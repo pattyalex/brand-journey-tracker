@@ -190,14 +190,13 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
         </p>
       </div>
 
-      <div className="flex justify-between">
-        <Button
+      <div className="flex items-center gap-3">
+        <button
           type="button"
-          variant="ghost"
-          size="sm"
           onClick={onBack}
           disabled={loading}
-          className="flex items-center"
+          className="flex items-center gap-1 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors hover:bg-gray-100 disabled:opacity-50"
+          style={{ color: '#6b6478' }}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -209,13 +208,20 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="mr-1"
           >
             <path d="m15 18-6-6 6-6" />
           </svg>
           Back
-        </Button>
-        <Button type="submit" className="flex-1 ml-4" disabled={!stripe || loading}>
+        </button>
+        <button
+          type="submit"
+          disabled={!stripe || loading}
+          className="flex-1 py-3.5 rounded-xl text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+          style={{
+            background: 'linear-gradient(135deg, #7a3868 0%, #612a4f 50%, #4e2040 100%)',
+            boxShadow: '0 4px 12px rgba(97, 42, 79, 0.25)'
+          }}
+        >
           {loading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -224,7 +230,7 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
           ) : (
             'Start 7-Day Free Trial'
           )}
-        </Button>
+        </button>
       </div>
     </form>
   );

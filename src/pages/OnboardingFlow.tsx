@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { SignUp, useUser, UserButton } from "@clerk/clerk-react";
+import { SignUp, useUser, UserButton, useClerk } from "@clerk/clerk-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,14 +18,15 @@ import { supabase } from "@/lib/supabase";
 import { Elements } from "@stripe/react-stripe-js";
 import { StripePaymentForm } from "@/components/StripePaymentForm";
 import { PaymentSetupStep } from "@/components/PaymentSetupStep";
+import { UserGoalsStep } from "@/components/UserGoalsStep";
+import EmailVerificationStatus from "@/components/EmailVerificationStatus";
 
 // Define the steps in the onboarding flow
-type OnboardingStep = 
-  | "account-creation" 
-  | "email-verification"
-  | "payment-setup" 
-  | "user-goals" 
-  | "connect-social" 
+type OnboardingStep =
+  | "account-creation"
+  | "plan-selection"
+  | "payment-entry"
+  | "user-goals"
   | "welcome";
 
 // Form validation schemas
@@ -161,12 +162,23 @@ const socialAccountsSchema = z.object({
 const OnboardingFlow: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { isSignedIn, user } = useUser();
+  const { isSignedIn, user, isLoaded: isUserLoaded } = useUser();
+  const { loaded: isClerkLoaded } = useClerk();
   const { hasCompletedOnboarding } = useAuth();
   const [currentStep, setCurrentStep] = useState<OnboardingStep>("account-creation");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<string>('');
   const [pendingVerificationEmail, setPendingVerificationEmail] = useState<string>('');
+
+  // Load Google Fonts for landing page consistency
+  useEffect(() => {
+    if (!document.querySelector('link[href*="DM+Sans"]')) {
+      const link = document.createElement('link');
+      link.href = 'https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Instrument+Serif:ital@0;1&display=swap';
+      link.rel = 'stylesheet';
+      document.head.appendChild(link);
+    }
+  }, []);
 
   // Redirect users who have already completed onboarding
   useEffect(() => {
@@ -179,19 +191,26 @@ const OnboardingFlow: React.FC = () => {
   // Check URL parameters on mount to determine initial step
   useEffect(() => {
     const stepParam = searchParams.get('step');
-    if (stepParam && ['account-creation', 'email-verification', 'payment-setup', 'user-goals', 'connect-social', 'welcome'].includes(stepParam)) {
+    if (stepParam && ['account-creation', 'plan-selection', 'payment-entry', 'user-goals', 'welcome'].includes(stepParam)) {
       console.log('🔗 Setting initial step from URL parameter:', stepParam);
       setCurrentStep(stepParam as OnboardingStep);
     }
   }, [searchParams]);
 
-  // Auto-advance to payment setup if user is already signed in with Clerk
+  // Auto-advance to plan selection ONLY on initial load if user is already signed in
+  // (not when they explicitly navigate back)
+  const [hasInitialized, setHasInitialized] = useState(false);
   useEffect(() => {
-    if (isSignedIn && currentStep === "account-creation") {
-      console.log('✅ User is signed in with Clerk, advancing to payment setup');
-      setCurrentStep("payment-setup");
+    if (!hasInitialized && isSignedIn && currentStep === "account-creation") {
+      // Only auto-advance on first load, not when user clicks Back
+      const stepParam = searchParams.get('step');
+      if (!stepParam) {
+        console.log('✅ User is signed in with Clerk, advancing to plan selection');
+        setCurrentStep("plan-selection");
+      }
+      setHasInitialized(true);
     }
-  }, [isSignedIn, currentStep]);
+  }, [isSignedIn, currentStep, hasInitialized, searchParams]);
 
   // Account Creation Form
   const accountForm = useForm<z.infer<typeof accountCreationSchema>>({
@@ -307,15 +326,16 @@ const OnboardingFlow: React.FC = () => {
 
       if (signUpResult.success) {
         console.log('✅ Account creation successful');
-        
+
         // Check if email verification is needed
         if (signUpResult.needsVerification) {
           console.log('📧 Email verification required');
           setPendingVerificationEmail(userEnteredEmail);
-          setCurrentStep("email-verification");
+          // Still go to plan selection - email verification is handled separately
+          setCurrentStep("plan-selection");
         } else {
-          console.log('✅ Account verified, proceeding to payment setup');
-          setCurrentStep("payment-setup");
+          console.log('✅ Account verified, proceeding to plan selection');
+          setCurrentStep("plan-selection");
         }
       } else {
         console.error('❌ Unexpected signup response:', signUpResult);
@@ -487,25 +507,22 @@ const OnboardingFlow: React.FC = () => {
   const handleEmailVerificationComplete = () => {
     console.log('✅ Email verification completed');
     setPendingVerificationEmail('');
-    setCurrentStep("payment-setup");
+    setCurrentStep("plan-selection");
   };
 
   const goToPreviousStep = () => {
     switch (currentStep) {
-      case "email-verification":
+      case "plan-selection":
         setCurrentStep("account-creation");
         break;
-      case "payment-setup":
-        setCurrentStep("account-creation");
+      case "payment-entry":
+        setCurrentStep("plan-selection");
         break;
       case "user-goals":
-        setCurrentStep("payment-setup");
-        break;
-      case "connect-social":
-        setCurrentStep("user-goals");
+        setCurrentStep("payment-entry");
         break;
       case "welcome":
-        setCurrentStep("connect-social");
+        setCurrentStep("user-goals");
         break;
       default:
         break;
@@ -541,6 +558,47 @@ const OnboardingFlow: React.FC = () => {
         );
 
       case "account-creation":
+        // If user is already signed in (clicked Back from payment), show continue option
+        if (isSignedIn && user) {
+          return (
+            <div className="w-full max-w-md mx-auto">
+              <div
+                className="rounded-3xl overflow-hidden p-8 text-center"
+                style={{
+                  background: '#ffffff',
+                  boxShadow: '0 25px 60px -12px rgba(97, 42, 79, 0.15), 0 0 0 1px rgba(139, 112, 130, 0.08)'
+                }}
+              >
+                <div
+                  className="w-14 h-14 mx-auto mb-4 rounded-2xl flex items-center justify-center text-white font-serif text-2xl"
+                  style={{
+                    background: 'linear-gradient(135deg, #7a3868 0%, #612a4f 50%, #4e2040 100%)',
+                    boxShadow: '0 8px 20px rgba(97, 42, 79, 0.3)'
+                  }}
+                >
+                  M
+                </div>
+                <h2 className="text-2xl font-semibold mb-2" style={{ color: '#1a1523' }}>
+                  Welcome, {user.firstName || 'there'}!
+                </h2>
+                <p className="text-sm mb-6" style={{ color: '#6b6478' }}>
+                  Your account is already set up. Continue to select your plan.
+                </p>
+                <button
+                  onClick={() => setCurrentStep("plan-selection")}
+                  className="w-full py-3.5 rounded-xl text-white font-semibold transition-all"
+                  style={{
+                    background: 'linear-gradient(135deg, #7a3868 0%, #612a4f 50%, #4e2040 100%)',
+                    boxShadow: '0 4px 12px rgba(97, 42, 79, 0.25)'
+                  }}
+                >
+                  Continue to Plan Selection
+                </button>
+              </div>
+            </div>
+          );
+        }
+
         return (
           <div className="w-full max-w-md mx-auto flex flex-col items-center">
             <div className="mb-4 text-center">
@@ -548,8 +606,7 @@ const OnboardingFlow: React.FC = () => {
               <p className="text-muted-foreground mt-2">Create your account to get started</p>
             </div>
             <SignUp
-              routing="hash"
-              afterSignUpUrl="/onboarding?step=payment-setup"
+              afterSignUpUrl="/onboarding?step=plan-selection"
               appearance={{
                 elements: {
                   rootBox: "w-full",
@@ -560,7 +617,20 @@ const OnboardingFlow: React.FC = () => {
           </div>
         );
 
-      case "payment-setup":
+      case "plan-selection":
+        if (!user) {
+          return <div>Loading user information...</div>;
+        }
+
+        return (
+          <PaymentSetupStep
+            user={user}
+            onContinueToPayment={() => setCurrentStep("payment-entry")}
+            showPaymentForm={false}
+          />
+        );
+
+      case "payment-entry":
         if (!user) {
           return <div>Loading user information...</div>;
         }
@@ -569,707 +639,99 @@ const OnboardingFlow: React.FC = () => {
           <PaymentSetupStep
             user={user}
             onSuccess={() => setCurrentStep("user-goals")}
-            onBack={goToPreviousStep}
+            onBack={() => setCurrentStep("plan-selection")}
+            showPaymentForm={true}
           />
         );
 
       case "user-goals":
         return (
-          <Card className="w-full max-w-md mx-auto">
-            <CardHeader className="relative pb-2">
-              <CardTitle className="text-2xl">We'd like to get to know you</CardTitle>
-              <CardDescription>This helps us tailor the experience to your needs</CardDescription>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <Form {...goalForm}>
-                <form 
-                  onSubmit={(e) => {
-                    // Extra safeguard to prevent accidental submissions from "Enter" key
-                    const activeElement = document.activeElement as HTMLElement;
-                    if (activeElement && activeElement.tagName === 'INPUT') {
-                      e.preventDefault();
-                      return;
-                    }
-                    goalForm.handleSubmit(onGoalSubmit)(e);
-                  }} 
-                  className="space-y-2"
-                >
-                  <FormField
-                    control={goalForm.control}
-                    name="postFrequency"
-                    render={({ field }) => (
-                      <FormItem className="mb-8 mt-4">
-                        <FormLabel className="font-medium text-xl bg-gray-100 px-4 py-3 rounded-md block shadow-sm w-full">
-                          How often do you want to create or post content?
-                        </FormLabel>
-                        <div className="space-y-2 mt-4">
-                          <RadioGroup
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                            <div className="flex items-center space-x-2 py-3">
-                              <RadioGroupItem value="several_times_a_day" id="several_times_a_day" />
-                              <Label htmlFor="several_times_a_day" className="font-medium">
-                                Several times a day
-                              </Label>
-                            </div>
-                            <div className="flex items-center space-x-2 py-3">
-                              <RadioGroupItem value="daily" id="daily" />
-                              <Label htmlFor="daily" className="font-medium">
-                                Daily
-                              </Label>
-                            </div>
-                            <div className="flex items-center space-x-2 py-3">
-                              <RadioGroupItem value="few_times_a_week" id="few_times_a_week" />
-                              <Label htmlFor="few_times_a_week" className="font-medium">
-                                A few times a week
-                              </Label>
-                            </div>
-                            <div className="flex items-center space-x-2 py-3">
-                              <RadioGroupItem value="occasionally" id="occasionally" />
-                              <Label htmlFor="occasionally" className="font-medium">
-                                Occasionally
-                              </Label>
-                            </div>
-                          </RadioGroup>
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={goalForm.control}
-                    name="ideationMethod"
-                    render={({ field }) => (
-                      <FormItem className="mb-8 mt-0">
-                        <FormLabel className="font-medium text-xl bg-gray-100 px-4 py-3 rounded-md block shadow-sm w-full">
-                          How do you come up with content ideas today?
-                        </FormLabel>
-                        <div className="space-y-2 mt-4">
-                          <RadioGroup
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                            <div className="flex items-center space-x-2 py-3">
-                              <RadioGroupItem value="plan_ahead" id="plan_ahead" />
-                              <Label htmlFor="plan_ahead" className="font-medium">
-                                I plan them ahead
-                              </Label>
-                            </div>
-                            <div className="flex items-center space-x-2 py-3">
-                              <RadioGroupItem value="wing_it" id="wing_it" />
-                              <Label htmlFor="wing_it" className="font-medium">
-                                I wing it day by day
-                              </Label>
-                            </div>
-                            <div className="flex items-center space-x-2 py-3">
-                              <RadioGroupItem value="follow_trends" id="follow_trends" />
-                              <Label htmlFor="follow_trends" className="font-medium">
-                                I follow trends and repost
-                              </Label>
-                            </div>
-                            <div className="flex items-center space-x-2 py-3">
-                              <RadioGroupItem value="struggle" id="struggle" />
-                              <Label htmlFor="struggle" className="font-medium">
-                                I struggle to come up with ideas
-                              </Label>
-                            </div>
-                          </RadioGroup>
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={goalForm.control}
-                    name="teamStructure"
-                    render={({ field }) => (
-                      <FormItem className="mb-8 mt-20">
-                        <FormLabel className="font-medium text-xl bg-gray-100 px-4 py-3 rounded-md block shadow-sm w-full">
-                          Do you work alone or with a team?
-                        </FormLabel>
-                        <div className="space-y-2 mt-4">
-                          <RadioGroup
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                            <div className="flex items-center space-x-2 py-3">
-                              <RadioGroupItem value="solo" id="solo" />
-                              <Label htmlFor="solo" className="font-medium">
-                                Just me
-                              </Label>
-                            </div>
-                            <div className="flex items-center space-x-2 py-3">
-                              <RadioGroupItem value="has_assistant" id="has_assistant" />
-                              <Label htmlFor="has_assistant" className="font-medium">
-                                I have an assistant / editor
-                              </Label>
-                            </div>
-                            <div className="flex items-center space-x-2 py-3">
-                              <RadioGroupItem value="team_agency" id="team_agency" />
-                              <Label htmlFor="team_agency" className="font-medium">
-                                I'm part of a team or agency
-                              </Label>
-                            </div>
-                            <div className="flex items-center space-x-2 py-3">
-                              <RadioGroupItem value="other" id="other_team" />
-                              <Label htmlFor="other_team" className="font-medium">
-                                Other
-                              </Label>
-                            </div>
-                          </RadioGroup>
-                        </div>
-
-                        {field.value === "other" && (
-                          <FormField
-                            control={goalForm.control}
-                            name="otherTeamStructure"
-                            render={({ field }) => (
-                              <FormItem className="mt-2">
-                                <FormControl>
-                                  <Input 
-                                    placeholder="Please specify your team structure" 
-                                    {...field} 
-                                    onKeyDown={(e) => {
-                                      if (e.key === 'Enter') {
-                                        e.preventDefault();
-                                        e.currentTarget.blur();
-                                      }
-                                    }}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        )}
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={goalForm.control}
-                    name="creatorDream"
-                    render={({ field }) => (
-                      <FormItem className="mb-8 mt-20">
-                        <FormLabel className="font-medium text-xl bg-gray-100 px-4 py-3 rounded-md block shadow-sm w-full">
-                          What's your biggest dream as a creator?
-                        </FormLabel>
-                        <div className="space-y-2 mt-4">
-                          <RadioGroup
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                            <div className="flex items-center space-x-2 py-3">
-                              <RadioGroupItem value="quit_job" id="quit_job" />
-                              <Label htmlFor="quit_job" className="font-medium">
-                                Quitting my job and going full-time
-                              </Label>
-                            </div>
-                            <div className="flex items-center space-x-2 py-3">
-<RadioGroupItem value="grow_followers" id="grow_followers" />
-                              <Label htmlFor="grow_followers" className="font-medium">
-                                Growing my followers and engagement
-                              </Label>
-                            </div>
-                            <div className="flex items-center space-x-2 py-3">
-                              <RadioGroupItem value="build_brand" id="build_brand" />
-                              <Label htmlFor="build_brand" className="font-medium">
-                                Building a personal brand that gets me brand deals
-                              </Label>
-                            </div>
-                            <div className="flex items-center space-x-2 py-3">
-                              <RadioGroupItem value="launch_products" id="launch_products" />
-                              <Label htmlFor="launch_products" className="font-medium">
-                                Launching my own products or business
-                              </Label>
-                            </div>
-                            <div className="flex items-center space-x-2 py-3">
-                              <RadioGroupItem value="inspire_others" id="inspire_others" />
-                              <Label htmlFor="inspire_others" className="font-medium">
-                                Inspiring others / making impact
-                              </Label>
-                            </div>
-                            <div className="flex items-center space-x-2 py-3">
-                              <RadioGroupItem value="other" id="other_dream" />
-                              <Label htmlFor="other_dream" className="font-medium">
-                                Other
-                              </Label>
-                            </div>
-                          </RadioGroup>
-                        </div>
-
-                        {field.value === "other" && (
-                          <FormField
-                            control={goalForm.control}
-                            name="otherCreatorDream"
-                            render={({ field }) => (
-                              <FormItem className="mt-2">
-                                <FormControl>
-                                  <Input 
-                                    placeholder="Please specify your creator dream" 
-                                    {...field} 
-                                    onKeyDown={(e) => {
-                                      if (e.key === 'Enter') {
-                                        e.preventDefault();
-                                        e.currentTarget.blur();
-                                      }
-                                    }}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        )}
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={goalForm.control}
-                    name="platforms"
-                    render={() => (
-                      <FormItem className="mb-8 mt-20">
-                        <FormLabel className="font-medium text-xl bg-gray-100 px-4 py-3 rounded-md block shadow-sm w-full">
-                          Which platforms do you want to focus on right now?
-                        </FormLabel>
-                        <FormDescription className="mt-2 text-sm">
-                          Select all that apply
-                        </FormDescription>
-                        <div className="space-y-2 mt-2">
-                          <FormField
-                            control={goalForm.control}
-                            name="platforms.instagram"
-                            render={({ field }) => (
-                              <FormItem className="flex items-center space-x-2 py-3">
-                                <FormControl>
-                                  <Checkbox 
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                  />
-                                </FormControl>
-                                <FormLabel className="font-medium">
-                                  Instagram
-                                </FormLabel>
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={goalForm.control}
-                            name="platforms.tiktok"
-                            render={({ field }) => (
-                              <FormItem className="flex items-center space-x-2 py-3">
-                                <FormControl>
-                                  <Checkbox 
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                  />
-                                </FormControl>
-                                <FormLabel className="font-medium">
-                                  TikTok
-                                </FormLabel>
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={goalForm.control}
-                            name="platforms.youtube"
-                            render={({ field }) => (
-                              <FormItem className="flex items-center space-x-2 py-3">
-                                <FormControl>
-                                  <Checkbox 
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                  />
-                                </FormControl>
-                                <FormLabel className="font-medium">
-                                  YouTube
-                                </FormLabel>
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={goalForm.control}
-                            name="platforms.other"
-                            render={({ field }) => (
-                              <FormItem className="flex items-center space-x-2 py-3">
-                                <FormControl>
-                                  <Checkbox 
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                  />
-                                </FormControl>
-                                <FormLabel className="font-medium">
-                                  Other
-                                </FormLabel>
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-
-                        {goalForm.watch("platforms.other") && (
-                          <FormField
-                            control={goalForm.control}
-                            name="otherPlatform"
-                            render={({ field }) => (
-                              <FormItem className="mt-2">
-                                <FormControl>
-                                  <Input 
-                                    placeholder="Please specify other platforms" 
-                                    {...field} 
-                                    onKeyDown={(e) => {
-                                      if (e.key === 'Enter') {
-                                        e.preventDefault(); // Prevent form submission
-                                        e.currentTarget.blur(); // Blur input to save value
-                                      }
-                                    }}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        )}
-
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={goalForm.control}
-                    name="stuckAreas"
-                    render={() => (
-                      <FormItem className="mb-8 mt-32">
-                        <FormLabel className="font-medium text-xl bg-gray-100 px-4 py-3 rounded-md block shadow-sm w-full">
-                          Where do you feel most stuck in your content process?
-                        </FormLabel>
-                        <FormDescription className="mt-2 text-sm">
-                          Select all that apply
-                        </FormDescription>
-                        <div className="space-y-2 mt-2">
-                          <FormField
-                            control={goalForm.control}
-                            name="stuckAreas.consistency"
-                            render={({ field }) => (
-                              <FormItem className="flex items-center space-x-2 py-3">
-                                <FormControl>
-                                  <Checkbox 
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                  />
-                                </FormControl>
-                                <FormLabel className="font-medium">
-                                  Staying consistent
-                                </FormLabel>
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={goalForm.control}
-                            name="stuckAreas.overwhelmed"
-                            render={({ field }) => (
-                              <FormItem className="flex items-center space-x-2 py-3">
-                                <FormControl>
-                                  <Checkbox 
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                  />
-                                </FormControl>
-                                <FormLabel className="font-medium">
-                                  Feeling overwhelmed with planning and batching
-                                </FormLabel>
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={goalForm.control}
-                            name="stuckAreas.ideas"
-                            render={({ field }) => (
-                              <FormItem className="flex items-center space-x-2 py-3">
-                                <FormControl>
-                                  <Checkbox 
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                  />
-                                </FormControl>
-                                <FormLabel className="font-medium">
-                                  Coming up with ideas
-                                </FormLabel>
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={goalForm.control}
-                            name="stuckAreas.partnerships"
-                            render={({ field }) => (
-                              <FormItem className="flex items-center space-x-2 py-3">
-                                <FormControl>
-                                  <Checkbox 
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                  />
-                                </FormControl>
-                                <FormLabel className="font-medium">
-                                  Managing brand deals or partnerships
-                                </FormLabel>
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={goalForm.control}
-                            name="stuckAreas.analytics"
-                            render={({ field }) => (
-                              <FormItem className="flex items-center space-x-2 py-3">
-                                <FormControl>
-                                  <Checkbox 
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                  />
-                                </FormControl>
-                                <FormLabel className="font-medium">
-                                  Tracking growth and analytics
-                                </FormLabel>
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={goalForm.control}
-                            name="stuckAreas.organization"
-                            render={({ field }) => (
-                              <FormItem className="flex items-center space-x-2 py-3">
-                                <FormControl>
-                                  <Checkbox 
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                  />
-                                </FormControl>
-                                <FormLabel className="font-medium">
-                                  No centralized place to organize everything and forgetting where things are saved
-                                </FormLabel>
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={goalForm.control}
-                            name="stuckAreas.other"
-                            render={({ field }) => (
-                              <FormItem className="flex items-center space-x-2 py-3">
-                                <FormControl>
-                                  <Checkbox 
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                  />
-                                </FormControl>
-                                <FormLabel className="font-medium">
-                                  Other
-                                </FormLabel>
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-
-                        {goalForm.watch("stuckAreas.other") && (
-                          <FormField
-                            control={goalForm.control}
-                            name="otherStuckArea"
-                            render={({ field }) => (
-                              <FormItem className="mt-2">
-                                <FormControl>
-                                  <Input 
-                                    placeholder="Please specify where else you feel stuck" 
-                                    {...field} 
-                                    onKeyDown={(e) => {
-                                      if (e.key === 'Enter') {
-                                        e.preventDefault(); // Prevent form submission
-                                        e.currentTarget.blur(); // Blur input to save value
-                                      }
-                                    }}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        )}
-
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-
-
-                  <div className="flex justify-between mt-6">
-                    <Button variant="ghost" size="sm" onClick={goToPreviousStep} className="flex items-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><path d="m15 18-6-6 6-6"/></svg>
-                      Back
-                    </Button>
-                    <Button type="submit" className="flex-1 ml-4">Continue</Button>
-                  </div>
-                </form>
-              </Form>
-            </CardContent>
-          </Card>
-        );
-
-      case "connect-social":
-        return (
-          <Card className="w-full max-w-md mx-auto">
-            <CardHeader className="relative">
-
-              <CardTitle className="text-2xl">Add your social accounts</CardTitle>
-              <CardDescription>
-                Connect your social media accounts to unlock analytics and recommendations
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Form {...socialForm}>
-                <form onSubmit={socialForm.handleSubmit(onSocialSubmit)} className="space-y-4">
-                  <div className="space-y-4">
-                    <FormField
-                      control={socialForm.control}
-                      name="instagram"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                          <div className="flex items-center space-x-3">
-                            <Instagram className="h-5 w-5 text-pink-600" />
-                            <FormLabel className="font-normal">Instagram</FormLabel>
-                          </div>
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={socialForm.control}
-                      name="tiktok"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                          <div className="flex items-center space-x-3">
-                            <Music className="h-5 w-5 text-black" />
-                            <FormLabel className="font-normal">TikTok</FormLabel>
-                          </div>
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={socialForm.control}
-                      name="youtube"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                          <div className="flex items-center space-x-3">
-                            <Youtube className="h-5 w-5 text-red-600" />
-                            <FormLabel className="font-normal">YouTube</FormLabel>
-                          </div>
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={socialForm.control}
-                      name="linkedin"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                          <div className="flex items-center space-x-3">
-                            <Linkedin className="h-5 w-5 text-blue-600" />
-                            <FormLabel className="font-normal">LinkedIn</FormLabel>
-                          </div>
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={socialForm.control}
-                      name="twitter"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                          <div className="flex items-center space-x-3">
-                            <Twitter className="h-5 w-5 text-blue-400" />
-                            <FormLabel className="font-normal">Twitter/X</FormLabel>
-                          </div>
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <div className="flex justify-between mt-6">
-                    <Button variant="ghost" size="sm" onClick={goToPreviousStep} className="flex items-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><path d="m15 18-6-6 6-6"/></svg>
-                      Back
-                    </Button>
-                    <Button type="submit" className="flex-1 ml-4">Continue</Button>
-                  </div>
-                </form>
-              </Form>
-            </CardContent>
-          </Card>
+          <UserGoalsStep
+            onComplete={(answers) => {
+              console.log("User goals:", answers);
+              setCurrentStep("welcome");
+            }}
+          />
         );
 
       case "welcome":
         return (
-          <Card className="w-full max-w-md mx-auto">
-            <CardHeader className="relative">
-
-              <CardTitle className="text-2xl text-center">🎉 Let's get you into Hey Megan!</CardTitle>
-              <CardDescription className="text-center">
-                Your account is all set up and ready to go.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex justify-center">
-              <div className="mt-8 space-y-4">
-                <Button 
-                  className="w-full py-6" 
-                  onClick={finishOnboarding}
+          <div className="w-full max-w-lg mx-auto" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+            <div
+              className="rounded-3xl overflow-hidden text-center"
+              style={{
+                background: '#ffffff',
+                boxShadow: '0 25px 60px -12px rgba(97, 42, 79, 0.15), 0 0 0 1px rgba(139, 112, 130, 0.08)',
+              }}
+            >
+              <div className="p-10">
+                {/* Heading */}
+                <h2
+                  className="text-3xl font-normal mb-3"
+                  style={{ color: '#1a1523', fontFamily: "'Instrument Serif', serif" }}
                 >
-                  Go to Home Page
-                </Button>
+                  You're all set!
+                </h2>
+
+                {/* Subtext */}
+                <p className="text-base mb-8" style={{ color: '#6b6478' }}>
+                  Your account is ready. Let's start creating amazing content.
+                </p>
+
+                {/* CTA Button */}
+                <button
+                  type="button"
+                  onClick={finishOnboarding}
+                  className="w-full py-4 rounded-xl text-white font-semibold text-lg transition-all hover:opacity-90"
+                  style={{
+                    background: 'linear-gradient(135deg, #7a3868 0%, #612a4f 50%, #4e2040 100%)',
+                    boxShadow: '0 4px 12px rgba(97, 42, 79, 0.25)',
+                  }}
+                >
+                  Let's go!
+                </button>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         );
     }
   };
 
+  // Don't render anything until Clerk is loaded (prevents flash)
+  if (!isClerkLoaded || !isUserLoaded) {
+    return <div className="min-h-screen bg-gradient-to-b from-white to-gray-100" />;
+  }
+
+  // Brand gradient for stepper
+  const brandGradient = 'linear-gradient(135deg, #7a3868 0%, #612a4f 50%, #4e2040 100%)';
+
+  // Get step index for stepper
+  const stepOrder = ["account-creation", "plan-selection", "payment-entry", "user-goals", "welcome"];
+  const currentStepIndex = stepOrder.indexOf(currentStep);
+
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-white to-gray-100">
+    <div
+      className="min-h-screen flex flex-col"
+      style={{
+        background: '#fcf9fe',
+        fontFamily: "'DM Sans', sans-serif"
+      }}
+    >
+      {/* Subtle gradient overlay like landing page */}
+      <div
+        className="fixed inset-0 pointer-events-none"
+        style={{
+          background: `
+            radial-gradient(ellipse 90% 70% at 5% 50%, rgba(220,208,255,0.4) 0%, transparent 55%),
+            radial-gradient(ellipse 70% 80% at 95% 50%, rgba(241,211,255,0.35) 0%, transparent 50%),
+            radial-gradient(ellipse 80% 50% at 50% 10%, rgba(197,216,255,0.35) 0%, transparent 55%),
+            radial-gradient(circle at 50% 50%, rgba(255,255,255,0.6) 0%, transparent 60%)
+          `
+        }}
+      />
+
       {/* Header with auth button */}
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <header className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md border-b border-gray-100">
         <div className="flex h-14 items-center justify-end px-6 gap-2">
           {isSignedIn && (
             <UserButton
@@ -1285,21 +747,53 @@ const OnboardingFlow: React.FC = () => {
       </header>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col items-center justify-center py-12 px-4">
-        <div className="w-full max-w-md mb-8">
-        <div className="mb-4">
-          <div className="w-full">
-            <ul className="steps w-full">
-              <li className={`step ${["account-creation", "email-verification", "payment-setup", "user-goals", "connect-social", "welcome"].includes(currentStep) ? "step-primary" : ""}`}></li>
-              <li className={`step ${["email-verification", "payment-setup", "user-goals", "connect-social", "welcome"].includes(currentStep) ? "step-primary" : ""}`}></li>
-              <li className={`step ${["payment-setup", "user-goals", "connect-social", "welcome"].includes(currentStep) ? "step-primary" : ""}`}></li>
-              <li className={`step ${["user-goals", "connect-social", "welcome"].includes(currentStep) ? "step-primary" : ""}`}></li>
-              <li className={`step ${["connect-social", "welcome"].includes(currentStep) ? "step-primary" : ""}`}></li>
-              <li className={`step ${["welcome"].includes(currentStep) ? "step-primary" : ""}`}></li>
-            </ul>
+      <div className="flex-1 flex flex-col items-center justify-center py-12 px-4 relative z-10">
+        {/* Modern Stepper */}
+        <div className="w-full max-w-md mb-10">
+          <div className="flex items-center justify-center gap-2">
+            {[1, 2, 3, 4, 5].map((step, index) => {
+              const isCompleted = index < currentStepIndex;
+              const isCurrent = index === currentStepIndex;
+              const isUpcoming = index > currentStepIndex;
+
+              return (
+                <React.Fragment key={step}>
+                  {/* Step Circle */}
+                  <div
+                    className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300"
+                    style={{
+                      background: isCompleted || isCurrent ? brandGradient : '#ffffff',
+                      color: isCompleted || isCurrent ? '#ffffff' : '#8a7a85',
+                      border: isUpcoming ? '2px solid #e5e0e3' : 'none',
+                      boxShadow: isCurrent ? '0 4px 12px rgba(97, 42, 79, 0.3)' :
+                                 isCompleted ? '0 2px 8px rgba(97, 42, 79, 0.2)' : 'none'
+                    }}
+                  >
+                    {isCompleted ? (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : (
+                      step
+                    )}
+                  </div>
+
+                  {/* Connector Line */}
+                  {index < 4 && (
+                    <div
+                      className="w-8 h-0.5 rounded-full transition-all duration-300"
+                      style={{
+                        background: index < currentStepIndex
+                          ? brandGradient
+                          : '#e5e0e3'
+                      }}
+                    />
+                  )}
+                </React.Fragment>
+              );
+            })}
           </div>
         </div>
-      </div>
 
         {renderStep()}
       </div>

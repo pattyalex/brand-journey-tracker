@@ -32,21 +32,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loginOpen, setLoginOpen] = useState(false);
   const [checkingOnboarding, setCheckingOnboarding] = useState(true);
 
+  // Helper to get user-specific localStorage key
+  const getOnboardingKey = (userId: string) => `${StorageKeys.hasCompletedOnboarding}_${userId}`;
+
+  // One-time cleanup: Remove old generic localStorage key that could cause cross-user issues
+  useEffect(() => {
+    // Remove the old generic key (without user ID) to prevent stale data
+    const oldGenericValue = getString(StorageKeys.hasCompletedOnboarding);
+    if (oldGenericValue) {
+      console.log('🧹 Cleaning up old generic onboarding localStorage key');
+      remove(StorageKeys.hasCompletedOnboarding);
+    }
+  }, []);
+
   // Check onboarding status from Supabase profile
   useEffect(() => {
     const checkOnboardingStatus = async () => {
       setCheckingOnboarding(true);
 
-      // First check localStorage - if they've completed onboarding before, trust it
-      const storedOnboarding = getString(StorageKeys.hasCompletedOnboarding);
-      if (storedOnboarding === 'true') {
-        console.log('✅ Onboarding already completed (from localStorage)');
-        setHasCompletedOnboarding(true);
-        setCheckingOnboarding(false);
-        return;
-      }
-
       if (isSignedIn && user) {
+        const userOnboardingKey = getOnboardingKey(user.id);
+
+        // First check user-specific localStorage - if they've completed onboarding before, trust it
+        const storedOnboarding = getString(userOnboardingKey);
+        if (storedOnboarding === 'true') {
+          console.log('✅ Onboarding already completed (from localStorage) for user:', user.id);
+          setHasCompletedOnboarding(true);
+          setCheckingOnboarding(false);
+          return;
+        }
+
         console.log('🔍 Checking onboarding status for user:', user.id);
 
         try {
@@ -63,12 +78,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // User has a subscription, they've completed onboarding
             console.log('✅ User has subscription, marking onboarding complete');
             setHasCompletedOnboarding(true);
-            setString(StorageKeys.hasCompletedOnboarding, 'true');
+            setString(userOnboardingKey, 'true');
           } else {
             // No subscription found, they need to complete onboarding
             console.log('❌ No subscription found, needs onboarding');
             setHasCompletedOnboarding(false);
-            remove(StorageKeys.hasCompletedOnboarding);
           }
         } catch (error) {
           console.error('Error checking onboarding:', error);
@@ -190,7 +204,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const completeOnboarding = () => {
     setHasCompletedOnboarding(true);
-    setString(StorageKeys.hasCompletedOnboarding, 'true');
+    // Store with user-specific key to prevent cross-user localStorage issues
+    if (user?.id) {
+      setString(getOnboardingKey(user.id), 'true');
+    }
   };
 
   const openLoginModal = useCallback(() => {

@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Elements } from '@stripe/react-stripe-js';
 import { stripePromise } from '@/lib/stripe';
 import { StripePaymentForm } from './StripePaymentForm';
+import { Check, Shield, Zap, ChevronLeft } from 'lucide-react';
 
 interface PaymentSetupStepProps {
   user: {
@@ -15,168 +13,258 @@ interface PaymentSetupStepProps {
     fullName?: string | null;
     firstName?: string | null;
   };
-  onSuccess: () => void;
-  onBack: () => void;
+  showPaymentForm?: boolean;
+  onContinueToPayment?: () => void;
+  onSuccess?: () => void;
+  onBack?: () => void;
 }
 
-export const PaymentSetupStep: React.FC<PaymentSetupStepProps> = ({ user, onSuccess, onBack }) => {
-  const [billingPlan, setBillingPlan] = useState<'monthly' | 'annual'>('monthly');
+export const PaymentSetupStep: React.FC<PaymentSetupStepProps> = ({
+  user,
+  showPaymentForm = false,
+  onContinueToPayment,
+  onSuccess,
+  onBack
+}) => {
+  const [billingPlan, setBillingPlan] = useState<'monthly' | 'annual'>('annual');
   const [termsAccepted, setTermsAccepted] = useState(false);
-  const [showPaymentForm, setShowPaymentForm] = useState(false);
 
   const handleContinue = () => {
     if (!termsAccepted) {
       alert('Please accept the terms and conditions to continue');
       return;
     }
-    setShowPaymentForm(true);
+    if (onContinueToPayment) {
+      onContinueToPayment();
+    }
   };
 
+  // Brand gradient style
+  const brandGradient = 'linear-gradient(135deg, #7a3868 0%, #612a4f 50%, #4e2040 100%)';
+
+  // Payment Entry View
   if (showPaymentForm) {
     return (
-      <Card className="w-full max-w-md mx-auto">
-        <CardHeader>
-          <CardTitle className="text-2xl">Enter payment information</CardTitle>
-          <CardDescription>
-            You won't be charged today. After 7 days, your trial will convert into a paid subscription.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Temporary skip button for development */}
-          <Button
-            onClick={onSuccess}
-            variant="outline"
-            className="w-full"
-          >
-            Skip Payment (Development)
-          </Button>
+      <div className="w-full max-w-lg mx-auto" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+        <div
+          className="rounded-3xl overflow-hidden"
+          style={{
+            background: '#ffffff',
+            boxShadow: '0 25px 60px -12px rgba(97, 42, 79, 0.15), 0 0 0 1px rgba(139, 112, 130, 0.08)'
+          }}
+        >
+          <div className="p-8">
+            <h2 className="text-2xl font-normal mb-2" style={{ color: '#1a1523', fontFamily: "'Instrument Serif', serif" }}>
+              Enter payment details
+            </h2>
+            <p className="text-sm mb-6" style={{ color: '#6b6478' }}>
+              Your card won't be charged until your 7-day free trial ends.
+            </p>
 
-          <Elements stripe={stripePromise}>
-            <StripePaymentForm
-              billingPlan={billingPlan}
-              onSuccess={onSuccess}
-              onBack={() => setShowPaymentForm(false)}
-              userId={user.id}
-              userEmail={user.primaryEmailAddress?.emailAddress || ''}
-              userName={user.fullName || user.firstName || 'User'}
-            />
-          </Elements>
-        </CardContent>
-      </Card>
+            {/* Temporary skip button for development */}
+            <Button
+              onClick={onSuccess}
+              variant="outline"
+              className="w-full mb-4"
+            >
+              Skip Payment (Development)
+            </Button>
+
+            <Elements stripe={stripePromise}>
+              <StripePaymentForm
+                billingPlan={billingPlan}
+                onSuccess={onSuccess || (() => {})}
+                onBack={onBack || (() => {})}
+                userId={user.id}
+                userEmail={user.primaryEmailAddress?.emailAddress || ''}
+                userName={user.fullName || user.firstName || 'User'}
+              />
+            </Elements>
+          </div>
+        </div>
+      </div>
     );
   }
 
+  // Plan Selection View
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader>
-        <CardTitle className="text-2xl">Select your plan</CardTitle>
-        <CardDescription>
-          You won't be charged today. After 7 days, your trial will convert into a paid subscription.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Plan Selection */}
-        <div className="space-y-3">
-          <Label>Select a Plan</Label>
-          <RadioGroup value={billingPlan} onValueChange={(value) => setBillingPlan(value as 'monthly' | 'annual')}>
-            <div className="flex items-start space-x-2 border rounded-md p-4 hover:bg-muted/50 transition-colors cursor-pointer">
-              <RadioGroupItem value="monthly" id="monthly" className="mt-1" />
-              <div className="flex-1">
-                <Label htmlFor="monthly" className="font-medium text-lg cursor-pointer">
-                  Monthly Plan
-                </Label>
-                <p className="text-muted-foreground text-sm mt-1">
-                  $17 per month, billed monthly
-                </p>
-                <div className="mt-2">
-                  <span className="bg-primary/10 text-primary text-xs font-medium px-2 py-1 rounded-full">
-                    Most popular
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-start space-x-2 border rounded-md p-4 hover:bg-muted/50 transition-colors cursor-pointer">
-              <RadioGroupItem value="annual" id="annual" className="mt-1" />
-              <div className="flex-1">
-                <Label htmlFor="annual" className="font-medium text-lg cursor-pointer">
-                  Annual Plan
-                </Label>
-                <p className="text-muted-foreground text-sm mt-1">
-                  $14 per month, billed annually ($168)
-                </p>
-                <div className="mt-2">
-                  <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">
-                    Save 18%
-                  </span>
-                </div>
-              </div>
-            </div>
-          </RadioGroup>
+    <div className="w-full max-w-lg mx-auto" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+      <div
+        className="rounded-3xl overflow-hidden"
+        style={{
+          background: '#ffffff',
+          boxShadow: '0 25px 60px -12px rgba(97, 42, 79, 0.15), 0 0 0 1px rgba(139, 112, 130, 0.08)'
+        }}
+      >
+        {/* Header Section */}
+        <div className="px-8 pt-8 pb-6 text-center">
+          <h2 className="text-2xl font-normal mb-2" style={{ color: '#1a1523', fontFamily: "'Instrument Serif', serif" }}>
+            Select your plan
+          </h2>
+          <p className="text-sm" style={{ color: '#6b6478' }}>
+            Start your 7-day free trial. Cancel anytime.
+          </p>
         </div>
 
-        {/* Accepted Payment Methods */}
-        <div className="flex items-center justify-center gap-2">
-          <svg className="h-6 w-6 text-muted-foreground" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M4,4h16c1.1,0,2,0.9,2,2v12c0,1.1-0.9,2-2,2H4c-1.1,0-2-0.9-2-2V6C2,4.9,2.9,4,4,4z" />
-          </svg>
-          <svg className="h-6 w-6 text-muted-foreground" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="10" fill="#EB001B" opacity="0.6" />
-            <circle cx="12" cy="12" r="10" fill="#F79E1B" opacity="0.6" style={{ transform: 'translateX(4px)' }} />
-          </svg>
-          <svg className="h-6 w-6 text-muted-foreground" viewBox="0 0 24 24">
-            <path d="M22,12c0,5.5-4.5,10-10,10S2,17.5,2,12S6.5,2,12,2S22,6.5,22,12z" fill="#006FCF" opacity="0.6" />
-          </svg>
-          <svg className="h-6 w-6 text-muted-foreground" viewBox="0 0 24 24">
-            <path d="M2.5,10.5l2,-4.5h15l2,4.5" fill="#FF5F00" opacity="0.6" />
-            <path d="M2.5,10.5v5.5h19v-5.5" fill="#EB001B" opacity="0.6" />
-          </svg>
-        </div>
+        <div className="px-8 pb-8">
+          {/* Plan Selection */}
+          <div className="space-y-3 mb-6">
+            {/* Annual Plan - Recommended */}
+            <button
+              type="button"
+              onClick={() => setBillingPlan('annual')}
+              className="w-full text-left rounded-2xl p-5 transition-all relative"
+              style={{
+                background: billingPlan === 'annual'
+                  ? 'linear-gradient(135deg, rgba(122, 56, 104, 0.08) 0%, rgba(97, 42, 79, 0.05) 100%)'
+                  : '#fafafa',
+                border: billingPlan === 'annual'
+                  ? '1px solid #7a3868'
+                  : '1px solid transparent',
+                boxShadow: billingPlan === 'annual'
+                  ? '0 4px 12px rgba(97, 42, 79, 0.1)'
+                  : 'none'
+              }}
+            >
+              {/* Best Value Badge */}
+              <div
+                className="absolute -top-3 left-5 px-3 py-1 rounded-full text-xs font-semibold text-white"
+                style={{ background: brandGradient }}
+              >
+                Best Value
+              </div>
 
-        {/* Terms and Conditions */}
-        <div className="flex items-start space-x-3">
-          <Checkbox id="terms" checked={termsAccepted} onCheckedChange={(checked) => setTermsAccepted(checked as boolean)} />
-          <div className="space-y-1 leading-none">
-            <label htmlFor="terms" className="text-sm font-medium leading-none cursor-pointer">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-semibold text-lg" style={{ color: '#1a1523' }}>
+                      Annual Plan
+                    </span>
+                    <span
+                      className="px-2 py-0.5 rounded-full text-xs font-medium"
+                      style={{ background: '#dcfce7', color: '#166534' }}
+                    >
+                      Save 18%
+                    </span>
+                  </div>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-2xl font-bold" style={{ color: '#1a1523' }}>$14</span>
+                    <span className="text-sm" style={{ color: '#6b6478' }}>/month</span>
+                  </div>
+                  <p className="text-xs mt-1" style={{ color: '#8a7a85' }}>
+                    Billed annually ($168/year)
+                  </p>
+                </div>
+                <div
+                  className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-1"
+                  style={{
+                    background: billingPlan === 'annual' ? brandGradient : '#e5e5e5',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  {billingPlan === 'annual' && <Check className="w-4 h-4 text-white" />}
+                </div>
+              </div>
+            </button>
+
+            {/* Monthly Plan */}
+            <button
+              type="button"
+              onClick={() => setBillingPlan('monthly')}
+              className="w-full text-left rounded-2xl p-5 transition-all"
+              style={{
+                background: billingPlan === 'monthly'
+                  ? 'linear-gradient(135deg, rgba(122, 56, 104, 0.08) 0%, rgba(97, 42, 79, 0.05) 100%)'
+                  : '#fafafa',
+                border: billingPlan === 'monthly'
+                  ? '1px solid #7a3868'
+                  : '1px solid transparent',
+                boxShadow: billingPlan === 'monthly'
+                  ? '0 4px 12px rgba(97, 42, 79, 0.1)'
+                  : 'none'
+              }}
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <span className="font-semibold text-lg block mb-1" style={{ color: '#1a1523' }}>
+                    Monthly Plan
+                  </span>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-2xl font-bold" style={{ color: '#1a1523' }}>$17</span>
+                    <span className="text-sm" style={{ color: '#6b6478' }}>/month</span>
+                  </div>
+                  <p className="text-xs mt-1" style={{ color: '#8a7a85' }}>
+                    Billed monthly
+                  </p>
+                </div>
+                <div
+                  className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-1"
+                  style={{
+                    background: billingPlan === 'monthly' ? brandGradient : '#e5e5e5',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  {billingPlan === 'monthly' && <Check className="w-4 h-4 text-white" />}
+                </div>
+              </div>
+            </button>
+          </div>
+
+          {/* Trial notice */}
+          <p className="text-center text-sm mb-6" style={{ color: '#8a7a85' }}>
+            Your card won't be charged until after your 7-day trial.
+          </p>
+
+          {/* Trust Badges */}
+          <div className="flex items-center justify-center gap-4 mb-6">
+            <div className="flex items-center gap-1.5 text-xs" style={{ color: '#8a7a85' }}>
+              <Shield className="w-4 h-4" />
+              <span>Secure payment</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs" style={{ color: '#8a7a85' }}>
+              <Zap className="w-4 h-4" />
+              <span>Cancel anytime</span>
+            </div>
+          </div>
+
+          {/* Terms and Conditions */}
+          <div className="flex items-center justify-center space-x-3 mb-6">
+            <Checkbox
+              id="terms"
+              checked={termsAccepted}
+              onCheckedChange={(checked) => setTermsAccepted(checked as boolean)}
+              style={{
+                borderColor: termsAccepted ? '#7a3868' : undefined,
+                backgroundColor: termsAccepted ? '#7a3868' : undefined
+              }}
+            />
+            <label htmlFor="terms" className="text-sm cursor-pointer" style={{ color: '#4d3e48' }}>
               I agree to the{' '}
-              <a href="#" className="text-primary hover:underline">
+              <a href="/terms" className="font-medium hover:underline" style={{ color: '#612a4f' }}>
                 Terms of Service
               </a>{' '}
               and{' '}
-              <a href="#" className="text-primary hover:underline">
+              <a href="/privacy" className="font-medium hover:underline" style={{ color: '#612a4f' }}>
                 Privacy Policy
               </a>
             </label>
-            <p className="text-sm text-muted-foreground">
-              Your card will not be charged until after your 7-day trial ends.
-            </p>
           </div>
-        </div>
 
-        {/* Action Buttons */}
-        <div className="flex justify-between">
-          <Button variant="ghost" size="sm" onClick={onBack} className="flex items-center">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="mr-1"
-            >
-              <path d="m15 18-6-6 6-6" />
-            </svg>
-            Back
-          </Button>
-          <Button onClick={handleContinue} className="flex-1 ml-4" disabled={!termsAccepted}>
+          {/* Action Button */}
+          <button
+            type="button"
+            onClick={handleContinue}
+            disabled={!termsAccepted}
+            className="w-full py-3.5 rounded-xl text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{
+              background: termsAccepted ? brandGradient : '#d1d5db',
+              boxShadow: termsAccepted ? '0 4px 12px rgba(97, 42, 79, 0.25)' : 'none'
+            }}
+          >
             Continue to Payment
-          </Button>
+          </button>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
