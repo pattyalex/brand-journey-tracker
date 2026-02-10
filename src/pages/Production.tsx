@@ -381,77 +381,230 @@ const Production = () => {
   const [isGeneratingMoreIdeas, setIsGeneratingMoreIdeas] = useState(false);
   const [addedIdeaText, setAddedIdeaText] = useState<string | null>(null);
 
-  // Helper function to generate sub-categories using server API
+  // Helper function to generate sub-categories using Claude API
   const generateSubCategoriesWithAI = async (pillarName: string): Promise<string[]> => {
+    const apiKey = getString(StorageKeys.anthropicApiKey);
+
+    if (!apiKey) {
+      console.warn("Claude API key not configured - returning empty sub-categories");
+      return [];
+    }
+
     try {
-      const response = await fetch("http://localhost:3001/api/generate-subcategories", {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "x-api-key": apiKey,
+          "anthropic-version": "2023-06-01",
+          "anthropic-dangerous-direct-browser-access": "true"
         },
-        body: JSON.stringify({ pillarName })
+        body: JSON.stringify({
+          model: "claude-3-5-haiku-20241022",
+          max_tokens: 300,
+          system: `Generate sub-categories for content pillars.
+
+STRICT RULES:
+- Each sub-category MUST be 1-2 words ONLY
+- Maximum 15 characters per sub-category
+- NO sentences, NO hooks, NO content ideas
+- Think: folder names, not video titles
+
+CORRECT FORMAT:
+["Fundraising", "Leadership", "Hiring", "Failures", "Growth"]
+
+WRONG FORMAT (DO NOT DO THIS):
+["How I raised money", "My leadership journey", "Hiring mistakes I made"]
+
+Return ONLY a JSON array.`,
+          messages: [{
+            role: "user",
+            content: `Content pillar: "${pillarName}"
+
+Generate 5-7 sub-categories. Each must be 1-2 words only (like folder names).
+
+Example: For "Fitness" → ["Workouts", "Nutrition", "Recovery", "Mindset", "Equipment"]
+
+Return JSON array only.`
+          }]
+        })
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        console.error("Subcategories API error:", data);
+        console.error("Claude API error:", data);
         return [];
       }
 
-      return data.subcategories || [];
+      // Parse the response - Claude should return a JSON array
+      const responseText = data.content[0].text.trim();
+      try {
+        // Try to extract JSON array from the response
+        const jsonMatch = responseText.match(/\[[\s\S]*\]/);
+        if (jsonMatch) {
+          return JSON.parse(jsonMatch[0]);
+        }
+        return [];
+      } catch (parseError) {
+        console.error("Error parsing sub-categories:", parseError);
+        return [];
+      }
     } catch (error) {
-      console.error("Error generating sub-categories:", error);
+      console.error("Error calling Claude API for sub-categories:", error);
       return [];
     }
   };
 
-  // Helper function to generate content ideas using server API
+  // Helper function to generate content ideas using Claude API
   const generateContentIdeasWithAI = async (pillarName: string, subCategory: string): Promise<string[]> => {
+    const apiKey = getString(StorageKeys.anthropicApiKey);
+
+    if (!apiKey) {
+      console.warn("Claude API key not configured - returning empty content ideas");
+      return [];
+    }
+
     try {
-      const response = await fetch("http://localhost:3001/api/generate-content-ideas", {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "x-api-key": apiKey,
+          "anthropic-version": "2023-06-01",
+          "anthropic-dangerous-direct-browser-access": "true"
         },
-        body: JSON.stringify({ pillarName, subCategory })
+        body: JSON.stringify({
+          model: "claude-3-5-haiku-20241022",
+          max_tokens: 600,
+          system: `You are a content strategist helping creators generate scroll-stopping content ideas.
+
+BEFORE generating, think:
+- What personal story could a creator tell about this topic?
+- What vulnerable moment or realization would resonate?
+- What surprising angle hasn't been done to death?
+- What would make someone comment "I needed to hear this"?
+
+QUALITY TEST: If the idea sounds like it could come from any creator, REJECT it. Generate ideas that feel personal and specific.
+
+RULES:
+- Write as actual video/post titles that make people stop scrolling
+- Mix: vulnerable confessions, surprising takes, specific stories, relatable fails, hard-won lessons
+- NO generic templates like "5 tips for X" or "How to Y"
+- NO emojis
+- Each idea should spark curiosity or emotion
+- Keep titles concise (under 15 words)
+
+Return ONLY a JSON array of 10 strings, nothing else.`,
+          messages: [{
+            role: "user",
+            content: `Generate 10 content ideas for a creator focused on "${pillarName}", specifically about "${subCategory}".
+
+Create ideas that feel personal and specific - like real stories a creator would tell, not generic advice anyone could give. Think: vulnerable moments, specific realizations, relatable struggles, surprising perspectives.
+
+Return only a JSON array of strings.`
+          }]
+        })
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        console.error("Content ideas API error:", data);
+        console.error("Claude API error:", data);
         return [];
       }
 
-      return data.ideas || [];
+      const responseText = data.content[0].text.trim();
+      try {
+        const jsonMatch = responseText.match(/\[[\s\S]*\]/);
+        if (jsonMatch) {
+          return JSON.parse(jsonMatch[0]);
+        }
+        return [];
+      } catch (parseError) {
+        console.error("Error parsing content ideas:", parseError);
+        return [];
+      }
     } catch (error) {
-      console.error("Error generating content ideas:", error);
+      console.error("Error calling Claude API for content ideas:", error);
       return [];
     }
   };
 
-  // Helper function to generate content angles using server API
+  // Helper function to generate content angles using Claude API
   const generateAnglesWithAI = async (ideaText: string, count: number = 10): Promise<string[]> => {
+    const apiKey = getString(StorageKeys.anthropicApiKey);
+
+    if (!apiKey) {
+      console.warn("Claude API key not configured - returning empty angles");
+      return [];
+    }
+
     try {
-      const response = await fetch("http://localhost:3001/api/generate-angles", {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "x-api-key": apiKey,
+          "anthropic-version": "2023-06-01",
+          "anthropic-dangerous-direct-browser-access": "true"
         },
-        body: JSON.stringify({ ideaText, count })
+        body: JSON.stringify({
+          model: "claude-3-5-haiku-20241022",
+          max_tokens: 800,
+          system: `You are a creative content strategist helping creators find unique, SPECIFIC angles for their content.
+
+BEFORE generating hooks, first analyze what the user wrote:
+1. What specific emotions are they expressing? (not just "lonely" but WHY they felt lonely)
+2. What unique details make their situation different?
+3. What makes their experience different from generic content on this topic?
+4. Who would deeply relate to this specific story?
+
+THEN generate hooks that could ONLY apply to THIS person's story.
+
+QUALITY TEST: If a hook could work for anyone talking about the same general topic, REJECT it and think harder. Each hook must reference or imply something specific from what they wrote.
+
+RULES:
+- Create hooks that feel personal and specific, not templated
+- Reference specific emotions, moments, realizations, or details they mentioned
+- Mix styles: vulnerable confessions, surprising revelations, specific lessons, relatable moments
+- Write as compelling video/post titles that make people stop scrolling
+- Keep hooks concise (under 15 words)
+- NO emojis
+- NO generic templates like "How to X" or "5 tips for Y"
+
+Return ONLY a JSON array of strings, nothing else.`,
+          messages: [{
+            role: "user",
+            content: `The creator shared this idea: "${ideaText}"
+
+Generate ${count} highly specific content angles. Each hook should feel like it could ONLY come from this person's unique experience. Don't create generic hooks - create ones that reference the specific emotions, situations, or insights they mentioned.
+
+Return only a JSON array of ${count} strings.`
+          }]
+        })
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        console.error("Angles API error:", data);
+        console.error("Claude API error:", data);
         return [];
       }
 
-      return data.angles || [];
+      const responseText = data.content[0].text.trim();
+      try {
+        const jsonMatch = responseText.match(/\[[\s\S]*\]/);
+        if (jsonMatch) {
+          return JSON.parse(jsonMatch[0]);
+        }
+        return [];
+      } catch (parseError) {
+        console.error("Error parsing angles:", parseError);
+        return [];
+      }
     } catch (error) {
-      console.error("Error generating angles:", error);
+      console.error("Error calling Claude API for angles:", error);
       return [];
     }
   };

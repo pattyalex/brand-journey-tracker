@@ -1,4 +1,5 @@
 import { shotTemplates, getAllTemplateIds } from "./shotTemplates";
+import { getString, StorageKeys } from "@/lib/storage";
 
 export interface ShotSuggestion {
   template_id: string;
@@ -18,6 +19,9 @@ export const suggestShotsForScene = async (
   platform?: string
 ): Promise<ShotSuggestionResponse> => {
   try {
+    // Get API key from localStorage (set in settings)
+    const apiKey = getString(StorageKeys.anthropicApiKey);
+
     const response = await fetch("http://localhost:3001/api/suggest-shots", {
       method: "POST",
       headers: {
@@ -29,7 +33,8 @@ export const suggestShotsForScene = async (
         scriptExcerpt,
         format,
         platform,
-        shotTemplates // Send templates to server for validation
+        shotTemplates, // Send templates to server for validation
+        apiKey // Pass the API key from settings
       })
     });
 
