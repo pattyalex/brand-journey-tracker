@@ -461,6 +461,18 @@
       50% { transform: translateY(-14px); }
     }
 
+    /* Hide floating verb tags and reduce fade on mobile */
+    @media (max-width: 768px) {
+      .verb-tag {
+        display: none;
+      }
+
+      .dashboard-preview::after {
+        height: 80px;
+        background: linear-gradient(to top, #fcf9fe 0%, transparent 100%);
+      }
+    }
+
     /* ==================== SOCIAL PROOF ==================== */
     .social-proof {
       position: relative;
@@ -776,11 +788,18 @@
       .arrow-divider {
         flex-direction: row;
         padding: 24px 0;
+        margin: 80px auto 10px;
+        justify-content: center;
+        width: 100%;
       }
 
       .arrow-line {
-        width: 80px;
+        width: 60px;
         height: 2px;
+      }
+
+      .arrow-circle svg {
+        transform: rotate(90deg);
       }
 
       .app-mockup-img {
@@ -890,14 +909,13 @@
       justify-content: center;
       overflow: hidden;
       opacity: 0;
-      transform: translateY(50px) scale(0.95);
-      transition: all 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+      transform: translateY(30px) scale(0.98);
+      transition: all 1.0s cubic-bezier(0.22, 1, 0.36, 1);
     }
 
     .feature-visual.visible {
       opacity: 1;
       transform: translateY(0) scale(1);
-      transition-delay: 0.1s;
     }
 
     .feature-screenshot {
@@ -2654,8 +2672,7 @@
       <span class="cta-eyebrow">Ready to level up?</span>
       <h2>Stop juggling tools.<br><em>Start creating.</em></h2>
       <p class="body-text">Join thousands of creators who've simplified their workflow and taken control of their content.</p>
-      <a href="/onboarding" class="btn-primary btn-large">Start your free trial</a>
-      <p class="cta-note">7 days free</p>
+      <a href="/onboarding" class="btn-primary btn-large">Start your 7-day free trial</a>
     </div>
   </section>
 
@@ -2710,7 +2727,7 @@
 
     revealElements.forEach(el => observer.observe(el));
 
-    // Feature visuals - appear when more centered on screen
+    // Feature visuals - appear when scrolled into view
     const visualElements = document.querySelectorAll('.reveal-visual');
     const visualObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
@@ -2718,7 +2735,7 @@
           entry.target.classList.add('visible');
         }
       });
-    }, { threshold: 0.7 });
+    }, { threshold: 0.3 });
 
     visualElements.forEach(el => visualObserver.observe(el));
 
