@@ -22,9 +22,6 @@ import { getCurrentUser, updateUserProfile, updateUserPassword, logout } from '@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { StorageKeys, getString, setString } from "@/lib/storage";
-import APIKeySettings from "@/components/settings/APIKeySettings";
-import OpenAISettings from "@/components/settings/OpenAISettings";
-import ClaudeAPISettings from "@/components/settings/ClaudeAPISettings";
 
 // Timezone options
 const TIMEZONES = [
@@ -1094,38 +1091,6 @@ const MyAccount = () => {
                       </div>
                     </div>
 
-                    {/* AI Assistants */}
-                    <div
-                      className="bg-white/80 rounded-[20px] p-6"
-                      style={{
-                        boxShadow: '0 4px 24px rgba(45, 42, 38, 0.04)',
-                        border: '1px solid rgba(139, 115, 130, 0.06)',
-                      }}
-                    >
-                      <div className="flex items-center gap-3 mb-4">
-                        <h3 className="text-sm font-medium text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                          AI Assistants
-                        </h3>
-                      </div>
-
-                      <div
-                        className="p-4 rounded-xl mb-4"
-                        style={{
-                          background: 'linear-gradient(145deg, rgba(139, 106, 126, 0.08) 0%, rgba(74, 52, 66, 0.05) 100%)',
-                          border: '1px solid rgba(139, 115, 130, 0.1)',
-                        }}
-                      >
-                        <p className="text-sm text-[#612a4f]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                          Connect AI providers to unlock content generation features
-                        </p>
-                      </div>
-
-                      <div className="space-y-4">
-                        <ClaudeAPISettings />
-                        <APIKeySettings />
-                        <OpenAISettings />
-                      </div>
-                    </div>
                   </div>
                 )}
 

@@ -383,10 +383,10 @@ const Production = () => {
 
   // Helper function to generate sub-categories using Claude API
   const generateSubCategoriesWithAI = async (pillarName: string): Promise<string[]> => {
-    const apiKey = getString(StorageKeys.anthropicApiKey);
+    const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
 
     if (!apiKey) {
-      console.warn("Claude API key not configured - returning empty sub-categories");
+      console.warn("AI service unavailable");
       return [];
     }
 
@@ -458,10 +458,10 @@ Return JSON array only.`
 
   // Helper function to generate content ideas using Claude API
   const generateContentIdeasWithAI = async (pillarName: string, subCategory: string): Promise<string[]> => {
-    const apiKey = getString(StorageKeys.anthropicApiKey);
+    const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
 
     if (!apiKey) {
-      console.warn("Claude API key not configured - returning empty content ideas");
+      console.warn("AI service unavailable");
       return [];
     }
 
@@ -533,10 +533,10 @@ Return only a JSON array of strings.`
 
   // Helper function to generate content angles using Claude API
   const generateAnglesWithAI = async (ideaText: string, count: number = 10): Promise<string[]> => {
-    const apiKey = getString(StorageKeys.anthropicApiKey);
+    const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
 
     if (!apiKey) {
-      console.warn("Claude API key not configured - returning empty angles");
+      console.warn("AI service unavailable");
       return [];
     }
 

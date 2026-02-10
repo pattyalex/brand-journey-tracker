@@ -1,5 +1,4 @@
 import { shotTemplates, getAllTemplateIds } from "./shotTemplates";
-import { getString, StorageKeys } from "@/lib/storage";
 
 export interface ShotSuggestion {
   template_id: string;
@@ -19,13 +18,13 @@ export const suggestShotsForScene = async (
   platform?: string
 ): Promise<ShotSuggestionResponse> => {
   try {
-    // Get API key from localStorage (set in settings)
-    const apiKey = getString(StorageKeys.anthropicApiKey);
+    // Get API key from environment variable
+    const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
 
     if (!apiKey) {
       return {
         suggestions: [],
-        error: "Please add your Anthropic API key in Settings to use this feature."
+        error: "AI service is temporarily unavailable. Please try again later."
       };
     }
 
@@ -92,7 +91,7 @@ Remember: Only use template IDs from the provided list.`;
       console.error("Claude API error:", data);
       const errorMessage = data.error?.message || "Unknown error";
       if (errorMessage.includes("invalid") && errorMessage.includes("key")) {
-        return { suggestions: [], error: "Invalid API key. Please check your Anthropic API key in Settings." };
+        return { suggestions: [], error: "AI service is temporarily unavailable. Please try again later." };
       }
       return { suggestions: [], error: `Claude API error: ${errorMessage}` };
     }

@@ -23,7 +23,6 @@ import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
 import { MoreHorizontal, Video, Camera, ChevronDown, X, Circle, Wrench, CheckCircle2, MapPin, Shirt, Boxes, NotebookPen, PenLine, Check, Plus, ArrowRight, ArrowDown, Sparkles, Send, Bot, User, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { StorageKeys, getString } from "@/lib/storage";
 import { toast } from "sonner";
 
 // Helper to get platform icon
@@ -211,11 +210,11 @@ Guidelines:
 - Match the tone and style of their existing content
 - Never use filler phrases - be direct and get to the point`;
 
-  const callClaude = async (userMessage: string): Promise<string> => {
-    const apiKey = getString(StorageKeys.anthropicApiKey);
+  const callAI = async (userMessage: string): Promise<string> => {
+    const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
 
     if (!apiKey) {
-      return "⚠️ Claude API key not configured. Please add your Anthropic API key in Settings.";
+      return "AI service is temporarily unavailable. Please try again later.";
     }
 
     const systemPrompt = getSystemPrompt();
@@ -251,98 +250,13 @@ Guidelines:
 
       if (!response.ok) {
         console.error("Claude API error:", data);
-        const errorMessage = data.error?.message || "Unknown error";
-
-        if (errorMessage.includes("invalid") && errorMessage.includes("key")) {
-          return "⚠️ Invalid API key. Please check your Anthropic API key in Settings.";
-        }
-        if (errorMessage.includes("credit") || errorMessage.includes("billing")) {
-          return "⚠️ Your Anthropic account needs credits. Please add a payment method at console.anthropic.com";
-        }
-        return `⚠️ Claude Error: ${errorMessage}`;
+        return "AI service is temporarily unavailable. Please try again.";
       }
 
       return data.content[0].text;
     } catch (error) {
-      console.error("Error calling Claude API:", error);
-      return `Sorry, I encountered an error: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`;
-    }
-  };
-
-  const callOpenAI = async (userMessage: string): Promise<string> => {
-    const apiKey = getString(StorageKeys.openaiApiKey);
-
-    if (!apiKey) {
-      return "⚠️ OpenAI API key not configured. Please add your API key in Settings to enable AI assistance.";
-    }
-
-    const systemPrompt = getSystemPrompt();
-
-    try {
-      const conversationHistory = megAIMessages.map(msg => ({
-        role: msg.role,
-        content: msg.content
-      }));
-
-      conversationHistory.push({
-        role: "user" as const,
-        content: userMessage
-      });
-
-      const response = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${apiKey}`
-        },
-        body: JSON.stringify({
-          model: "gpt-4o-mini",
-          messages: [
-            { role: "system", content: systemPrompt },
-            ...conversationHistory
-          ],
-          temperature: 0.7,
-          max_tokens: 800
-        })
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        console.error("OpenAI API error:", data);
-        const errorMessage = data.error?.message || "Unknown error";
-        const errorCode = data.error?.code || "";
-
-        if (errorCode === "invalid_api_key") {
-          return "⚠️ Invalid API key. Please check your OpenAI API key in Settings.";
-        }
-        if (errorCode === "insufficient_quota" || errorMessage.includes("quota")) {
-          return "⚠️ Your OpenAI account has no credits. Please add a payment method at platform.openai.com/account/billing";
-        }
-        if (errorCode === "rate_limit_exceeded") {
-          return "⚠️ Rate limit exceeded. Please wait a moment and try again.";
-        }
-        return `⚠️ OpenAI Error: ${errorMessage}`;
-      }
-
-      return data.choices[0].message.content;
-    } catch (error) {
-      console.error("Error calling OpenAI API:", error);
-      return `Sorry, I encountered an error: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`;
-    }
-  };
-
-  const callAI = async (userMessage: string): Promise<string> => {
-    // Try Claude first if key is set, otherwise use OpenAI
-    const anthropicKey = getString(StorageKeys.anthropicApiKey);
-    const openaiKey = getString(StorageKeys.openaiApiKey);
-
-    if (anthropicKey) {
-      return callClaude(userMessage);
-    } else if (openaiKey) {
-      return callOpenAI(userMessage);
-    } else {
-      return "⚠️ No API key configured. Please add your Claude or OpenAI API key in Settings.";
+      console.error("Error calling AI:", error);
+      return "AI service is temporarily unavailable. Please try again.";
     }
   };
 

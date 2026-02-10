@@ -1,6 +1,5 @@
 import { shotTemplates } from "./shotTemplates";
 import { StoryboardScene } from "../types";
-import { getString, StorageKeys } from "@/lib/storage";
 
 export interface GeneratedScene {
   scriptLine: string;
@@ -27,13 +26,13 @@ export const generateStoryboardFromScript = async (
       };
     }
 
-    // Get API key from localStorage (set in settings)
-    const apiKey = getString(StorageKeys.anthropicApiKey);
+    // Get API key from environment variable
+    const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
 
     if (!apiKey) {
       return {
         scenes: [],
-        error: "Please add your Anthropic API key in Settings to use this feature."
+        error: "AI service is temporarily unavailable. Please try again later."
       };
     }
 
@@ -94,10 +93,10 @@ RESPOND WITH ONLY a JSON array in this exact format (no other text):
       console.error("Claude API error:", data);
       const errorMessage = data.error?.message || "Unknown error";
       if (errorMessage.includes("invalid") && errorMessage.includes("key")) {
-        return { scenes: [], error: "Invalid API key. Please check your Anthropic API key in Settings." };
+        return { scenes: [], error: "AI service is temporarily unavailable. Please try again later." };
       }
       if (errorMessage.includes("credit") || errorMessage.includes("billing")) {
-        return { scenes: [], error: "Your Anthropic account needs credits. Please add billing at console.anthropic.com" };
+        return { scenes: [], error: "AI service is temporarily unavailable. Please try again later." };
       }
       return { scenes: [], error: `Claude API error: ${errorMessage}` };
     }
