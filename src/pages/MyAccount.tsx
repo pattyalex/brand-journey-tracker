@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from 'sonner';
-import { getCurrentUser, updateUserProfile, updateUserPassword, logout } from '@/lib/supabase';
+import { getCurrentUser, updateUserProfile, updateUserPassword } from '@/lib/supabase';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { StorageKeys, getString, setString } from "@/lib/storage";
@@ -38,7 +38,7 @@ const TIMEZONES = [
 
 const MyAccount = () => {
   const navigate = useNavigate();
-  const { openLoginModal } = useAuth();
+  const { openLoginModal, logout } = useAuth();
 
   // Profile state
   const [name, setName] = useState('');
@@ -143,15 +143,9 @@ const MyAccount = () => {
 
   const handleSignOut = async () => {
     try {
-      await logout();
-      navigate('/');
-      toast.success("You've officially signed out");
-      setTimeout(() => {
-        openLoginModal();
-      }, 500);
+      await logout(); // This will redirect to landing.html
     } catch (error) {
       console.error('Error signing out:', error);
-      toast.error('Failed to sign out');
     }
   };
 

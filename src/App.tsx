@@ -13,7 +13,9 @@ import CollabManagement from './pages/CollabManagement';
 import StrategyDemo from './pages/StrategyDemo';
 import HomePage from './pages/HomePage';
 import OnboardingFlow from './pages/OnboardingFlow';
-import LandingPage from './pages/LandingPage';
+import LoginPage from './pages/LoginPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import SSOCallback from './pages/SSOCallback';
 import Production from './pages/Production';
 import StrategyGrowth from './pages/StrategyGrowth';
 import TaskBoard from './pages/TaskBoard';
@@ -43,12 +45,35 @@ const PageLoader = () => null;
 import { useAuth } from "./contexts/AuthContext";
 import ErrorBoundary from "./components/ErrorBoundary";
 
+// Redirect component for landing page
+const LandingRedirect = () => {
+  React.useEffect(() => {
+    window.location.href = '/landing.html';
+  }, []);
+  return null;
+};
+
 // Protected route component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated, hasCompletedOnboarding } = useAuth();
+  const { isAuthenticated, isAuthLoaded, hasCompletedOnboarding } = useAuth();
+
+  // Wait for auth to load before making any decisions
+  if (!isAuthLoaded) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#fcf9fe' }}>
+        <div
+          className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-serif text-xl animate-pulse"
+          style={{ background: 'linear-gradient(135deg, #7a3868 0%, #612a4f 50%, #4e2040 100%)' }}
+        >
+          M
+        </div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
-    return <Navigate to="/" replace />;
+    window.location.href = '/landing.html';
+    return null;
   }
 
   if (isAuthenticated && !hasCompletedOnboarding) {
@@ -81,7 +106,10 @@ function App() {
             <Suspense fallback={<PageLoader />}>
               <Routes>
               {/* Public routes */}
-              <Route path="/" element={<LandingPage />} />
+              <Route path="/" element={<LandingRedirect />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="/sso-callback" element={<SSOCallback />} />
               <Route path="/onboarding" element={<OnboardingFlow />} />
               <Route path="/auth/callback" element={<EmailVerificationCallback />} />
 

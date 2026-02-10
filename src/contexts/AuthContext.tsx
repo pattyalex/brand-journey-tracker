@@ -5,6 +5,7 @@ import { StorageKeys, getString, remove, setString } from '@/lib/storage';
 
 interface AuthContextType {
   isAuthenticated: boolean;
+  isAuthLoaded: boolean;
   hasCompletedOnboarding: boolean;
   login: () => void;
   logout: () => void;
@@ -142,6 +143,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [isSignedIn, user, isLoaded]);
 
+  // Check for ?login=true query parameter to open login modal
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('login') === 'true') {
+      setLoginOpen(true);
+      // Remove the query parameter from URL without page reload
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
+    }
+  }, []);
+
   const login = useCallback(() => {
     // With Clerk, this is just for marking onboarding as complete
     setLoginOpen(false);
@@ -159,12 +171,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Reset onboarding state
       setHasCompletedOnboarding(false);
 
+      // Redirect to landing page
+      window.location.href = '/landing.html';
+
       return true;
     } catch (error) {
       console.error("Error signing out:", error);
       // Still clear local state even if Clerk fails
       remove(StorageKeys.user);
       setHasCompletedOnboarding(false);
+
+      // Still redirect even on error
+      window.location.href = '/landing.html';
+
       return false;
     }
   };
@@ -200,6 +219,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   return (
     <AuthContext.Provider value={{
       isAuthenticated: !!isSignedIn,
+      isAuthLoaded: isLoaded,
       hasCompletedOnboarding,
       login,
       logout,

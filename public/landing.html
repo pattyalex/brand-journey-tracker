@@ -161,6 +161,23 @@
       background: rgba(0,0,0,0.03);
     }
 
+    .nav-login {
+      font-size: 14px;
+      font-weight: 500;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text-body);
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 30px;
+      transition: all 0.25s ease;
+      margin-right: 8px;
+    }
+
+    .nav-login:hover {
+      color: var(--brand-dark);
+      background: rgba(139,112,130,0.1);
+    }
+
     .nav-cta {
       background: linear-gradient(135deg, #7a3868, #612a4f, #4e2040);
       color: white;
@@ -199,6 +216,11 @@
       opacity: 0;
       padding: 8px 0;
       overflow: hidden;
+    }
+
+    nav.compact .nav-login {
+      padding: 7px 14px;
+      font-size: 13px;
     }
 
     nav.compact .nav-cta {
@@ -2232,7 +2254,8 @@
       <a href="#features">Features</a>
       <a href="#pricing">Pricing</a>
     </div>
-    <a href="#" class="nav-cta">Get Started For Free</a>
+    <a href="/login" class="nav-login">Log In</a>
+    <a href="/onboarding" class="nav-cta">Get Started For Free</a>
   </nav>
 
   <!-- Hero Section -->
@@ -2247,7 +2270,7 @@
       from idea to publishing.
     </p>
     <div class="hero-cta">
-      <a href="#" class="btn-primary">Try HeyMeg For Free</a>
+      <a href="/onboarding" class="btn-primary">Try HeyMeg For Free</a>
     </div>
     <p class="hero-accent">Plan Strategically. Post Consistently. AI-Assisted.</p>
 
@@ -2631,7 +2654,7 @@
       <span class="cta-eyebrow">Ready to level up?</span>
       <h2>Stop juggling tools.<br><em>Start creating.</em></h2>
       <p class="body-text">Join thousands of creators who've simplified their workflow and taken control of their content.</p>
-      <a href="#" class="btn-primary btn-large">Start your free trial</a>
+      <a href="/onboarding" class="btn-primary btn-large">Start your free trial</a>
       <p class="cta-note">7 days free · No credit card required</p>
     </div>
   </section>
