@@ -1,6 +1,5 @@
 import { shotTemplates } from "./shotTemplates";
 import { StoryboardScene } from "../types";
-import { getString, StorageKeys } from "@/lib/storage";
 
 export interface GeneratedScene {
   scriptLine: string;
@@ -27,9 +26,6 @@ export const generateStoryboardFromScript = async (
       };
     }
 
-    // Get API key from localStorage (set in settings)
-    const apiKey = getString(StorageKeys.anthropicApiKey);
-
     const response = await fetch("http://localhost:3001/api/generate-storyboard", {
       method: "POST",
       headers: {
@@ -39,8 +35,7 @@ export const generateStoryboardFromScript = async (
         script,
         format,
         platform,
-        shotTemplates, // Send all templates - all 10 have matching images now
-        apiKey // Pass the API key from settings
+        shotTemplates // Send all templates - all 10 have matching images now
       })
     });
 
