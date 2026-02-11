@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { toast } from 'sonner';
 import { X, ChevronDown, Trash2, Check, Plus, Video, Camera, MapPin, Shirt, Boxes, NotebookPen, Play, FileText, Clapperboard, CalendarDays, Clock, CheckCircle, Send, ChevronLeft, ChevronRight, CalendarCheck } from 'lucide-react';
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from 'react-icons/si';
 import { RiTwitterXLine, RiThreadsLine } from 'react-icons/ri';
@@ -1250,7 +1251,7 @@ const MobileCardEditor: React.FC<MobileCardEditorProps> = ({
 
             {/* Modern Calendar Picker */}
             <div
-              className="rounded-3xl p-5"
+              className="rounded-3xl p-4"
               style={{
                 background: 'rgba(255, 255, 255, 0.75)',
                 backdropFilter: 'blur(10px)',
@@ -1260,35 +1261,35 @@ const MobileCardEditor: React.FC<MobileCardEditorProps> = ({
               }}
             >
               {/* Calendar Header */}
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-3">
                 <button
                   onClick={() => setCalendarMonth(new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() - 1, 1))}
-                  className="w-10 h-10 rounded-xl flex items-center justify-center transition-all active:scale-95"
+                  className="w-11 h-11 rounded-2xl flex items-center justify-center transition-all active:scale-90 active:bg-[rgba(139,112,130,0.15)]"
                   style={{ background: 'rgba(139, 112, 130, 0.08)' }}
                 >
-                  <ChevronLeft className="w-5 h-5" style={{ color: '#612a4f' }} />
+                  <ChevronLeft className="w-6 h-6" style={{ color: '#612a4f' }} />
                 </button>
                 <span
-                  className="text-base font-semibold"
+                  className="text-lg font-semibold"
                   style={{ color: '#612a4f', fontFamily: "'Playfair Display', serif" }}
                 >
                   {calendarMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                 </span>
                 <button
                   onClick={() => setCalendarMonth(new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1, 1))}
-                  className="w-10 h-10 rounded-xl flex items-center justify-center transition-all active:scale-95"
+                  className="w-11 h-11 rounded-2xl flex items-center justify-center transition-all active:scale-90 active:bg-[rgba(139,112,130,0.15)]"
                   style={{ background: 'rgba(139, 112, 130, 0.08)' }}
                 >
-                  <ChevronRight className="w-5 h-5" style={{ color: '#612a4f' }} />
+                  <ChevronRight className="w-6 h-6" style={{ color: '#612a4f' }} />
                 </button>
               </div>
 
               {/* Day names */}
-              <div className="grid grid-cols-7 gap-1 mb-2">
-                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
+              <div className="grid grid-cols-7 gap-1 mb-1">
+                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, i) => (
                   <div
                     key={i}
-                    className="h-8 flex items-center justify-center text-xs font-medium"
+                    className="h-8 flex items-center justify-center text-[11px] font-semibold uppercase tracking-wide"
                     style={{ color: '#8B7082' }}
                   >
                     {day}
@@ -1306,12 +1307,12 @@ const MobileCardEditor: React.FC<MobileCardEditorProps> = ({
                     <button
                       key={i}
                       onClick={() => setScheduledDate(dateStr)}
-                      className="aspect-square rounded-xl flex flex-col items-center justify-center text-sm font-medium transition-all active:scale-95 relative"
+                      className="aspect-square min-h-[44px] rounded-2xl flex flex-col items-center justify-center text-[15px] font-medium transition-all active:scale-90 relative"
                       style={{
                         background: day.isSelected
                           ? 'linear-gradient(135deg, #612a4f 0%, #8B7082 100%)'
                           : day.isToday
-                          ? 'rgba(97, 42, 79, 0.15)'
+                          ? 'rgba(97, 42, 79, 0.12)'
                           : 'transparent',
                         color: day.isSelected
                           ? 'white'
@@ -1319,14 +1320,15 @@ const MobileCardEditor: React.FC<MobileCardEditorProps> = ({
                           ? day.isToday
                             ? '#612a4f'
                             : '#1a1523'
-                          : '#ccc',
+                          : '#d1d1d1',
                         fontWeight: day.isToday || day.isSelected ? 600 : 400,
+                        boxShadow: day.isSelected ? '0 4px 12px rgba(97, 42, 79, 0.25)' : 'none',
                       }}
                     >
                       <span>{day.date.getDate()}</span>
                       {hasScheduledContent && day.isCurrentMonth && (
                         <div
-                          className="absolute bottom-1 w-1 h-1 rounded-full"
+                          className="absolute bottom-1.5 w-1.5 h-1.5 rounded-full"
                           style={{
                             background: day.isSelected ? 'white' : '#10b981',
                           }}
@@ -1855,6 +1857,9 @@ const MobileCardEditor: React.FC<MobileCardEditorProps> = ({
                   onClick={() => {
                     onMove(card.id, 'posted');
                     setShowMarkPosted(false);
+                    toast.success('Card moved to archive', {
+                      description: 'View your archive on desktop',
+                    });
                     onClose();
                   }}
                   className="flex-1 py-3.5 rounded-xl font-medium transition-all"

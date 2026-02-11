@@ -2033,14 +2033,14 @@ const HomePage = () => {
               background: '#f9f7f5',
             }}
           >
-            <div className="container px-6 md:px-8 pt-5 pb-10">
+            <div className="container px-4 sm:px-6 md:px-8 pt-4 sm:pt-5 pb-10">
               {/* Greeting Section with Date Badge */}
-              <section className="mb-8">
-                <div className="flex items-start justify-between">
+              <section className="mb-6 sm:mb-8">
+                <div className="flex items-start justify-between gap-3">
                   {/* Left: Greeting */}
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <h1
-                      className="text-[32px] leading-tight mb-2"
+                      className="text-[24px] sm:text-[32px] leading-tight mb-1 sm:mb-2"
                       style={{
                         fontFamily: "'Playfair Display', serif",
                         fontWeight: 500,
@@ -2050,7 +2050,7 @@ const HomePage = () => {
                       {greeting}
                     </h1>
                     <p
-                      className="text-[16px] text-gray-400"
+                      className="text-[14px] sm:text-[16px] text-gray-400"
                       style={{ fontFamily: "'DM Sans', sans-serif" }}
                     >
                       Welcome to your creator studio
@@ -2059,20 +2059,20 @@ const HomePage = () => {
 
                   {/* Right: Today's Date Badge */}
                   <div
-                    className="flex-shrink-0 flex items-center gap-3"
+                    className="flex-shrink-0 flex items-center gap-2 sm:gap-3"
                     style={{ fontFamily: "'DM Sans', sans-serif" }}
                   >
                     <span
-                      className="text-[40px] font-light text-[#2d2a26] -mt-4"
+                      className="text-[28px] sm:text-[40px] font-light text-[#2d2a26] -mt-2 sm:-mt-4"
                       style={{ fontFamily: "'Playfair Display', serif" }}
                     >
                       {new Date().getDate()}
                     </span>
                     <div className="flex flex-col">
-                      <span className="text-sm font-medium text-[#2d2a26]">
+                      <span className="text-xs sm:text-sm font-medium text-[#2d2a26]">
                         {new Date().toLocaleDateString('en-US', { weekday: 'long' })}
                       </span>
-                      <span className="text-sm text-gray-400">
+                      <span className="text-xs sm:text-sm text-gray-400">
                         {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                       </span>
                     </div>
@@ -2081,11 +2081,11 @@ const HomePage = () => {
               </section>
 
             {/* Bento Grid Layout */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 items-stretch">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 mt-3 sm:mt-4 items-stretch">
 
               {/* Top 3 Priorities - 1 column */}
               <div className="relative h-full">
-              <section className="bg-white/60 rounded-2xl p-5 border border-[#e0d5db] h-full">
+              <section className="bg-white/60 rounded-xl sm:rounded-2xl p-4 sm:p-5 border border-[#e0d5db] h-full">
                   {/* Header */}
                   <div className="flex items-center gap-2.5 mb-2.5">
                     <Target className="w-5 h-5 text-[#612a4f]" />
@@ -2191,18 +2191,18 @@ const HomePage = () => {
                   </div>
               </section>
 
-              {/* Celebration popup - positioned next to Top 3 Priorities */}
+              {/* Celebration popup - positioned next to Top 3 Priorities on desktop, fixed bottom on mobile */}
               <AnimatePresence>
                 {showCelebration && (
                   <motion.div
-                    initial={{ opacity: 0, x: -20, scale: 0.95 }}
-                    animate={{ opacity: 1, x: 0, scale: 1 }}
-                    exit={{ opacity: 0, x: -20, scale: 0.95 }}
+                    initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 20, scale: 0.95 }}
                     transition={{ duration: 0.25, ease: "easeOut" }}
-                    className="absolute left-full top-[100px] ml-4 z-10"
+                    className="fixed bottom-20 left-4 right-4 md:absolute md:bottom-auto md:left-full md:right-auto md:top-[100px] md:ml-4 z-50 md:z-10"
                   >
                     <div
-                      className="relative overflow-hidden rounded-xl shadow-lg w-[380px]"
+                      className="relative overflow-hidden rounded-xl shadow-lg w-full md:w-[380px]"
                       style={{
                         background: 'linear-gradient(135deg, #612a4f 0%, #4a1f3d 100%)',
                         boxShadow: '0 10px 40px rgba(97, 42, 79, 0.3)',
@@ -2253,7 +2253,7 @@ const HomePage = () => {
               </div>
 
               {/* Continue Creating Section - 1 column */}
-              <section className="bg-white/60 rounded-2xl p-5 border border-[#e0d5db]">
+              <section className="bg-white/60 rounded-xl sm:rounded-2xl p-4 sm:p-5 border border-[#e0d5db]">
                   {/* Header */}
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2.5">
@@ -2348,7 +2348,7 @@ const HomePage = () => {
               </section>
 
               {/* Upcoming Partnerships Section - 1 column */}
-              <section className="bg-white/60 rounded-2xl p-5 border border-[#e0d5db]">
+              <section className="bg-white/60 rounded-xl sm:rounded-2xl p-4 sm:p-5 border border-[#e0d5db]">
                   {/* Header */}
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2.5">
@@ -2453,9 +2453,9 @@ const HomePage = () => {
               </section>
 
               {/* Work Habits + Monthly Goals Row */}
-              <div className="md:col-span-3 flex gap-4">
+              <div className="md:col-span-3 flex flex-col lg:flex-row gap-3 sm:gap-4">
               {/* Work Habits Section */}
-              <section className="flex-1 bg-white/60 rounded-2xl p-5 border border-[#e0d5db]">
+              <section className="flex-1 bg-white/60 rounded-xl sm:rounded-2xl p-4 sm:p-5 border border-[#e0d5db]">
                   {/* Header */}
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2.5">
@@ -2490,7 +2490,7 @@ const HomePage = () => {
                   {habits.length > 0 || isAddingHabit ? (
                     <div>
                       {/* Day Headers */}
-                      <div className="grid grid-cols-[1fr_repeat(7,36px)] gap-1 mb-1 pb-3" style={{ borderBottom: '1px solid rgba(139, 115, 130, 0.08)' }}>
+                      <div className="grid grid-cols-[1fr_repeat(7,28px)] sm:grid-cols-[1fr_repeat(7,36px)] gap-0.5 sm:gap-1 mb-1 pb-3" style={{ borderBottom: '1px solid rgba(139, 115, 130, 0.08)' }}>
                         <div></div>
                         {getWeekDays(habitWeekOffset).map((day, idx) => {
                           const isToday = getDateString(day) === getDateString(new Date());
@@ -2525,7 +2525,7 @@ const HomePage = () => {
                           return (
                           <div
                             key={habit.id}
-                            className={`grid grid-cols-[1fr_repeat(7,36px)] gap-1 items-center group ${habits.length >= 3 ? 'py-1.5' : 'py-2'}`}
+                            className={`grid grid-cols-[1fr_repeat(7,28px)] sm:grid-cols-[1fr_repeat(7,36px)] gap-0.5 sm:gap-1 items-center group ${habits.length >= 3 ? 'py-1.5' : 'py-2'}`}
                           >
                             {/* Habit Name */}
                             <div className="flex items-center gap-2 min-w-0 pr-2">
@@ -2782,7 +2782,7 @@ const HomePage = () => {
               </section>
 
               {/* Monthly Goals Section */}
-              <section className="flex-[0.75] bg-white/60 rounded-2xl p-5 border border-[#e0d5db]">
+              <section className="lg:flex-[0.75] bg-white/60 rounded-xl sm:rounded-2xl p-4 sm:p-5 border border-[#e0d5db]">
                   {/* Header */}
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2.5">
@@ -2903,7 +2903,7 @@ const HomePage = () => {
               </div>
 
               {/* Mission Statement - Full width */}
-              <section className="md:col-span-3 bg-white/60 rounded-2xl p-6 border border-[#e0d5db]">
+              <section className="md:col-span-3 bg-white/60 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-[#e0d5db]">
                   {/* Header with Edit button */}
                   <div className="flex justify-end -mb-2">
                     <TooltipProvider>
@@ -2937,7 +2937,7 @@ const HomePage = () => {
 
                     {/* Mission Quote */}
                     <p
-                      className="text-2xl md:text-3xl italic text-[#2d2a26] text-center max-w-2xl leading-relaxed"
+                      className="text-xl sm:text-2xl md:text-3xl italic text-[#2d2a26] text-center max-w-2xl leading-relaxed px-2"
                       style={{ fontFamily: "'Playfair Display', serif", fontWeight: 400 }}
                     >
                       "{missionStatement || 'Set your mission statement...'}"

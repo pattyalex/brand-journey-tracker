@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { addDays, addMonths, endOfMonth, endOfWeek, format, startOfMonth, startOfWeek, subDays, subMonths, eachDayOfInterval, isSameDay } from "date-fns";
-import { ChevronLeft, ChevronRight, Plus, Clock, FileText, Palette, Lightbulb, ListTodo, ArrowRight, Check, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronDown, Plus, Clock, FileText, Palette, Lightbulb, ListTodo, ArrowRight, Check, X, Trash2 } from 'lucide-react';
+import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { getWeekStartsOn, getDayNames } from "@/lib/storage";
 import { toast } from "sonner";
@@ -80,6 +81,9 @@ export const DailyPlanner = () => {
     open: boolean;
     dayString: string;
   }>({ open: false, dayString: '' });
+
+  // State for mobile tasks accordion
+  const [mobileTasksExpanded, setMobileTasksExpanded] = useState(false);
 
   // Monthly dialog form state
   const [monthlyTaskTitle, setMonthlyTaskTitle] = useState("");
@@ -420,18 +424,20 @@ export const DailyPlanner = () => {
   return (
     <div className="h-full">
       <div className="flex h-full">
-        {/* Sidebar - Left Side - Visible in Today, This Week, and Calendar views */}
+        {/* Sidebar - Left Side - Visible in Today, This Week, and Calendar views - Hidden on mobile */}
         {(currentView === 'today' || currentView === 'week' || currentView === 'calendar') && (
           contentDisplayMode === 'content' ? (
-            <ContentOverviewSidebar
-              isCollapsed={isAllTasksCollapsed}
-              setIsCollapsed={setIsAllTasksCollapsed}
-            />
+            <div className="hidden lg:block">
+              <ContentOverviewSidebar
+                isCollapsed={isAllTasksCollapsed}
+                setIsCollapsed={setIsAllTasksCollapsed}
+              />
+            </div>
           ) : contentDisplayMode === 'both' ? (
             // Combined sidebar for "Both" view - show All Tasks + Content Overview
             <div
               className={cn(
-                "h-full flex-shrink-0 transition-all duration-300 relative bg-gradient-to-br from-[#F0EAED] via-[#F8F6F6] to-[#FAFAFA]",
+                "hidden lg:block h-full flex-shrink-0 transition-all duration-300 relative bg-gradient-to-br from-[#F0EAED] via-[#F8F6F6] to-[#FAFAFA]",
                 isAllTasksCollapsed ? "w-12" : "w-80"
               )}
             >
@@ -489,24 +495,26 @@ export const DailyPlanner = () => {
               </div>
             </div>
           ) : (
-            <AllTasksSidebar
-              isAllTasksCollapsed={isAllTasksCollapsed}
-              setIsAllTasksCollapsed={setIsAllTasksCollapsed}
-              setIsDraggingOverAllTasks={setIsDraggingOverAllTasks}
-              allTasks={allTasks}
-              handleToggleAllTask={handleToggleAllTask}
-              handleDeleteAllTask={handleDeleteAllTask}
-              handleEditAllTask={handleEditAllTask}
-              handleAddAllTask={handleAddAllTask}
-              handleReorderAllTasks={handleReorderAllTasks}
-              handleDropTaskFromWeeklyToAllTasks={handleDropTaskFromWeeklyToAllTasks}
-              handleDropTaskFromCalendarToAllTasks={handleDropTaskFromCalendarToAllTasks}
-            />
+            <div className="hidden lg:block">
+              <AllTasksSidebar
+                isAllTasksCollapsed={isAllTasksCollapsed}
+                setIsAllTasksCollapsed={setIsAllTasksCollapsed}
+                setIsDraggingOverAllTasks={setIsDraggingOverAllTasks}
+                allTasks={allTasks}
+                handleToggleAllTask={handleToggleAllTask}
+                handleDeleteAllTask={handleDeleteAllTask}
+                handleEditAllTask={handleEditAllTask}
+                handleAddAllTask={handleAddAllTask}
+                handleReorderAllTasks={handleReorderAllTasks}
+                handleDropTaskFromWeeklyToAllTasks={handleDropTaskFromWeeklyToAllTasks}
+                handleDropTaskFromCalendarToAllTasks={handleDropTaskFromCalendarToAllTasks}
+              />
+            </div>
           )
         )}
 
         {/* Main Planner - Right Side */}
-        <div className="flex-1 pl-6 bg-white h-full flex flex-col">
+        <div className="flex-1 pl-0 lg:pl-6 bg-white h-full flex flex-col">
             {/* Header with Tabs and Date Navigation */}
             <PlannerHeader
               currentView={currentView}
@@ -526,6 +534,125 @@ export const DailyPlanner = () => {
               contentDisplayMode={contentDisplayMode}
               setContentDisplayMode={setContentDisplayMode}
             />
+
+            {/* Mobile Tasks Accordion - Only visible on mobile */}
+            <div className="lg:hidden px-4 pb-3">
+              <div
+                className="rounded-2xl overflow-hidden"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.9)',
+                  boxShadow: '0 2px 12px rgba(97, 42, 79, 0.08)',
+                  border: '1px solid rgba(139, 112, 130, 0.15)',
+                }}
+              >
+                {/* Accordion Header */}
+                <button
+                  onClick={() => setMobileTasksExpanded(!mobileTasksExpanded)}
+                  className="w-full flex items-center justify-between p-3 transition-all active:scale-[0.99]"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <div
+                      className="w-8 h-8 rounded-xl flex items-center justify-center"
+                      style={{ background: 'rgba(97, 42, 79, 0.1)' }}
+                    >
+                      <ListTodo className="w-4 h-4" style={{ color: '#612a4f' }} />
+                    </div>
+                    <span
+                      className="font-semibold text-sm"
+                      style={{ color: '#1a1523' }}
+                    >
+                      All Tasks
+                    </span>
+                    {allTasks.length > 0 && (
+                      <span
+                        className="text-xs px-2 py-0.5 rounded-full"
+                        style={{ background: 'rgba(97, 42, 79, 0.1)', color: '#612a4f' }}
+                      >
+                        {allTasks.length}
+                      </span>
+                    )}
+                  </div>
+                  <div
+                    className="w-7 h-7 rounded-lg flex items-center justify-center"
+                    style={{
+                      background: mobileTasksExpanded ? 'linear-gradient(135deg, #612a4f 0%, #8B7082 100%)' : 'rgba(139, 112, 130, 0.1)',
+                    }}
+                  >
+                    <ChevronDown
+                      className="w-4 h-4 transition-transform duration-300"
+                      style={{
+                        color: mobileTasksExpanded ? 'white' : '#8B7082',
+                        transform: mobileTasksExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                      }}
+                    />
+                  </div>
+                </button>
+
+                {/* Expanded Tasks List */}
+                {mobileTasksExpanded && (
+                  <div className="px-3 pb-3 space-y-2">
+                    {allTasks.length === 0 ? (
+                      <p className="text-sm text-center py-3" style={{ color: '#8B7082' }}>
+                        No tasks yet
+                      </p>
+                    ) : (
+                      allTasks.map((task) => (
+                        <div
+                          key={task.id}
+                          className="flex items-center gap-2.5 p-2.5 rounded-xl transition-all"
+                          style={{
+                            background: 'rgba(139, 112, 130, 0.06)',
+                            border: '1px solid rgba(139, 112, 130, 0.1)',
+                          }}
+                        >
+                          <Checkbox
+                            checked={task.completed || task.isCompleted}
+                            onCheckedChange={() => handleToggleAllTask(task.id)}
+                            className="h-4 w-4 rounded border-2"
+                            style={{ borderColor: '#8B7082' }}
+                          />
+                          <span
+                            className={cn(
+                              "flex-1 text-sm",
+                              (task.completed || task.isCompleted) && "line-through opacity-50"
+                            )}
+                            style={{ color: '#1a1523' }}
+                          >
+                            {task.text}
+                          </span>
+                          <button
+                            onClick={() => handleDeleteAllTask(task.id)}
+                            className="w-6 h-6 rounded-lg flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" style={{ color: '#8B7082' }} />
+                          </button>
+                        </div>
+                      ))
+                    )}
+
+                    {/* Add Task Input */}
+                    <div className="pt-2">
+                      <button
+                        onClick={() => {
+                          const taskText = prompt('Enter task:');
+                          if (taskText?.trim()) {
+                            handleAddAllTask(taskText.trim());
+                          }
+                        }}
+                        className="w-full py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                        style={{
+                          background: 'rgba(97, 42, 79, 0.08)',
+                          color: '#612a4f',
+                        }}
+                      >
+                        <Plus className="w-4 h-4" />
+                        Add task
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
 
         {currentView === 'today' && (
           <div className="flex-1 overflow-hidden">
