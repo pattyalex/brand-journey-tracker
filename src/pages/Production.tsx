@@ -55,6 +55,7 @@ import ExpandedScheduleView from "./production/components/ExpandedScheduleView";
 import ArchiveDialog from "./production/components/ArchiveDialog";
 import MobileContentView from "./production/components/MobileContentView";
 import MobileCardEditor from "./production/components/MobileCardEditor";
+import MobileStoryboardView from "./production/components/MobileStoryboardView";
 import { columnColors, cardColors, defaultColumns, columnAccentColors, columnIcons, emptyStateIcons } from "./production/utils/productionConstants";
 import { getFormatColors, getPlatformColors } from "./production/utils/productionHelpers";
 import { useSidebar } from "@/components/ui/sidebar";
@@ -2707,6 +2708,8 @@ Return only a JSON array of ${count} strings.`
   // Mobile view
   // State for mobile card editing
   const [mobileEditingCard, setMobileEditingCard] = useState<ProductionCard | null>(null);
+  // State for mobile storyboard view (filming mode)
+  const [mobileStoryboardCard, setMobileStoryboardCard] = useState<ProductionCard | null>(null);
 
   if (isMobile) {
     return (
@@ -2715,6 +2718,7 @@ Return only a JSON array of ${count} strings.`
           columns={columns}
           onAddIdea={handleMobileAddIdea}
           onCardClick={(card) => setMobileEditingCard(card)}
+          onOpenStoryboard={(card) => setMobileStoryboardCard(card)}
         />
 
         {/* Simple Add Idea Dialog */}
@@ -2815,6 +2819,20 @@ Return only a JSON array of ${count} strings.`
               toast.success('Card deleted');
             }}
             onClose={() => setMobileEditingCard(null)}
+          />
+        )}
+
+        {/* Mobile Storyboard View (Filming Mode) */}
+        {mobileStoryboardCard && (
+          <MobileStoryboardView
+            card={mobileStoryboardCard}
+            onClose={() => setMobileStoryboardCard(null)}
+            onUpdateCard={(updatedCard) => {
+              setColumns(prev => prev.map(col => ({
+                ...col,
+                cards: col.cards.map(c => c.id === updatedCard.id ? updatedCard : c)
+              })));
+            }}
           />
         )}
       </Layout>

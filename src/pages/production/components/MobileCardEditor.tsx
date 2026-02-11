@@ -28,26 +28,36 @@ const MobileCardEditor: React.FC<MobileCardEditorProps> = ({
   onDelete,
   onClose,
 }) => {
+  const isIdeate = card.columnId === 'ideate';
+  const isScriptIdeas = card.columnId === 'shape-ideas';
+
   const [title, setTitle] = useState(card.title);
-  const [notes, setNotes] = useState(card.description || card.script || '');
+  // For Ideate: use description, For Script Ideas: use script
+  const [notes, setNotes] = useState(isIdeate ? (card.description || '') : '');
+  const [script, setScript] = useState(isScriptIdeas ? (card.script || '') : '');
   const [showMoveMenu, setShowMoveMenu] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Auto-save on changes
   useEffect(() => {
     const timeout = setTimeout(() => {
-      if (title !== card.title || notes !== (card.description || card.script || '')) {
+      const hasChanges =
+        title !== card.title ||
+        (isIdeate && notes !== (card.description || '')) ||
+        (isScriptIdeas && script !== (card.script || ''));
+
+      if (hasChanges) {
         onSave({
           ...card,
           title,
-          description: notes,
-          script: card.columnId !== 'ideate' ? notes : card.script,
+          description: isIdeate ? notes : card.description,
+          script: isScriptIdeas ? script : card.script,
         });
       }
     }, 500);
 
     return () => clearTimeout(timeout);
-  }, [title, notes]);
+  }, [title, notes, script]);
 
   const handleMove = (targetColumnId: string) => {
     onMove(card.id, targetColumnId);
@@ -164,35 +174,100 @@ const MobileCardEditor: React.FC<MobileCardEditorProps> = ({
           />
         </div>
 
-        {/* Glass Card for Notes */}
-        <div
-          className="rounded-3xl p-5"
-          style={{
-            background: 'rgba(255, 255, 255, 0.75)',
-            backdropFilter: 'blur(10px)',
-            WebkitBackdropFilter: 'blur(10px)',
-            boxShadow: '0 8px 32px rgba(97, 42, 79, 0.08), inset 0 1px 0 rgba(255,255,255,0.9)',
-            border: '1px solid rgba(255, 255, 255, 0.6)',
-          }}
-        >
-          <label
-            className="block text-xs font-semibold mb-3 uppercase tracking-wider"
-            style={{ color: '#8B7082' }}
-          >
-            Notes & Ideas
-          </label>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Dump your thoughts here... script ideas, talking points, visual concepts, anything!"
-            rows={8}
-            className="w-full px-0 py-2 text-sm leading-relaxed focus:outline-none bg-transparent resize-none placeholder:text-gray-400"
+        {/* Glass Card for Notes (Ideate) or Talking Points (Script Ideas) */}
+        {isIdeate && (
+          <div
+            className="rounded-3xl p-5"
             style={{
-              color: '#1a1523',
-              fontFamily: "'Inter', sans-serif",
+              background: 'rgba(255, 255, 255, 0.75)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              boxShadow: '0 8px 32px rgba(97, 42, 79, 0.08), inset 0 1px 0 rgba(255,255,255,0.9)',
+              border: '1px solid rgba(255, 255, 255, 0.6)',
             }}
-          />
-        </div>
+          >
+            <label
+              className="block text-xs font-semibold mb-3 uppercase tracking-wider"
+              style={{ color: '#8B7082' }}
+            >
+              Notes & Ideas
+            </label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Dump your thoughts here... what's the concept? Any initial ideas?"
+              rows={8}
+              className="w-full px-0 py-2 text-sm leading-relaxed focus:outline-none bg-transparent resize-none placeholder:text-gray-400"
+              style={{
+                color: '#1a1523',
+                fontFamily: "'Inter', sans-serif",
+              }}
+            />
+          </div>
+        )}
+
+        {isScriptIdeas && (
+          <div
+            className="rounded-3xl p-5"
+            style={{
+              background: 'rgba(255, 255, 255, 0.75)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              boxShadow: '0 8px 32px rgba(97, 42, 79, 0.08), inset 0 1px 0 rgba(255,255,255,0.9)',
+              border: '1px solid rgba(255, 255, 255, 0.6)',
+            }}
+          >
+            <label
+              className="block text-xs font-semibold mb-3 uppercase tracking-wider"
+              style={{ color: '#8B7082' }}
+            >
+              Script
+            </label>
+            <textarea
+              value={script}
+              onChange={(e) => setScript(e.target.value)}
+              placeholder="Write your script here... what will you say in the video?"
+              rows={10}
+              className="w-full px-0 py-2 text-sm leading-relaxed focus:outline-none bg-transparent resize-none placeholder:text-gray-400"
+              style={{
+                color: '#1a1523',
+                fontFamily: "'Inter', sans-serif",
+              }}
+            />
+          </div>
+        )}
+
+        {/* Generic notes field for other columns (To Film, To Edit, etc.) */}
+        {!isIdeate && !isScriptIdeas && (
+          <div
+            className="rounded-3xl p-5"
+            style={{
+              background: 'rgba(255, 255, 255, 0.75)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              boxShadow: '0 8px 32px rgba(97, 42, 79, 0.08), inset 0 1px 0 rgba(255,255,255,0.9)',
+              border: '1px solid rgba(255, 255, 255, 0.6)',
+            }}
+          >
+            <label
+              className="block text-xs font-semibold mb-3 uppercase tracking-wider"
+              style={{ color: '#8B7082' }}
+            >
+              Notes
+            </label>
+            <textarea
+              value={card.description || card.script || ''}
+              readOnly
+              placeholder="No notes yet"
+              rows={6}
+              className="w-full px-0 py-2 text-sm leading-relaxed focus:outline-none bg-transparent resize-none placeholder:text-gray-400"
+              style={{
+                color: '#1a1523',
+                fontFamily: "'Inter', sans-serif",
+              }}
+            />
+          </div>
+        )}
 
         {/* Glass Card for Stage/Move */}
         <div

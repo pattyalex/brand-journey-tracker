@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Lightbulb, PenLine, Clapperboard, Scissors, CalendarDays, Archive, ChevronDown } from 'lucide-react';
+import { Plus, Lightbulb, PenLine, Clapperboard, Scissors, CalendarDays, Archive, ChevronDown, Video, Play } from 'lucide-react';
 import { KanbanColumn, ProductionCard } from '../types';
 
 interface MobileContentViewProps {
   columns: KanbanColumn[];
   onAddIdea: () => void;
   onCardClick: (card: ProductionCard) => void;
+  onOpenStoryboard?: (card: ProductionCard) => void;
 }
 
 const columnConfig: Record<string, { icon: React.ElementType; color: string; gradient: string; label: string }> = {
@@ -19,7 +20,7 @@ const columnConfig: Record<string, { icon: React.ElementType; color: string; gra
 
 const STORAGE_KEY = 'heymeg_mobile_content_expanded';
 
-const MobileContentView: React.FC<MobileContentViewProps> = ({ columns, onAddIdea, onCardClick }) => {
+const MobileContentView: React.FC<MobileContentViewProps> = ({ columns, onAddIdea, onCardClick, onOpenStoryboard }) => {
   const [expandedColumns, setExpandedColumns] = useState<Set<string>>(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
@@ -165,31 +166,75 @@ const MobileContentView: React.FC<MobileContentViewProps> = ({ columns, onAddIde
               {/* Cards */}
               {isExpanded && cardCount > 0 && (
                 <div className="px-4 pb-4 space-y-2">
-                  {column.cards.map((card) => (
-                    <button
-                      key={card.id}
-                      onClick={() => onCardClick(card)}
-                      className="w-full text-left p-4 rounded-2xl flex items-center gap-3 transition-all active:scale-[0.98]"
-                      style={{
-                        background: 'rgba(255, 255, 255, 0.6)',
-                        border: '1px solid rgba(139, 112, 130, 0.1)',
-                      }}
-                    >
-                      {/* Title */}
-                      <span
-                        className="flex-1 text-sm"
-                        style={{ color: '#1a1523', fontFamily: "'Inter', sans-serif" }}
-                      >
-                        {card.title}
-                      </span>
+                  {column.cards.map((card) => {
+                    const hasStoryboard = card.storyboard && card.storyboard.length > 0;
+                    const isToFilm = column.id === 'to-film';
+                    const sceneCount = card.storyboard?.length || 0;
 
-                      {/* Arrow indicator */}
-                      <ChevronDown
-                        className="w-4 h-4 flex-shrink-0"
-                        style={{ color: '#8B7082', transform: 'rotate(-90deg)' }}
-                      />
-                    </button>
-                  ))}
+
+                    // Default card layout for other columns
+                    return (
+                      <div
+                        key={card.id}
+                        className="rounded-2xl overflow-hidden transition-all"
+                        style={{
+                          background: 'rgba(255, 255, 255, 0.6)',
+                          border: isToFilm && hasStoryboard
+                            ? '2px solid rgba(97, 42, 79, 0.2)'
+                            : '1px solid rgba(139, 112, 130, 0.1)',
+                        }}
+                      >
+                        <button
+                          onClick={() => onCardClick(card)}
+                          className="w-full text-left p-4 flex items-center gap-3 transition-all active:scale-[0.98]"
+                        >
+                          {/* Title */}
+                          <span
+                            className="flex-1 text-sm"
+                            style={{ color: '#1a1523', fontFamily: "'Inter', sans-serif" }}
+                          >
+                            {card.title}
+                          </span>
+
+                          {/* Storyboard indicator for to-film cards */}
+                          {isToFilm && hasStoryboard && (
+                            <span
+                              className="text-xs px-2 py-0.5 rounded-full"
+                              style={{ background: 'rgba(97, 42, 79, 0.1)', color: '#612a4f' }}
+                            >
+                              {sceneCount} shots
+                            </span>
+                          )}
+
+                          {/* Arrow indicator */}
+                          <ChevronDown
+                            className="w-4 h-4 flex-shrink-0"
+                            style={{ color: '#8B7082', transform: 'rotate(-90deg)' }}
+                          />
+                        </button>
+
+                        {/* Open Storyboard button for to-film cards with storyboard */}
+                        {isToFilm && hasStoryboard && onOpenStoryboard && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onOpenStoryboard(card);
+                            }}
+                            className="w-full py-3 flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                            style={{
+                              background: 'linear-gradient(135deg, #612a4f 0%, #8B7082 100%)',
+                              borderTop: '1px solid rgba(255, 255, 255, 0.2)',
+                            }}
+                          >
+                            <Play className="w-4 h-4 text-white" />
+                            <span className="text-sm font-medium text-white">
+                              Open Storyboard
+                            </span>
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
 
