@@ -1,6 +1,34 @@
 import React, { useState, useEffect } from 'react';
-import { X, ChevronDown, Trash2 } from 'lucide-react';
-import { ProductionCard, KanbanColumn } from '../types';
+import { X, ChevronDown, Trash2, Check, Plus, Video, Camera, MapPin, Shirt, Boxes, NotebookPen, Play, FileText, Clapperboard } from 'lucide-react';
+import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from 'react-icons/si';
+import { RiTwitterXLine, RiThreadsLine } from 'react-icons/ri';
+import { ProductionCard, KanbanColumn, EditingChecklistItem, StoryboardScene } from '../types';
+import { getShotTemplateById } from '../utils/shotTemplates';
+
+// Import shot illustrations
+import wideShotIllustration from "@/assets/shot-illustrations/wide-shot.png";
+import mediumShotIllustration from "@/assets/shot-illustrations/medium-shot.png";
+import closeUpShotIllustration from "@/assets/shot-illustrations/close-up-shot.png";
+import handsDoingIllustration from "@/assets/shot-illustrations/hands-doing.png";
+import closeDetailIllustration from "@/assets/shot-illustrations/close-detail.png";
+import atDeskIllustration from "@/assets/shot-illustrations/at-desk.png";
+import neutralVisualIllustration from "@/assets/shot-illustrations/neutral-visual.png";
+import movingThroughIllustration from "@/assets/shot-illustrations/moving-through.png";
+import quietCutawayIllustration from "@/assets/shot-illustrations/quiet-cutaway.png";
+import reactionMomentIllustration from "@/assets/shot-illustrations/reaction-moment.png";
+
+const shotIllustrations: Record<string, string> = {
+  'wide-shot': wideShotIllustration,
+  'medium-shot': mediumShotIllustration,
+  'close-up-shot': closeUpShotIllustration,
+  'hands-doing': handsDoingIllustration,
+  'close-detail': closeDetailIllustration,
+  'at-desk': atDeskIllustration,
+  'neutral-visual': neutralVisualIllustration,
+  'moving-through': movingThroughIllustration,
+  'quiet-cutaway': quietCutawayIllustration,
+  'reaction-moment': reactionMomentIllustration,
+};
 
 interface MobileCardEditorProps {
   card: ProductionCard;
@@ -9,6 +37,7 @@ interface MobileCardEditorProps {
   onMove: (cardId: string, targetColumnId: string) => void;
   onDelete: (cardId: string) => void;
   onClose: () => void;
+  onOpenStoryboard?: (card: ProductionCard) => void;
 }
 
 const columnLabels: Record<string, string> = {
@@ -27,9 +56,12 @@ const MobileCardEditor: React.FC<MobileCardEditorProps> = ({
   onMove,
   onDelete,
   onClose,
+  onOpenStoryboard,
 }) => {
   const isIdeate = card.columnId === 'ideate';
   const isScriptIdeas = card.columnId === 'shape-ideas';
+  const isToEdit = card.columnId === 'to-edit';
+  const isToFilm = card.columnId === 'to-film';
 
   const [title, setTitle] = useState(card.title);
   // For Ideate: use description, For Script Ideas: use script
@@ -38,13 +70,87 @@ const MobileCardEditor: React.FC<MobileCardEditorProps> = ({
   const [showMoveMenu, setShowMoveMenu] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
+  // For To Edit: editing checklist and notes
+  const [checklistItems, setChecklistItems] = useState<EditingChecklistItem[]>(
+    card.editingChecklist?.items || []
+  );
+  const [editorNotes, setEditorNotes] = useState(card.editingChecklist?.notes || '');
+  const [newItemText, setNewItemText] = useState('');
+
+  // For Script Ideas: formats, platforms, shooting plan
+  const [formatTags, setFormatTags] = useState<string[]>(card.formats || []);
+  const [platformTags, setPlatformTags] = useState<string[]>(card.platforms || []);
+  const [locationText, setLocationText] = useState(card.locationText || '');
+  const [outfitText, setOutfitText] = useState(card.outfitText || '');
+  const [propsText, setPropsText] = useState(card.propsText || '');
+  const [filmingNotes, setFilmingNotes] = useState(card.filmingNotes || '');
+
+  // Collapsible section states
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(() => {
+    // Auto-expand sections that have data
+    const sections = new Set<string>();
+    if (card.formats && card.formats.length > 0) sections.add('format');
+    if (card.platforms && card.platforms.length > 0) sections.add('platforms');
+    if (card.locationText || card.outfitText || card.propsText || card.filmingNotes) sections.add('shooting');
+    return sections;
+  });
+
+  const toggleSection = (section: string) => {
+    setExpandedSections(prev => {
+      const next = new Set(prev);
+      if (next.has(section)) {
+        next.delete(section);
+      } else {
+        next.add(section);
+      }
+      return next;
+    });
+  };
+
+  // For To Film: filmed scenes tracking
+  const [filmedScenes, setFilmedScenes] = useState<Set<string>>(() => {
+    if (!isToFilm) return new Set();
+    const saved = localStorage.getItem(`heymeg_filmed_${card.id}`);
+    if (saved) {
+      try {
+        return new Set(JSON.parse(saved));
+      } catch {
+        return new Set();
+      }
+    }
+    return new Set();
+  });
+  const [showScript, setShowScript] = useState(false);
+
+  // Get shot illustration for a scene
+  const getSceneIllustration = (scene: StoryboardScene): string | null => {
+    if (!scene.selectedShotTemplateId) return null;
+    return shotIllustrations[scene.selectedShotTemplateId] || null;
+  };
+
   // Auto-save on changes
   useEffect(() => {
     const timeout = setTimeout(() => {
+      const checklistChanged = isToEdit && (
+        JSON.stringify(checklistItems) !== JSON.stringify(card.editingChecklist?.items || []) ||
+        editorNotes !== (card.editingChecklist?.notes || '')
+      );
+
+      const scriptIdeasChanged = isScriptIdeas && (
+        JSON.stringify(formatTags) !== JSON.stringify(card.formats || []) ||
+        JSON.stringify(platformTags) !== JSON.stringify(card.platforms || []) ||
+        locationText !== (card.locationText || '') ||
+        outfitText !== (card.outfitText || '') ||
+        propsText !== (card.propsText || '') ||
+        filmingNotes !== (card.filmingNotes || '')
+      );
+
       const hasChanges =
         title !== card.title ||
         (isIdeate && notes !== (card.description || '')) ||
-        (isScriptIdeas && script !== (card.script || ''));
+        (isScriptIdeas && script !== (card.script || '')) ||
+        checklistChanged ||
+        scriptIdeasChanged;
 
       if (hasChanges) {
         onSave({
@@ -52,12 +158,25 @@ const MobileCardEditor: React.FC<MobileCardEditorProps> = ({
           title,
           description: isIdeate ? notes : card.description,
           script: isScriptIdeas ? script : card.script,
+          formats: isScriptIdeas ? formatTags : card.formats,
+          platforms: isScriptIdeas ? platformTags : card.platforms,
+          locationText: isScriptIdeas ? locationText : card.locationText,
+          outfitText: isScriptIdeas ? outfitText : card.outfitText,
+          propsText: isScriptIdeas ? propsText : card.propsText,
+          filmingNotes: isScriptIdeas ? filmingNotes : card.filmingNotes,
+          editingChecklist: isToEdit ? {
+            ...card.editingChecklist,
+            items: checklistItems,
+            notes: editorNotes,
+            externalLinks: card.editingChecklist?.externalLinks || [],
+            status: card.editingChecklist?.status || null,
+          } : card.editingChecklist,
         });
       }
     }, 500);
 
     return () => clearTimeout(timeout);
-  }, [title, notes, script]);
+  }, [title, notes, script, checklistItems, editorNotes, formatTags, platformTags, locationText, outfitText, propsText, filmingNotes]);
 
   const handleMove = (targetColumnId: string) => {
     onMove(card.id, targetColumnId);
@@ -237,8 +356,769 @@ const MobileCardEditor: React.FC<MobileCardEditorProps> = ({
           </div>
         )}
 
-        {/* Generic notes field for other columns (To Film, To Edit, etc.) */}
-        {!isIdeate && !isScriptIdeas && (
+        {/* Script Ideas: How It's Shot (Collapsible) */}
+        {isScriptIdeas && (
+          <div
+            className="rounded-3xl overflow-hidden"
+            style={{
+              background: 'rgba(255, 255, 255, 0.75)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              boxShadow: '0 8px 32px rgba(97, 42, 79, 0.08), inset 0 1px 0 rgba(255,255,255,0.9)',
+              border: '1px solid rgba(255, 255, 255, 0.6)',
+            }}
+          >
+            <button
+              onClick={() => toggleSection('format')}
+              className="w-full p-5 flex items-center justify-between"
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-9 h-9 rounded-xl flex items-center justify-center"
+                  style={{ background: 'rgba(97, 42, 79, 0.1)' }}
+                >
+                  <Video className="w-4 h-4" style={{ color: '#612a4f' }} />
+                </div>
+                <span
+                  className="text-xs font-semibold uppercase tracking-wider"
+                  style={{ color: '#8B7082' }}
+                >
+                  How It's Shot
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                {formatTags.length > 0 && (
+                  <span
+                    className="text-xs px-2 py-0.5 rounded-full"
+                    style={{ background: 'rgba(97, 42, 79, 0.1)', color: '#612a4f' }}
+                  >
+                    {formatTags.length}
+                  </span>
+                )}
+                <ChevronDown
+                  className="w-5 h-5 transition-transform duration-300"
+                  style={{
+                    color: '#8B7082',
+                    transform: expandedSections.has('format') ? 'rotate(180deg)' : 'rotate(0deg)',
+                  }}
+                />
+              </div>
+            </button>
+
+            {expandedSections.has('format') && (
+              <div className="px-5 pb-5 space-y-3">
+                {/* Format options */}
+                <div className="space-y-2">
+                  <p className="text-xs" style={{ color: '#8B7082' }}>Video</p>
+                  <div className="flex flex-wrap gap-2">
+                    {['Talking to camera', 'Voice-over', 'Vlog', 'Tutorial', 'GRWM'].map((format) => (
+                      <button
+                        key={format}
+                        onClick={() => {
+                          if (formatTags.includes(format)) {
+                            setFormatTags(formatTags.filter(f => f !== format));
+                          } else {
+                            setFormatTags([...formatTags, format]);
+                          }
+                        }}
+                        className="px-3 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5"
+                        style={{
+                          background: formatTags.includes(format)
+                            ? 'linear-gradient(135deg, #612a4f 0%, #8B7082 100%)'
+                            : 'rgba(139, 112, 130, 0.08)',
+                          color: formatTags.includes(format) ? 'white' : '#1a1523',
+                          border: formatTags.includes(format) ? 'none' : '1px solid rgba(139, 112, 130, 0.15)',
+                        }}
+                      >
+                        <Video className="w-3 h-3" />
+                        {format}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="text-xs" style={{ color: '#8B7082' }}>Photo</p>
+                  <div className="flex flex-wrap gap-2">
+                    {['Photo post', 'Carousel', 'Text post'].map((format) => (
+                      <button
+                        key={format}
+                        onClick={() => {
+                          if (formatTags.includes(format)) {
+                            setFormatTags(formatTags.filter(f => f !== format));
+                          } else {
+                            setFormatTags([...formatTags, format]);
+                          }
+                        }}
+                        className="px-3 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5"
+                        style={{
+                          background: formatTags.includes(format)
+                            ? 'linear-gradient(135deg, #612a4f 0%, #8B7082 100%)'
+                            : 'rgba(139, 112, 130, 0.08)',
+                          color: formatTags.includes(format) ? 'white' : '#1a1523',
+                          border: formatTags.includes(format) ? 'none' : '1px solid rgba(139, 112, 130, 0.15)',
+                        }}
+                      >
+                        <Camera className="w-3 h-3" />
+                        {format}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Script Ideas: Platforms (Collapsible) */}
+        {isScriptIdeas && (
+          <div
+            className="rounded-3xl overflow-hidden"
+            style={{
+              background: 'rgba(255, 255, 255, 0.75)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              boxShadow: '0 8px 32px rgba(97, 42, 79, 0.08), inset 0 1px 0 rgba(255,255,255,0.9)',
+              border: '1px solid rgba(255, 255, 255, 0.6)',
+            }}
+          >
+            <button
+              onClick={() => toggleSection('platforms')}
+              className="w-full p-5 flex items-center justify-between"
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-9 h-9 rounded-xl flex items-center justify-center"
+                  style={{ background: 'rgba(97, 42, 79, 0.1)' }}
+                >
+                  <SiInstagram className="w-4 h-4" style={{ color: '#612a4f' }} />
+                </div>
+                <span
+                  className="text-xs font-semibold uppercase tracking-wider"
+                  style={{ color: '#8B7082' }}
+                >
+                  Platforms
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                {platformTags.length > 0 && (
+                  <span
+                    className="text-xs px-2 py-0.5 rounded-full"
+                    style={{ background: 'rgba(97, 42, 79, 0.1)', color: '#612a4f' }}
+                  >
+                    {platformTags.length}
+                  </span>
+                )}
+                <ChevronDown
+                  className="w-5 h-5 transition-transform duration-300"
+                  style={{
+                    color: '#8B7082',
+                    transform: expandedSections.has('platforms') ? 'rotate(180deg)' : 'rotate(0deg)',
+                  }}
+                />
+              </div>
+            </button>
+
+            {expandedSections.has('platforms') && (
+              <div className="px-5 pb-5">
+                <div className="flex flex-wrap gap-3">
+                  {[
+                    { name: 'Instagram', icon: SiInstagram },
+                    { name: 'TikTok', icon: SiTiktok },
+                    { name: 'YouTube', icon: SiYoutube },
+                    { name: 'Facebook', icon: SiFacebook },
+                    { name: 'LinkedIn', icon: SiLinkedin },
+                    { name: 'X', icon: RiTwitterXLine },
+                    { name: 'Threads', icon: RiThreadsLine },
+                  ].map((platform) => {
+                    const isSelected = platformTags.includes(platform.name);
+                    const IconComponent = platform.icon;
+                    return (
+                      <button
+                        key={platform.name}
+                        onClick={() => {
+                          if (isSelected) {
+                            setPlatformTags(platformTags.filter(p => p !== platform.name));
+                          } else {
+                            setPlatformTags([...platformTags, platform.name]);
+                          }
+                        }}
+                        className="w-12 h-12 rounded-2xl flex items-center justify-center transition-all"
+                        style={{
+                          background: isSelected
+                            ? 'linear-gradient(135deg, #612a4f 0%, #8B7082 100%)'
+                            : 'rgba(139, 112, 130, 0.08)',
+                          border: isSelected ? 'none' : '1px solid rgba(139, 112, 130, 0.15)',
+                        }}
+                      >
+                        <IconComponent
+                          className="w-5 h-5"
+                          style={{ color: isSelected ? 'white' : '#8B7082' }}
+                        />
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Script Ideas: Shooting Plan (Collapsible) */}
+        {isScriptIdeas && (
+          <div
+            className="rounded-3xl overflow-hidden"
+            style={{
+              background: 'rgba(255, 255, 255, 0.75)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              boxShadow: '0 8px 32px rgba(97, 42, 79, 0.08), inset 0 1px 0 rgba(255,255,255,0.9)',
+              border: '1px solid rgba(255, 255, 255, 0.6)',
+            }}
+          >
+            <button
+              onClick={() => toggleSection('shooting')}
+              className="w-full p-5 flex items-center justify-between"
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-9 h-9 rounded-xl flex items-center justify-center"
+                  style={{ background: 'rgba(97, 42, 79, 0.1)' }}
+                >
+                  <MapPin className="w-4 h-4" style={{ color: '#612a4f' }} />
+                </div>
+                <span
+                  className="text-xs font-semibold uppercase tracking-wider"
+                  style={{ color: '#8B7082' }}
+                >
+                  Shooting Plan
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                {(locationText || outfitText || propsText || filmingNotes) && (
+                  <span
+                    className="w-2 h-2 rounded-full"
+                    style={{ background: '#612a4f' }}
+                  />
+                )}
+                <ChevronDown
+                  className="w-5 h-5 transition-transform duration-300"
+                  style={{
+                    color: '#8B7082',
+                    transform: expandedSections.has('shooting') ? 'rotate(180deg)' : 'rotate(0deg)',
+                  }}
+                />
+              </div>
+            </button>
+
+            {expandedSections.has('shooting') && (
+              <div className="px-5 pb-5 space-y-1">
+                {/* Location */}
+                <div
+                  className="flex items-start gap-3 py-3 px-3 rounded-xl"
+                  style={{ background: 'rgba(139, 112, 130, 0.05)' }}
+                >
+                  <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: '#8B7082' }} />
+                  <textarea
+                    value={locationText}
+                    onChange={(e) => setLocationText(e.target.value)}
+                    placeholder="Location..."
+                    rows={1}
+                    className="flex-1 text-sm bg-transparent border-none outline-none resize-none placeholder:text-gray-400"
+                    style={{ color: '#1a1523', fontFamily: "'Inter', sans-serif" }}
+                  />
+                </div>
+
+                {/* Outfit */}
+                <div
+                  className="flex items-start gap-3 py-3 px-3 rounded-xl"
+                  style={{ background: 'rgba(139, 112, 130, 0.08)' }}
+                >
+                  <Shirt className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: '#8B7082' }} />
+                  <textarea
+                    value={outfitText}
+                    onChange={(e) => setOutfitText(e.target.value)}
+                    placeholder="Outfit..."
+                    rows={1}
+                    className="flex-1 text-sm bg-transparent border-none outline-none resize-none placeholder:text-gray-400"
+                    style={{ color: '#1a1523', fontFamily: "'Inter', sans-serif" }}
+                  />
+                </div>
+
+                {/* Props */}
+                <div
+                  className="flex items-start gap-3 py-3 px-3 rounded-xl"
+                  style={{ background: 'rgba(139, 112, 130, 0.11)' }}
+                >
+                  <Boxes className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: '#8B7082' }} />
+                  <textarea
+                    value={propsText}
+                    onChange={(e) => setPropsText(e.target.value)}
+                    placeholder="Props..."
+                    rows={1}
+                    className="flex-1 text-sm bg-transparent border-none outline-none resize-none placeholder:text-gray-400"
+                    style={{ color: '#1a1523', fontFamily: "'Inter', sans-serif" }}
+                  />
+                </div>
+
+                {/* Notes */}
+                <div
+                  className="flex items-start gap-3 py-3 px-3 rounded-xl"
+                  style={{ background: 'rgba(139, 112, 130, 0.14)' }}
+                >
+                  <NotebookPen className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: '#8B7082' }} />
+                  <textarea
+                    value={filmingNotes}
+                    onChange={(e) => setFilmingNotes(e.target.value)}
+                    placeholder="Notes..."
+                    rows={2}
+                    className="flex-1 text-sm bg-transparent border-none outline-none resize-none placeholder:text-gray-400"
+                    style={{ color: '#1a1523', fontFamily: "'Inter', sans-serif" }}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* To Edit: Editing Checklist */}
+        {isToEdit && (
+          <div
+            className="rounded-3xl p-5"
+            style={{
+              background: 'rgba(255, 255, 255, 0.75)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              boxShadow: '0 8px 32px rgba(97, 42, 79, 0.08), inset 0 1px 0 rgba(255,255,255,0.9)',
+              border: '1px solid rgba(255, 255, 255, 0.6)',
+            }}
+          >
+            <label
+              className="block text-xs font-semibold mb-3 uppercase tracking-wider"
+              style={{ color: '#8B7082' }}
+            >
+              Editing Checklist
+            </label>
+
+            {/* Checklist items */}
+            <div className="space-y-2 mb-4">
+              {checklistItems.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center gap-3 py-2"
+                >
+                  <button
+                    onClick={() => {
+                      setChecklistItems(prev =>
+                        prev.map(i =>
+                          i.id === item.id ? { ...i, checked: !i.checked } : i
+                        )
+                      );
+                    }}
+                    className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 transition-all"
+                    style={{
+                      background: item.checked
+                        ? 'linear-gradient(135deg, #612a4f 0%, #8B7082 100%)'
+                        : 'rgba(139, 112, 130, 0.1)',
+                      border: item.checked ? 'none' : '1px solid rgba(139, 112, 130, 0.2)',
+                    }}
+                  >
+                    {item.checked && <Check className="w-4 h-4 text-white" />}
+                  </button>
+                  <span
+                    className="flex-1 text-sm"
+                    style={{
+                      color: item.checked ? '#8B7082' : '#1a1523',
+                      textDecoration: item.checked ? 'line-through' : 'none',
+                      fontFamily: "'Inter', sans-serif",
+                    }}
+                  >
+                    {item.text}
+                  </span>
+                  <button
+                    onClick={() => {
+                      setChecklistItems(prev => prev.filter(i => i.id !== item.id));
+                    }}
+                    className="w-6 h-6 rounded-lg flex items-center justify-center opacity-50 hover:opacity-100 transition-opacity"
+                  >
+                    <X className="w-4 h-4" style={{ color: '#8B7082' }} />
+                  </button>
+                </div>
+              ))}
+
+              {checklistItems.length === 0 && (
+                <p className="text-sm py-2" style={{ color: '#8B7082' }}>
+                  No checklist items yet
+                </p>
+              )}
+            </div>
+
+            {/* Add new item */}
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newItemText}
+                onChange={(e) => setNewItemText(e.target.value)}
+                placeholder="Add a task..."
+                className="flex-1 px-3 py-2 text-sm rounded-xl focus:outline-none bg-transparent transition-all placeholder:text-gray-400"
+                style={{
+                  color: '#1a1523',
+                  fontFamily: "'Inter', sans-serif",
+                  background: 'rgba(139, 112, 130, 0.05)',
+                  border: '1px solid rgba(139, 112, 130, 0.15)',
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && newItemText.trim()) {
+                    setChecklistItems(prev => [
+                      ...prev,
+                      {
+                        id: `item-${Date.now()}`,
+                        text: newItemText.trim(),
+                        checked: false,
+                      }
+                    ]);
+                    setNewItemText('');
+                  }
+                }}
+              />
+              <button
+                onClick={() => {
+                  if (newItemText.trim()) {
+                    setChecklistItems(prev => [
+                      ...prev,
+                      {
+                        id: `item-${Date.now()}`,
+                        text: newItemText.trim(),
+                        checked: false,
+                      }
+                    ]);
+                    setNewItemText('');
+                  }
+                }}
+                className="w-10 h-10 rounded-xl flex items-center justify-center transition-all active:scale-95"
+                style={{
+                  background: 'linear-gradient(135deg, #612a4f 0%, #8B7082 100%)',
+                }}
+              >
+                <Plus className="w-5 h-5 text-white" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* To Edit: Editor's Notes */}
+        {isToEdit && (
+          <div
+            className="rounded-3xl p-5"
+            style={{
+              background: 'rgba(255, 255, 255, 0.75)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              boxShadow: '0 8px 32px rgba(97, 42, 79, 0.08), inset 0 1px 0 rgba(255,255,255,0.9)',
+              border: '1px solid rgba(255, 255, 255, 0.6)',
+            }}
+          >
+            <label
+              className="block text-xs font-semibold mb-3 uppercase tracking-wider"
+              style={{ color: '#8B7082' }}
+            >
+              Editor's Notes
+            </label>
+            <textarea
+              value={editorNotes}
+              onChange={(e) => setEditorNotes(e.target.value)}
+              placeholder="Add notes for editing... music choices, transitions, special effects, etc."
+              rows={6}
+              className="w-full px-0 py-2 text-sm leading-relaxed focus:outline-none bg-transparent resize-none placeholder:text-gray-400"
+              style={{
+                color: '#1a1523',
+                fontFamily: "'Inter', sans-serif",
+              }}
+            />
+          </div>
+        )}
+
+        {/* To Film: Enhanced Overview */}
+        {isToFilm && (
+          <>
+            {/* Progress & Start Filming Button */}
+            <div
+              className="rounded-3xl p-5"
+              style={{
+                background: 'linear-gradient(135deg, #612a4f 0%, #8B7082 100%)',
+                boxShadow: '0 8px 32px rgba(97, 42, 79, 0.25)',
+              }}
+            >
+              {card.storyboard && card.storyboard.length > 0 ? (
+                <>
+                  {/* Progress */}
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-white/80 text-sm">Filming Progress</span>
+                    <span className="text-white font-semibold">
+                      {filmedScenes.size} / {card.storyboard.length} shots
+                    </span>
+                  </div>
+
+                  {/* Progress bar */}
+                  <div className="h-2 rounded-full bg-white/20 mb-5 overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-white transition-all duration-500"
+                      style={{
+                        width: `${(filmedScenes.size / card.storyboard.length) * 100}%`,
+                      }}
+                    />
+                  </div>
+
+                  {/* Start Filming button */}
+                  <button
+                    onClick={() => onOpenStoryboard?.(card)}
+                    className="w-full py-4 rounded-2xl flex items-center justify-center gap-3 transition-all active:scale-[0.98]"
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.95)',
+                      boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
+                    }}
+                  >
+                    <Play className="w-6 h-6" style={{ color: '#612a4f' }} />
+                    <span
+                      className="text-lg font-semibold"
+                      style={{ color: '#612a4f', fontFamily: "'Playfair Display', serif" }}
+                    >
+                      Start Filming
+                    </span>
+                  </button>
+                </>
+              ) : (
+                <div className="text-center py-4">
+                  <Clapperboard className="w-10 h-10 text-white/60 mx-auto mb-3" />
+                  <p className="text-white/80 text-sm">No storyboard yet</p>
+                  <p className="text-white/60 text-xs mt-1">Create shots in the desktop view</p>
+                </div>
+              )}
+            </div>
+
+            {/* Shot Thumbnails Grid */}
+            {card.storyboard && card.storyboard.length > 0 && (
+              <div
+                className="rounded-3xl p-5"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.75)',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                  boxShadow: '0 8px 32px rgba(97, 42, 79, 0.08), inset 0 1px 0 rgba(255,255,255,0.9)',
+                  border: '1px solid rgba(255, 255, 255, 0.6)',
+                }}
+              >
+                <label
+                  className="block text-xs font-semibold mb-4 uppercase tracking-wider"
+                  style={{ color: '#8B7082' }}
+                >
+                  Shot List
+                </label>
+                <div className="grid grid-cols-4 gap-2">
+                  {card.storyboard.map((scene, index) => {
+                    const isFilmed = filmedScenes.has(scene.id);
+                    const illustration = getSceneIllustration(scene);
+                    const template = scene.selectedShotTemplateId
+                      ? getShotTemplateById(scene.selectedShotTemplateId)
+                      : null;
+
+                    return (
+                      <div
+                        key={scene.id}
+                        className="relative aspect-square rounded-xl overflow-hidden"
+                        style={{
+                          background: isFilmed
+                            ? 'linear-gradient(135deg, #612a4f 0%, #8B7082 100%)'
+                            : 'rgba(139, 112, 130, 0.1)',
+                          border: isFilmed ? 'none' : '1px solid rgba(139, 112, 130, 0.2)',
+                        }}
+                      >
+                        {illustration ? (
+                          <img
+                            src={illustration}
+                            alt={template?.user_facing_name || `Shot ${index + 1}`}
+                            className="w-full h-full object-cover"
+                            style={{ opacity: isFilmed ? 0.4 : 0.8 }}
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <Video
+                              className="w-5 h-5"
+                              style={{ color: isFilmed ? 'white' : '#8B7082', opacity: 0.5 }}
+                            />
+                          </div>
+                        )}
+
+                        {/* Shot number */}
+                        <div
+                          className="absolute top-1 left-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold"
+                          style={{
+                            background: isFilmed ? 'white' : 'rgba(255,255,255,0.9)',
+                            color: '#612a4f',
+                          }}
+                        >
+                          {index + 1}
+                        </div>
+
+                        {/* Filmed checkmark */}
+                        {isFilmed && (
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center">
+                              <Check className="w-5 h-5" style={{ color: '#612a4f' }} />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Script Reference (Collapsible) */}
+            {card.script && (
+              <div
+                className="rounded-3xl overflow-hidden"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.75)',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                  boxShadow: '0 8px 32px rgba(97, 42, 79, 0.08), inset 0 1px 0 rgba(255,255,255,0.9)',
+                  border: '1px solid rgba(255, 255, 255, 0.6)',
+                }}
+              >
+                <button
+                  onClick={() => setShowScript(!showScript)}
+                  className="w-full p-5 flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-9 h-9 rounded-xl flex items-center justify-center"
+                      style={{ background: 'rgba(97, 42, 79, 0.1)' }}
+                    >
+                      <FileText className="w-4 h-4" style={{ color: '#612a4f' }} />
+                    </div>
+                    <span
+                      className="text-xs font-semibold uppercase tracking-wider"
+                      style={{ color: '#8B7082' }}
+                    >
+                      Script Reference
+                    </span>
+                  </div>
+                  <ChevronDown
+                    className="w-5 h-5 transition-transform duration-300"
+                    style={{
+                      color: '#8B7082',
+                      transform: showScript ? 'rotate(180deg)' : 'rotate(0deg)',
+                    }}
+                  />
+                </button>
+
+                {showScript && (
+                  <div className="px-5 pb-5">
+                    <div
+                      className="p-4 rounded-xl text-sm leading-relaxed whitespace-pre-wrap"
+                      style={{
+                        background: 'rgba(139, 112, 130, 0.05)',
+                        color: '#1a1523',
+                        fontFamily: "'Inter', sans-serif",
+                        maxHeight: '300px',
+                        overflowY: 'auto',
+                      }}
+                    >
+                      {card.script}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Filming Prep (Collapsible) */}
+            {(card.locationText || card.outfitText || card.propsText || card.filmingNotes) && (
+              <div
+                className="rounded-3xl overflow-hidden"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.75)',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                  boxShadow: '0 8px 32px rgba(97, 42, 79, 0.08), inset 0 1px 0 rgba(255,255,255,0.9)',
+                  border: '1px solid rgba(255, 255, 255, 0.6)',
+                }}
+              >
+                <button
+                  onClick={() => toggleSection('filmPrep')}
+                  className="w-full p-5 flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-9 h-9 rounded-xl flex items-center justify-center"
+                      style={{ background: 'rgba(97, 42, 79, 0.1)' }}
+                    >
+                      <MapPin className="w-4 h-4" style={{ color: '#612a4f' }} />
+                    </div>
+                    <span
+                      className="text-xs font-semibold uppercase tracking-wider"
+                      style={{ color: '#8B7082' }}
+                    >
+                      Filming Prep
+                    </span>
+                  </div>
+                  <ChevronDown
+                    className="w-5 h-5 transition-transform duration-300"
+                    style={{
+                      color: '#8B7082',
+                      transform: expandedSections.has('filmPrep') ? 'rotate(180deg)' : 'rotate(0deg)',
+                    }}
+                  />
+                </button>
+
+                {expandedSections.has('filmPrep') && (
+                  <div className="px-5 pb-5 space-y-1">
+                    {card.locationText && (
+                      <div
+                        className="flex items-start gap-3 py-3 px-3 rounded-xl"
+                        style={{ background: 'rgba(139, 112, 130, 0.05)' }}
+                      >
+                        <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: '#8B7082' }} />
+                        <span className="text-sm" style={{ color: '#1a1523' }}>{card.locationText}</span>
+                      </div>
+                    )}
+                    {card.outfitText && (
+                      <div
+                        className="flex items-start gap-3 py-3 px-3 rounded-xl"
+                        style={{ background: 'rgba(139, 112, 130, 0.08)' }}
+                      >
+                        <Shirt className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: '#8B7082' }} />
+                        <span className="text-sm" style={{ color: '#1a1523' }}>{card.outfitText}</span>
+                      </div>
+                    )}
+                    {card.propsText && (
+                      <div
+                        className="flex items-start gap-3 py-3 px-3 rounded-xl"
+                        style={{ background: 'rgba(139, 112, 130, 0.11)' }}
+                      >
+                        <Boxes className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: '#8B7082' }} />
+                        <span className="text-sm" style={{ color: '#1a1523' }}>{card.propsText}</span>
+                      </div>
+                    )}
+                    {card.filmingNotes && (
+                      <div
+                        className="flex items-start gap-3 py-3 px-3 rounded-xl"
+                        style={{ background: 'rgba(139, 112, 130, 0.14)' }}
+                      >
+                        <NotebookPen className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: '#8B7082' }} />
+                        <span className="text-sm" style={{ color: '#1a1523' }}>{card.filmingNotes}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Generic notes field for other columns (To Schedule, Posted) */}
+        {!isIdeate && !isScriptIdeas && !isToEdit && !isToFilm && (
           <div
             className="rounded-3xl p-5"
             style={{

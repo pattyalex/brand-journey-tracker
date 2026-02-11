@@ -2718,7 +2718,6 @@ Return only a JSON array of ${count} strings.`
           columns={columns}
           onAddIdea={handleMobileAddIdea}
           onCardClick={(card) => setMobileEditingCard(card)}
-          onOpenStoryboard={(card) => setMobileStoryboardCard(card)}
         />
 
         {/* Simple Add Idea Dialog */}
@@ -2819,6 +2818,10 @@ Return only a JSON array of ${count} strings.`
               toast.success('Card deleted');
             }}
             onClose={() => setMobileEditingCard(null)}
+            onOpenStoryboard={(card) => {
+              setMobileEditingCard(null);
+              setMobileStoryboardCard(card);
+            }}
           />
         )}
 
@@ -2832,6 +2835,11 @@ Return only a JSON array of ${count} strings.`
                 ...col,
                 cards: col.cards.map(c => c.id === updatedCard.id ? updatedCard : c)
               })));
+            }}
+            onBackToEditor={() => {
+              const card = mobileStoryboardCard;
+              setMobileStoryboardCard(null);
+              setMobileEditingCard(card);
             }}
           />
         )}

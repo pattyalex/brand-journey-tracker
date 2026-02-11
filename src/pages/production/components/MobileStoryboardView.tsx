@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, ChevronLeft, ChevronRight, MapPin, Shirt, Boxes, NotebookPen, Check, Video, Camera, Clapperboard } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, MapPin, Shirt, Boxes, NotebookPen, Check, Video, Camera, Clapperboard, ArrowLeft } from 'lucide-react';
 import { ProductionCard, StoryboardScene } from '../types';
 import { getShotTemplateById } from '../utils/shotTemplates';
 import { variantImages } from './ShotLibraryDialog';
@@ -34,12 +34,14 @@ interface MobileStoryboardViewProps {
   card: ProductionCard;
   onClose: () => void;
   onUpdateCard?: (updatedCard: ProductionCard) => void;
+  onBackToEditor?: () => void;
 }
 
 const MobileStoryboardView: React.FC<MobileStoryboardViewProps> = ({
   card,
   onClose,
   onUpdateCard,
+  onBackToEditor,
 }) => {
   const scenes = card.storyboard || [];
   const [currentSceneIndex, setCurrentSceneIndex] = useState(0);
@@ -129,14 +131,14 @@ const MobileStoryboardView: React.FC<MobileStoryboardViewProps> = ({
           }}
         >
           <button
-            onClick={onClose}
+            onClick={onBackToEditor || onClose}
             className="w-10 h-10 rounded-2xl flex items-center justify-center transition-all active:scale-95"
             style={{
               background: 'rgba(255, 255, 255, 0.8)',
               boxShadow: '0 2px 8px rgba(97, 42, 79, 0.08)',
             }}
           >
-            <X className="w-5 h-5" style={{ color: '#612a4f' }} />
+            <ArrowLeft className="w-5 h-5" style={{ color: '#612a4f' }} />
           </button>
           <span
             className="text-lg font-medium"
@@ -144,7 +146,16 @@ const MobileStoryboardView: React.FC<MobileStoryboardViewProps> = ({
           >
             Storyboard
           </span>
-          <div className="w-10" />
+          <button
+            onClick={onClose}
+            className="w-10 h-10 rounded-2xl flex items-center justify-center transition-all active:scale-95"
+            style={{
+              background: 'rgba(255, 255, 255, 0.8)',
+              boxShadow: '0 2px 8px rgba(97, 42, 79, 0.08)',
+            }}
+          >
+            <X className="w-5 h-5" style={{ color: '#8B7082' }} />
+          </button>
         </div>
 
         {/* Empty state */}
@@ -196,14 +207,14 @@ const MobileStoryboardView: React.FC<MobileStoryboardViewProps> = ({
         }}
       >
         <button
-          onClick={onClose}
+          onClick={onBackToEditor || onClose}
           className="w-10 h-10 rounded-2xl flex items-center justify-center transition-all active:scale-95"
           style={{
             background: 'rgba(255, 255, 255, 0.8)',
             boxShadow: '0 2px 8px rgba(97, 42, 79, 0.08)',
           }}
         >
-          <X className="w-5 h-5" style={{ color: '#612a4f' }} />
+          <ArrowLeft className="w-5 h-5" style={{ color: '#612a4f' }} />
         </button>
 
         {/* Title and progress */}
