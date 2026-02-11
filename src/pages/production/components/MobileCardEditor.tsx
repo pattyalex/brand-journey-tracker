@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { X, ChevronDown, Trash2, Check, Plus, Video, Camera, MapPin, Shirt, Boxes, NotebookPen, Play, FileText, Clapperboard } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { X, ChevronDown, Trash2, Check, Plus, Video, Camera, MapPin, Shirt, Boxes, NotebookPen, Play, FileText, Clapperboard, CalendarDays, Clock, CheckCircle, Send, ChevronLeft, ChevronRight, CalendarCheck } from 'lucide-react';
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from 'react-icons/si';
 import { RiTwitterXLine, RiThreadsLine } from 'react-icons/ri';
 import { ProductionCard, KanbanColumn, EditingChecklistItem, StoryboardScene } from '../types';
@@ -46,6 +46,7 @@ const columnLabels: Record<string, string> = {
   'to-film': 'To Film',
   'to-edit': 'To Edit',
   'to-schedule': 'To Schedule',
+  'scheduled': 'Scheduled',
   'posted': 'Posted',
 };
 
@@ -62,6 +63,8 @@ const MobileCardEditor: React.FC<MobileCardEditorProps> = ({
   const isScriptIdeas = card.columnId === 'shape-ideas';
   const isToEdit = card.columnId === 'to-edit';
   const isToFilm = card.columnId === 'to-film';
+  const isToSchedule = card.columnId === 'to-schedule';
+  const isScheduled = card.columnId === 'scheduled';
 
   const [title, setTitle] = useState(card.title);
   // For Ideate: use description, For Script Ideas: use script
@@ -122,6 +125,98 @@ const MobileCardEditor: React.FC<MobileCardEditorProps> = ({
   });
   const [showScript, setShowScript] = useState(false);
 
+  // For To Schedule and Scheduled: date and time
+  const [scheduledDate, setScheduledDate] = useState(card.scheduledDate || '');
+  const [scheduledStartTime, setScheduledStartTime] = useState(card.scheduledStartTime || '09:00');
+  const [showMarkPosted, setShowMarkPosted] = useState(false);
+  const [showScheduleConfirm, setShowScheduleConfirm] = useState(false);
+  const [calendarMonth, setCalendarMonth] = useState(() => {
+    if (card.scheduledDate) {
+      const d = new Date(card.scheduledDate);
+      return new Date(d.getFullYear(), d.getMonth(), 1);
+    }
+    return new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  });
+
+  // Get all scheduled content from other cards (for calendar indicators)
+  const scheduledContent = useMemo(() => {
+    const contentByDate: Record<string, { id: string; title: string; time: string }[]> = {};
+    columns.forEach(col => {
+      col.cards.forEach(c => {
+        // Exclude current card, include cards with scheduled dates
+        if (c.id !== card.id && c.scheduledDate) {
+          if (!contentByDate[c.scheduledDate]) {
+            contentByDate[c.scheduledDate] = [];
+          }
+          contentByDate[c.scheduledDate].push({
+            id: c.id,
+            title: c.title,
+            time: c.scheduledStartTime || '09:00',
+          });
+        }
+      });
+    });
+    // Sort each day's content by time
+    Object.keys(contentByDate).forEach(date => {
+      contentByDate[date].sort((a, b) => a.time.localeCompare(b.time));
+    });
+    return contentByDate;
+  }, [columns, card.id]);
+
+  const scheduledDates = useMemo(() => new Set(Object.keys(scheduledContent)), [scheduledContent]);
+
+  // Generate calendar days for the current month view
+  const calendarDays = useMemo(() => {
+    const year = calendarMonth.getFullYear();
+    const month = calendarMonth.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startDayOfWeek = firstDay.getDay();
+
+    const days: { date: Date; isCurrentMonth: boolean; isToday: boolean; isSelected: boolean }[] = [];
+
+    // Previous month days
+    const prevMonthLastDay = new Date(year, month, 0).getDate();
+    for (let i = startDayOfWeek - 1; i >= 0; i--) {
+      const date = new Date(year, month - 1, prevMonthLastDay - i);
+      days.push({
+        date,
+        isCurrentMonth: false,
+        isToday: false,
+        isSelected: false,
+      });
+    }
+
+    // Current month days
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    for (let i = 1; i <= daysInMonth; i++) {
+      const date = new Date(year, month, i);
+      const dateStr = date.toISOString().split('T')[0];
+      days.push({
+        date,
+        isCurrentMonth: true,
+        isToday: date.getTime() === today.getTime(),
+        isSelected: scheduledDate === dateStr,
+      });
+    }
+
+    // Next month days to fill grid
+    const remainingDays = 42 - days.length;
+    for (let i = 1; i <= remainingDays; i++) {
+      const date = new Date(year, month + 1, i);
+      days.push({
+        date,
+        isCurrentMonth: false,
+        isToday: false,
+        isSelected: false,
+      });
+    }
+
+    return days;
+  }, [calendarMonth, scheduledDate]);
+
   // Get shot illustration for a scene
   const getSceneIllustration = (scene: StoryboardScene): string | null => {
     if (!scene.selectedShotTemplateId) return null;
@@ -145,12 +240,18 @@ const MobileCardEditor: React.FC<MobileCardEditorProps> = ({
         filmingNotes !== (card.filmingNotes || '')
       );
 
+      const scheduleChanged = (isToSchedule || isScheduled) && (
+        scheduledDate !== (card.scheduledDate || '') ||
+        scheduledStartTime !== (card.scheduledStartTime || '09:00')
+      );
+
       const hasChanges =
         title !== card.title ||
         (isIdeate && notes !== (card.description || '')) ||
         (isScriptIdeas && script !== (card.script || '')) ||
         checklistChanged ||
-        scriptIdeasChanged;
+        scriptIdeasChanged ||
+        scheduleChanged;
 
       if (hasChanges) {
         onSave({
@@ -171,12 +272,15 @@ const MobileCardEditor: React.FC<MobileCardEditorProps> = ({
             externalLinks: card.editingChecklist?.externalLinks || [],
             status: card.editingChecklist?.status || null,
           } : card.editingChecklist,
+          scheduledDate: (isToSchedule || isScheduled) ? (scheduledDate || undefined) : card.scheduledDate,
+          scheduledStartTime: (isToSchedule || isScheduled) ? scheduledStartTime : card.scheduledStartTime,
+          schedulingStatus: (isToSchedule || isScheduled) && scheduledDate ? 'scheduled' : card.schedulingStatus,
         });
       }
     }, 500);
 
     return () => clearTimeout(timeout);
-  }, [title, notes, script, checklistItems, editorNotes, formatTags, platformTags, locationText, outfitText, propsText, filmingNotes]);
+  }, [title, notes, script, checklistItems, editorNotes, formatTags, platformTags, locationText, outfitText, propsText, filmingNotes, scheduledDate, scheduledStartTime, isToSchedule, isScheduled]);
 
   const handleMove = (targetColumnId: string) => {
     onMove(card.id, targetColumnId);
@@ -1117,8 +1221,657 @@ const MobileCardEditor: React.FC<MobileCardEditorProps> = ({
           </>
         )}
 
-        {/* Generic notes field for other columns (To Schedule, Posted) */}
-        {!isIdeate && !isScriptIdeas && !isToEdit && !isToFilm && (
+        {/* To Schedule: Scheduling Interface */}
+        {isToSchedule && (
+          <>
+            {/* Status Banner - only show when no date selected */}
+            {!scheduledDate && (
+              <div
+                className="rounded-3xl p-5"
+                style={{
+                  background: 'linear-gradient(135deg, #612a4f 0%, #8B7082 100%)',
+                  boxShadow: '0 8px 32px rgba(97, 42, 79, 0.25)',
+                }}
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-12 h-12 rounded-2xl flex items-center justify-center"
+                    style={{ background: 'rgba(255, 255, 255, 0.2)' }}
+                  >
+                    <CalendarDays className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-white font-semibold text-lg">Ready to Schedule</p>
+                    <p className="text-white/80 text-sm">Select a date and time below</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Modern Calendar Picker */}
+            <div
+              className="rounded-3xl p-5"
+              style={{
+                background: 'rgba(255, 255, 255, 0.75)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                boxShadow: '0 8px 32px rgba(97, 42, 79, 0.08), inset 0 1px 0 rgba(255,255,255,0.9)',
+                border: '1px solid rgba(255, 255, 255, 0.6)',
+              }}
+            >
+              {/* Calendar Header */}
+              <div className="flex items-center justify-between mb-4">
+                <button
+                  onClick={() => setCalendarMonth(new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() - 1, 1))}
+                  className="w-10 h-10 rounded-xl flex items-center justify-center transition-all active:scale-95"
+                  style={{ background: 'rgba(139, 112, 130, 0.08)' }}
+                >
+                  <ChevronLeft className="w-5 h-5" style={{ color: '#612a4f' }} />
+                </button>
+                <span
+                  className="text-base font-semibold"
+                  style={{ color: '#612a4f', fontFamily: "'Playfair Display', serif" }}
+                >
+                  {calendarMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                </span>
+                <button
+                  onClick={() => setCalendarMonth(new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1, 1))}
+                  className="w-10 h-10 rounded-xl flex items-center justify-center transition-all active:scale-95"
+                  style={{ background: 'rgba(139, 112, 130, 0.08)' }}
+                >
+                  <ChevronRight className="w-5 h-5" style={{ color: '#612a4f' }} />
+                </button>
+              </div>
+
+              {/* Day names */}
+              <div className="grid grid-cols-7 gap-1 mb-2">
+                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
+                  <div
+                    key={i}
+                    className="h-8 flex items-center justify-center text-xs font-medium"
+                    style={{ color: '#8B7082' }}
+                  >
+                    {day}
+                  </div>
+                ))}
+              </div>
+
+              {/* Calendar Grid */}
+              <div className="grid grid-cols-7 gap-1">
+                {calendarDays.map((day, i) => {
+                  const dateStr = day.date.toISOString().split('T')[0];
+                  const hasScheduledContent = scheduledDates.has(dateStr);
+
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => setScheduledDate(dateStr)}
+                      className="aspect-square rounded-xl flex flex-col items-center justify-center text-sm font-medium transition-all active:scale-95 relative"
+                      style={{
+                        background: day.isSelected
+                          ? 'linear-gradient(135deg, #612a4f 0%, #8B7082 100%)'
+                          : day.isToday
+                          ? 'rgba(97, 42, 79, 0.15)'
+                          : 'transparent',
+                        color: day.isSelected
+                          ? 'white'
+                          : day.isCurrentMonth
+                          ? day.isToday
+                            ? '#612a4f'
+                            : '#1a1523'
+                          : '#ccc',
+                        fontWeight: day.isToday || day.isSelected ? 600 : 400,
+                      }}
+                    >
+                      <span>{day.date.getDate()}</span>
+                      {hasScheduledContent && day.isCurrentMonth && (
+                        <div
+                          className="absolute bottom-1 w-1 h-1 rounded-full"
+                          style={{
+                            background: day.isSelected ? 'white' : '#10b981',
+                          }}
+                        />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Scheduled content for selected date */}
+              {scheduledDate && scheduledContent[scheduledDate] && scheduledContent[scheduledDate].length > 0 && (
+                <div
+                  className="mt-4 p-3 rounded-2xl"
+                  style={{ background: 'rgba(16, 185, 129, 0.08)' }}
+                >
+                  <p className="text-xs font-medium mb-2" style={{ color: '#059669' }}>
+                    Also scheduled for this day:
+                  </p>
+                  <div className="space-y-2">
+                    {scheduledContent[scheduledDate].map((item) => {
+                      const [h] = item.time.split(':').map(Number);
+                      const hour12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+                      const ampm = h >= 12 ? 'pm' : 'am';
+                      return (
+                        <div
+                          key={item.id}
+                          className="flex items-center gap-2 text-sm"
+                          style={{ color: '#1a1523' }}
+                        >
+                          <span
+                            className="text-xs px-2 py-0.5 rounded-md font-medium"
+                            style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#059669' }}
+                          >
+                            {hour12}{ampm}
+                          </span>
+                          <span className="truncate">{item.title}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Clear button */}
+              {scheduledDate && (
+                <button
+                  onClick={() => {
+                    setScheduledDate('');
+                    setScheduledStartTime('09:00');
+                  }}
+                  className="w-full py-2.5 mt-4 rounded-xl text-sm font-medium transition-all active:scale-[0.98]"
+                  style={{
+                    background: 'rgba(139, 112, 130, 0.08)',
+                    color: '#8B7082',
+                  }}
+                >
+                  Clear date
+                </button>
+              )}
+            </div>
+
+            {/* Time Picker - Compact */}
+            <div
+              className="rounded-3xl p-5"
+              style={{
+                background: 'rgba(255, 255, 255, 0.75)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                boxShadow: '0 8px 32px rgba(97, 42, 79, 0.08), inset 0 1px 0 rgba(255,255,255,0.9)',
+                border: '1px solid rgba(255, 255, 255, 0.6)',
+              }}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <label
+                  className="text-xs font-semibold uppercase tracking-wider"
+                  style={{ color: '#8B7082' }}
+                >
+                  Post Time
+                </label>
+                <span
+                  className="text-sm font-semibold px-3 py-1 rounded-lg"
+                  style={{ background: 'rgba(97, 42, 79, 0.1)', color: '#612a4f' }}
+                >
+                  {(() => {
+                    const [h] = scheduledStartTime.split(':').map(Number);
+                    const hour12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+                    const ampm = h >= 12 ? 'PM' : 'AM';
+                    return `${hour12}:00 ${ampm}`;
+                  })()}
+                </span>
+              </div>
+
+              {/* Common times grid */}
+              <div className="grid grid-cols-4 gap-2">
+                {['06:00', '09:00', '12:00', '15:00', '17:00', '18:00', '19:00', '21:00'].map((time) => {
+                  const [h] = time.split(':').map(Number);
+                  const hour12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+                  const ampm = h >= 12 ? 'pm' : 'am';
+                  const isSelected = scheduledStartTime === time;
+                  return (
+                    <button
+                      key={time}
+                      onClick={() => setScheduledStartTime(time)}
+                      className="py-2.5 rounded-xl text-sm font-medium transition-all active:scale-95"
+                      style={{
+                        background: isSelected
+                          ? 'linear-gradient(135deg, #612a4f 0%, #8B7082 100%)'
+                          : 'rgba(139, 112, 130, 0.06)',
+                        color: isSelected ? 'white' : '#1a1523',
+                      }}
+                    >
+                      {hour12}{ampm}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Schedule Button - appears when date is selected */}
+            {scheduledDate && (
+              <button
+                onClick={() => setShowScheduleConfirm(true)}
+                className="w-full py-4 rounded-3xl flex items-center justify-center gap-3 transition-all active:scale-[0.98]"
+                style={{
+                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  boxShadow: '0 8px 32px rgba(16, 185, 129, 0.35)',
+                }}
+              >
+                <CalendarCheck className="w-6 h-6 text-white" />
+                <span
+                  className="text-lg font-semibold text-white"
+                  style={{ fontFamily: "'Playfair Display', serif" }}
+                >
+                  Schedule Content
+                </span>
+              </button>
+            )}
+
+            {/* Content Summary (collapsible) */}
+            <div
+              className="rounded-3xl overflow-hidden"
+              style={{
+                background: 'rgba(255, 255, 255, 0.75)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                boxShadow: '0 8px 32px rgba(97, 42, 79, 0.08), inset 0 1px 0 rgba(255,255,255,0.9)',
+                border: '1px solid rgba(255, 255, 255, 0.6)',
+              }}
+            >
+              <button
+                onClick={() => toggleSection('contentSummary')}
+                className="w-full p-5 flex items-center justify-between"
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-9 h-9 rounded-xl flex items-center justify-center"
+                    style={{ background: 'rgba(97, 42, 79, 0.1)' }}
+                  >
+                    <FileText className="w-4 h-4" style={{ color: '#612a4f' }} />
+                  </div>
+                  <span
+                    className="text-xs font-semibold uppercase tracking-wider"
+                    style={{ color: '#8B7082' }}
+                  >
+                    Content Summary
+                  </span>
+                </div>
+                <ChevronDown
+                  className="w-5 h-5 transition-transform duration-300"
+                  style={{
+                    color: '#8B7082',
+                    transform: expandedSections.has('contentSummary') ? 'rotate(180deg)' : 'rotate(0deg)',
+                  }}
+                />
+              </button>
+
+              {expandedSections.has('contentSummary') && (
+                <div className="px-5 pb-5 space-y-4">
+                  {/* Script preview */}
+                  {card.script && (
+                    <div>
+                      <p className="text-xs font-medium mb-2" style={{ color: '#8B7082' }}>Script</p>
+                      <p
+                        className="text-sm leading-relaxed"
+                        style={{
+                          color: '#1a1523',
+                          display: '-webkit-box',
+                          WebkitLineClamp: 4,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        {card.script}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Platforms */}
+                  {card.platforms && card.platforms.length > 0 && (
+                    <div>
+                      <p className="text-xs font-medium mb-2" style={{ color: '#8B7082' }}>Platforms</p>
+                      <div className="flex flex-wrap gap-2">
+                        {card.platforms.map((platform) => (
+                          <span
+                            key={platform}
+                            className="px-3 py-1 rounded-full text-xs"
+                            style={{
+                              background: 'rgba(97, 42, 79, 0.1)',
+                              color: '#612a4f',
+                            }}
+                          >
+                            {platform}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Formats */}
+                  {card.formats && card.formats.length > 0 && (
+                    <div>
+                      <p className="text-xs font-medium mb-2" style={{ color: '#8B7082' }}>Format</p>
+                      <div className="flex flex-wrap gap-2">
+                        {card.formats.map((format) => (
+                          <span
+                            key={format}
+                            className="px-3 py-1 rounded-full text-xs flex items-center gap-1"
+                            style={{
+                              background: 'rgba(139, 112, 130, 0.1)',
+                              color: '#1a1523',
+                            }}
+                          >
+                            <Video className="w-3 h-3" />
+                            {format}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {!card.script && !card.platforms?.length && !card.formats?.length && (
+                    <p className="text-sm" style={{ color: '#8B7082' }}>No content details available</p>
+                  )}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
+        {/* Scheduled Column View */}
+        {isScheduled && (
+          <>
+            {/* Scheduled Status Banner */}
+            <div
+              className="rounded-3xl p-5"
+              style={{
+                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                boxShadow: '0 8px 32px rgba(16, 185, 129, 0.25)',
+              }}
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div
+                  className="w-12 h-12 rounded-2xl flex items-center justify-center"
+                  style={{ background: 'rgba(255, 255, 255, 0.2)' }}
+                >
+                  <CalendarCheck className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <p className="text-white font-semibold text-lg">Scheduled</p>
+                  <p className="text-white/80 text-sm">
+                    {card.scheduledDate && new Date(card.scheduledDate).toLocaleDateString('en-US', {
+                      weekday: 'short',
+                      month: 'short',
+                      day: 'numeric',
+                    })}
+                    {card.scheduledStartTime && ` at ${(() => {
+                      const [h] = card.scheduledStartTime.split(':').map(Number);
+                      const hour12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+                      const ampm = h >= 12 ? 'PM' : 'AM';
+                      return `${hour12}:00 ${ampm}`;
+                    })()}`}
+                  </p>
+                </div>
+              </div>
+
+              {/* Mark as Posted button */}
+              <button
+                onClick={() => setShowMarkPosted(true)}
+                className="w-full py-3 rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.95)',
+                }}
+              >
+                <Send className="w-5 h-5" style={{ color: '#059669' }} />
+                <span className="font-semibold" style={{ color: '#059669' }}>
+                  Mark as Posted
+                </span>
+              </button>
+            </div>
+
+            {/* Content Summary for Scheduled */}
+            <div
+              className="rounded-3xl overflow-hidden"
+              style={{
+                background: 'rgba(255, 255, 255, 0.75)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                boxShadow: '0 8px 32px rgba(97, 42, 79, 0.08), inset 0 1px 0 rgba(255,255,255,0.9)',
+                border: '1px solid rgba(255, 255, 255, 0.6)',
+              }}
+            >
+              <button
+                onClick={() => toggleSection('scheduledSummary')}
+                className="w-full p-5 flex items-center justify-between"
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-9 h-9 rounded-xl flex items-center justify-center"
+                    style={{ background: 'rgba(16, 185, 129, 0.1)' }}
+                  >
+                    <FileText className="w-4 h-4" style={{ color: '#059669' }} />
+                  </div>
+                  <span
+                    className="text-xs font-semibold uppercase tracking-wider"
+                    style={{ color: '#8B7082' }}
+                  >
+                    Content Summary
+                  </span>
+                </div>
+                <ChevronDown
+                  className="w-5 h-5 transition-transform duration-300"
+                  style={{
+                    color: '#8B7082',
+                    transform: expandedSections.has('scheduledSummary') ? 'rotate(180deg)' : 'rotate(0deg)',
+                  }}
+                />
+              </button>
+
+              {expandedSections.has('scheduledSummary') && (
+                <div className="px-5 pb-5 space-y-4">
+                  {/* Script preview */}
+                  {card.script && (
+                    <div>
+                      <p className="text-xs font-medium mb-2" style={{ color: '#8B7082' }}>Script</p>
+                      <p
+                        className="text-sm leading-relaxed"
+                        style={{
+                          color: '#1a1523',
+                          display: '-webkit-box',
+                          WebkitLineClamp: 4,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        {card.script}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Platforms */}
+                  {card.platforms && card.platforms.length > 0 && (
+                    <div>
+                      <p className="text-xs font-medium mb-2" style={{ color: '#8B7082' }}>Platforms</p>
+                      <div className="flex flex-wrap gap-2">
+                        {card.platforms.map((platform) => (
+                          <span
+                            key={platform}
+                            className="px-3 py-1 rounded-full text-xs"
+                            style={{
+                              background: 'rgba(16, 185, 129, 0.1)',
+                              color: '#059669',
+                            }}
+                          >
+                            {platform}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Formats */}
+                  {card.formats && card.formats.length > 0 && (
+                    <div>
+                      <p className="text-xs font-medium mb-2" style={{ color: '#8B7082' }}>Format</p>
+                      <div className="flex flex-wrap gap-2">
+                        {card.formats.map((format) => (
+                          <span
+                            key={format}
+                            className="px-3 py-1 rounded-full text-xs flex items-center gap-1"
+                            style={{
+                              background: 'rgba(139, 112, 130, 0.1)',
+                              color: '#1a1523',
+                            }}
+                          >
+                            <Video className="w-3 h-3" />
+                            {format}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {!card.script && !card.platforms?.length && !card.formats?.length && (
+                    <p className="text-sm" style={{ color: '#8B7082' }}>No content details available</p>
+                  )}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
+        {/* Schedule confirmation modal */}
+        {showScheduleConfirm && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-6"
+            style={{ background: 'rgba(16, 185, 129, 0.4)', backdropFilter: 'blur(4px)' }}
+          >
+            <div
+              className="w-full max-w-sm rounded-3xl p-6"
+              style={{
+                background: 'white',
+                boxShadow: '0 25px 60px rgba(16, 185, 129, 0.25)',
+              }}
+            >
+              <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }}>
+                <CalendarCheck className="w-7 h-7 text-white" />
+              </div>
+              <h3
+                className="text-xl font-semibold mb-2 text-center"
+                style={{ color: '#1a1523', fontFamily: "'Playfair Display', serif" }}
+              >
+                Schedule Content?
+              </h3>
+              <p className="text-sm mb-2 text-center" style={{ color: '#6b6478' }}>
+                This content will be scheduled for:
+              </p>
+              <p className="text-base font-semibold mb-6 text-center" style={{ color: '#059669' }}>
+                {scheduledDate && new Date(scheduledDate).toLocaleDateString('en-US', {
+                  weekday: 'long',
+                  month: 'long',
+                  day: 'numeric',
+                })}
+                {scheduledStartTime && ` at ${(() => {
+                  const [h] = scheduledStartTime.split(':').map(Number);
+                  const hour12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+                  const ampm = h >= 12 ? 'PM' : 'AM';
+                  return `${hour12}:00 ${ampm}`;
+                })()}`}
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowScheduleConfirm(false)}
+                  className="flex-1 py-3.5 rounded-xl font-medium transition-all"
+                  style={{
+                    background: 'rgba(139, 112, 130, 0.1)',
+                    color: '#612a4f',
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    // Save the scheduled date/time first
+                    onSave({
+                      ...card,
+                      scheduledDate: scheduledDate || undefined,
+                      scheduledStartTime,
+                      schedulingStatus: 'scheduled',
+                    });
+                    // Then move to the scheduled column
+                    onMove(card.id, 'scheduled');
+                    setShowScheduleConfirm(false);
+                    onClose();
+                  }}
+                  className="flex-1 py-3.5 rounded-xl font-medium transition-all"
+                  style={{
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    color: 'white',
+                  }}
+                >
+                  Schedule
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Mark as Posted confirmation */}
+        {showMarkPosted && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-6"
+            style={{ background: 'rgba(97, 42, 79, 0.4)', backdropFilter: 'blur(4px)' }}
+          >
+            <div
+              className="w-full max-w-sm rounded-3xl p-6"
+              style={{
+                background: 'white',
+                boxShadow: '0 25px 60px rgba(97, 42, 79, 0.25)',
+              }}
+            >
+              <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }}>
+                <Send className="w-7 h-7 text-white" />
+              </div>
+              <h3
+                className="text-xl font-semibold mb-2 text-center"
+                style={{ color: '#1a1523', fontFamily: "'Playfair Display', serif" }}
+              >
+                Mark as Posted?
+              </h3>
+              <p className="text-sm mb-6 text-center" style={{ color: '#6b6478' }}>
+                This will move the content to your Posted archive.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowMarkPosted(false)}
+                  className="flex-1 py-3.5 rounded-xl font-medium transition-all"
+                  style={{
+                    background: 'rgba(139, 112, 130, 0.1)',
+                    color: '#612a4f',
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    onMove(card.id, 'posted');
+                    setShowMarkPosted(false);
+                    onClose();
+                  }}
+                  className="flex-1 py-3.5 rounded-xl font-medium transition-all"
+                  style={{
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    color: 'white',
+                  }}
+                >
+                  Yes, Posted!
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Generic notes field for Posted column only */}
+        {card.columnId === 'posted' && (
           <div
             className="rounded-3xl p-5"
             style={{
