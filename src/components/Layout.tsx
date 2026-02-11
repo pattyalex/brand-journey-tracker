@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import Sidebar from "./Sidebar";
 import ToggleSidebarButton from "./sidebar/ToggleSidebarButton";
+import MobileBottomNav from "./MobileBottomNav";
 import { Toaster } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -51,17 +52,19 @@ const Layout = ({ children, hideSidebar = false }: LayoutProps) => {
   return (
     <SidebarProvider key={sidebarKey}>
       <div className="h-screen flex w-full bg-white overflow-hidden">
-        {/* Main content area */}
+        {/* Sidebar - hidden on mobile */}
         {shouldShowSidebar && (
-          <div className="flex-shrink-0 h-full">
+          <div className="flex-shrink-0 h-full hidden md:block">
             <Sidebar />
           </div>
         )}
-        <main className={`flex-1 overflow-x-clip overflow-y-auto relative h-full bg-white scroll-smooth ${!shouldShowSidebar ? 'w-full' : ''}`}>
-          {shouldShowSidebar && <ToggleSidebarButton />}
+        <main className={`flex-1 overflow-x-clip overflow-y-auto relative h-full bg-white scroll-smooth ${!shouldShowSidebar ? 'w-full' : ''} pb-20 md:pb-0`}>
+          {shouldShowSidebar && <div className="hidden md:block"><ToggleSidebarButton /></div>}
           {children}
           <Toaster/>
         </main>
+        {/* Mobile bottom navigation */}
+        {shouldShowSidebar && <MobileBottomNav />}
       </div>
     </SidebarProvider>
   );

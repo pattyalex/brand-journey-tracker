@@ -53,6 +53,8 @@ import StoryboardEditorDialog from "./production/components/StoryboardEditorDial
 import EditChecklistDialog from "./production/components/EditChecklistDialog";
 import ExpandedScheduleView from "./production/components/ExpandedScheduleView";
 import ArchiveDialog from "./production/components/ArchiveDialog";
+import MobileContentView from "./production/components/MobileContentView";
+import MobileCardEditor from "./production/components/MobileCardEditor";
 import { columnColors, cardColors, defaultColumns, columnAccentColors, columnIcons, emptyStateIcons } from "./production/utils/productionConstants";
 import { getFormatColors, getPlatformColors } from "./production/utils/productionHelpers";
 import { useSidebar } from "@/components/ui/sidebar";
@@ -188,6 +190,15 @@ const getInitialColumns = (): KanbanColumn[] => {
 const Production = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+
+  // Mobile detection
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   const columnRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const [columns, setColumns] = useState<KanbanColumn[]>(getInitialColumns);
   const [draggedCard, setDraggedCard] = useState<ProductionCard | null>(null);
@@ -2671,6 +2682,144 @@ Return only a JSON array of ${count} strings.`
 
     // Don't close dialog - user may want to add more ideas
   };
+
+  // Mobile view handlers
+  const handleMobileAddIdea = () => {
+    setIsIdeateDialogOpen(true);
+  };
+
+  const handleMobileCardClick = (card: ProductionCard) => {
+    // Open the appropriate editor based on card column
+    if (card.columnId === 'ideate') {
+      setEditingIdeateCard(card);
+      setIdeateCardTitle(card.title);
+      setIdeateCardNotes(card.description || '');
+      setIsIdeateCardEditorOpen(true);
+    } else {
+      setEditingScriptCard(card);
+      setCardTitle(card.title || '');
+      setCardHook(card.hook || '');
+      setScriptContent(card.script || '');
+      setIsScriptEditorOpen(true);
+    }
+  };
+
+  // Mobile view
+  // State for mobile card editing
+  const [mobileEditingCard, setMobileEditingCard] = useState<ProductionCard | null>(null);
+
+  if (isMobile) {
+    return (
+      <Layout>
+        <MobileContentView
+          columns={columns}
+          onAddIdea={handleMobileAddIdea}
+          onCardClick={(card) => setMobileEditingCard(card)}
+        />
+
+        {/* Simple Add Idea Dialog */}
+        <Dialog open={isIdeateDialogOpen} onOpenChange={setIsIdeateDialogOpen}>
+          <DialogContent className="max-w-[calc(100vw-32px)] rounded-2xl">
+            <DialogHeader>
+              <DialogTitle>New Idea</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-2">
+              <Input
+                placeholder="What's your idea?"
+                value={brainstormText}
+                onChange={(e) => setBrainstormText(e.target.value)}
+                autoFocus
+                className="text-base"
+              />
+              <Textarea
+                placeholder="Any notes? (optional)"
+                value={ideateCardNotes}
+                onChange={(e) => setIdeateCardNotes(e.target.value)}
+                rows={4}
+                className="text-base resize-none"
+              />
+            </div>
+            <DialogFooter>
+              <Button
+                onClick={() => {
+                  if (brainstormText.trim()) {
+                    const newCard: ProductionCard = {
+                      id: `card-${Date.now()}`,
+                      title: brainstormText.trim(),
+                      description: ideateCardNotes.trim() || undefined,
+                      columnId: 'ideate',
+                      addedFrom: 'quick-idea',
+                    };
+                    setColumns(prev => prev.map(col =>
+                      col.id === 'ideate'
+                        ? { ...col, cards: [...col.cards, newCard] }
+                        : col
+                    ));
+                    setBrainstormText('');
+                    setIdeateCardNotes('');
+                    setIsIdeateDialogOpen(false);
+                    toast.success('Idea added!');
+                  }
+                }}
+                disabled={!brainstormText.trim()}
+                className="w-full"
+                style={{ background: 'linear-gradient(135deg, #7a3868 0%, #612a4f 50%, #4e2040 100%)' }}
+              >
+                Add Idea
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Mobile Card Editor */}
+        {mobileEditingCard && (
+          <MobileCardEditor
+            card={mobileEditingCard}
+            columns={columns}
+            onSave={(updatedCard) => {
+              setColumns(prev => prev.map(col => ({
+                ...col,
+                cards: col.cards.map(c => c.id === updatedCard.id ? updatedCard : c)
+              })));
+            }}
+            onMove={(cardId, targetColumnId) => {
+              setColumns(prev => {
+                // Find the card and its current column
+                let cardToMove: ProductionCard | null = null;
+                const newColumns = prev.map(col => {
+                  const card = col.cards.find(c => c.id === cardId);
+                  if (card) {
+                    cardToMove = { ...card, columnId: targetColumnId };
+                    return { ...col, cards: col.cards.filter(c => c.id !== cardId) };
+                  }
+                  return col;
+                });
+
+                // Add card to target column
+                if (cardToMove) {
+                  return newColumns.map(col =>
+                    col.id === targetColumnId
+                      ? { ...col, cards: [...col.cards, cardToMove!] }
+                      : col
+                  );
+                }
+                return newColumns;
+              });
+              toast.success('Card moved!');
+            }}
+            onDelete={(cardId) => {
+              setColumns(prev => prev.map(col => ({
+                ...col,
+                cards: col.cards.filter(c => c.id !== cardId)
+              })));
+              toast.success('Card deleted');
+            }}
+            onClose={() => setMobileEditingCard(null)}
+          />
+        )}
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
