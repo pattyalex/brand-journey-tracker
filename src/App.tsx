@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "./contexts/AuthContext";
 import LoginModal from "./components/LoginModal";
+import { MobileInterstitialWrapper } from "./components/MobileInterstitial";
 
 // Eagerly load main pages for instant navigation
 import Dashboard from './pages/Dashboard';
@@ -80,7 +81,8 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
     return <Navigate to="/onboarding" replace />;
   }
 
-  return <>{children}</>;
+  // Wrap with mobile interstitial for protected routes
+  return <MobileInterstitialWrapper>{children}</MobileInterstitialWrapper>;
 };
 
 

@@ -65,29 +65,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.log('🔍 Checking onboarding status for user:', user.id);
 
         try {
-          // Check if user has completed payment setup in Supabase
-          const { data: profile } = await supabase
+          // Check if user profile exists in Supabase
+          const { data: profile, error: profileError } = await supabase
             .from('profiles')
-            .select('stripe_subscription_id, subscription_status')
+            .select('id, stripe_subscription_id, subscription_status')
             .eq('id', user.id)
             .single();
 
           console.log('📊 Profile data from Supabase:', profile);
 
-          if (profile?.stripe_subscription_id) {
-            // User has a subscription, they've completed onboarding
-            console.log('✅ User has subscription, marking onboarding complete');
+          if (profile) {
+            // User has a profile - they're an existing user, allow them in
+            console.log('✅ User profile exists, marking onboarding complete');
             setHasCompletedOnboarding(true);
             setString(userOnboardingKey, 'true');
-          } else {
-            // No subscription found, they need to complete onboarding
-            console.log('❌ No subscription found, needs onboarding');
+          } else if (profileError?.code === 'PGRST116') {
+            // No profile found (PGRST116 = no rows returned) - new user needs onboarding
+            console.log('❌ No profile found, new user needs onboarding');
             setHasCompletedOnboarding(false);
+          } else {
+            // Profile exists but may have an error, let them through
+            console.log('⚠️ Profile check returned unexpected result, allowing access');
+            setHasCompletedOnboarding(true);
           }
         } catch (error) {
           console.error('Error checking onboarding:', error);
-          // On error, assume they need onboarding
-          setHasCompletedOnboarding(false);
+          // On error, let them through rather than blocking
+          setHasCompletedOnboarding(true);
         }
       } else {
         // Not signed in
@@ -236,7 +240,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   return (
     <AuthContext.Provider value={{
       isAuthenticated: !!isSignedIn,
-      isAuthLoaded: isLoaded,
+      isAuthLoaded: isLoaded && !checkingOnboarding,
       hasCompletedOnboarding,
       login,
       logout,
