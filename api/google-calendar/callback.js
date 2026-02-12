@@ -1,4 +1,4 @@
-const { google } = require('googleapis');
+import { google } from 'googleapis';
 
 const createOAuth2Client = () => {
   return new google.auth.OAuth2(
@@ -8,7 +8,7 @@ const createOAuth2Client = () => {
   );
 };
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   try {
     const { code, state: userId } = req.query;
 
