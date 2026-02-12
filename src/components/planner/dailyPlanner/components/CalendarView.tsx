@@ -691,8 +691,8 @@ export const CalendarView = ({
                 c.plannedDate?.split('T')[0] === dayString
               );
 
-              // Get Google Calendar events for this day
-              const googleEventsForDay = googleConnection.showEvents
+              // Get Google Calendar events for this day (only in Tasks Calendar or Both mode)
+              const googleEventsForDay = googleConnection.showEvents && showTasks
                 ? googleEvents.filter(e => e.date === dayString)
                 : [];
 

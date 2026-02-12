@@ -72,9 +72,14 @@ export const useGoogleCalendar = (): UseGoogleCalendarReturn => {
     };
 
     // Re-check localStorage when window regains focus (catches popup fallback path)
+    // Use a flag to avoid repeated toasts
+    let hasShownFocusToast = false;
     const handleFocus = () => {
+      if (hasShownFocusToast) return;
       const connected = getString(StorageKeys.googleCalendarConnected) === 'true';
-      if (connected && !connection.isConnected) {
+      const alreadyConnected = getString(StorageKeys.googleCalendarLastSync);
+      if (connected && !alreadyConnected) {
+        hasShownFocusToast = true;
         loadConnectionState();
         toast.success('Google Calendar connected successfully!');
       }

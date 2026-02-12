@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { eachDayOfInterval, endOfWeek, format, isSameDay, startOfWeek } from "date-fns";
-import { Trash2, Video, Lightbulb, X, Clock, FileText, ArrowRight, ListTodo, Check, GripHorizontal } from "lucide-react";
+import { addDays, eachDayOfInterval, endOfWeek, format, isSameDay, startOfWeek } from "date-fns";
+import { Trash2, Video, Lightbulb, X, Clock, FileText, ArrowRight, ListTodo, Check, GripHorizontal, Calendar, ExternalLink } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { autoFormatTime } from "../utils/timeUtils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -24,6 +24,7 @@ import { ContentDisplayMode } from "../hooks/usePlannerState";
 import { StorageKeys, getString, setString, getWeekStartsOn } from "@/lib/storage";
 import { EVENTS, emit } from "@/lib/events";
 import { cn } from "@/lib/utils";
+import { useGoogleCalendar } from "@/hooks/useGoogleCalendar";
 
 interface WeekViewProps {
   selectedDate: Date;
@@ -152,6 +153,21 @@ export const WeekView = ({
 }: WeekViewProps) => {
   const navigate = useNavigate();
 
+  // Google Calendar integration
+  const {
+    connection: googleConnection,
+    events: googleEvents,
+    fetchEvents: fetchGoogleEvents,
+  } = useGoogleCalendar();
+
+  // Fetch Google Calendar events for the week
+  useEffect(() => {
+    if (googleConnection.isConnected && googleConnection.showEvents) {
+      const weekStart = startOfWeek(selectedDate, { weekStartsOn: getWeekStartsOn() });
+      const weekEnd = endOfWeek(selectedDate, { weekStartsOn: getWeekStartsOn() });
+      fetchGoogleEvents(format(weekStart, 'yyyy-MM-dd'), format(addDays(weekEnd, 1), 'yyyy-MM-dd'));
+    }
+  }, [googleConnection.isConnected, googleConnection.showEvents, selectedDate]);
 
   // State for add dialog - sync with external state if provided
   const [addDialogTab, setAddDialogTab] = useState<'task' | 'content'>('task');
@@ -1569,6 +1585,56 @@ export const WeekView = ({
                               });
                             })()}
                           </div>
+
+                          {/* Google Calendar Events - only in Tasks Calendar or Both mode */}
+                          {googleConnection.showEvents && showTasks && (() => {
+                            const dayGoogleEvents = googleEvents.filter(e => e.date === dayString && e.startTime && e.endTime && !e.isAllDay);
+                            if (dayGoogleEvents.length === 0) return null;
+                            return (
+                              <div className="absolute top-0 left-0 right-0" style={{ zIndex: 118 }}>
+                                {dayGoogleEvents.map((gEvent) => {
+                                  const [sH, sM] = gEvent.startTime!.split(':').map(Number);
+                                  const [eH, eM] = gEvent.endTime!.split(':').map(Number);
+                                  const startMin = sH * 60 + sM;
+                                  const durMin = Math.max((eH * 60 + eM) - startMin, 30);
+                                  const topPos = startMin * 0.8 * weeklyZoomLevel;
+                                  const height = Math.max(durMin * 0.8 * weeklyZoomLevel - 1, 20);
+
+                                  return (
+                                    <div
+                                      key={`google-${gEvent.id}`}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (gEvent.htmlLink) window.open(gEvent.htmlLink, '_blank');
+                                      }}
+                                      className="absolute rounded px-1.5 py-1 border-l-[3px] cursor-pointer hover:brightness-95 overflow-hidden group"
+                                      style={{
+                                        top: `${topPos}px`,
+                                        height: `${height}px`,
+                                        left: '2px',
+                                        right: '2px',
+                                        background: 'linear-gradient(180deg, #E8F0FE 0%, #D2E3FC 50%, #AECBFA 100%)',
+                                        borderLeftColor: '#4285F4',
+                                        boxShadow: '0 1px 3px rgba(66,133,244,0.2)',
+                                      }}
+                                    >
+                                      <div className="flex items-center gap-0.5">
+                                        <Calendar className="w-2.5 h-2.5 flex-shrink-0" style={{ color: '#4285F4' }} />
+                                        <span className="text-[10px] font-medium truncate" style={{ color: '#1967D2' }}>
+                                          {gEvent.title}
+                                        </span>
+                                      </div>
+                                      {height >= 32 && (
+                                        <div className="text-[9px] opacity-80 pl-3" style={{ color: '#1967D2' }}>
+                                          {gEvent.startTime} - {gEvent.endTime}
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            );
+                          })()}
 
                           {/* Drag-to-create preview - only show when start and end differ (actual drag happened) */}
                           {weeklyDraggingCreate[dayString] && weeklyDragCreateStart[dayString] && weeklyDragCreateEnd[dayString] && (() => {
