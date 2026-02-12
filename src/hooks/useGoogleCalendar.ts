@@ -71,8 +71,21 @@ export const useGoogleCalendar = (): UseGoogleCalendarReturn => {
       }
     };
 
+    // Re-check localStorage when window regains focus (catches popup fallback path)
+    const handleFocus = () => {
+      const connected = getString(StorageKeys.googleCalendarConnected) === 'true';
+      if (connected && !connection.isConnected) {
+        loadConnectionState();
+        toast.success('Google Calendar connected successfully!');
+      }
+    };
+
     window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
+    window.addEventListener('focus', handleFocus);
+    return () => {
+      window.removeEventListener('message', handleMessage);
+      window.removeEventListener('focus', handleFocus);
+    };
   }, []);
 
   // Get stored tokens

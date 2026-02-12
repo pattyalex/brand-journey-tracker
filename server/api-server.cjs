@@ -882,15 +882,18 @@ app.get('/api/google-calendar/callback', async (req, res) => {
               tokens: ${JSON.stringify(tokens)},
               email: ${JSON.stringify(userInfo.email)}
             };
+            // Store tokens in localStorage regardless
+            localStorage.setItem('google_calendar_tokens', JSON.stringify(data.tokens));
+            localStorage.setItem('google_calendar_email', data.email);
+            localStorage.setItem('google_calendar_connected', 'true');
+
             if (window.opener) {
               window.opener.postMessage({ type: 'google-calendar-callback', ...data }, '*');
               setTimeout(() => window.close(), 2000);
             } else {
-              // Fallback: store in localStorage and redirect
-              localStorage.setItem('google_calendar_tokens', JSON.stringify(data.tokens));
-              localStorage.setItem('google_calendar_email', data.email);
-              localStorage.setItem('google_calendar_connected', 'true');
-              setTimeout(() => window.location.href = '/account?section=integrations&google-connected=true', 1000);
+              // No opener available - just stay on this success page
+              // The parent window will pick up the connection from localStorage
+              document.querySelector('p').textContent = 'Connected! You can close this tab and return to HeyMeg.';
             }
           </script>
         </body>

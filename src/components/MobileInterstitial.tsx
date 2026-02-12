@@ -232,7 +232,18 @@ export const MobileInterstitialWrapper: React.FC<{ children: React.ReactNode }> 
   useEffect(() => {
     // Check if we should show the interstitial
     const checkMobile = () => {
-      const isMobileDevice = screen.width < 768;
+      // Never show in popup/OAuth callback windows
+      const isPopup = window.opener !== null || window.name === 'google-calendar-auth';
+      const isOAuthCallback = window.location.search.includes('google-connected');
+      if (isPopup || isOAuthCallback) {
+        setHasChecked(true);
+        return;
+      }
+
+      // Use user-agent to detect actual mobile devices (screen.width can be unreliable in popups)
+      const mobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const smallScreen = window.innerWidth < 768;
+      const isMobileDevice = mobileUA && smallScreen;
       const hasSeenInterstitial = sessionStorage.getItem('heymeg_mobile_interstitial_seen');
 
       if (isMobileDevice && !hasSeenInterstitial) {
