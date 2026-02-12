@@ -169,6 +169,7 @@ const OnboardingFlow: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<string>('');
   const [pendingVerificationEmail, setPendingVerificationEmail] = useState<string>('');
+  const [consentAccepted, setConsentAccepted] = useState(false);
 
   // Load Google Fonts for landing page consistency
   useEffect(() => {
@@ -605,15 +606,53 @@ const OnboardingFlow: React.FC = () => {
               <h2 className="text-2xl font-bold">Let's set up your account</h2>
               <p className="text-muted-foreground mt-2">Create your account to get started</p>
             </div>
-            <SignUp
-              afterSignUpUrl="/onboarding?step=plan-selection"
-              appearance={{
-                elements: {
-                  rootBox: "w-full",
-                  card: "shadow-lg"
-                }
+
+            {/* Consent checkbox */}
+            <div className="w-full mb-4 flex items-start gap-3 px-2">
+              <Checkbox
+                id="signup-consent"
+                checked={consentAccepted}
+                onCheckedChange={(checked) => setConsentAccepted(checked as boolean)}
+                className="mt-0.5"
+                style={{
+                  borderColor: consentAccepted ? '#7a3868' : undefined,
+                  backgroundColor: consentAccepted ? '#7a3868' : undefined,
+                }}
+              />
+              <label
+                htmlFor="signup-consent"
+                className="text-sm cursor-pointer leading-relaxed"
+                style={{ color: '#4d3e48', fontFamily: "'DM Sans', sans-serif" }}
+              >
+                By signing up, you agree to our{' '}
+                <a href="/terms" target="_blank" className="font-medium hover:underline" style={{ color: '#612a4f' }}>
+                  Terms of Service
+                </a>{' '}
+                and{' '}
+                <a href="/privacy" target="_blank" className="font-medium hover:underline" style={{ color: '#612a4f' }}>
+                  Privacy Policy
+                </a>
+              </label>
+            </div>
+
+            {/* Clerk SignUp - dimmed until consent is given */}
+            <div
+              className="w-full transition-all duration-300"
+              style={{
+                opacity: consentAccepted ? 1 : 0.4,
+                pointerEvents: consentAccepted ? 'auto' : 'none',
               }}
-            />
+            >
+              <SignUp
+                afterSignUpUrl="/onboarding?step=plan-selection"
+                appearance={{
+                  elements: {
+                    rootBox: "w-full",
+                    card: "shadow-lg"
+                  }
+                }}
+              />
+            </div>
           </div>
         );
 
