@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 import { StorageKeys, getString, setString, remove } from '@/lib/storage';
 import {
@@ -30,6 +30,7 @@ export const useGoogleCalendar = (): UseGoogleCalendarReturn => {
   });
   const [events, setEvents] = useState<TransformedGoogleEvent[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const lastFetchParamsRef = useRef<{ startDate: string; endDate: string } | null>(null);
 
   // Load connection state from localStorage on mount
   useEffect(() => {
@@ -183,6 +184,7 @@ export const useGoogleCalendar = (): UseGoogleCalendarReturn => {
       return;
     }
 
+    lastFetchParamsRef.current = { startDate, endDate };
     setIsLoading(true);
     try {
       const response = await fetch(`${API_BASE}/api/google-calendar/events`, {
@@ -218,6 +220,19 @@ export const useGoogleCalendar = (): UseGoogleCalendarReturn => {
       setIsLoading(false);
     }
   }, [getTokens, updateTokens]);
+
+  // Re-fetch events when user switches back to the HeyMeg tab
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && lastFetchParamsRef.current) {
+        const { startDate, endDate } = lastFetchParamsRef.current;
+        fetchEvents(startDate, endDate);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [fetchEvents]);
 
   // Toggle showing events in calendar
   const toggleShowEvents = useCallback((show: boolean) => {

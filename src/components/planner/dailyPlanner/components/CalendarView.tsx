@@ -904,103 +904,118 @@ export const CalendarView = ({
                       </div>
                     ))}
 
-                    {/* Google Calendar Events */}
-                    {googleEventsForDay.map((gEvent) => (
-                      <div
-                        key={`google-${gEvent.id}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (gEvent.htmlLink) {
-                            window.open(gEvent.htmlLink, '_blank');
-                          }
-                        }}
-                        className={cn(
-                          "group text-[11px] rounded-md cursor-pointer hover:brightness-95 flex flex-col overflow-hidden flex-shrink-0 border-l-4",
-                          "shadow-[0_1px_3px_rgba(66,133,244,0.2)] hover:shadow-[0_2px_5px_rgba(66,133,244,0.3)]"
-                        )}
-                        style={{
-                          background: 'linear-gradient(180deg, #E8F0FE 0%, #D2E3FC 50%, #AECBFA 100%)',
-                          borderLeftColor: '#4285F4',
-                          color: '#1967D2'
-                        }}
-                      >
-                        <div className="flex items-center gap-1 px-2 py-1.5">
-                          <Calendar className="w-3 h-3 flex-shrink-0" />
-                          <span className="flex-1 truncate leading-tight font-medium">
-                            {gEvent.title}
-                          </span>
-                          {gEvent.htmlLink && (
-                            <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 flex-shrink-0 transition-opacity" />
-                          )}
-                        </div>
-                        {(gEvent.startTime || gEvent.isAllDay) && (
-                          <div className="px-2 pb-1 text-[10px] opacity-80">
-                            {gEvent.isAllDay ? 'All day' : `${gEvent.startTime}${gEvent.endTime ? ` - ${gEvent.endTime}` : ''}`}
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                    {/* Google Calendar Events + Tasks - sorted by time */}
+                    {(() => {
+                      // Build a merged list sorted by start time
+                      const mergedItems: Array<{ type: 'google'; data: typeof googleEventsForDay[0] } | { type: 'task'; data: typeof tasksToShow[0] }> = [
+                        ...googleEventsForDay.map(g => ({ type: 'google' as const, data: g })),
+                        ...tasksToShow.map(t => ({ type: 'task' as const, data: t })),
+                      ];
 
-                    {/* Tasks */}
-                    {tasksToShow.map((task) => {
-                      // Use preview color if this task is being edited
-                      const isBeingEdited = editingTask?.id === task.id;
-                      const colorToUse = isBeingEdited && dialogTaskColor ? dialogTaskColor : task.color;
-                      const taskColorInfo = getTaskColorByHex(colorToUse);
-                      return (
-                        <div
-                          key={task.id}
-                          draggable={true}
-                          onClick={(e) => e.stopPropagation()}
-                          onMouseDown={(e) => e.stopPropagation()}
-                          onDragStart={(e) => {
-                            console.log('🚀 DRAG START - Calendar Task:', task.id, task.text, 'from:', dayString);
-                            e.stopPropagation();
-                            e.dataTransfer.setData('text/plain', task.id);
-                            e.dataTransfer.setData('taskId', task.id);
-                            e.dataTransfer.setData('fromDate', dayString);
-                            e.dataTransfer.setData('fromAllTasks', 'false');
-                            e.dataTransfer.effectAllowed = 'move';
-                            const target = e.currentTarget;
-                            setTimeout(() => {
-                              if (target) target.style.opacity = '0.5';
-                            }, 0);
-                          }}
-                          onDragEnd={(e) => {
-                            e.currentTarget.style.opacity = '1';
-                          }}
-                          className="group text-[11px] px-2 py-1 rounded-md cursor-grab active:cursor-grabbing transition-colors hover:shadow-sm flex-shrink-0 border-l-4"
-                          style={{
-                            backgroundColor: taskColorInfo.fill,
-                            borderLeftColor: taskColorInfo.border,
-                          }}
-                        >
-                          <div className="flex items-center gap-1">
-                            <Checkbox
-                              checked={task.isCompleted}
-                              onCheckedChange={() => handleToggleTask(task.id, dayString)}
-                              onClick={(e) => e.stopPropagation()}
-                              className="h-3 w-3 flex-shrink-0"
-                            />
+                      mergedItems.sort((a, b) => {
+                        const timeA = a.type === 'google' ? (a.data.startTime || '99:99') : ((a.data as any).startTime || '99:99');
+                        const timeB = b.type === 'google' ? (b.data.startTime || '99:99') : ((b.data as any).startTime || '99:99');
+                        return timeA.localeCompare(timeB);
+                      });
+
+                      return mergedItems.map((item) => {
+                        if (item.type === 'google') {
+                          const gEvent = item.data;
+                          return (
                             <div
-                              className={`flex-1 truncate leading-tight ${task.isCompleted ? 'line-through opacity-50' : ''}`}
-                              style={{ color: taskColorInfo.text }}
-                            >
-                              {task.text}
-                            </div>
-                            <button
+                              key={`google-${gEvent.id}`}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleDeleteTask(task.id, dayString);
+                                if (gEvent.htmlLink) {
+                                  window.open(gEvent.htmlLink, '_blank');
+                                }
                               }}
-                              className="opacity-0 group-hover:opacity-100 flex-shrink-0 text-gray-500 hover:text-red-500 transition-all"
+                              className={cn(
+                                "group text-[11px] rounded-md cursor-pointer hover:brightness-95 flex flex-col overflow-hidden flex-shrink-0 border-l-4",
+                                "shadow-[0_1px_3px_rgba(66,133,244,0.2)] hover:shadow-[0_2px_5px_rgba(66,133,244,0.3)]"
+                              )}
+                              style={{
+                                background: 'linear-gradient(180deg, #E8F0FE 0%, #D2E3FC 50%, #AECBFA 100%)',
+                                borderLeftColor: '#4285F4',
+                                color: '#1967D2'
+                              }}
                             >
-                              <Trash2 className="w-3 h-3" />
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
+                              <div className="flex items-center gap-1 px-2 py-1.5">
+                                <Calendar className="w-3 h-3 flex-shrink-0" />
+                                <span className="flex-1 truncate leading-tight font-medium">
+                                  {gEvent.title}
+                                </span>
+                                {gEvent.htmlLink && (
+                                  <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 flex-shrink-0 transition-opacity" />
+                                )}
+                              </div>
+                              {(gEvent.startTime || gEvent.isAllDay) && (
+                                <div className="px-2 pb-1 text-[10px] opacity-80">
+                                  {gEvent.isAllDay ? 'All day' : `${gEvent.startTime}${gEvent.endTime ? ` - ${gEvent.endTime}` : ''}`}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        } else {
+                          const task = item.data;
+                          const isBeingEdited = editingTask?.id === task.id;
+                          const colorToUse = isBeingEdited && dialogTaskColor ? dialogTaskColor : task.color;
+                          const taskColorInfo = getTaskColorByHex(colorToUse);
+                          return (
+                            <div
+                              key={task.id}
+                              draggable={true}
+                              onClick={(e) => e.stopPropagation()}
+                              onMouseDown={(e) => e.stopPropagation()}
+                              onDragStart={(e) => {
+                                e.stopPropagation();
+                                e.dataTransfer.setData('text/plain', task.id);
+                                e.dataTransfer.setData('taskId', task.id);
+                                e.dataTransfer.setData('fromDate', dayString);
+                                e.dataTransfer.setData('fromAllTasks', 'false');
+                                e.dataTransfer.effectAllowed = 'move';
+                                const target = e.currentTarget;
+                                setTimeout(() => {
+                                  if (target) target.style.opacity = '0.5';
+                                }, 0);
+                              }}
+                              onDragEnd={(e) => {
+                                e.currentTarget.style.opacity = '1';
+                              }}
+                              className="group text-[11px] px-2 py-1 rounded-md cursor-grab active:cursor-grabbing transition-colors hover:shadow-sm flex-shrink-0 border-l-4"
+                              style={{
+                                backgroundColor: taskColorInfo.fill,
+                                borderLeftColor: taskColorInfo.border,
+                              }}
+                            >
+                              <div className="flex items-center gap-1">
+                                <Checkbox
+                                  checked={task.isCompleted}
+                                  onCheckedChange={() => handleToggleTask(task.id, dayString)}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="h-3 w-3 flex-shrink-0"
+                                />
+                                <div
+                                  className={`flex-1 truncate leading-tight ${task.isCompleted ? 'line-through opacity-50' : ''}`}
+                                  style={{ color: taskColorInfo.text }}
+                                >
+                                  {task.text}
+                                </div>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteTask(task.id, dayString);
+                                  }}
+                                  className="opacity-0 group-hover:opacity-100 flex-shrink-0 text-gray-500 hover:text-red-500 transition-all"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        }
+                      });
+                    })()}
 
                   </div>
                 </div>

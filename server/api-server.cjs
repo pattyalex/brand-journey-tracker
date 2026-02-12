@@ -972,11 +972,13 @@ app.post('/api/google-calendar/events', async (req, res) => {
 
     const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
 
-    // Build time range
-    const timeMin = startDate ? new Date(startDate).toISOString() : new Date().toISOString();
-    const timeMax = endDate
-      ? new Date(endDate).toISOString()
-      : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(); // Default: 30 days
+    // Build time range - add buffer to cover all timezones
+    // Subtract 1 day from start and add 1 day to end to ensure we capture events
+    // that may span timezone boundaries. Frontend filters by local date.
+    const startMs = startDate ? new Date(startDate).getTime() : Date.now();
+    const endMs = endDate ? new Date(endDate).getTime() : Date.now() + 30 * 24 * 60 * 60 * 1000;
+    const timeMin = new Date(startMs - 24 * 60 * 60 * 1000).toISOString();
+    const timeMax = new Date(endMs + 24 * 60 * 60 * 1000).toISOString();
 
     console.log('Fetching Google Calendar events:', { timeMin, timeMax });
 
@@ -1004,11 +1006,11 @@ app.post('/api/google-calendar/events', async (req, res) => {
       if (isAllDay) {
         date = event.start?.date; // YYYY-MM-DD format
       } else {
-        const startDate = new Date(startDateTime);
-        const endDate = new Date(endDateTime);
-        date = startDate.toISOString().split('T')[0];
-        startTime = startDate.toTimeString().slice(0, 5); // HH:mm
-        endTime = endDate.toTimeString().slice(0, 5);
+        // Parse date and time directly from the dateTime string (e.g. "2026-02-12T17:00:00-08:00")
+        // This preserves the event's local timezone rather than converting to UTC
+        date = startDateTime.slice(0, 10); // "2026-02-12"
+        startTime = startDateTime.slice(11, 16); // "17:00"
+        endTime = endDateTime.slice(11, 16);
       }
 
       return {
