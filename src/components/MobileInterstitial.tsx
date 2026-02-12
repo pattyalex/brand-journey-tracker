@@ -232,11 +232,10 @@ export const MobileInterstitialWrapper: React.FC<{ children: React.ReactNode }> 
   useEffect(() => {
     // Check if we should show the interstitial
     const checkMobile = () => {
-      const isNarrow = window.innerWidth < 768;
-      const isPopup = window.opener !== null || window.innerWidth < screen.width * 0.5;
+      const isMobileDevice = screen.width < 768;
       const hasSeenInterstitial = sessionStorage.getItem('heymeg_mobile_interstitial_seen');
 
-      if (isNarrow && !isPopup && !hasSeenInterstitial) {
+      if (isMobileDevice && !hasSeenInterstitial) {
         setShowInterstitial(true);
       }
       setHasChecked(true);
