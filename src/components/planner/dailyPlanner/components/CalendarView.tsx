@@ -11,7 +11,7 @@ import { defaultScheduledColor, getTaskColorByHex, isColorDark } from "../utils/
 import { useColorPalette } from "../hooks/useColorPalette";
 import { ProductionCard, KanbanColumn } from "@/pages/production/types";
 import { defaultColumns } from "@/pages/production/utils/productionConstants";
-import { Video, Lightbulb, X, Clock, FileText, ArrowRight, Trash2, Check, GripHorizontal } from "lucide-react";
+import { Video, Lightbulb, X, Clock, FileText, ArrowRight, Trash2, Check, GripHorizontal, ExternalLink, Calendar } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { autoFormatTime } from "../utils/timeUtils";
@@ -20,6 +20,8 @@ import { StorageKeys, getString, setString, getWeekStartsOn, getDayNames } from 
 import { EVENTS, emit } from "@/lib/events";
 import { ContentDisplayMode } from "../hooks/usePlannerState";
 import { cn } from "@/lib/utils";
+import { useGoogleCalendar } from "@/hooks/useGoogleCalendar";
+import { TransformedGoogleEvent } from "@/types/google-calendar";
 
 interface CalendarViewProps {
   getTimezoneDisplay: () => string;
@@ -100,6 +102,9 @@ export const CalendarView = ({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const monthRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
+  // Google Calendar integration
+  const { connection: googleConnection, events: googleEvents, fetchEvents: fetchGoogleEvents } = useGoogleCalendar();
+
   // Minimum date: January 2026
   const minDate = new Date(2026, 0, 1);
 
@@ -177,6 +182,15 @@ export const CalendarView = ({
 
     return () => clearTimeout(timer);
   }, []);
+
+  // Fetch Google Calendar events when connected and date range changes
+  useEffect(() => {
+    if (googleConnection.isConnected && googleConnection.showEvents && allDays.length > 0) {
+      const startDate = format(allDays[0], 'yyyy-MM-dd');
+      const endDate = format(allDays[allDays.length - 1], 'yyyy-MM-dd');
+      fetchGoogleEvents(startDate, endDate);
+    }
+  }, [googleConnection.isConnected, googleConnection.showEvents, selectedDate]);
 
   // State for add dialog
   const [addDialogOpen, setAddDialogOpen] = useState(false);
@@ -677,6 +691,11 @@ export const CalendarView = ({
                 c.plannedDate?.split('T')[0] === dayString
               );
 
+              // Get Google Calendar events for this day
+              const googleEventsForDay = googleConnection.showEvents
+                ? googleEvents.filter(e => e.date === dayString)
+                : [];
+
               // Determine what to show based on display settings
               const tasksToShow = showTasks ? tasks : [];
               const contentToShow = showContent ? [...scheduledContent, ...plannedContent] : [];
@@ -882,6 +901,43 @@ export const CalendarView = ({
                             <X className="w-3 h-3" />
                           </button>
                         </div>
+                      </div>
+                    ))}
+
+                    {/* Google Calendar Events */}
+                    {googleEventsForDay.map((gEvent) => (
+                      <div
+                        key={`google-${gEvent.id}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (gEvent.htmlLink) {
+                            window.open(gEvent.htmlLink, '_blank');
+                          }
+                        }}
+                        className={cn(
+                          "group text-[11px] rounded-md cursor-pointer hover:brightness-95 flex flex-col overflow-hidden flex-shrink-0 border-l-4",
+                          "shadow-[0_1px_3px_rgba(66,133,244,0.2)] hover:shadow-[0_2px_5px_rgba(66,133,244,0.3)]"
+                        )}
+                        style={{
+                          background: 'linear-gradient(180deg, #E8F0FE 0%, #D2E3FC 50%, #AECBFA 100%)',
+                          borderLeftColor: '#4285F4',
+                          color: '#1967D2'
+                        }}
+                      >
+                        <div className="flex items-center gap-1 px-2 py-1.5">
+                          <Calendar className="w-3 h-3 flex-shrink-0" />
+                          <span className="flex-1 truncate leading-tight font-medium">
+                            {gEvent.title}
+                          </span>
+                          {gEvent.htmlLink && (
+                            <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 flex-shrink-0 transition-opacity" />
+                          )}
+                        </div>
+                        {(gEvent.startTime || gEvent.isAllDay) && (
+                          <div className="px-2 pb-1 text-[10px] opacity-80">
+                            {gEvent.isAllDay ? 'All day' : `${gEvent.startTime}${gEvent.endTime ? ` - ${gEvent.endTime}` : ''}`}
+                          </div>
+                        )}
                       </div>
                     ))}
 

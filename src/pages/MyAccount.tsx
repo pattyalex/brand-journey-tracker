@@ -22,6 +22,7 @@ import { getCurrentUser, updateUserProfile, updateUserPassword } from '@/lib/sup
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { StorageKeys, getString, setString } from "@/lib/storage";
+import GoogleCalendarIntegration from "@/components/settings/GoogleCalendarIntegration";
 
 // Timezone options
 const TIMEZONES = [
@@ -1061,28 +1062,7 @@ const MyAccount = () => {
                       </div>
 
                       {/* Google Calendar */}
-                      <div className="flex items-center justify-between p-4 rounded-xl border border-[#E8E4E6] hover:border-[#8B7082]/30 transition-colors">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-                            <Calendar className="w-5 h-5 text-white" />
-                          </div>
-                          <div>
-                            <p className="font-medium text-[#2d2a26] text-sm" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                              Google Calendar
-                            </p>
-                            <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                              Sync your schedule for better planning
-                            </p>
-                          </div>
-                        </div>
-                        <Button
-                          variant="outline"
-                          className="h-9 px-4 rounded-lg border-[#8B7082]/30 text-[#612a4f] hover:bg-[#612a4f]/5 hover:border-[#612a4f]/30"
-                          style={{ fontFamily: "'DM Sans', sans-serif" }}
-                        >
-                          Connect
-                        </Button>
-                      </div>
+                      <GoogleCalendarIntegration />
                     </div>
 
                   </div>

@@ -54,7 +54,12 @@ export const StorageKeys = {
   selectedTaskPalette: "selectedTaskPalette",
   firstDayOfWeek: "firstDayOfWeek",
   ideaExpanderText: "ideaExpanderText",
-  ideaExpanderAngles: "ideaExpanderAngles"
+  ideaExpanderAngles: "ideaExpanderAngles",
+  googleCalendarTokens: "google_calendar_tokens",
+  googleCalendarEmail: "google_calendar_email",
+  googleCalendarConnected: "google_calendar_connected",
+  googleCalendarShowEvents: "google_calendar_show_events",
+  googleCalendarLastSync: "google_calendar_last_sync"
 } as const;
 
 export const contentFormatsByPillar = (pillarId: string) => `content-formats-${pillarId}`;

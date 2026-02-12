@@ -762,6 +762,281 @@ RESPOND WITH ONLY a JSON array in this exact format (no other text):
   }
 });
 
+// ========== GOOGLE CALENDAR INTEGRATION ==========
+
+const { google } = require('googleapis');
+
+// Create OAuth2 client for Google Calendar
+const createOAuth2Client = () => {
+  return new google.auth.OAuth2(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET,
+    process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3001/api/google-calendar/callback'
+  );
+};
+
+// Generate Google OAuth URL
+app.get('/api/google-calendar/auth-url', (req, res) => {
+  try {
+    const { userId } = req.query;
+
+    if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+      return res.status(400).json({
+        error: 'Google Calendar not configured. Please add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to your .env file.'
+      });
+    }
+
+    const oauth2Client = createOAuth2Client();
+
+    const scopes = [
+      'https://www.googleapis.com/auth/calendar.readonly',
+      'https://www.googleapis.com/auth/userinfo.email'
+    ];
+
+    const authUrl = oauth2Client.generateAuthUrl({
+      access_type: 'offline',
+      scope: scopes,
+      prompt: 'consent',
+      state: userId || 'default'
+    });
+
+    console.log('Generated Google Calendar auth URL for user:', userId);
+    res.json({ authUrl });
+  } catch (error) {
+    console.error('Error generating auth URL:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Handle OAuth callback
+app.get('/api/google-calendar/callback', async (req, res) => {
+  try {
+    const { code, state: userId } = req.query;
+
+    if (!code) {
+      return res.redirect('/?google-calendar-error=no-code');
+    }
+
+    const oauth2Client = createOAuth2Client();
+    const { tokens } = await oauth2Client.getToken(code);
+
+    oauth2Client.setCredentials(tokens);
+
+    // Get user email
+    const oauth2 = google.oauth2({ version: 'v2', auth: oauth2Client });
+    const { data: userInfo } = await oauth2.userinfo.get();
+
+    console.log('Google Calendar connected for:', userInfo.email);
+
+    // Return HTML that passes tokens back to the frontend via postMessage
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Google Calendar Connected</title>
+          <style>
+            body {
+              font-family: 'DM Sans', -apple-system, sans-serif;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              height: 100vh;
+              margin: 0;
+              background: linear-gradient(145deg, #f5f0f3 0%, #ede5ea 100%);
+            }
+            .container {
+              text-align: center;
+              padding: 40px;
+              background: white;
+              border-radius: 20px;
+              box-shadow: 0 4px 24px rgba(45, 42, 38, 0.08);
+            }
+            .success-icon {
+              width: 64px;
+              height: 64px;
+              background: linear-gradient(145deg, #4285f4 0%, #1a73e8 100%);
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin: 0 auto 20px;
+            }
+            .success-icon svg { width: 32px; height: 32px; color: white; }
+            h2 { color: #2d2a26; margin-bottom: 10px; }
+            p { color: #8B7082; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="success-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+            <h2>Google Calendar Connected!</h2>
+            <p>You can close this window now.</p>
+          </div>
+          <script>
+            const data = {
+              success: true,
+              tokens: ${JSON.stringify(tokens)},
+              email: ${JSON.stringify(userInfo.email)}
+            };
+            if (window.opener) {
+              window.opener.postMessage({ type: 'google-calendar-callback', ...data }, '*');
+              setTimeout(() => window.close(), 2000);
+            } else {
+              // Fallback: store in localStorage and redirect
+              localStorage.setItem('google_calendar_tokens', JSON.stringify(data.tokens));
+              localStorage.setItem('google_calendar_email', data.email);
+              localStorage.setItem('google_calendar_connected', 'true');
+              setTimeout(() => window.location.href = '/account?section=integrations&google-connected=true', 1000);
+            }
+          </script>
+        </body>
+      </html>
+    `;
+
+    res.send(html);
+  } catch (error) {
+    console.error('Google Calendar callback error:', error);
+    res.redirect('/?google-calendar-error=' + encodeURIComponent(error.message));
+  }
+});
+
+// Check connection status (validates tokens)
+app.post('/api/google-calendar/status', async (req, res) => {
+  try {
+    const { tokens } = req.body;
+
+    if (!tokens || !tokens.access_token) {
+      return res.json({ isConnected: false });
+    }
+
+    const oauth2Client = createOAuth2Client();
+    oauth2Client.setCredentials(tokens);
+
+    // Try to get user info to validate tokens
+    const oauth2 = google.oauth2({ version: 'v2', auth: oauth2Client });
+    const { data: userInfo } = await oauth2.userinfo.get();
+
+    res.json({
+      isConnected: true,
+      email: userInfo.email,
+      tokens: oauth2Client.credentials // Return potentially refreshed tokens
+    });
+  } catch (error) {
+    console.error('Error checking Google Calendar status:', error);
+    res.json({ isConnected: false, error: error.message });
+  }
+});
+
+// Disconnect and revoke tokens
+app.post('/api/google-calendar/disconnect', async (req, res) => {
+  try {
+    const { tokens } = req.body;
+
+    if (tokens && tokens.access_token) {
+      const oauth2Client = createOAuth2Client();
+      oauth2Client.setCredentials(tokens);
+
+      try {
+        await oauth2Client.revokeToken(tokens.access_token);
+        console.log('Google Calendar tokens revoked');
+      } catch (revokeError) {
+        console.warn('Could not revoke token (may already be invalid):', revokeError.message);
+      }
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error disconnecting Google Calendar:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Fetch calendar events
+app.post('/api/google-calendar/events', async (req, res) => {
+  try {
+    const { tokens, startDate, endDate } = req.body;
+
+    if (!tokens || !tokens.access_token) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    const oauth2Client = createOAuth2Client();
+    oauth2Client.setCredentials(tokens);
+
+    const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+
+    // Build time range
+    const timeMin = startDate ? new Date(startDate).toISOString() : new Date().toISOString();
+    const timeMax = endDate
+      ? new Date(endDate).toISOString()
+      : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(); // Default: 30 days
+
+    console.log('Fetching Google Calendar events:', { timeMin, timeMax });
+
+    const response = await calendar.events.list({
+      calendarId: 'primary',
+      timeMin,
+      timeMax,
+      singleEvents: true,
+      orderBy: 'startTime',
+      maxResults: 250
+    });
+
+    const events = response.data.items || [];
+    console.log('Fetched', events.length, 'Google Calendar events');
+
+    // Transform events to HeyMeg format
+    const transformedEvents = events.map(event => {
+      const isAllDay = !event.start?.dateTime;
+      const startDateTime = event.start?.dateTime || event.start?.date;
+      const endDateTime = event.end?.dateTime || event.end?.date;
+
+      // Parse date and time
+      let date, startTime, endTime;
+
+      if (isAllDay) {
+        date = event.start?.date; // YYYY-MM-DD format
+      } else {
+        const startDate = new Date(startDateTime);
+        const endDate = new Date(endDateTime);
+        date = startDate.toISOString().split('T')[0];
+        startTime = startDate.toTimeString().slice(0, 5); // HH:mm
+        endTime = endDate.toTimeString().slice(0, 5);
+      }
+
+      return {
+        id: event.id,
+        title: event.summary || '(No title)',
+        description: event.description,
+        date,
+        startTime,
+        endTime,
+        isAllDay,
+        source: 'google',
+        htmlLink: event.htmlLink,
+        location: event.location
+      };
+    });
+
+    res.json({
+      events: transformedEvents,
+      tokens: oauth2Client.credentials // Return potentially refreshed tokens
+    });
+  } catch (error) {
+    console.error('Error fetching Google Calendar events:', error);
+
+    if (error.code === 401 || error.message?.includes('invalid_grant')) {
+      return res.status(401).json({ error: 'Token expired or revoked', needsReauth: true });
+    }
+
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
