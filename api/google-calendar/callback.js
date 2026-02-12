@@ -81,15 +81,18 @@ export default async function handler(req, res) {
               tokens: ${JSON.stringify(tokens)},
               email: ${JSON.stringify(userInfo.email)}
             };
+            // Store tokens in localStorage
+            localStorage.setItem('google_calendar_tokens', JSON.stringify(data.tokens));
+            localStorage.setItem('google_calendar_email', data.email);
+            localStorage.setItem('google_calendar_connected', 'true');
+
             if (window.opener) {
               window.opener.postMessage({ type: 'google-calendar-callback', ...data }, '*');
               setTimeout(() => window.close(), 2000);
             } else {
-              // Fallback: store in localStorage and redirect
-              localStorage.setItem('google_calendar_tokens', JSON.stringify(data.tokens));
-              localStorage.setItem('google_calendar_email', data.email);
-              localStorage.setItem('google_calendar_connected', 'true');
-              setTimeout(() => window.location.href = '/my-account?google-connected=true', 1000);
+              // No opener - just try to close, user can close manually
+              document.querySelector('p').textContent = 'Connected! You can close this window and refresh your settings page.';
+              setTimeout(() => { try { window.close(); } catch(e) {} }, 3000);
             }
           </script>
         </body>
