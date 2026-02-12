@@ -58,7 +58,7 @@ export const PaymentSetupStep: React.FC<PaymentSetupStepProps> = ({
               Enter payment details
             </h2>
             <p className="text-sm mb-6" style={{ color: '#6b6478' }}>
-              Your card won't be charged until your 7-day free trial ends.
+              Your card won't be charged until your 14-day free trial ends.
             </p>
 
             {/* Temporary skip button for development */}
@@ -102,7 +102,7 @@ export const PaymentSetupStep: React.FC<PaymentSetupStepProps> = ({
             Select your plan
           </h2>
           <p className="text-sm" style={{ color: '#6b6478' }}>
-            Start your 7-day free trial. Cancel anytime.
+            Start your 14-day free trial. Cancel anytime.
           </p>
         </div>
 
@@ -212,7 +212,7 @@ export const PaymentSetupStep: React.FC<PaymentSetupStepProps> = ({
 
           {/* Trial notice */}
           <p className="text-center text-sm mb-6" style={{ color: '#8a7a85' }}>
-            Your card won't be charged until after your 7-day trial.
+            Your card won't be charged until after your 14-day trial.
           </p>
 
           {/* Trust Badges */}

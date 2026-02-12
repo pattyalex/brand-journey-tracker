@@ -558,7 +558,7 @@ const MyAccount = () => {
                               Free Trial Active
                             </p>
                             <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                              7-day trial ends on May 30, 2025
+                              14-day trial ends on May 30, 2025
                             </p>
                           </div>
                         </div>

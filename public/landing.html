@@ -271,13 +271,22 @@
     }
 
     .hero-cta {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
       opacity: 0;
       animation: fadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.65s forwards;
     }
 
+    .trial-note {
+      font-size: 13px;
+      color: #8a7a85;
+    }
+
     .hero-accent {
       margin-top: 28px;
-      font-size: clamp(0.85rem, 1.5vw, 0.95rem);
+      font-size: clamp(1rem, 1.8vw, 1.15rem);
       color: #8B7082;
       letter-spacing: 0.04em;
       opacity: 0;
@@ -1320,6 +1329,340 @@
       color: #612a4f;
     }
 
+    /* ==================== PRICING SECTION ==================== */
+    .pricing-section {
+      position: relative;
+      z-index: 1;
+      padding: 60px 24px 120px;
+      background: linear-gradient(180deg, #fcfafe 0%, #f8f4fb 50%, #fcfafe 100%);
+      overflow: hidden;
+      scroll-margin-top: 40px;
+    }
+
+    .pricing-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 1200px;
+      height: 100%;
+      background:
+        radial-gradient(ellipse 80% 50% at 20% 20%, rgba(139, 112, 130, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(97, 42, 79, 0.06) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .pricing-header {
+      text-align: center;
+      margin-bottom: 60px;
+      position: relative;
+    }
+
+    .pricing-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(139, 112, 130, 0.15);
+      border-radius: 50px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #612a4f;
+      margin-bottom: 24px;
+    }
+
+    .pricing-badge svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .pricing-section h2 {
+      font-family: 'Instrument Serif', serif;
+      font-size: clamp(2.2rem, 5vw, 3.5rem);
+      color: var(--text-dark);
+      margin-bottom: 16px;
+      line-height: 1.15;
+    }
+
+    .pricing-section h2 em {
+      font-style: italic;
+      color: #612a4f;
+    }
+
+    .pricing-subtitle {
+      font-size: 1.15rem;
+      color: #8a7a85;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    /* Toggle Switch */
+    .pricing-toggle-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 50px;
+    }
+
+    .toggle-label {
+      font-size: 15px;
+      font-weight: 500;
+      color: #b8a8b3;
+      transition: all 0.3s ease;
+      padding: 10px 20px;
+      border-radius: 12px;
+      cursor: pointer;
+      border: 2px solid transparent;
+    }
+
+    .toggle-label:hover {
+      color: #8a7a85;
+    }
+
+    .toggle-label.active {
+      color: var(--text-dark);
+      font-weight: 600;
+      background: white;
+      border: 2px solid rgba(97, 42, 79, 0.15);
+      box-shadow: 0 2px 8px rgba(97, 42, 79, 0.1);
+    }
+
+    .save-badge {
+      background: linear-gradient(135deg, #7a9a7a 0%, #5a8a5a 100%);
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 20px;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+
+    .popular-badge {
+      background: linear-gradient(135deg, #612a4f 0%, #8B7082 100%);
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 20px;
+      margin-left: 4px;
+      vertical-align: middle;
+    }
+
+    /* Pricing Card */
+    .pricing-cards {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      max-width: 900px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .pricing-card {
+      position: relative;
+      flex: 1;
+      max-width: 420px;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 28px;
+      padding: 48px 40px;
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      box-shadow:
+        0 4px 24px rgba(97, 42, 79, 0.08),
+        0 1px 3px rgba(0, 0, 0, 0.04),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.4s ease;
+    }
+
+    .pricing-card:hover {
+      transform: translateY(-8px);
+      box-shadow:
+        0 20px 60px rgba(97, 42, 79, 0.15),
+        0 8px 24px rgba(0, 0, 0, 0.06),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    }
+
+    .pricing-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #612a4f 0%, #8B7082 50%, #c4a8b9 100%);
+      border-radius: 28px 28px 0 0;
+    }
+
+    .popular-tag {
+      position: absolute;
+      top: -14px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, #612a4f 0%, #8B7082 100%);
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 6px 20px;
+      border-radius: 20px;
+      box-shadow: 0 4px 15px rgba(97, 42, 79, 0.3);
+    }
+
+    .pricing-card-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .plan-name {
+      font-family: 'Instrument Serif', serif;
+      font-size: 1.5rem;
+      color: var(--text-dark);
+      margin-bottom: 8px;
+    }
+
+    .plan-desc {
+      font-size: 14px;
+      color: #8a7a85;
+    }
+
+    .price-wrapper {
+      text-align: center;
+      margin-bottom: 32px;
+      min-height: 80px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .price {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .currency {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #612a4f;
+      margin-top: 8px;
+    }
+
+    .amount {
+      font-family: 'Instrument Serif', serif;
+      font-size: 4.5rem;
+      font-weight: 400;
+      color: var(--text-dark);
+      line-height: 1;
+    }
+
+    .period {
+      font-size: 1rem;
+      color: #8a7a85;
+      margin-top: auto;
+      margin-bottom: 8px;
+    }
+
+    .price-note {
+      font-size: 13px;
+      color: #7a9a7a;
+      font-weight: 500;
+      margin-top: 8px;
+    }
+
+    .pricing-features {
+      list-style: none;
+      margin-bottom: 36px;
+    }
+
+    .pricing-features li {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(139, 112, 130, 0.08);
+      font-size: 15px;
+      color: var(--text-body);
+    }
+
+    .pricing-features li:last-child {
+      border-bottom: none;
+    }
+
+    .pricing-features svg {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+      color: #7a9a7a;
+      margin-top: 1px;
+    }
+
+    .pricing-cta {
+      display: block;
+      width: 100%;
+      padding: 16px 32px;
+      background: linear-gradient(135deg, #612a4f 0%, #7a5068 100%);
+      color: white;
+      font-size: 15px;
+      font-weight: 600;
+      text-align: center;
+      text-decoration: none;
+      border-radius: 14px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(97, 42, 79, 0.25);
+    }
+
+    .pricing-cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(97, 42, 79, 0.35);
+    }
+
+    .pricing-guarantee {
+      text-align: center;
+      margin-top: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 14px;
+      color: #8a7a85;
+    }
+
+    .pricing-guarantee svg {
+      width: 18px;
+      height: 18px;
+      color: #7a9a7a;
+    }
+
+    /* Pricing responsive */
+    @media (max-width: 640px) {
+      .pricing-section {
+        padding: 60px 16px 80px;
+      }
+
+      .pricing-card {
+        padding: 36px 24px;
+      }
+
+      .amount {
+        font-size: 3.5rem;
+      }
+
+      .pricing-features li {
+        font-size: 14px;
+      }
+    }
+
     /* ==================== WHY HEYMEG RIBBONS SECTION ==================== */
     .ribbons-section {
       position: relative;
@@ -2292,6 +2635,7 @@
     </p>
     <div class="hero-cta">
       <a href="/onboarding" class="btn-primary">Try HeyMeg For Free</a>
+      <span class="trial-note">14-day free trial • Cancel anytime</span>
     </div>
     <p class="hero-accent">Plan Strategically. Post Consistently. AI-Assisted.</p>
 
@@ -2611,6 +2955,94 @@
     </div>
   </section>
 
+  <!-- Pricing Section -->
+  <section class="pricing-section reveal" id="pricing">
+    <div class="pricing-header">
+      <div class="pricing-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+          <path d="M2 17l10 5 10-5"/>
+          <path d="M2 12l10 5 10-5"/>
+        </svg>
+        <span>Simple Pricing</span>
+      </div>
+      <h2>One plan. <em>Everything included.</em></h2>
+    </div>
+
+    <div class="pricing-toggle-wrapper">
+      <span class="toggle-label" id="monthly-label" onclick="selectMonthly()">Monthly</span>
+      <span class="toggle-label active" id="yearly-label" onclick="selectYearly()">Yearly <span class="save-badge">Save 18%</span></span>
+    </div>
+
+    <div class="pricing-cards">
+      <div class="pricing-card">
+        <div class="popular-tag" id="popular-tag">Most Popular</div>
+        <div class="pricing-card-header">
+          <h3 class="plan-name">Creator Pro</h3>
+          <p class="plan-desc">Everything you need to grow</p>
+        </div>
+
+        <div class="price-wrapper">
+          <div class="price">
+            <span class="currency">$</span>
+            <span class="amount" id="price-amount">14</span>
+          </div>
+          <span class="period">per month</span>
+          <span class="price-note" id="price-note">Billed as $168/year</span>
+        </div>
+
+        <ul class="pricing-features">
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <span>Unlimited content ideas & scripts</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <span>AI-powered content assistance</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <span>Full production pipeline (Kanban + Storyboards)</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <span>Smart daily planner & calendar</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <span>Brand deal tracking and partnership management</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <span>Strategy & growth goal setting</span>
+          </li>
+        </ul>
+
+        <a href="/onboarding" class="pricing-cta">Start Your 14-Day Free Trial</a>
+      </div>
+    </div>
+
+    <div class="pricing-guarantee">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        <polyline points="9 12 11 14 15 10"/>
+      </svg>
+      <span>Cancel anytime</span>
+    </div>
+  </section>
+
   <!-- Why HeyMeg Ribbons Section -->
   <section class="ribbons-section reveal">
     <div class="badge-pill">
@@ -2675,7 +3107,7 @@
       <span class="cta-eyebrow">Ready to level up?</span>
       <h2>Stop juggling tools.<br><em>Start creating.</em></h2>
       <p class="body-text">Join thousands of creators who've simplified their workflow and taken control of their content.</p>
-      <a href="/onboarding" class="btn-primary btn-large">Start your 7-day free trial</a>
+      <a href="/onboarding" class="btn-primary btn-large">Start your 14-day free trial</a>
     </div>
   </section>
 
@@ -2741,6 +3173,35 @@
     }, { threshold: 0.3 });
 
     visualElements.forEach(el => visualObserver.observe(el));
+
+    // Pricing selection
+    function selectMonthly() {
+      const priceAmount = document.getElementById('price-amount');
+      const priceNote = document.getElementById('price-note');
+      const monthlyLabel = document.getElementById('monthly-label');
+      const yearlyLabel = document.getElementById('yearly-label');
+      const popularTag = document.getElementById('popular-tag');
+
+      priceAmount.textContent = '17';
+      priceNote.textContent = '';
+      monthlyLabel.classList.add('active');
+      yearlyLabel.classList.remove('active');
+      popularTag.style.display = 'none';
+    }
+
+    function selectYearly() {
+      const priceAmount = document.getElementById('price-amount');
+      const priceNote = document.getElementById('price-note');
+      const monthlyLabel = document.getElementById('monthly-label');
+      const yearlyLabel = document.getElementById('yearly-label');
+      const popularTag = document.getElementById('popular-tag');
+
+      priceAmount.textContent = '14';
+      priceNote.textContent = 'Billed as $168/year';
+      monthlyLabel.classList.remove('active');
+      yearlyLabel.classList.add('active');
+      popularTag.style.display = 'block';
+    }
 
     // Compact nav on scroll
     const nav = document.querySelector('nav');

@@ -145,7 +145,7 @@ export const MembershipPage: React.FC = () => {
         </CardHeader>
         <CardContent className="space-y-3">
           <p className="text-sm text-muted-foreground">
-            Start your 7-day free trial to access all features.
+            Start your 14-day free trial to access all features.
           </p>
           <Button onClick={() => window.location.href = '/onboarding?step=payment-setup'} className="w-full">
             Start Free Trial

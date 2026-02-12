@@ -228,7 +228,7 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
               Processing...
             </>
           ) : (
-            'Start 7-Day Free Trial'
+            'Start 14-Day Free Trial'
           )}
         </button>
       </div>

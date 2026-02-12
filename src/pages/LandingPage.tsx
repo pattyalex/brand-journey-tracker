@@ -170,7 +170,7 @@ const LandingPage = () => {
           id: data.user?.id,
           full_name: fullName,
           is_on_trial: true,
-          trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days from now
+          trial_ends_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000) // 14 days from now
         }
       ]);
 
@@ -208,7 +208,7 @@ const LandingPage = () => {
               className="bg-primary hover:bg-primary/90 text-white text-lg px-8 py-6"
               onClick={handleStartFreeTrial}
             >
-              {isSignedIn ? "Go to Dashboard" : "Start 7-Day Free Trial"}
+              {isSignedIn ? "Go to Dashboard" : "Start 14-Day Free Trial"}
             </Button>
           </div>
         </section>
@@ -241,7 +241,7 @@ const LandingPage = () => {
         <section className="py-10">
           <h2 className="text-3xl font-bold text-center mb-4">Simple, Transparent Pricing</h2>
           <p className="text-center text-muted-foreground mb-10 max-w-2xl mx-auto">
-            Start with our 7-day free trial and discover how our platform can transform your content creation workflow
+            Start with our 14-day free trial and discover how our platform can transform your content creation workflow
           </p>
 
           <div className="max-w-md mx-auto">
@@ -274,7 +274,7 @@ const LandingPage = () => {
                 className="w-full py-6"
                 onClick={handleStartFreeTrial}
               >
-                {isSignedIn ? "Go to Dashboard" : "Start 7-Day Free Trial"}
+                {isSignedIn ? "Go to Dashboard" : "Start 14-Day Free Trial"}
               </Button>
               <p className="text-xs text-center text-muted-foreground mt-4">
                 Cancel anytime.
