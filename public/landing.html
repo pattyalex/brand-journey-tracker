@@ -691,24 +691,30 @@
     }
 
     .chaos-card:nth-child(4) {
-      top: 150px;
+      top: 110px;
       left: 0%;
       background: rgba(222,222,240,0.6);
       animation: drift3 5.5s ease-in-out infinite;
     }
 
     .chaos-card:nth-child(5) {
-      top: 230px;
-      right: 5%;
-      background: rgba(216,226,238,0.6);
+      top: 260px;
+      left: 3%;
+      background: rgba(232,220,230,0.6);
       animation: drift4 7s ease-in-out infinite;
     }
 
     .chaos-card:nth-child(6) {
-      top: 310px;
-      left: 15%;
-      background: rgba(232,220,230,0.6);
+      top: 165px;
+      right: 15%;
+      background: rgba(216,226,238,0.6);
       animation: drift5 6.5s ease-in-out infinite;
+    }
+    .chaos-card:nth-child(7) {
+      top: 300px;
+      right: 0%;
+      background: rgba(225,220,238,0.6);
+      animation: drift6 5.8s ease-in-out infinite;
     }
 
     @keyframes drift1 {
@@ -735,6 +741,11 @@
       0%, 100% { transform: rotate(4deg) translate(0, 0); }
       50% { transform: rotate(10deg) translate(12px, -10px); }
     }
+    @keyframes drift6 {
+      0%, 100% { transform: rotate(-2deg) translate(0, 0); }
+      50% { transform: rotate(5deg) translate(-8px, 12px); }
+      100% { transform: rotate(-2deg) translate(0, 0); }
+    }
 
     /* Arrow Divider - Center */
     .arrow-divider {
@@ -742,12 +753,33 @@
       flex-direction: column;
       align-items: center;
       padding: 0 40px;
+      position: relative;
     }
 
     .arrow-line {
       width: 2px;
       height: 80px;
       background: linear-gradient(180deg, rgba(139,112,130,0.05), rgba(97,42,79,0.3), rgba(139,112,130,0.05));
+      position: relative;
+      overflow: hidden;
+    }
+
+    .arrow-line::after {
+      content: '';
+      position: absolute;
+      top: -20px;
+      left: 0;
+      width: 100%;
+      height: 20px;
+      background: linear-gradient(180deg, transparent, rgba(122,56,104,0.6), transparent);
+      animation: lineTravel 2.5s ease-in-out infinite;
+    }
+
+    @keyframes lineTravel {
+      0% { top: -20px; opacity: 0; }
+      30% { opacity: 1; }
+      70% { opacity: 1; }
+      100% { top: 100%; opacity: 0; }
     }
 
     .arrow-circle {
@@ -762,6 +794,28 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      position: relative;
+      animation: arrowPulse 3s ease-in-out infinite;
+    }
+
+    .arrow-circle::before {
+      content: '';
+      position: absolute;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      border: 1px solid rgba(122,56,104,0.2);
+      animation: arrowRing 3s ease-out infinite;
+    }
+
+    @keyframes arrowRing {
+      0% { width: 56px; height: 56px; opacity: 0.6; }
+      100% { width: 90px; height: 90px; opacity: 0; }
+    }
+
+    @keyframes arrowPulse {
+      0%, 100% { box-shadow: 0 1px 8px rgba(0,0,0,0.06), 0 0 0 1px rgba(255,255,255,0.5), inset 0 0 0 1px rgba(255,255,255,0.4); }
+      50% { box-shadow: 0 1px 8px rgba(0,0,0,0.06), 0 0 0 1px rgba(255,255,255,0.5), inset 0 0 0 1px rgba(255,255,255,0.4), 0 0 20px rgba(122,56,104,0.15); }
     }
 
     .arrow-circle svg {
@@ -770,19 +824,364 @@
       color: #8B7082;
     }
 
-    /* App Mockup - Right Side */
-    .phone-side {
+    /* ---- Constellation - Right Side ---- */
+    .constellation-side {
       display: flex;
       flex-direction: column;
       align-items: center;
     }
 
-    .app-mockup-img {
-      max-width: 320px;
+    .constellation-headline {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1.3rem;
+      color: #8a7a85;
+      text-align: center;
+      line-height: 1.5;
+      max-width: 380px;
+      margin: 0 auto 90px;
+    }
+
+    .constellation-container {
+      position: relative;
       width: 100%;
-      border-radius: 20px;
-      background: #ffffff;
-      padding: 20px;
+      max-width: 400px;
+      height: 400px;
+    }
+
+    .constellation-glow {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 280px;
+      height: 280px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(122,56,104,0.15) 0%, rgba(139,112,130,0.08) 40%, transparent 70%);
+      filter: blur(30px);
+      animation: constellationGlow 6s ease-in-out infinite;
+    }
+
+    @keyframes constellationGlow {
+      0%, 100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1); }
+      50% { opacity: 1; transform: translate(-50%, -50%) scale(1.08); }
+    }
+
+    .constellation-lines {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .constellation-line {
+      opacity: 0.7;
+    }
+
+    .constellation-line-pulse {
+      stroke-dasharray: 4 12;
+      stroke-dashoffset: 0;
+      animation: lineFlow 3s linear infinite;
+      opacity: 0.5;
+    }
+
+    @keyframes lineFlow {
+      0% { stroke-dashoffset: 48; }
+      100% { stroke-dashoffset: 0; }
+    }
+
+    /* Central Hub */
+    .constellation-hub {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100px;
+      height: 100px;
+      z-index: 3;
+    }
+
+    .hub-glow {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(122,56,104,0.35) 0%, transparent 70%);
+      filter: blur(20px);
+      animation: hubGlow 4s ease-in-out infinite;
+    }
+
+    @keyframes hubGlow {
+      0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
+      50% { opacity: 1; transform: translate(-50%, -50%) scale(1.15); }
+    }
+
+    .hub-ring {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      border-radius: 50%;
+      border: 1.5px solid transparent;
+    }
+
+    .hub-ring-outer {
+      width: 100px;
+      height: 100px;
+      transform: translate(-50%, -50%);
+      border-color: rgba(139,112,130,0.2);
+      border-top-color: rgba(122,56,104,0.5);
+      border-right-color: rgba(122,56,104,0.3);
+      animation: ringRotate 12s linear infinite;
+    }
+
+    .hub-ring-inner {
+      width: 80px;
+      height: 80px;
+      transform: translate(-50%, -50%);
+      border-color: rgba(139,112,130,0.15);
+      border-bottom-color: rgba(122,56,104,0.4);
+      border-left-color: rgba(122,56,104,0.25);
+      animation: ringRotate 8s linear infinite reverse;
+    }
+
+    @keyframes ringRotate {
+      from { transform: translate(-50%, -50%) rotate(0deg); }
+      to { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    .hub-core {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #9d5a87 0%, #7a3868 40%, #5c2a50 100%);
+      box-shadow:
+        0 8px 32px rgba(97,42,79,0.3),
+        inset 0 -4px 16px rgba(0,0,0,0.2),
+        inset 0 4px 16px rgba(255,255,255,0.15);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1px;
+      animation: hubFloat 6s ease-in-out infinite;
+    }
+
+    @keyframes hubFloat {
+      0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+      50% { transform: translate(-50%, -50%) translateY(-4px); }
+    }
+
+    .hub-logo {
+      font-family: 'Instrument Serif', serif;
+      font-size: 28px;
+      color: white;
+      line-height: 1;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    .hub-label {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 7px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.8);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    /* Satellite Nodes */
+    .constellation-node {
+      position: absolute;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .node-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #7a3868;
+      box-shadow: 0 0 8px rgba(122,56,104,0.4), 0 0 16px rgba(122,56,104,0.2);
+      margin-bottom: 6px;
+      animation: dotPulse 3s ease-in-out infinite;
+      animation-delay: var(--node-delay, 0s);
+    }
+
+    @keyframes dotPulse {
+      0%, 100% { box-shadow: 0 0 8px rgba(122,56,104,0.4), 0 0 16px rgba(122,56,104,0.2); transform: scale(1); }
+      50% { box-shadow: 0 0 12px rgba(122,56,104,0.6), 0 0 24px rgba(122,56,104,0.3); transform: scale(1.2); }
+    }
+
+    .node-card {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(12px) saturate(160%);
+      -webkit-backdrop-filter: blur(12px) saturate(160%);
+      border: 1px solid rgba(139,112,130,0.18);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06), 0 0 0 1px rgba(255,255,255,0.5), inset 0 0 0 1px rgba(255,255,255,0.4);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: #4d3e48;
+      white-space: nowrap;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .node-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(97,42,79,0.12), 0 0 0 1px rgba(255,255,255,0.5), inset 0 0 0 1px rgba(255,255,255,0.4);
+    }
+
+    .node-card svg {
+      width: 16px;
+      height: 16px;
+      color: #7a3868;
+      flex-shrink: 0;
+    }
+
+    .clap-icon {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      background-color: #6b2f5a;
+      -webkit-mask: url(noun-clapperboard-3762498.png) no-repeat center / contain;
+      mask: url(noun-clapperboard-3762498.png) no-repeat center / contain;
+    }
+
+    .idea-icon {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      background-color: #6b2f5a;
+      -webkit-mask: url(noun-idea-5660536.png) no-repeat center / contain;
+      mask: url(noun-idea-5660536.png) no-repeat center / contain;
+    }
+
+    .strategy-icon {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      background-color: #6b2f5a;
+      -webkit-mask: url(noun-growth-2238174.png) no-repeat center / contain;
+      mask: url(noun-growth-2238174.png) no-repeat center / contain;
+    }
+
+    .ai-icon {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      background-color: #6b2f5a;
+      -webkit-mask: url(noun-ai-8215905.png) no-repeat center / contain;
+      mask: url(noun-ai-8215905.png) no-repeat center / contain;
+    }
+
+    .visual-icon {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      background-color: #6b2f5a;
+      -webkit-mask: url(noun-camera-757304.png) no-repeat center / contain;
+      mask: url(noun-camera-757304.png) no-repeat center / contain;
+    }
+
+    /* Node Positions - Pentagon Layout */
+    .node-ideas {
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      animation: nodeFloatCenter 5.5s ease-in-out infinite;
+      animation-delay: var(--node-delay, 0s);
+    }
+
+    .node-scripts {
+      top: 70px;
+      right: -5px;
+      animation: nodeFloat 6s ease-in-out infinite;
+      animation-delay: var(--node-delay, 0s);
+    }
+
+    .node-planning {
+      top: 70px;
+      left: -5px;
+      animation: nodeFloat 5.8s ease-in-out infinite;
+      animation-delay: var(--node-delay, 0s);
+    }
+
+    .node-deals {
+      bottom: 50px;
+      left: -15px;
+      animation: nodeFloat 6.2s ease-in-out infinite;
+      animation-delay: var(--node-delay, 0s);
+    }
+
+    .node-schedule {
+      bottom: 50px;
+      right: -15px;
+      animation: nodeFloat 5.7s ease-in-out infinite;
+      animation-delay: var(--node-delay, 0s);
+    }
+
+    .node-strategy {
+      bottom: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      animation: nodeFloatCenter 6.4s ease-in-out infinite;
+      animation-delay: var(--node-delay, 0s);
+    }
+
+    .node-ai {
+      top: 50%;
+      left: -30px;
+      transform: translateY(-50%);
+      animation: nodeFloatLeft 5.9s ease-in-out infinite;
+      animation-delay: var(--node-delay, 0s);
+    }
+
+    .node-visual {
+      top: 50%;
+      right: -30px;
+      transform: translateY(-50%);
+      animation: nodeFloatRight 6.1s ease-in-out infinite;
+      animation-delay: var(--node-delay, 0s);
+    }
+
+    @keyframes nodeFloatLeft {
+      0%, 100% { transform: translateY(-50%); }
+      50% { transform: translateY(calc(-50% - 6px)); }
+    }
+
+    @keyframes nodeFloatRight {
+      0%, 100% { transform: translateY(-50%); }
+      50% { transform: translateY(calc(-50% - 6px)); }
+    }
+
+    @keyframes nodeFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    @keyframes nodeFloatCenter {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(-6px); }
     }
 
     /* Problem section responsive */
@@ -809,13 +1208,64 @@
         height: 2px;
       }
 
+      .arrow-line::after {
+        top: 0;
+        left: -20px;
+        width: 20px;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(122,56,104,0.6), transparent);
+        animation: lineTravelH 2.5s ease-in-out infinite;
+      }
+
       .arrow-circle svg {
         transform: rotate(90deg);
       }
 
-      .app-mockup-img {
-        max-width: 320px;
+      .constellation-container {
+        max-width: 340px;
+        height: 340px;
+        margin: 0 auto;
       }
+
+      .constellation-headline {
+        margin-bottom: 60px;
+      }
+
+      .hub-core {
+        width: 56px;
+        height: 56px;
+      }
+
+      .hub-ring-outer {
+        width: 88px;
+        height: 88px;
+      }
+
+      .hub-ring-inner {
+        width: 70px;
+        height: 70px;
+      }
+
+      .hub-logo {
+        font-size: 18px;
+      }
+
+      .node-card {
+        font-size: 0.78rem;
+        padding: 8px 12px;
+      }
+
+      .node-card svg {
+        width: 14px;
+        height: 14px;
+      }
+    }
+
+    @keyframes lineTravelH {
+      0% { left: -20px; opacity: 0; }
+      30% { opacity: 1; }
+      70% { opacity: 1; }
+      100% { left: 100%; opacity: 0; }
     }
 
     /* ==================== FEATURES SECTION ==================== */
@@ -2699,6 +3149,7 @@
             <path d="M40,180 Q100,220 150,170 T220,200 Q260,160 290,190" />
             <path d="M60,80 Q100,130 140,90 T200,120 Q240,70 280,100" />
             <path d="M30,220 Q90,180 140,230 T210,190 Q260,240 290,210" />
+            <path d="M20,260 Q80,240 150,270 T230,250 Q270,270 290,255" />
           </svg>
 
           <!-- Floating Cards -->
@@ -2737,6 +3188,12 @@
             </svg>
             <span>Deadlines in your head</span>
           </div>
+          <div class="chaos-card">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span>Questions in ChatGPT</span>
+          </div>
         </div>
       </div>
 
@@ -2752,10 +3209,157 @@
         <div class="arrow-line"></div>
       </div>
 
-      <!-- Right Side: App Mockup -->
-      <div class="phone-side">
-        <p class="phone-headline">HeyMeg brings it all together.<br>One system. Zero chaos.</p>
-        <img src="heymeg-app-mockup.png" alt="HeyMeg App Interface" class="app-mockup-img">
+      <!-- Right Side: Convergence Constellation -->
+      <div class="constellation-side">
+        <p class="constellation-headline">HeyMeg brings it all together.<br>One system. Zero chaos.</p>
+
+        <div class="constellation-container">
+          <!-- Background ambient glow -->
+          <div class="constellation-glow"></div>
+
+          <!-- SVG connecting lines -->
+          <svg class="constellation-lines" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet">
+            <defs>
+              <linearGradient id="lg0" x1="200" y1="200" x2="200" y2="30" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#7a3868" stop-opacity="0.5"/>
+                <stop offset="100%" stop-color="#8B7082" stop-opacity="0.1"/>
+              </linearGradient>
+              <linearGradient id="lg1" x1="200" y1="200" x2="340" y2="90" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#7a3868" stop-opacity="0.5"/>
+                <stop offset="100%" stop-color="#8B7082" stop-opacity="0.1"/>
+              </linearGradient>
+              <linearGradient id="lg2" x1="200" y1="200" x2="60" y2="90" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#7a3868" stop-opacity="0.5"/>
+                <stop offset="100%" stop-color="#8B7082" stop-opacity="0.1"/>
+              </linearGradient>
+              <linearGradient id="lg3" x1="200" y1="200" x2="80" y2="340" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#7a3868" stop-opacity="0.5"/>
+                <stop offset="100%" stop-color="#8B7082" stop-opacity="0.1"/>
+              </linearGradient>
+              <linearGradient id="lg4" x1="200" y1="200" x2="320" y2="340" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#7a3868" stop-opacity="0.5"/>
+                <stop offset="100%" stop-color="#8B7082" stop-opacity="0.1"/>
+              </linearGradient>
+              <linearGradient id="lg5" x1="200" y1="200" x2="200" y2="380" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#7a3868" stop-opacity="0.5"/>
+                <stop offset="100%" stop-color="#8B7082" stop-opacity="0.1"/>
+              </linearGradient>
+              <linearGradient id="lg6" x1="200" y1="200" x2="20" y2="200" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#7a3868" stop-opacity="0.5"/>
+                <stop offset="100%" stop-color="#8B7082" stop-opacity="0.1"/>
+              </linearGradient>
+              <linearGradient id="lg7" x1="200" y1="200" x2="380" y2="200" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#7a3868" stop-opacity="0.5"/>
+                <stop offset="100%" stop-color="#8B7082" stop-opacity="0.1"/>
+              </linearGradient>
+              <filter id="line-glow">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="1.5" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+
+            <!-- Base lines (hub center to each satellite) -->
+            <line class="constellation-line" x1="200" y1="200" x2="200" y2="30" stroke="url(#lg0)" stroke-width="1.5"/>
+            <line class="constellation-line" x1="200" y1="200" x2="340" y2="90" stroke="url(#lg1)" stroke-width="1.5"/>
+            <line class="constellation-line" x1="200" y1="200" x2="60" y2="90" stroke="url(#lg2)" stroke-width="1.5"/>
+            <line class="constellation-line" x1="200" y1="200" x2="50" y2="310" stroke="url(#lg3)" stroke-width="1.5"/>
+            <line class="constellation-line" x1="200" y1="200" x2="350" y2="310" stroke="url(#lg4)" stroke-width="1.5"/>
+            <line class="constellation-line" x1="200" y1="200" x2="200" y2="395" stroke="url(#lg5)" stroke-width="1.5"/>
+            <line class="constellation-line" x1="200" y1="200" x2="20" y2="200" stroke="url(#lg6)" stroke-width="1.5"/>
+            <line class="constellation-line" x1="200" y1="200" x2="380" y2="200" stroke="url(#lg7)" stroke-width="1.5"/>
+
+            <!-- Pulse lines (data flow effect) -->
+            <line class="constellation-line-pulse" x1="200" y1="200" x2="200" y2="30" stroke="#7a3868" stroke-width="1.5" filter="url(#line-glow)"/>
+            <line class="constellation-line-pulse" x1="200" y1="200" x2="340" y2="90" stroke="#7a3868" stroke-width="1.5" filter="url(#line-glow)" style="animation-delay: 0.4s"/>
+            <line class="constellation-line-pulse" x1="200" y1="200" x2="60" y2="90" stroke="#7a3868" stroke-width="1.5" filter="url(#line-glow)" style="animation-delay: 0.8s"/>
+            <line class="constellation-line-pulse" x1="200" y1="200" x2="50" y2="310" stroke="#7a3868" stroke-width="1.5" filter="url(#line-glow)" style="animation-delay: 1.2s"/>
+            <line class="constellation-line-pulse" x1="200" y1="200" x2="350" y2="310" stroke="#7a3868" stroke-width="1.5" filter="url(#line-glow)" style="animation-delay: 1.6s"/>
+            <line class="constellation-line-pulse" x1="200" y1="200" x2="200" y2="395" stroke="#7a3868" stroke-width="1.5" filter="url(#line-glow)" style="animation-delay: 2s"/>
+            <line class="constellation-line-pulse" x1="200" y1="200" x2="20" y2="200" stroke="#7a3868" stroke-width="1.5" filter="url(#line-glow)" style="animation-delay: 2.4s"/>
+            <line class="constellation-line-pulse" x1="200" y1="200" x2="380" y2="200" stroke="#7a3868" stroke-width="1.5" filter="url(#line-glow)" style="animation-delay: 2.8s"/>
+          </svg>
+
+          <!-- Central Hub -->
+          <div class="constellation-hub">
+            <div class="hub-glow"></div>
+            <div class="hub-ring hub-ring-outer"></div>
+            <div class="hub-ring hub-ring-inner"></div>
+            <div class="hub-core">
+              <span class="hub-logo">M</span>
+            </div>
+          </div>
+
+          <!-- Satellite Nodes -->
+          <div class="constellation-node node-ideas" style="--node-delay: 0s;">
+            <div class="node-dot"></div>
+            <div class="node-card">
+              <span class="idea-icon"></span>
+              <span>Bank of Ideas</span>
+            </div>
+          </div>
+
+          <div class="constellation-node node-scripts" style="--node-delay: 0.15s;">
+            <div class="node-dot"></div>
+            <div class="node-card">
+              <span class="clap-icon"></span>
+              <span>Production Pipeline</span>
+            </div>
+          </div>
+
+          <div class="constellation-node node-planning" style="--node-delay: 0.3s;">
+            <div class="node-dot"></div>
+            <div class="node-card">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+              </svg>
+              <span>Content Calendar</span>
+            </div>
+          </div>
+
+          <div class="constellation-node node-deals" style="--node-delay: 0.45s;">
+            <div class="node-dot"></div>
+            <div class="node-card">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+              </svg>
+              <span>Partnership Tracker</span>
+            </div>
+          </div>
+
+          <div class="constellation-node node-schedule" style="--node-delay: 0.6s;">
+            <div class="node-dot"></div>
+            <div class="node-card">
+              <span class="visual-icon"></span>
+              <span>Visual Concept Lab</span>
+            </div>
+          </div>
+
+          <div class="constellation-node node-strategy" style="--node-delay: 0.75s;">
+            <div class="node-dot"></div>
+            <div class="node-card">
+              <span class="strategy-icon"></span>
+              <span>Growth Strategy Kit</span>
+            </div>
+          </div>
+
+          <div class="constellation-node node-visual" style="--node-delay: 0.9s;">
+            <div class="node-dot"></div>
+            <div class="node-card">
+              <span class="ai-icon"></span>
+              <span>AI-Support</span>
+            </div>
+          </div>
+
+          <div class="constellation-node node-ai" style="--node-delay: 1.05s;">
+            <div class="node-dot"></div>
+            <div class="node-card">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+              </svg>
+              <span>Daily Planner</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -3326,6 +3930,49 @@
 
     if (statsSection) {
       statsObserver.observe(statsSection);
+    }
+
+    // Constellation entrance animation
+    const constellationContainer = document.querySelector('.constellation-container');
+    if (constellationContainer) {
+      constellationContainer.style.opacity = '0';
+
+      const constellationObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            constellationContainer.style.transition = 'opacity 0.6s ease';
+            constellationContainer.style.opacity = '1';
+
+            // Animate SVG base lines drawing in from center
+            const baseLines = constellationContainer.querySelectorAll('.constellation-line:not(.constellation-line-pulse)');
+            baseLines.forEach((line, i) => {
+              const dx = line.x2.baseVal.value - line.x1.baseVal.value;
+              const dy = line.y2.baseVal.value - line.y1.baseVal.value;
+              const length = Math.sqrt(dx * dx + dy * dy);
+              line.style.strokeDasharray = length;
+              line.style.strokeDashoffset = length;
+              line.style.transition = 'stroke-dashoffset 0.8s cubic-bezier(0.22, 1, 0.36, 1) ' + (i * 0.12) + 's';
+              requestAnimationFrame(() => {
+                line.style.strokeDashoffset = '0';
+              });
+            });
+
+            // Show pulse lines after base lines finish drawing
+            const pulseLines = constellationContainer.querySelectorAll('.constellation-line-pulse');
+            pulseLines.forEach((line, i) => {
+              line.style.opacity = '0';
+              setTimeout(() => {
+                line.style.transition = 'opacity 0.5s ease';
+                line.style.opacity = '0.5';
+              }, 800 + i * 120);
+            });
+
+            constellationObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.3 });
+
+      constellationObserver.observe(constellationContainer);
     }
   </script>
 </body>
