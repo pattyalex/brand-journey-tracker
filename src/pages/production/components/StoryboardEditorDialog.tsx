@@ -907,6 +907,24 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
                 )}
               </div>
 
+              {/* Caption section */}
+              <div className="mt-6">
+                <p className="text-[11px] font-semibold text-[#612A4F] uppercase tracking-wider mb-1">Caption</p>
+                {isEditingScript ? (
+                  <textarea
+                    value={card?.caption || ''}
+                    onChange={() => {}}
+                    className="w-full min-h-[80px] text-[13px] text-gray-700 leading-relaxed bg-transparent border-none p-0 resize-none focus:outline-none focus:ring-0"
+                    placeholder="Write your caption here..."
+                    readOnly
+                  />
+                ) : card?.caption ? (
+                  <p className="text-[13px] text-gray-700 leading-relaxed whitespace-pre-wrap">{card.caption}</p>
+                ) : (
+                  <p className="text-[13px] text-gray-400 italic">No caption added</p>
+                )}
+              </div>
+
               {/* Card details - Formats, Platform, Shooting Plan */}
               <div className="mt-4 pt-2 space-y-6">
                 {/* Formats (How it's shot) */}

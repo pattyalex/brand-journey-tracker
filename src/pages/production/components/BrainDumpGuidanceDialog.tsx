@@ -11,6 +11,7 @@ import {
 import { ArrowRight, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ContentFlowProgress from "./ContentFlowProgress";
+import { ContentType } from "../types";
 
 interface BrainDumpGuidanceDialogProps {
   isOpen: boolean;
@@ -26,6 +27,7 @@ interface BrainDumpGuidanceDialogProps {
   slideDirection?: 'left' | 'right';
   embedded?: boolean;
   completedSteps?: number[];
+  contentType?: ContentType;
 }
 
 const BrainDumpGuidanceDialog: React.FC<BrainDumpGuidanceDialogProps> = ({
@@ -42,6 +44,7 @@ const BrainDumpGuidanceDialog: React.FC<BrainDumpGuidanceDialogProps> = ({
   slideDirection = 'right',
   embedded = false,
   completedSteps = [],
+  contentType = 'video',
 }) => {
   const [shakeButton, setShakeButton] = useState(false);
 
@@ -78,7 +81,7 @@ const BrainDumpGuidanceDialog: React.FC<BrainDumpGuidanceDialogProps> = ({
 
       {/* Stepper Progress */}
       <div className="pt-6 pb-8">
-        <ContentFlowProgress currentStep={1} onStepClick={onNavigateToStep} completedSteps={completedSteps} />
+        <ContentFlowProgress currentStep={1} contentType={contentType} onStepClick={onNavigateToStep} completedSteps={completedSteps} />
       </div>
 
       {/* Content Area */}
@@ -110,7 +113,7 @@ const BrainDumpGuidanceDialog: React.FC<BrainDumpGuidanceDialogProps> = ({
             onClick={() => onNavigateToStep?.(2)}
             className="bg-[#612A4F] hover:bg-[#4A1F3D] text-white flex-shrink-0 ml-auto text-sm"
           >
-            Save & Move to Script <ArrowRight className="w-3 h-3 ml-1" />
+            {contentType === 'image' ? 'Save & Move to Concept' : 'Save & Move to Script'} <ArrowRight className="w-3 h-3 ml-1" />
           </Button>
         </div>
 
@@ -122,7 +125,7 @@ const BrainDumpGuidanceDialog: React.FC<BrainDumpGuidanceDialogProps> = ({
           <Textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Write freely here... no need to organize, just capture your thoughts..."
+            placeholder="Write down any initial thoughts, or skip ahead if your idea is ready to go..."
             className="min-h-[300px] flex-1 resize-none rounded-lg focus:outline-none focus:ring-0 transition-all text-sm leading-relaxed bg-white p-4" style={{ border: '0.5px solid #e5e7eb' }}
           />
         </div>

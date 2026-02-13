@@ -48,8 +48,9 @@ import ScriptEditorDialog from "./production/components/ScriptEditorDialog";
 import ContentFlowProgress, { getCompletedSteps } from "./production/components/ContentFlowProgress";
 import ContentFlowDialog from "./production/components/ContentFlowDialog";
 import BrainDumpGuidanceDialog from "./production/components/BrainDumpGuidanceDialog";
-import { KanbanColumn, ProductionCard, StoryboardScene, EditingChecklist, SchedulingStatus } from "./production/types";
+import { KanbanColumn, ProductionCard, StoryboardScene, EditingChecklist, SchedulingStatus, ContentType, ImageSlide, VisualReference, LinkPreview } from "./production/types";
 import StoryboardEditorDialog from "./production/components/StoryboardEditorDialog";
+import ConceptEditorDialog from "./production/components/ConceptEditorDialog";
 import EditChecklistDialog from "./production/components/EditChecklistDialog";
 import ExpandedScheduleView from "./production/components/ExpandedScheduleView";
 import ArchiveDialog from "./production/components/ArchiveDialog";
@@ -274,6 +275,15 @@ const Production = () => {
   // Unified Content Flow Dialog state (for seamless transitions between steps)
   const [activeContentFlowStep, setActiveContentFlowStep] = useState<number | null>(null);
   const [contentFlowCard, setContentFlowCard] = useState<ProductionCard | null>(null);
+
+  // Content type state (video vs image)
+  const [contentType, setContentType] = useState<ContentType>('video');
+
+  // Image-specific state for Concept step
+  const [caption, setCaption] = useState("");
+  const [visualReferences, setVisualReferences] = useState<VisualReference[]>([]);
+  const [linkPreviews, setLinkPreviews] = useState<LinkPreview[]>([]);
+  const [slides, setSlides] = useState<ImageSlide[]>([]);
 
   // Archive state - load from localStorage
   const [archivedCards, setArchivedCards] = useState<ProductionCard[]>(() => {
@@ -1746,8 +1756,12 @@ Return only a JSON array of ${count} strings.`
 
   // Open content flow dialog for any card (used for scheduled content)
   const handleOpenContentFlowForCard = (card: ProductionCard, startStep?: number) => {
+    const cardContentType = card.contentType || 'video';
+    setContentType(cardContentType);
+
     // Determine which step to start on based on what's completed
     const completedSteps = getCompletedSteps(card);
+    const maxStep = cardContentType === 'image' ? 4 : 5;
     let step = startStep || 1;
 
     // If no startStep provided, start at first incomplete step or step 1
@@ -1756,7 +1770,7 @@ Return only a JSON array of ${count} strings.`
       else if (!completedSteps.includes(2)) step = 2;
       else if (!completedSteps.includes(3)) step = 3;
       else if (!completedSteps.includes(4)) step = 4;
-      else step = 5;
+      else step = maxStep;
     }
 
     // Initialize all state for the card
@@ -1782,6 +1796,12 @@ Return only a JSON array of ${count} strings.`
     setEditingStoryboardCard(card);
     setEditingEditCard(card);
     setSchedulingCard(card);
+
+    // Initialize image-specific state
+    setCaption(card.caption || "");
+    setVisualReferences(card.visualReferences || []);
+    setLinkPreviews(card.linkPreviews || []);
+    setSlides(card.slides || []);
 
     // Check for brain dump suggestion
     // Only show if notes exist AND haven't already been handled (dismissed or appended)
@@ -1902,14 +1922,27 @@ Return only a JSON array of ${count} strings.`
       return 'to-edit';
     }
 
-    // 3. Has storyboard scenes → Film column
-    if (card.storyboard && card.storyboard.length > 0) {
-      return 'to-film';
-    }
+    // For image content: check concept data instead of storyboard/script
+    if (card.contentType === 'image') {
+      // 3. Has concept content (caption, slides, visual refs) → equivalent of Script column
+      const hasConceptContent =
+        card.caption?.trim() ||
+        (card.slides && card.slides.length > 0 && card.slides.some(s => s.content?.trim())) ||
+        (card.visualReferences && card.visualReferences.length > 0) ||
+        (card.linkPreviews && card.linkPreviews.length > 0);
+      if (hasConceptContent) {
+        return 'shape-ideas';
+      }
+    } else {
+      // 3. Has storyboard scenes → Film column (video only)
+      if (card.storyboard && card.storyboard.length > 0) {
+        return 'to-film';
+      }
 
-    // 4. Has script content → Script column
-    if (card.script && card.script.trim().length > 0) {
-      return 'shape-ideas';
+      // 4. Has script content → Script column (video only)
+      if (card.script && card.script.trim().length > 0) {
+        return 'shape-ideas';
+      }
     }
 
     // 5. Default → Ideate column
@@ -1937,12 +1970,14 @@ Return only a JSON array of ${count} strings.`
 
     // Gather all current state into an updated card object
     const updatedCardData: Partial<ProductionCard> = {
+      // Content type
+      contentType,
       // From Ideate step
       title: ideateCardTitle || cardTitle || baseCard.title,
       description: ideateCardNotes || baseCard.description,
-      // From Script step
+      // From Script step (video) / shared
       hook: cardHook || baseCard.hook,
-      script: scriptContent || baseCard.script,
+      script: contentType === 'image' ? (caption || baseCard.caption || baseCard.script) : (scriptContent || baseCard.script),
       platforms: platformTags.length > 0 ? platformTags : baseCard.platforms,
       formats: formatTags.length > 0 ? formatTags : baseCard.formats,
       locationChecked,
@@ -1953,13 +1988,18 @@ Return only a JSON array of ${count} strings.`
       propsText,
       filmingNotes,
       status: cardStatus || baseCard.status,
-      // From Film step (storyboard)
+      // From Film step (storyboard) - video only
       storyboard: editingStoryboardCard?.storyboard || baseCard.storyboard,
       // From Edit step
       editingChecklist: editingEditCard?.editingChecklist || baseCard.editingChecklist,
       // From Schedule step
       scheduledDate: baseCard.scheduledDate,
       schedulingStatus: baseCard.schedulingStatus,
+      // Image-specific data from Concept step
+      caption: caption || baseCard.caption,
+      visualReferences: visualReferences.length > 0 ? visualReferences : baseCard.visualReferences,
+      linkPreviews: linkPreviews.length > 0 ? linkPreviews : baseCard.linkPreviews,
+      slides: slides.length > 0 ? slides : baseCard.slides,
     };
 
     // Determine target column based on content
@@ -1971,6 +2011,24 @@ Return only a JSON array of ${count} strings.`
     // Reset state
     setActiveContentFlowStep(null);
     setContentFlowCard(null);
+  };
+
+  // Handle content type toggle (Video <-> Image)
+  const handleContentTypeChange = (newType: ContentType) => {
+    setContentType(newType);
+    // Reset to step 1 when switching content type
+    setActiveContentFlowStep(1);
+    // Update the card's content type in columns
+    if (contentFlowCard) {
+      setColumns((prev) =>
+        prev.map((col) => ({
+          ...col,
+          cards: col.cards.map((card) =>
+            card.id === contentFlowCard.id ? { ...card, contentType: newType } : card
+          ),
+        }))
+      );
+    }
   };
 
   // Helper to move a card to a specific column
@@ -2212,65 +2270,95 @@ Return only a JSON array of ${count} strings.`
     setSlideDirection(step > currentDialogStep ? 'left' : 'right');
 
     // If we're in the unified content flow dialog, just update the step (no blink!)
-    if (activeContentFlowStep !== null && step >= 1 && step <= 5) {
+    const maxStep = contentType === 'image' ? 4 : 5;
+    if (activeContentFlowStep !== null && step >= 1 && step <= maxStep) {
       // Initialize state for the target step
-      switch (step) {
-        case 1: // Ideate
-          setEditingIdeateCard(latestCard!);
-          const ideateTitle = latestCard!.hook || latestCard!.title || "";
-          setIdeateCardTitle(ideateTitle);
-          setIdeateCardNotes(latestCard!.description || "");
-          // Also sync cardHook so it's up-to-date if user navigates to Script later
-          setCardHook(ideateTitle);
-          break;
-        case 2: // Script
-          setEditingScriptCard(latestCard!);
-          const scriptTitle = latestCard!.hook || latestCard!.title || "";
-          setCardTitle(latestCard!.title || "");
-          setCardHook(scriptTitle);
-          // Also sync ideateCardTitle so it's up-to-date if user navigates back to Ideate
-          setIdeateCardTitle(scriptTitle);
-          setScriptContent(latestCard!.script || "");
-          setPlatformTags(latestCard!.platforms || []);
-          setFormatTags(latestCard!.formats || []);
-          setLocationChecked(latestCard!.locationChecked || false);
-          setLocationText(latestCard!.locationText || "");
-          setOutfitChecked(latestCard!.outfitChecked || false);
-          setOutfitText(latestCard!.outfitText || "");
-          setPropsChecked(latestCard!.propsChecked || false);
-          setPropsText(latestCard!.propsText || "");
-          setFilmingNotes(latestCard!.filmingNotes || "");
-          setCardStatus(latestCard!.status || 'to-start');
-          setCustomVideoFormats(latestCard!.customVideoFormats || []);
-          setCustomPhotoFormats(latestCard!.customPhotoFormats || []);
-          // Check for brain dump suggestion
-          // Only show if notes exist AND haven't already been handled (dismissed or appended)
-          {
-            const notesText = latestCard!.description?.trim() || "";
-            const alreadyHandledText = latestCard!.brainDumpHandledText?.trim() || "";
-            const hasNotes = notesText.length > 0;
-            const alreadyHandled = alreadyHandledText.length > 0 && notesText === alreadyHandledText;
-            console.log('[BrainDump Prod case 2] notesText:', notesText);
-            console.log('[BrainDump Prod case 2] alreadyHandledText:', alreadyHandledText);
-            console.log('[BrainDump Prod case 2] hasNotes:', hasNotes, 'alreadyHandled:', alreadyHandled);
-            if (hasNotes && !alreadyHandled) {
-              setBrainDumpSuggestion(latestCard!.description!);
-              setShowBrainDumpSuggestion(true);
-            } else {
-              setBrainDumpSuggestion("");
-              setShowBrainDumpSuggestion(false);
-            }
+      if (contentType === 'image') {
+        // Image flow: 1=Ideate, 2=Concept, 3=Edit, 4=Schedule
+        switch (step) {
+          case 1: { // Ideate
+            setEditingIdeateCard(latestCard!);
+            const ideateTitle = latestCard!.hook || latestCard!.title || "";
+            setIdeateCardTitle(ideateTitle);
+            setIdeateCardNotes(latestCard!.description || "");
+            setCardHook(ideateTitle);
+            break;
           }
-          break;
-        case 3: // Film
-          setEditingStoryboardCard(latestCard!);
-          break;
-        case 4: // Edit
-          setEditingEditCard(latestCard!);
-          break;
-        case 5: // Schedule
-          setSchedulingCard(latestCard!);
-          break;
+          case 2: { // Concept
+            const conceptTitle = latestCard!.hook || latestCard!.title || "";
+            setCardTitle(latestCard!.title || "");
+            setCardHook(conceptTitle);
+            setIdeateCardTitle(conceptTitle);
+            setCaption(latestCard!.caption || "");
+            setVisualReferences(latestCard!.visualReferences || []);
+            setLinkPreviews(latestCard!.linkPreviews || []);
+            setSlides(latestCard!.slides || []);
+            setPlatformTags(latestCard!.platforms || []);
+            break;
+          }
+          case 3: // Edit
+            setEditingEditCard(latestCard!);
+            break;
+          case 4: // Schedule
+            setSchedulingCard(latestCard!);
+            break;
+        }
+      } else {
+        // Video flow: 1=Ideate, 2=Script, 3=Film, 4=Edit, 5=Schedule
+        switch (step) {
+          case 1: { // Ideate
+            setEditingIdeateCard(latestCard!);
+            const ideateTitle = latestCard!.hook || latestCard!.title || "";
+            setIdeateCardTitle(ideateTitle);
+            setIdeateCardNotes(latestCard!.description || "");
+            setCardHook(ideateTitle);
+            break;
+          }
+          case 2: { // Script
+            setEditingScriptCard(latestCard!);
+            const scriptTitle = latestCard!.hook || latestCard!.title || "";
+            setCardTitle(latestCard!.title || "");
+            setCardHook(scriptTitle);
+            setIdeateCardTitle(scriptTitle);
+            setScriptContent(latestCard!.script || "");
+            setPlatformTags(latestCard!.platforms || []);
+            setFormatTags(latestCard!.formats || []);
+            setLocationChecked(latestCard!.locationChecked || false);
+            setLocationText(latestCard!.locationText || "");
+            setOutfitChecked(latestCard!.outfitChecked || false);
+            setOutfitText(latestCard!.outfitText || "");
+            setPropsChecked(latestCard!.propsChecked || false);
+            setPropsText(latestCard!.propsText || "");
+            setFilmingNotes(latestCard!.filmingNotes || "");
+            setCardStatus(latestCard!.status || 'to-start');
+            setCustomVideoFormats(latestCard!.customVideoFormats || []);
+            setCustomPhotoFormats(latestCard!.customPhotoFormats || []);
+            // Check for brain dump suggestion
+            {
+              const notesText = latestCard!.description?.trim() || "";
+              const alreadyHandledText = latestCard!.brainDumpHandledText?.trim() || "";
+              const hasNotes = notesText.length > 0;
+              const alreadyHandled = alreadyHandledText.length > 0 && notesText === alreadyHandledText;
+              if (hasNotes && !alreadyHandled) {
+                setBrainDumpSuggestion(latestCard!.description!);
+                setShowBrainDumpSuggestion(true);
+              } else {
+                setBrainDumpSuggestion("");
+                setShowBrainDumpSuggestion(false);
+              }
+            }
+            break;
+          }
+          case 3: // Film
+            setEditingStoryboardCard(latestCard!);
+            break;
+          case 4: // Edit
+            setEditingEditCard(latestCard!);
+            break;
+          case 5: // Schedule
+            setSchedulingCard(latestCard!);
+            break;
+        }
       }
       setContentFlowCard(latestCard!);
       setActiveContentFlowStep(step);
@@ -4927,6 +5015,8 @@ Return only a JSON array of ${count} strings.`
           onNavigateToStep={handleNavigateToStep}
           slideDirection={slideDirection}
           completedSteps={getCompletedSteps(editingScriptCard)}
+          caption={caption}
+          setCaption={setCaption}
         />
 
         <BrainDumpGuidanceDialog
@@ -4969,7 +5059,10 @@ Return only a JSON array of ${count} strings.`
           activeStep={activeContentFlowStep}
           onClose={handleCloseContentFlowDialog}
           slideDirection={slideDirection}
+          contentType={contentType}
+          onContentTypeChange={handleContentTypeChange}
         >
+          {/* Step 1: Ideate (same for both video and image) */}
           {activeContentFlowStep === 1 && contentFlowCard && (
             <BrainDumpGuidanceDialog
               isOpen={true}
@@ -4989,9 +5082,12 @@ Return only a JSON array of ${count} strings.`
               slideDirection={slideDirection}
               embedded={true}
               completedSteps={getCompletedSteps(contentFlowCard)}
+              contentType={contentType}
             />
           )}
-          {activeContentFlowStep === 2 && contentFlowCard && (
+
+          {/* Step 2: Script (video) or Concept (image) */}
+          {activeContentFlowStep === 2 && contentFlowCard && contentType === 'video' && (
             <ScriptEditorDialog
               isOpen={true}
               onOpenChange={(open) => {
@@ -5038,13 +5134,53 @@ Return only a JSON array of ${count} strings.`
               setCustomVideoFormats={setCustomVideoFormats}
               customPhotoFormats={customPhotoFormats}
               setCustomPhotoFormats={setCustomPhotoFormats}
+              onRemoveFormatTag={handleRemoveFormatTag}
+              onRemovePlatformTag={handleRemovePlatformTag}
+              onNavigateToStep={handleNavigateToStep}
+              slideDirection={slideDirection}
+              embedded={true}
+              completedSteps={getCompletedSteps(contentFlowCard)}
+              caption={caption}
+              setCaption={setCaption}
+            />
+          )}
+          {activeContentFlowStep === 2 && contentFlowCard && contentType === 'image' && (
+            <ConceptEditorDialog
+              isOpen={true}
+              onOpenChange={(open) => {
+                if (!open) {
+                  handleCloseContentFlowDialog();
+                }
+              }}
+              onSave={() => {}}
+              cardTitle={cardTitle}
+              setCardTitle={setCardTitle}
+              cardHook={cardHook}
+              setCardHook={setCardHook}
+              caption={caption}
+              setCaption={setCaption}
+              visualReferences={visualReferences}
+              setVisualReferences={setVisualReferences}
+              linkPreviews={linkPreviews}
+              setLinkPreviews={setLinkPreviews}
+              slides={slides}
+              setSlides={setSlides}
+              platformTags={platformTags}
+              setPlatformTags={setPlatformTags}
+              showCustomPlatformInput={showCustomPlatformInput}
+              setShowCustomPlatformInput={setShowCustomPlatformInput}
+              customPlatformInput={customPlatformInput}
+              setCustomPlatformInput={setCustomPlatformInput}
+              onRemovePlatformTag={(tag) => setPlatformTags(platformTags.filter(t => t !== tag))}
               onNavigateToStep={handleNavigateToStep}
               slideDirection={slideDirection}
               embedded={true}
               completedSteps={getCompletedSteps(contentFlowCard)}
             />
           )}
-          {activeContentFlowStep === 3 && contentFlowCard && (
+
+          {/* Step 3: Film (video) or Edit (image) */}
+          {activeContentFlowStep === 3 && contentFlowCard && contentType === 'video' && (
             <StoryboardEditorDialog
               open={true}
               onOpenChange={(open) => {
@@ -5060,7 +5196,7 @@ Return only a JSON array of ${count} strings.`
               completedSteps={getCompletedSteps(contentFlowCard)}
             />
           )}
-          {activeContentFlowStep === 4 && contentFlowCard && (
+          {activeContentFlowStep === 3 && contentFlowCard && contentType === 'image' && (
             <EditChecklistDialog
               isOpen={true}
               onOpenChange={(open) => {
@@ -5074,9 +5210,30 @@ Return only a JSON array of ${count} strings.`
               slideDirection={slideDirection}
               embedded={true}
               completedSteps={getCompletedSteps(contentFlowCard)}
+              contentType="image"
             />
           )}
-          {activeContentFlowStep === 5 && contentFlowCard && (
+
+          {/* Step 4: Edit (video) or Schedule (image) */}
+          {activeContentFlowStep === 4 && contentFlowCard && contentType === 'video' && (
+            <EditChecklistDialog
+              isOpen={true}
+              onOpenChange={(open) => {
+                if (!open) {
+                  handleCloseContentFlowDialog();
+                }
+              }}
+              card={contentFlowCard}
+              onSave={handleSaveEditChecklist}
+              onNavigateToStep={handleNavigateToStep}
+              slideDirection={slideDirection}
+              embedded={true}
+              completedSteps={getCompletedSteps(contentFlowCard)}
+              contentType="video"
+            />
+          )}
+          {/* Step 5: Schedule (video) — or step 4 for image is handled above */}
+          {((activeContentFlowStep === 5 && contentType === 'video') || (activeContentFlowStep === 4 && contentType === 'image')) && contentFlowCard && (
             <ExpandedScheduleView
               embedded={true}
               singleCard={contentFlowCard}

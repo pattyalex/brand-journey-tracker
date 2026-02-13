@@ -29,7 +29,7 @@ import {
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
 import { motion, AnimatePresence } from "framer-motion";
-import { ProductionCard, EditingChecklist, EditingChecklistItem, EditingStatus } from "../types";
+import { ProductionCard, EditingChecklist, EditingChecklistItem, EditingStatus, ContentType } from "../types";
 
 // Helper to get platform icon
 const getPlatformIcon = (platform: string): React.ReactNode => {
@@ -71,24 +71,35 @@ interface EditChecklistDialogProps {
   slideDirection?: 'left' | 'right';
   embedded?: boolean;
   completedSteps?: number[];
+  contentType?: ContentType;
 }
 
-// Default example items for the global checklist
-const defaultExampleItems: EditingChecklistItem[] = [
+// Default example items for the global checklist (video)
+const defaultVideoExampleItems: EditingChecklistItem[] = [
   { id: 'example-1', text: 'Add visual hook in the first 3 seconds', checked: false, isExample: true },
   { id: 'example-2', text: 'Cut out pauses and filler words', checked: false, isExample: true },
   { id: 'example-3', text: 'Add captions for talking videos', checked: false, isExample: true },
 ];
 
-const GLOBAL_CHECKLIST_KEY = 'editor-checklist-items';
+// Default example items for the global checklist (image)
+const defaultImageExampleItems: EditingChecklistItem[] = [
+  { id: 'img-example-1', text: 'Consistent visual style across all slides', checked: false, isExample: true },
+  { id: 'img-example-2', text: 'Text is legible on all backgrounds', checked: false, isExample: true },
+  { id: 'img-example-3', text: 'Branding or watermark added', checked: false, isExample: true },
+  { id: 'img-example-4', text: 'Slide order tells a clear story', checked: false, isExample: true },
+];
+
+const VIDEO_CHECKLIST_KEY = 'editor-checklist-items';
+const IMAGE_CHECKLIST_KEY = 'editor-checklist-items-image';
 
 // Load global checklist from localStorage
-const loadGlobalChecklist = (): EditingChecklistItem[] => {
+const loadGlobalChecklist = (contentType: ContentType = 'video'): EditingChecklistItem[] => {
+  const key = contentType === 'image' ? IMAGE_CHECKLIST_KEY : VIDEO_CHECKLIST_KEY;
+  const defaults = contentType === 'image' ? defaultImageExampleItems : defaultVideoExampleItems;
   try {
-    const saved = localStorage.getItem(GLOBAL_CHECKLIST_KEY);
+    const saved = localStorage.getItem(key);
     if (saved) {
       const parsed = JSON.parse(saved);
-      // If saved data is empty or invalid, return defaults
       if (Array.isArray(parsed) && parsed.length > 0) {
         return parsed;
       }
@@ -96,13 +107,14 @@ const loadGlobalChecklist = (): EditingChecklistItem[] => {
   } catch (e) {
     console.error('Failed to load global checklist:', e);
   }
-  return defaultExampleItems;
+  return defaults;
 };
 
 // Save global checklist to localStorage
-const saveGlobalChecklist = (items: EditingChecklistItem[]) => {
+const saveGlobalChecklist = (items: EditingChecklistItem[], contentType: ContentType = 'video') => {
+  const key = contentType === 'image' ? IMAGE_CHECKLIST_KEY : VIDEO_CHECKLIST_KEY;
   try {
-    localStorage.setItem(GLOBAL_CHECKLIST_KEY, JSON.stringify(items));
+    localStorage.setItem(key, JSON.stringify(items));
   } catch (e) {
     console.error('Failed to save global checklist:', e);
   }
@@ -117,6 +129,7 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
   slideDirection = 'right',
   embedded = false,
   completedSteps = [],
+  contentType = 'video',
 }) => {
   const [shakeButton, setShakeButton] = useState(false);
 
@@ -141,8 +154,8 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
     }),
   };
 
-  // Global checklist items (shared across all cards)
-  const [globalItems, setGlobalItems] = useState<EditingChecklistItem[]>(loadGlobalChecklist);
+  // Global checklist items (shared across all cards of same content type)
+  const [globalItems, setGlobalItems] = useState<EditingChecklistItem[]>(() => loadGlobalChecklist(contentType));
   // Per-card notes and status
   const [notes, setNotes] = useState("");
   const [status, setStatus] = useState<EditingStatus | null>(null);
@@ -151,10 +164,15 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
   const [script, setScript] = useState("");
   const [isEditing, setIsEditing] = useState(false);
 
+  const isImage = contentType === 'image';
+  // For image: Edit is step 3, Schedule is step 4; for video: Edit is step 4, Schedule is step 5
+  const editStepNumber = isImage ? 3 : 4;
+  const scheduleStepNumber = isImage ? 4 : 5;
+
   // Initialize content from card data when dialog opens
   useEffect(() => {
-    // Load global checklist items
-    setGlobalItems(loadGlobalChecklist());
+    // Load global checklist items for this content type
+    setGlobalItems(loadGlobalChecklist(contentType));
     // Load per-card notes and status
     setNotes(card?.editingChecklist?.notes || "");
     setStatus(card?.editingChecklist?.status || null);
@@ -165,8 +183,8 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
 
   // Save global checklist whenever it changes
   useEffect(() => {
-    saveGlobalChecklist(globalItems);
-  }, [globalItems]);
+    saveGlobalChecklist(globalItems, contentType);
+  }, [globalItems, contentType]);
 
   const handleToggleItem = (id: string) => {
     setGlobalItems(prev => prev.map(item =>
@@ -236,7 +254,8 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
 
       {/* Step Progress Indicator */}
       <ContentFlowProgress
-        currentStep={4}
+        currentStep={editStepNumber}
+        contentType={contentType}
         className="flex-shrink-0 pt-4 pb-6"
         onStepClick={handleNavigateWithSave}
         completedSteps={completedSteps}
@@ -259,7 +278,7 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
             </h3>
             <Button
               size="sm"
-              onClick={() => handleNavigateWithSave(5)}
+              onClick={() => handleNavigateWithSave(scheduleStepNumber)}
               className="bg-[#612A4F] hover:bg-[#4A1F3D] text-white text-sm"
             >
               Save & Move to Schedule <ArrowRight className="w-3 h-3 ml-1" />
@@ -312,16 +331,18 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
                 )}
               </div>
 
-              {/* Script section */}
+              {/* Script/Caption section */}
               <div className="mt-6">
-                <p className="text-[11px] font-semibold text-[#612A4F] uppercase tracking-wider mb-1">Script</p>
+                <p className="text-[11px] font-semibold text-[#612A4F] uppercase tracking-wider mb-1">
+                  {isImage ? 'Caption' : 'Script'}
+                </p>
                 {isEditing ? (
                   <textarea
                     autoFocus
                     value={script}
                     onChange={(e) => setScript(e.target.value)}
                     className="w-full h-full min-h-[200px] text-[13px] text-gray-700 leading-relaxed bg-transparent border-none p-0 resize-none focus:outline-none focus:ring-0"
-                    placeholder="Write your script here..."
+                    placeholder={isImage ? "Write your caption here..." : "Write your script here..."}
                   />
                 ) : script ? (
                   <div className="-mx-2 px-2">
@@ -336,14 +357,35 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
                       <FileText className="w-6 h-6 text-pink-400" />
                     </div>
                     <div className="text-left">
-                      <h4 className="text-xs text-gray-600 font-medium">Click to add script</h4>
+                      <h4 className="text-xs text-gray-600 font-medium">
+                        {isImage ? 'Click to add caption' : 'Click to add script'}
+                      </h4>
                       <p className="text-xs text-gray-400">
-                        Add a script to review while editing
+                        {isImage ? 'Add caption to review while editing' : 'Add a script to review while editing'}
                       </p>
                     </div>
                   </div>
                 )}
               </div>
+
+              {/* Caption section (video only — image uses the Script slot above) */}
+              {!isImage && (
+                <div className="mt-6">
+                  <p className="text-[11px] font-semibold text-[#612A4F] uppercase tracking-wider mb-1">Caption</p>
+                  {isEditing ? (
+                    <textarea
+                      value={card?.caption || ''}
+                      className="w-full min-h-[80px] text-[13px] text-gray-700 leading-relaxed bg-transparent border-none p-0 resize-none focus:outline-none focus:ring-0"
+                      placeholder="Write your caption here..."
+                      readOnly
+                    />
+                  ) : card?.caption ? (
+                    <p className="text-[13px] text-gray-700 leading-relaxed whitespace-pre-wrap">{card.caption}</p>
+                  ) : (
+                    <p className="text-[13px] text-gray-400 italic">No caption added</p>
+                  )}
+                </div>
+              )}
 
               {/* Card details - Formats, Platform, Shooting Plan */}
               <div className="mt-4 pt-2 space-y-6">
@@ -624,7 +666,7 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
               <Textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="Pacing, music, transitions, text overlays..."
+                placeholder={isImage ? "Color grading, font choices, brand consistency..." : "Pacing, music, transitions, text overlays..."}
                 className="min-h-[120px] max-h-[200px] border-0 bg-transparent focus:ring-0 resize-none overflow-y-auto placeholder:text-gray-400 text-xs text-gray-700"
               />
             </div>

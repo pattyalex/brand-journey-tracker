@@ -108,6 +108,8 @@ interface ScriptEditorDialogProps {
   onNavigateToStep?: (step: number) => void;
   slideDirection?: 'left' | 'right';
   completedSteps?: number[];
+  caption?: string;
+  setCaption?: (value: string) => void;
 }
 
 const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
@@ -161,6 +163,8 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
   onNavigateToStep,
   slideDirection = 'right',
   completedSteps = [],
+  caption = '',
+  setCaption,
 }) => {
   // Internal refs for shooting plan navigation (fallback when external refs not provided)
   const internalTitleRef = useRef<HTMLInputElement>(null);
@@ -353,12 +357,12 @@ Guidelines:
       </button>
 
       {/* Step Progress Indicator - Centered */}
-      <div className="flex justify-center pt-2 pb-12 flex-shrink-0">
+      <div className="flex justify-center pt-2 pb-4 flex-shrink-0">
         <ContentFlowProgress currentStep={2} className="w-[550px]" onStepClick={onNavigateToStep} completedSteps={completedSteps} />
       </div>
-      <div className="flex-1 overflow-y-auto px-6 -mt-1 pb-1">
+      <div className="flex-1 overflow-y-auto px-6 pb-1">
         {/* Title Section + Move to Film Button */}
-        <div className="flex items-center gap-4 border-b border-gray-200 pb-2 mb-16">
+        <div className="flex items-center gap-4 border-b border-gray-200 pb-2 mb-6">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -452,7 +456,7 @@ Guidelines:
                 onChange={(e) => setScriptContent(e.target.value)}
                 onClick={(e) => e.stopPropagation()}
                 placeholder="Write your script here..."
-                className="min-h-[400px] resize-none border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#612A4F] focus:border-[#612A4F] transition-all text-sm leading-relaxed bg-white placeholder:text-gray-400 shadow-[0_1px_3px_rgba(0,0,0,0.06)] pr-12"
+                className="min-h-[280px] resize-none border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#612A4F] focus:border-[#612A4F] transition-all text-sm leading-relaxed bg-white placeholder:text-gray-400 shadow-[0_1px_3px_rgba(0,0,0,0.06)] pr-12"
               />
               {/* MegAI Button */}
               <TooltipProvider>
@@ -475,6 +479,19 @@ Guidelines:
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
+            </div>
+
+            {/* Caption */}
+            <div className="space-y-2">
+              <label className="text-[12px] font-medium text-[#612A4F] uppercase tracking-wider">
+                Caption
+              </label>
+              <Textarea
+                value={caption}
+                onChange={(e) => setCaption?.(e.target.value)}
+                placeholder="Write your caption here..."
+                className="min-h-[100px] resize-none border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#612A4F] focus:border-[#612A4F] transition-all text-sm leading-relaxed bg-white placeholder:text-gray-400 shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
+              />
             </div>
           </div>
 
@@ -710,67 +727,6 @@ Guidelines:
                         }}
                       />
                     </div>
-                    <SelectGroup>
-                      <SelectLabel className="text-sm font-medium text-gray-500">Photo</SelectLabel>
-                      {!formatTags.includes("Photo post") && (
-                        <SelectItem value="Photo post"><span className="flex items-center gap-2"><Camera className="w-4 h-4 text-gray-400" />Photo post</span></SelectItem>
-                      )}
-                      {!formatTags.includes("Carousel") && (
-                        <SelectItem value="Carousel"><span className="flex items-center gap-2"><Camera className="w-4 h-4 text-gray-400" />Carousel</span></SelectItem>
-                      )}
-                      {!formatTags.includes("Text post") && (
-                        <SelectItem value="Text post"><span className="flex items-center gap-2"><Camera className="w-4 h-4 text-gray-400" />Text post</span></SelectItem>
-                      )}
-                      {customPhotoFormats.filter(f => !formatTags.includes(f)).map((format) => (
-                        <SelectItem key={format} value={format}>
-                          <span className="flex items-center gap-2 w-full">
-                            <Camera className="w-4 h-4 text-gray-400" />
-                            <span className="flex-1">{format}</span>
-                            <span
-                              role="button"
-                              onPointerDown={(e) => {
-                                e.stopPropagation();
-                                e.preventDefault();
-                                handleRemoveCustomFormat(format, 'photo');
-                              }}
-                              className="text-gray-300 hover:text-red-500 transition-colors ml-2 cursor-pointer"
-                            >
-                              <X className="w-3 h-3" />
-                            </span>
-                          </span>
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                    <div
-                      className="flex items-center gap-2 px-2 py-1.5 cursor-text"
-                      onPointerDown={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                      }}
-                    >
-                      <Camera className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-                      <input
-                        type="text"
-                        placeholder="+ Add photo format..."
-                        className="flex-1 text-xs text-gray-500 bg-transparent border-none outline-none placeholder:text-gray-400 focus:placeholder:text-transparent"
-                        onPointerDown={(e) => e.stopPropagation()}
-                        onClick={(e) => e.stopPropagation()}
-                        onKeyDown={(e) => {
-                          e.stopPropagation();
-                          if (e.key === 'Enter' && e.currentTarget.value.trim()) {
-                            e.preventDefault();
-                            const value = e.currentTarget.value.trim();
-                            if (!customPhotoFormats.includes(value)) {
-                              setCustomPhotoFormats([...customPhotoFormats, value]);
-                            }
-                            if (!formatTags.includes(value)) {
-                              setFormatTags([...formatTags, value]);
-                            }
-                            e.currentTarget.value = '';
-                          }
-                        }}
-                      />
-                    </div>
                   </SelectContent>
                 </Select>
 
@@ -783,8 +739,8 @@ Guidelines:
                     {isStaticFormat(tag) ? <Camera className="w-3 h-3 text-white" /> : <Video className="w-3 h-3 text-white" />}
                     {tag}
                     <button
-                      onClick={() => onRemoveFormatTag(tag)}
-                      className="text-white/70 hover:text-white transition-colors"
+                      onClick={(e) => { e.stopPropagation(); e.preventDefault(); onRemoveFormatTag(tag); }}
+                      className="text-white/70 hover:text-white transition-colors cursor-pointer"
                     >
                       <X className="w-3 h-3" />
                     </button>

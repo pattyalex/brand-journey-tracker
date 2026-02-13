@@ -1,19 +1,72 @@
 import React from "react";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ProductionCard } from "../types";
+import { ProductionCard, ContentType } from "../types";
 
 interface Step {
   label: string;
   shortLabel?: string;
 }
 
+const VIDEO_STEPS: Step[] = [
+  { label: "Ideate", shortLabel: "Ideate" },
+  { label: "Script Ideas", shortLabel: "Script" },
+  { label: "Film", shortLabel: "Film" },
+  { label: "To Edit", shortLabel: "Edit" },
+  { label: "To Schedule", shortLabel: "Schedule" },
+];
+
+const IMAGE_STEPS: Step[] = [
+  { label: "Ideate", shortLabel: "Ideate" },
+  { label: "Concept", shortLabel: "Concept" },
+  { label: "To Edit", shortLabel: "Edit" },
+  { label: "To Schedule", shortLabel: "Schedule" },
+];
+
 /**
- * Calculates which steps are completed based on the card's actual data
+ * Calculates which steps are completed based on the card's actual data.
+ * For video cards (or default): 5-step flow.
+ * For image cards: 4-step flow.
  */
 export const getCompletedSteps = (card: ProductionCard | null | undefined): number[] => {
   if (!card) return [];
 
+  const contentType = card.contentType || 'video';
+
+  if (contentType === 'image') {
+    const completed: number[] = [];
+
+    // Step 1 - Ideate: has hook or title
+    if (card.hook?.trim() || card.title?.trim()) {
+      completed.push(1);
+    }
+
+    // Step 2 - Concept: has caption, slides, or visual references
+    const hasConceptContent =
+      card.caption?.trim() ||
+      (card.slides && card.slides.length > 0 && card.slides.some(s => s.content?.trim())) ||
+      (card.visualReferences && card.visualReferences.length > 0) ||
+      (card.linkPreviews && card.linkPreviews.length > 0);
+    if (hasConceptContent) {
+      completed.push(2);
+    }
+
+    // Step 3 - Edit: all checklist items are checked
+    const editItems = card.editingChecklist?.items || [];
+    const allItemsChecked = editItems.length > 0 && editItems.every(item => item.checked);
+    if (allItemsChecked) {
+      completed.push(3);
+    }
+
+    // Step 4 - Schedule: has scheduled date
+    if (card.scheduledDate) {
+      completed.push(4);
+    }
+
+    return completed;
+  }
+
+  // Video (default) - existing logic
   const completed: number[] = [];
 
   // Step 1 - Ideate: has hook or title
@@ -52,16 +105,9 @@ export const getCompletedSteps = (card: ProductionCard | null | undefined): numb
   return completed;
 };
 
-const CONTENT_FLOW_STEPS: Step[] = [
-  { label: "Ideate", shortLabel: "Ideate" },
-  { label: "Script Ideas", shortLabel: "Script" },
-  { label: "Film", shortLabel: "Film" },
-  { label: "To Edit", shortLabel: "Edit" },
-  { label: "To Schedule", shortLabel: "Schedule" },
-];
-
 interface ContentFlowProgressProps {
-  currentStep: 1 | 2 | 3 | 4 | 5;
+  currentStep: number;
+  contentType?: ContentType;
   allCompleted?: boolean;
   /** Array of step numbers that have been actually completed (not just visited) */
   completedSteps?: number[];
@@ -71,35 +117,39 @@ interface ContentFlowProgressProps {
 
 const ContentFlowProgress: React.FC<ContentFlowProgressProps> = ({
   currentStep,
+  contentType = 'video',
   allCompleted = false,
   completedSteps = [],
   className,
   onStepClick,
 }) => {
+  const steps = contentType === 'image' ? IMAGE_STEPS : VIDEO_STEPS;
+  const totalSteps = steps.length;
+  const maxStepIndex = totalSteps - 1;
 
   return (
-    <div className={cn("w-full px-4 py-2", className)}>
-      <div className="flex items-center justify-between relative max-w-xl mx-auto">
+    <div className={cn("w-full px-4 py-1", className)}>
+      <div className="flex items-center justify-between relative max-w-md mx-auto">
         {/* Connecting line background */}
-        <div className="absolute top-[18px] left-6 right-6 h-[2px] bg-gray-200" />
+        <div className="absolute top-[14px] left-6 right-6 h-[1.5px] bg-gray-200" />
 
         {/* Progress line */}
         <div
-          className="absolute top-[18px] left-6 h-[2px] transition-all duration-500"
+          className="absolute top-[14px] left-6 h-[1.5px] transition-all duration-500"
           style={{
             backgroundColor: '#612A4F',
             width: allCompleted
               ? 'calc(100% - 3rem)'
               : currentStep === 1
                 ? '0%'
-                : `calc(${((currentStep - 1) / 4) * 100}% - ${(currentStep - 1) * 0.5}rem)`
+                : `calc(${((currentStep - 1) / maxStepIndex) * 100}% - ${(currentStep - 1) * 0.5}rem)`
           }}
         />
 
-        {CONTENT_FLOW_STEPS.map((step, index) => {
+        {steps.map((step, index) => {
           const stepNumber = index + 1;
           const isActuallyCompleted = allCompleted || completedSteps.includes(stepNumber);
-          const isVisited = stepNumber < currentStep; // Passed through but not necessarily completed
+          const isVisited = stepNumber < currentStep;
           const isCurrent = !allCompleted && stepNumber === currentStep;
           const isPending = !allCompleted && stepNumber > currentStep;
           const isClickable = onStepClick && stepNumber !== currentStep;
@@ -119,30 +169,26 @@ const ContentFlowProgress: React.FC<ContentFlowProgressProps> = ({
                 <div
                   className={cn(
                     "rounded-full flex items-center justify-center font-semibold transition-all duration-300",
-                    // Actually completed - filled with checkmark
-                    isActuallyCompleted && "w-6 h-6 text-xs bg-[#612A4F] border-[2px] border-[#612A4F] text-white",
-                    // Visited but not completed - outline only
-                    !isActuallyCompleted && isVisited && "w-6 h-6 text-xs bg-white border-[2px] border-[#612A4F] text-[#612A4F]",
-                    // Current step
-                    isCurrent && "w-12 h-12 text-lg bg-[#612A4F] border-[2px] border-[#612A4F] text-white shadow-md",
-                    // Pending - not visited yet
-                    isPending && "w-6 h-6 text-xs bg-gray-100 border-[1.5px] border-gray-300 text-gray-400",
-                    isClickable && "hover:ring-2 hover:ring-offset-2 hover:ring-[#612A4F]/30"
+                    isActuallyCompleted && "w-5 h-5 text-[10px] bg-[#612A4F] border-[1.5px] border-[#612A4F] text-white",
+                    !isActuallyCompleted && isVisited && "w-5 h-5 text-[10px] bg-white border-[1.5px] border-[#612A4F] text-[#612A4F]",
+                    isCurrent && "w-9 h-9 text-sm bg-[#612A4F] border-[2px] border-[#612A4F] text-white shadow-sm",
+                    isPending && "w-5 h-5 text-[10px] bg-gray-100 border-[1.5px] border-gray-300 text-gray-400",
+                    isClickable && "hover:ring-2 hover:ring-offset-1 hover:ring-[#612A4F]/30"
                   )}
                 >
                   {isActuallyCompleted ? (
-                    <Check className="w-3 h-3" strokeWidth={3} />
+                    <Check className="w-2.5 h-2.5" strokeWidth={3} />
                   ) : (
                     <span>{stepNumber}</span>
                   )}
                 </div>
 
-                {/* Step label - compact */}
+                {/* Step label */}
                 <p className={cn(
-                  "font-medium mt-1.5 text-center leading-tight",
-                  (isActuallyCompleted || isVisited) && "text-[10px] text-[#612A4F]",
+                  "font-medium mt-1 text-center leading-tight",
+                  (isActuallyCompleted || isVisited) && "text-[11px] text-[#612A4F]",
                   isCurrent && "text-xs text-[#612A4F]",
-                  isPending && "text-[10px] text-gray-400"
+                  isPending && "text-[11px] text-gray-400"
                 )}>
                   {step.shortLabel}
                 </p>

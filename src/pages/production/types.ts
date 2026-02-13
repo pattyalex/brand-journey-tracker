@@ -33,6 +33,30 @@ export interface EditingChecklist {
   status: EditingStatus | null;
 }
 
+export interface ImageSlide {
+  id: string;
+  content: string;
+  location: string;
+  outfit: string;
+  props: string;
+}
+
+export interface VisualReference {
+  id: string;
+  url: string;
+  name?: string;
+}
+
+export interface LinkPreview {
+  id: string;
+  url: string;
+  title?: string;
+  description?: string;
+  thumbnail?: string;
+}
+
+export type ContentType = 'video' | 'image';
+
 export type CardAddedFrom = 'calendar' | 'quick-idea' | 'ai-generated' | 'bank-of-ideas' | 'repurposed' | 'idea-expander';
 
 export interface ProductionCard {
@@ -72,6 +96,11 @@ export interface ProductionCard {
   plannedEndTime?: string; // End time for planned content (e.g., "10:00 am")
   brainDumpHandledText?: string; // The notes text that was already appended or dismissed in script editor
   calendarOnly?: boolean; // If true, this content only appears on calendar, not in Kanban Ideate column
+  contentType?: ContentType; // 'video' (default) or 'image'
+  caption?: string; // Image content: post caption text
+  visualReferences?: VisualReference[]; // Image content: uploaded reference images
+  linkPreviews?: LinkPreview[]; // Image content: pasted reference links
+  slides?: ImageSlide[]; // Image content: per-slide planning cards
 }
 
 export interface KanbanColumn {
