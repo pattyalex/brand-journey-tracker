@@ -185,7 +185,7 @@ const ContentFlowProgress: React.FC<ContentFlowProgressProps> = ({
 
                 {/* Step label */}
                 <p className={cn(
-                  "font-medium mt-1 text-center leading-tight",
+                  "font-medium mt-2 text-center leading-tight",
                   (isActuallyCompleted || isVisited) && "text-[11px] text-[#612A4F]",
                   isCurrent && "text-xs text-[#612A4F]",
                   isPending && "text-[11px] text-gray-400"

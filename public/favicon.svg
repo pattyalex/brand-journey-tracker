@@ -1,11 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <defs>
-    <linearGradient id="brandGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#7a3868"/>
-      <stop offset="50%" style="stop-color:#612a4f"/>
-      <stop offset="100%" style="stop-color:#4e2040"/>
-    </linearGradient>
-  </defs>
-  <rect width="32" height="32" rx="8" fill="url(#brandGradient)"/>
-  <text x="16" y="23" font-family="Georgia, serif" font-size="20" font-weight="600" fill="white" text-anchor="middle">M</text>
+<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <!-- Board body -->
+  <rect x="2.5" y="15.25" width="27" height="13.5" rx="2" fill="#7A3558" opacity="0.9"/>
+  <!-- Two thin horizontal lines on the board -->
+  <line x1="6" y1="19.5" x2="29.5" y2="19.5" stroke="#FBF7F4" stroke-width="0.7" opacity="0.25"/>
+  <line x1="6" y1="23.5" x2="29.5" y2="23.5" stroke="#FBF7F4" stroke-width="0.7" opacity="0.25"/>
+  <!-- Bottom hinge bar -->
+  <rect x="2.5" y="12.25" width="27" height="4.1" rx="1" fill="#7A3558"/>
+  <!-- Top bar — angled open, 2 stripes -->
+  <g transform="rotate(-25 4.5 13.75)">
+    <rect x="2.5" y="8.65" width="27" height="4.1" rx="1" fill="#7A3558"/>
+    <path d="M11.5 8.65L13.3 12.75" stroke="#FBF7F4" stroke-width="1.85" stroke-linecap="round"/>
+    <path d="M19.5 8.65L21.3 12.75" stroke="#FBF7F4" stroke-width="1.85" stroke-linecap="round"/>
+  </g>
+  <!-- Hinge with center dot -->
+  <circle cx="5.75" cy="13.75" r="2.6" fill="#7A3558"/>
+  <circle cx="5.75" cy="13.75" r="1.05" fill="#FBF7F4"/>
 </svg>

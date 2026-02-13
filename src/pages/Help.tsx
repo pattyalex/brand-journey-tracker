@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import Layout from '@/components/Layout';
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import {
@@ -10,7 +9,7 @@ import {
   MessageCircle,
   ChevronRight,
   ChevronDown,
-  Send
+  Mail
 } from 'lucide-react';
 
 const faqs = [
@@ -39,29 +38,6 @@ const faqs = [
 const Help = () => {
   const [activeSection, setActiveSection] = useState('faq');
   const [expandedFaq, setExpandedFaq] = useState<number | null>(0);
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    message: ''
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    setTimeout(() => {
-      toast.success("Message sent! We'll get back to you soon.");
-      setFormData({ name: '', email: '', subject: '', message: '' });
-      setIsSubmitting(false);
-    }, 1500);
-  };
 
   const sections = [
     { id: 'faq', label: 'FAQs', icon: HelpCircle },
@@ -230,104 +206,24 @@ const Help = () => {
                         >
                           Contact Us
                         </h2>
-                        <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                          We'd love to hear from you
-                        </p>
                       </div>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-5">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <label
-                            className="text-sm font-medium text-[#2d2a26]"
-                            style={{ fontFamily: "'DM Sans', sans-serif" }}
-                          >
-                            Your Name
-                          </label>
-                          <input
-                            type="text"
-                            name="name"
-                            value={formData.name}
-                            onChange={handleChange}
-                            required
-                            placeholder="Enter your name"
-                            className="w-full h-11 px-4 rounded-xl border border-[#E8E4E6] bg-white text-sm focus:border-[#612a4f] focus:ring-2 focus:ring-[#612a4f]/20 outline-none transition-all"
-                            style={{ fontFamily: "'DM Sans', sans-serif" }}
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <label
-                            className="text-sm font-medium text-[#2d2a26]"
-                            style={{ fontFamily: "'DM Sans', sans-serif" }}
-                          >
-                            Email Address
-                          </label>
-                          <input
-                            type="email"
-                            name="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            required
-                            placeholder="Enter your email"
-                            className="w-full h-11 px-4 rounded-xl border border-[#E8E4E6] bg-white text-sm focus:border-[#612a4f] focus:ring-2 focus:ring-[#612a4f]/20 outline-none transition-all"
-                            style={{ fontFamily: "'DM Sans', sans-serif" }}
-                          />
-                        </div>
+                    <div className="text-center py-6 space-y-4">
+                      <div className="w-14 h-14 rounded-full bg-[#612a4f]/10 flex items-center justify-center mx-auto">
+                        <Mail className="w-6 h-6 text-[#612a4f]" />
                       </div>
-
-                      <div className="space-y-2">
-                        <label
-                          className="text-sm font-medium text-[#2d2a26]"
-                          style={{ fontFamily: "'DM Sans', sans-serif" }}
-                        >
-                          Subject
-                        </label>
-                        <input
-                          type="text"
-                          name="subject"
-                          value={formData.subject}
-                          onChange={handleChange}
-                          required
-                          placeholder="What's this about?"
-                          className="w-full h-11 px-4 rounded-xl border border-[#E8E4E6] bg-white text-sm focus:border-[#612a4f] focus:ring-2 focus:ring-[#612a4f]/20 outline-none transition-all"
-                          style={{ fontFamily: "'DM Sans', sans-serif" }}
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <label
-                          className="text-sm font-medium text-[#2d2a26]"
-                          style={{ fontFamily: "'DM Sans', sans-serif" }}
-                        >
-                          Message
-                        </label>
-                        <textarea
-                          name="message"
-                          value={formData.message}
-                          onChange={handleChange}
-                          required
-                          rows={5}
-                          placeholder="Tell us how we can help..."
-                          className="w-full px-4 py-3 rounded-xl border border-[#E8E4E6] bg-white text-sm focus:border-[#612a4f] focus:ring-2 focus:ring-[#612a4f]/20 outline-none transition-all resize-none"
-                          style={{ fontFamily: "'DM Sans', sans-serif" }}
-                        />
-                      </div>
-
-                      <Button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="h-11 px-6 rounded-xl text-white font-medium flex items-center gap-2"
-                        style={{
-                          fontFamily: "'DM Sans', sans-serif",
-                          background: 'linear-gradient(145deg, #612a4f 0%, #4a3442 100%)',
-                        }}
+                      <p className="text-sm text-[#8B7082] leading-relaxed" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                        Have a question, feedback, or just want to say hi?<br />
+                        Drop us an email and we'll get back to you as soon as possible.
+                      </p>
+                      <p
+                        className="text-[#612a4f] font-semibold text-base"
+                        style={{ fontFamily: "'DM Sans', sans-serif" }}
                       >
-                        <Send className="w-4 h-4" />
-                        {isSubmitting ? "Sending..." : "Send Message"}
-                      </Button>
-                    </form>
+                        contact@heymeg.ai
+                      </p>
+                    </div>
                   </div>
                 )}
 
