@@ -1140,7 +1140,7 @@ Return only a JSON array of ${count} strings.`
         }
 
         // Insert at new position
-        withoutDragged.splice(actualDropIndex, 0, { ...draggedCard, columnId: column.id });
+        withoutDragged.splice(actualDropIndex, 0, { ...draggedCard, columnId: column.id, lastUpdated: new Date().toISOString() });
 
         return { ...column, cards: withoutDragged };
       } else if (column.id === sourceColumnId) {
@@ -1154,7 +1154,7 @@ Return only a JSON array of ${count} strings.`
         const filtered = column.cards.filter(filterCard);
         // Auto-set status when moving between columns
         // Auto-unpin if moving to 'posted' column (finished work shouldn't be on dashboard)
-        let cardToAdd = { ...draggedCard, columnId: column.id };
+        let cardToAdd = { ...draggedCard, columnId: column.id, lastUpdated: new Date().toISOString() };
 
         // Set status to 'to-start' if moving to shape-ideas column and card doesn't already have a status
         if (column.id === 'shape-ideas' && !draggedCard.status) {
@@ -2033,6 +2033,7 @@ Return only a JSON array of ${count} strings.`
 
   // Helper to move a card to a specific column
   const moveCardToColumn = (cardId: string, targetColumnId: string, updatedCardData: Partial<ProductionCard>) => {
+    const now = new Date().toISOString();
     setColumns((prev) => {
       // Find the card and its current column
       let cardToMove: ProductionCard | undefined;
@@ -2054,13 +2055,13 @@ Return only a JSON array of ${count} strings.`
         return prev.map((col) => ({
           ...col,
           cards: col.cards.map((card) =>
-            card.id === cardId ? { ...card, ...updatedCardData, columnId: targetColumnId } : card
+            card.id === cardId ? { ...card, ...updatedCardData, columnId: targetColumnId, lastUpdated: now } : card
           ),
         }));
       }
 
       // Move card to new column
-      const updatedCard = { ...cardToMove, ...updatedCardData, columnId: targetColumnId };
+      const updatedCard = { ...cardToMove, ...updatedCardData, columnId: targetColumnId, lastUpdated: now };
 
       return prev.map((col) => {
         if (col.id === sourceColumnId) {
@@ -2686,6 +2687,7 @@ Return only a JSON array of ${count} strings.`
   const handleSaveCardEdit = (cardId: string, newValue: string) => {
     if (!newValue.trim()) return;
 
+    const now = new Date().toISOString();
     setColumns((prev) =>
       prev.map((col) => ({
         ...col,
@@ -2693,9 +2695,9 @@ Return only a JSON array of ${count} strings.`
           if (card.id === cardId) {
             // Save to hook if it exists, otherwise save to title
             if (card.hook) {
-              return { ...card, hook: newValue.trim() };
+              return { ...card, hook: newValue.trim(), lastUpdated: now };
             }
-            return { ...card, title: newValue.trim() };
+            return { ...card, title: newValue.trim(), lastUpdated: now };
           }
           return card;
         }),

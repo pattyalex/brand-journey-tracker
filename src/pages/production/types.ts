@@ -101,6 +101,7 @@ export interface ProductionCard {
   visualReferences?: VisualReference[]; // Image content: uploaded reference images
   linkPreviews?: LinkPreview[]; // Image content: pasted reference links
   slides?: ImageSlide[]; // Image content: per-slide planning cards
+  lastUpdated?: string; // ISO timestamp of last edit
 }
 
 export interface KanbanColumn {

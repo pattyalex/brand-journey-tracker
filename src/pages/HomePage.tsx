@@ -503,6 +503,7 @@ const HomePage = () => {
     script?: string;
     hook?: string;
     status?: "to-start" | "needs-work" | "ready" | null;
+    lastUpdated?: string;
   }
 
   interface KanbanColumn {
@@ -1011,7 +1012,7 @@ const HomePage = () => {
       const columnMapping: Record<string, { stage: 'Edit' | 'Film' | 'Script' | 'Ideate', priority: number }> = {
         'to-edit': { stage: 'Edit', priority: 1 },
         'to-film': { stage: 'Film', priority: 2 },
-        'script-ideas': { stage: 'Script', priority: 3 },
+        'shape-ideas': { stage: 'Script', priority: 3 },
         'ideate': { stage: 'Ideate', priority: 4 },
       };
 
@@ -1019,7 +1020,7 @@ const HomePage = () => {
       const cardsByColumn: Record<string, ContinueCreatingCard[]> = {
         'to-edit': [],
         'to-film': [],
-        'script-ideas': [],
+        'shape-ideas': [],
         'ideate': [],
       };
 
@@ -1031,11 +1032,10 @@ const HomePage = () => {
             if (!card.isCompleted) {
               cardsByColumn[column.id].push({
                 id: card.id,
-                title: card.title,
+                title: card.hook || card.title,
                 stage,
                 columnId: column.id,
-                // Use a pseudo last-updated based on card position (newer cards at top)
-                lastUpdated: new Date(),
+                lastUpdated: card.lastUpdated ? new Date(card.lastUpdated) : new Date(),
               });
             }
           });
@@ -1046,7 +1046,7 @@ const HomePage = () => {
       const selectedCards: ContinueCreatingCard[] = [];
 
       // Priority order: Edit -> Film -> Script -> Ideate
-      const priorityOrder = ['to-edit', 'to-film', 'script-ideas', 'ideate'];
+      const priorityOrder = ['to-edit', 'to-film', 'shape-ideas', 'ideate'];
 
       // First pass: take 1 from each column in priority order
       for (const colId of priorityOrder) {
