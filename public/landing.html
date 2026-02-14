@@ -384,10 +384,10 @@
 
     @media (max-width: 768px) {
       .hero-avatar {
-        width: 70px;
-        height: 70px;
-        top: -18px;
-        right: -8px;
+        width: 40px;
+        height: 40px;
+        top: -12px;
+        right: 4px;
       }
     }
 
@@ -430,7 +430,7 @@
       top: 52%;
       left: 64%;
       opacity: 0;
-      animation: cursorSequence 9s ease-in-out 1s infinite;
+      animation: cursorSequence 7s ease-in-out 1s infinite;
 
     }
 
@@ -450,7 +450,7 @@
       pointer-events: none;
       border-radius: 10px;
       opacity: 0;
-      animation: cardHighlight 9s ease-in-out 1s infinite;
+      animation: cardHighlight 7s ease-in-out 1s infinite;
 
     }
 
@@ -464,7 +464,7 @@
       background: rgba(90, 74, 82, 0.55);
       z-index: 15;
       pointer-events: none;
-      animation: strikethroughDraw 9s ease-in-out 1s infinite;
+      animation: strikethroughDraw 7s ease-in-out 1s infinite;
 
     }
 
@@ -478,7 +478,7 @@
       z-index: 15;
       pointer-events: none;
       opacity: 0;
-      animation: checkmarkAppear 9s ease-in-out 1s infinite;
+      animation: checkmarkAppear 7s ease-in-out 1s infinite;
 
     }
 
@@ -497,7 +497,7 @@
       z-index: 15;
       pointer-events: none;
       opacity: 0;
-      animation: badgeSwap 9s ease-in-out 1s infinite;
+      animation: badgeSwap 7s ease-in-out 1s infinite;
 
     }
 
@@ -520,7 +520,7 @@
       opacity: 0;
       border-radius: 16px;
       box-shadow: 0 12px 40px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.08);
-      animation: expectedPopup 9s ease-in-out 1s infinite;
+      animation: expectedPopup 7s ease-in-out 1s infinite;
 
     }
 
@@ -607,6 +607,16 @@
         top: 42%; left: 85%;
         opacity: 1; transform: scale(1);
       }
+      /* Click down */
+      72% {
+        top: 42%; left: 85%;
+        opacity: 1; transform: scale(0.82);
+      }
+      /* Click release */
+      74% {
+        top: 42%; left: 85%;
+        opacity: 1; transform: scale(1);
+      }
       /* Hold while popup shows */
       87% {
         top: 42%; left: 85%;
@@ -648,10 +658,10 @@
 
     /* Strikethrough draws across "Call grandma" text */
     @keyframes strikethroughDraw {
-      0%, 34% {
+      0%, 31% {
         width: 0;
       }
-      40% {
+      35% {
         width: 5.5%;
       }
       93% {
@@ -667,10 +677,10 @@
 
     /* Green checkmark fades in on click */
     @keyframes checkmarkAppear {
-      0%, 33% {
+      0%, 31% {
         opacity: 0; transform: scale(0.5);
       }
-      37% {
+      34% {
         opacity: 1; transform: scale(1);
       }
       93% {
@@ -686,13 +696,13 @@
 
     /* "Fully Completed!" badge appears on third click */
     @keyframes badgeSwap {
-      0%, 55% {
+      0%, 54% {
         opacity: 0; transform: scale(0.8);
       }
-      58% {
+      56% {
         opacity: 1; transform: scale(1.05);
       }
-      61% {
+      58% {
         opacity: 1; transform: scale(1);
       }
       93% {
@@ -708,10 +718,10 @@
 
     /* "Expected This Month" popup appears on hover */
     @keyframes expectedPopup {
-      0%, 69% {
+      0%, 73% {
         opacity: 0; transform: scale(0.9) translateY(10px);
       }
-      72% {
+      76% {
         opacity: 1; transform: scale(1) translateY(0);
       }
       93% {
@@ -726,13 +736,25 @@
     }
 
     @media (max-width: 768px) {
-      .hero-cursor,
-      .hero-card-highlight,
-      .hero-strikethrough,
-      .hero-checkmark,
-      .hero-badge-overlay,
+      .hero-cursor {
+        width: 20px;
+        height: 24px;
+      }
+      .hero-card-highlight {
+        border-radius: 6px;
+      }
+      .hero-checkmark {
+        width: 1.4%;
+        height: 2.4%;
+      }
+      .hero-badge-overlay {
+        width: 6%;
+        height: 2.8%;
+      }
       .hero-expected-popup {
-        display: none;
+        width: 23%;
+        height: 3%;
+        border-radius: 10px;
       }
     }
 
@@ -849,6 +871,12 @@
 
     /* Hide floating verb tags and reduce fade on mobile */
     @media (max-width: 768px) {
+      .social-proof-avatars img {
+        width: 30px !important;
+        height: 30px !important;
+        margin-left: -8px !important;
+      }
+
       .verb-tag {
         display: none;
       }
