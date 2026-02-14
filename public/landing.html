@@ -319,7 +319,7 @@
       max-width: 1100px;
       width: 100%;
       padding: 0 20px;
-      perspective: 1200px;
+      perspective: none;
     }
 
     /* Animated aurora glow behind dashboard */
@@ -353,17 +353,42 @@
         0 4px 6px rgba(0,0,0,0.02),
         0 12px 24px rgba(139,112,130,0.08),
         0 24px 48px rgba(139,112,130,0.06);
-      overflow: hidden;
+      overflow: visible;
       border: 1px solid rgba(255,255,255,0.6);
-      transform: rotateX(0deg) rotateY(4deg);
-      transform-style: preserve-3d;
-      will-change: transform;
+      transform: none;
+      transform-style: flat;
     }
 
-    .dashboard-preview img {
+    .dashboard-preview img:not(.hero-avatar) {
       width: 100%;
       height: auto;
       display: block;
+      border-radius: 16px;
+    }
+
+    /* Creator avatar overlay — flows over the dashboard edge */
+    .hero-avatar {
+      position: absolute;
+      top: -12px;
+      right: 10px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid white;
+      box-shadow: 0 8px 24px rgba(97,42,79,0.15), 0 2px 8px rgba(0,0,0,0.08);
+      z-index: 10;
+      animation: fadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) 1.3s forwards;
+      opacity: 0;
+    }
+
+    @media (max-width: 768px) {
+      .hero-avatar {
+        width: 70px;
+        height: 70px;
+        top: -18px;
+        right: -8px;
+      }
     }
 
     /* Light shimmer sweep */
@@ -392,6 +417,323 @@
       10% { opacity: 1; }
       90% { opacity: 1; }
       100% { left: 130%; opacity: 0; }
+    }
+
+    /* ── Animated cursor interaction (four-step sequence) ── */
+    .hero-cursor {
+      position: absolute;
+      width: 28px;
+      height: 34px;
+      z-index: 20;
+      pointer-events: none;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.25));
+      top: 52%;
+      left: 64%;
+      opacity: 0;
+      animation: cursorSequence 9s ease-in-out 1s infinite;
+
+    }
+
+    .hero-cursor svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Card highlight overlay — "Evening wellness routine" */
+    .hero-card-highlight {
+      position: absolute;
+      top: 33.2%;
+      left: 44.6%;
+      width: 24%;
+      height: 8.5%;
+      z-index: 15;
+      pointer-events: none;
+      border-radius: 10px;
+      opacity: 0;
+      animation: cardHighlight 9s ease-in-out 1s infinite;
+
+    }
+
+    /* Strikethrough line overlay — positioned over "Call grandma" text */
+    .hero-strikethrough {
+      position: absolute;
+      top: 34.4%;
+      left: 19.5%;
+      width: 0;
+      height: 1.5px;
+      background: rgba(90, 74, 82, 0.55);
+      z-index: 15;
+      pointer-events: none;
+      animation: strikethroughDraw 9s ease-in-out 1s infinite;
+
+    }
+
+    /* Green checkmark overlay — positioned over "Call grandma" checkbox */
+    .hero-checkmark {
+      position: absolute;
+      top: 32.2%;
+      left: 39.8%;
+      width: 2%;
+      height: 3.4%;
+      z-index: 15;
+      pointer-events: none;
+      opacity: 0;
+      animation: checkmarkAppear 9s ease-in-out 1s infinite;
+
+    }
+
+    .hero-checkmark svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* "Fully Completed!" badge overlay — covers "Great Progress" badge */
+    .hero-badge-overlay {
+      position: absolute;
+      top: 60.8%;
+      left: 88.5%;
+      width: 7%;
+      height: 3.2%;
+      z-index: 15;
+      pointer-events: none;
+      opacity: 0;
+      animation: badgeSwap 9s ease-in-out 1s infinite;
+
+    }
+
+    .hero-badge-overlay img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 20px;
+    }
+
+    /* "Expected This Month" popup overlay */
+    .hero-expected-popup {
+      position: absolute;
+      top: 36.5%;
+      left: 72.5%;
+      width: 25%;
+      height: 3.5%;
+      z-index: 25;
+      pointer-events: none;
+      opacity: 0;
+      border-radius: 16px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.08);
+      animation: expectedPopup 9s ease-in-out 1s infinite;
+
+    }
+
+    .hero-expected-popup img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      border-radius: 16px;
+      object-fit: fill;
+    }
+
+    /* ── Cursor: appear → click card → checkbox → badge → hover expected → fade out ── */
+    @keyframes cursorSequence {
+      0% {
+        top: 52%; left: 64%;
+        opacity: 0; transform: scale(1);
+      }
+      2% {
+        top: 52%; left: 64%;
+        opacity: 1; transform: scale(1);
+      }
+      /* Arrive at "Evening wellness routine" */
+      12% {
+        top: 36%; left: 54%;
+        opacity: 1; transform: scale(1);
+      }
+      /* Click down */
+      14% {
+        top: 36%; left: 54%;
+        opacity: 1; transform: scale(0.82);
+      }
+      /* Click release */
+      16% {
+        top: 36%; left: 54%;
+        opacity: 1; transform: scale(1);
+      }
+      /* Hold, then move */
+      18% {
+        top: 36%; left: 54%;
+        opacity: 1; transform: scale(1);
+      }
+      /* Arrive at "Call grandma" checkbox */
+      28% {
+        top: 33.5%; left: 41%;
+        opacity: 1; transform: scale(1);
+      }
+      /* Click down on checkbox */
+      30% {
+        top: 33.5%; left: 41%;
+        opacity: 1; transform: scale(0.82);
+      }
+      /* Click release */
+      32% {
+        top: 33.5%; left: 41%;
+        opacity: 1; transform: scale(1);
+      }
+      /* Hold while strikethrough animates, then move */
+      35% {
+        top: 33.5%; left: 41%;
+        opacity: 1; transform: scale(1);
+      }
+      /* Arrive at "Great Progress" badge */
+      52% {
+        top: 60.5%; left: 91.5%;
+        opacity: 1; transform: scale(1);
+      }
+      /* Click down */
+      54% {
+        top: 60.5%; left: 91.5%;
+        opacity: 1; transform: scale(0.82);
+      }
+      /* Click release */
+      56% {
+        top: 60.5%; left: 91.5%;
+        opacity: 1; transform: scale(1);
+      }
+      /* Hold, then move */
+      60% {
+        top: 60.5%; left: 91.5%;
+        opacity: 1; transform: scale(1);
+      }
+      /* Arrive at "Expected This Month" section */
+      70% {
+        top: 42%; left: 85%;
+        opacity: 1; transform: scale(1);
+      }
+      /* Hold while popup shows */
+      87% {
+        top: 42%; left: 85%;
+        opacity: 1; transform: scale(1);
+      }
+      /* Fade out */
+      92% {
+        top: 42%; left: 85%;
+        opacity: 0; transform: scale(1);
+      }
+      100% {
+        top: 52%; left: 64%;
+        opacity: 0; transform: scale(1);
+      }
+    }
+
+    /* Card highlight: glow on first click, stays until end */
+    @keyframes cardHighlight {
+      0%, 13% {
+        opacity: 0; transform: scale(1); box-shadow: none;
+      }
+      16% {
+        opacity: 1; transform: scale(1.03);
+        box-shadow: 0 4px 20px rgba(97,42,79,0.12), 0 0 0 2px rgba(97,42,79,0.08);
+        background: rgba(97,42,79,0.04);
+      }
+      93% {
+        opacity: 1; transform: scale(1.03);
+        box-shadow: 0 4px 20px rgba(97,42,79,0.12), 0 0 0 2px rgba(97,42,79,0.08);
+        background: rgba(97,42,79,0.04);
+      }
+      98% {
+        opacity: 0; transform: scale(1); box-shadow: none; background: transparent;
+      }
+      100% {
+        opacity: 0; transform: scale(1);
+      }
+    }
+
+    /* Strikethrough draws across "Call grandma" text */
+    @keyframes strikethroughDraw {
+      0%, 34% {
+        width: 0;
+      }
+      40% {
+        width: 5.5%;
+      }
+      93% {
+        width: 5.5%;
+      }
+      98% {
+        width: 0;
+      }
+      100% {
+        width: 0;
+      }
+    }
+
+    /* Green checkmark fades in on click */
+    @keyframes checkmarkAppear {
+      0%, 33% {
+        opacity: 0; transform: scale(0.5);
+      }
+      37% {
+        opacity: 1; transform: scale(1);
+      }
+      93% {
+        opacity: 1; transform: scale(1);
+      }
+      98% {
+        opacity: 0; transform: scale(0.5);
+      }
+      100% {
+        opacity: 0; transform: scale(0.5);
+      }
+    }
+
+    /* "Fully Completed!" badge appears on third click */
+    @keyframes badgeSwap {
+      0%, 55% {
+        opacity: 0; transform: scale(0.8);
+      }
+      58% {
+        opacity: 1; transform: scale(1.05);
+      }
+      61% {
+        opacity: 1; transform: scale(1);
+      }
+      93% {
+        opacity: 1; transform: scale(1);
+      }
+      98% {
+        opacity: 0; transform: scale(0.8);
+      }
+      100% {
+        opacity: 0; transform: scale(0.8);
+      }
+    }
+
+    /* "Expected This Month" popup appears on hover */
+    @keyframes expectedPopup {
+      0%, 69% {
+        opacity: 0; transform: scale(0.9) translateY(10px);
+      }
+      72% {
+        opacity: 1; transform: scale(1) translateY(0);
+      }
+      93% {
+        opacity: 1; transform: scale(1) translateY(0);
+      }
+      98% {
+        opacity: 0; transform: scale(0.9) translateY(10px);
+      }
+      100% {
+        opacity: 0; transform: scale(0.9) translateY(10px);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .hero-cursor,
+      .hero-card-highlight,
+      .hero-strikethrough,
+      .hero-checkmark,
+      .hero-badge-overlay,
+      .hero-expected-popup {
+        display: none;
+      }
     }
 
     /* Soft fade edges - disabled */
@@ -3095,6 +3437,27 @@
         </div>
         <div class="dashboard-preview">
           <img src="dashboard-preview.png" alt="HeyMeg Creator Studio Dashboard">
+          <img src="creator-avatar.png" alt="Creator" class="hero-avatar">
+          <!-- Animated cursor + card highlight + strikethrough + checkmark + badge -->
+          <div class="hero-card-highlight" aria-hidden="true"></div>
+          <div class="hero-strikethrough" aria-hidden="true"></div>
+          <div class="hero-checkmark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="1" y="1" width="22" height="22" rx="5" fill="#5B8C5A" stroke="#5B8C5A" stroke-width="1"/>
+              <path d="M7 12.5L10.5 16L17 9" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="hero-badge-overlay" aria-hidden="true">
+            <img src="fully-completed-badge.png" alt="">
+          </div>
+          <div class="hero-expected-popup" aria-hidden="true">
+            <img src="expected-month-popup.png" alt="">
+          </div>
+          <div class="hero-cursor" aria-hidden="true">
+            <svg viewBox="0 0 24 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M2 2L2 22L7.5 16.5L12.5 26L16 24.5L11 14.5L18 14.5L2 2Z" fill="#1a1a1a" stroke="white" stroke-width="1.5" stroke-linejoin="round"/>
+            </svg>
+          </div>
         </div>
       </div>
     </div>
@@ -3844,26 +4207,7 @@
       }
     });
 
-    // 3D tilt effect on dashboard
-    const dashboardPreview = document.querySelector('.dashboard-preview');
-    const heroVisualEl = document.querySelector('.hero-visual');
-
-    if (dashboardPreview && !('ontouchstart' in window)) {
-      heroVisualEl.addEventListener('mousemove', (e) => {
-        const rect = heroVisualEl.getBoundingClientRect();
-        const x = (e.clientX - rect.left) / rect.width - 0.5;
-        const y = (e.clientY - rect.top) / rect.height - 0.5;
-        const rotateY = x * 16;
-        const rotateX = -y * 16;
-        dashboardPreview.style.transition = 'transform 0.15s ease-out';
-        dashboardPreview.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-      });
-
-      heroVisualEl.addEventListener('mouseleave', () => {
-        dashboardPreview.style.transition = 'transform 0.6s ease-out';
-        dashboardPreview.style.transform = 'rotateX(0deg) rotateY(4deg)';
-      });
-    }
+    // 3D tilt effect on dashboard - disabled (flat layout)
 
     // Ribbons falling animation
     const ribbonsSection = document.querySelector('.ribbons-section');
