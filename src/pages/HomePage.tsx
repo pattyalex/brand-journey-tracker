@@ -517,8 +517,8 @@ const HomePage = () => {
 
   // Column colors and emojis matching Content Hub
   const columnTagStyles: Record<string, { bg: string; text: string; border: string; emoji: string; displayName?: string }> = {
-    ideate: { bg: "bg-purple-100", text: "text-purple-700", border: "border-purple-200", emoji: "💡", displayName: "To Ideate Further" },
-    "shape-ideas": { bg: "bg-blue-100", text: "text-blue-700", border: "border-blue-200", emoji: "🧠", displayName: "To Shape Idea" },
+    ideate: { bg: "bg-purple-100", text: "text-purple-700", border: "border-purple-200", emoji: "💡", displayName: "Bank of Ideas" },
+    "shape-ideas": { bg: "bg-blue-100", text: "text-blue-700", border: "border-blue-200", emoji: "🧠", displayName: "Script and Concept" },
     "to-film": { bg: "bg-amber-100", text: "text-amber-700", border: "border-amber-200", emoji: "🎥" },
     "to-edit": { bg: "bg-rose-100", text: "text-rose-700", border: "border-rose-200", emoji: "💻" },
     "to-schedule": { bg: "bg-indigo-100", text: "text-indigo-700", border: "border-indigo-200", emoji: "📅" },
@@ -570,7 +570,7 @@ const HomePage = () => {
   interface ContinueCreatingCard {
     id: string;
     title: string;
-    stage: 'Edit' | 'Film' | 'Script' | 'Ideate';
+    stage: 'Edit' | 'Film' | 'Script' | 'Bank of Ideas';
     columnId: string;
     lastUpdated: Date;
   }
@@ -1009,11 +1009,11 @@ const HomePage = () => {
       const productionData = getJSON<KanbanColumn[]>(StorageKeys.productionKanban, []);
 
       // Map column IDs to stages and get cards
-      const columnMapping: Record<string, { stage: 'Edit' | 'Film' | 'Script' | 'Ideate', priority: number }> = {
+      const columnMapping: Record<string, { stage: 'Edit' | 'Film' | 'Script' | 'Bank of Ideas', priority: number }> = {
         'to-edit': { stage: 'Edit', priority: 1 },
         'to-film': { stage: 'Film', priority: 2 },
         'shape-ideas': { stage: 'Script', priority: 3 },
-        'ideate': { stage: 'Ideate', priority: 4 },
+        'ideate': { stage: 'Bank of Ideas', priority: 4 },
       };
 
       // Collect cards from each column (excluding to-schedule)
@@ -2290,7 +2290,7 @@ const HomePage = () => {
                           'Edit': '#6b4a5e',
                           'Film': '#8b6a7e',
                           'Script': '#a8899a',
-                          'Ideate': 'rgba(184, 169, 170, 0.6)',
+                          'Bank of Ideas': 'rgba(184, 169, 170, 0.6)',
                         };
 
                         return (

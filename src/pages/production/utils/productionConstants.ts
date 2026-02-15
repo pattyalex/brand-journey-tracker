@@ -56,8 +56,8 @@ export const emptyStateIcons: Record<string, string> = {
 };
 
 export const defaultColumns: KanbanColumn[] = [
-  { id: "ideate", title: "Ideate", cards: [] },
-  { id: "shape-ideas", title: "Script Ideas", cards: [] },
+  { id: "ideate", title: "Bank of Ideas", cards: [] },
+  { id: "shape-ideas", title: "Script and Concept", cards: [] },
   { id: "to-film", title: "To Film", cards: [] },
   { id: "to-edit", title: "To Edit", cards: [] },
   { id: "to-schedule", title: "To Schedule", cards: [] },

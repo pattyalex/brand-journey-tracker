@@ -360,6 +360,25 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
   const leftPanelRef = useRef<HTMLDivElement>(null);
   const rightPanelRef = useRef<HTMLDivElement>(null);
 
+  // Track latest data in a ref so unmount cleanup can access it
+  const latestDataRef = useRef({ scenes, cardTitle, scriptContent, hookContent, filmingStatus });
+  useEffect(() => {
+    latestDataRef.current = { scenes, cardTitle, scriptContent, hookContent, filmingStatus };
+  }, [scenes, cardTitle, scriptContent, hookContent, filmingStatus]);
+
+  // Save on unmount (when parent dialog closes via X button)
+  const onSaveRef = useRef(onSave);
+  const cardRef = useRef(card);
+  useEffect(() => { onSaveRef.current = onSave; }, [onSave]);
+  useEffect(() => { cardRef.current = card; }, [card]);
+  useEffect(() => {
+    return () => {
+      if (cardRef.current) {
+        const d = latestDataRef.current;
+        onSaveRef.current(d.scenes, d.cardTitle, d.scriptContent, d.hookContent, d.filmingStatus);
+      }
+    };
+  }, []);
 
   // Initialize scenes, title, and script from card
   useEffect(() => {

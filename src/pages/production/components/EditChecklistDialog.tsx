@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -168,6 +168,32 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
   // For image: Edit is step 3, Schedule is step 4; for video: Edit is step 4, Schedule is step 5
   const editStepNumber = isImage ? 3 : 4;
   const scheduleStepNumber = isImage ? 4 : 5;
+
+  // Track latest data in a ref so unmount cleanup can access it
+  const latestDataRef = useRef({ globalItems, notes, status, title, hook, script });
+  useEffect(() => {
+    latestDataRef.current = { globalItems, notes, status, title, hook, script };
+  }, [globalItems, notes, status, title, hook, script]);
+
+  // Save on unmount (when parent dialog closes via X button)
+  const onSaveRef = useRef(onSave);
+  const cardRef = useRef(card);
+  useEffect(() => { onSaveRef.current = onSave; }, [onSave]);
+  useEffect(() => { cardRef.current = card; }, [card]);
+  useEffect(() => {
+    return () => {
+      if (cardRef.current) {
+        const d = latestDataRef.current;
+        const checklist: EditingChecklist = {
+          items: d.globalItems,
+          notes: d.notes,
+          externalLinks: [],
+          status: d.status,
+        };
+        onSaveRef.current(checklist, d.title, d.hook, d.script);
+      }
+    };
+  }, []);
 
   // Initialize content from card data when dialog opens
   useEffect(() => {

@@ -385,7 +385,7 @@ export const WeekView = ({
 
       // Create ideate column if it doesn't exist
       if (!ideateColumn) {
-        ideateColumn = { id: 'ideate', title: 'Ideate', cards: [] };
+        ideateColumn = { id: 'ideate', title: 'Bank of Ideas', cards: [] };
         columns.unshift(ideateColumn);
       }
 

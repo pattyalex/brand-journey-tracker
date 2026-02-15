@@ -1485,24 +1485,36 @@ Return only a JSON array of ${count} strings.`
   const handleSaveScript = () => {
     if (!editingScriptCard) return;
 
-    // Move card to 'shape-ideas' column (Script step) and update data
-    moveCardToColumn(editingScriptCard.id, 'shape-ideas', {
-      title: cardTitle,
-      hook: cardHook,
-      script: scriptContent,
-      platforms: platformTags,
-      formats: formatTags,
-      locationChecked,
-      locationText,
-      outfitChecked,
-      outfitText,
-      propsChecked,
-      propsText,
-      filmingNotes,
-      status: cardStatus,
-      customVideoFormats,
-      customPhotoFormats,
-    });
+    // Update card data in place (keep it in its current column)
+    const now = new Date().toISOString();
+    setColumns((prev) =>
+      prev.map((col) => ({
+        ...col,
+        cards: col.cards.map((card) =>
+          card.id === editingScriptCard.id
+            ? {
+                ...card,
+                title: cardTitle,
+                hook: cardHook,
+                script: scriptContent,
+                platforms: platformTags,
+                formats: formatTags,
+                locationChecked,
+                locationText,
+                outfitChecked,
+                outfitText,
+                propsChecked,
+                propsText,
+                filmingNotes,
+                status: cardStatus,
+                customVideoFormats,
+                customPhotoFormats,
+                lastUpdated: now,
+              }
+            : card
+        ),
+      }))
+    );
 
     resetScriptEditorState();
   };
@@ -1540,16 +1552,26 @@ Return only a JSON array of ${count} strings.`
   const handleSaveStoryboard = (storyboard: StoryboardScene[], title?: string, script?: string, hook?: string, status?: "to-start" | "needs-work" | "ready" | null) => {
     if (!editingStoryboardCard) return;
 
-    // Move card to 'to-film' column (Film step) and update data
-    moveCardToColumn(editingStoryboardCard.id, 'to-film', {
-      storyboard,
-      ...(title !== undefined && { title }),
-      ...(script !== undefined && { script }),
-      ...(hook !== undefined && { hook }),
-      ...(status !== undefined && { status }),
-    });
-
-    setEditingStoryboardCard(null);
+    // Update card data in place (keep it in its current column)
+    const now = new Date().toISOString();
+    setColumns((prev) =>
+      prev.map((col) => ({
+        ...col,
+        cards: col.cards.map((card) =>
+          card.id === editingStoryboardCard.id
+            ? {
+                ...card,
+                storyboard,
+                ...(title !== undefined && { title }),
+                ...(script !== undefined && { script }),
+                ...(hook !== undefined && { hook }),
+                ...(status !== undefined && { status }),
+                lastUpdated: now,
+              }
+            : card
+        ),
+      }))
+    );
   };
 
   // Edit checklist handlers
@@ -1563,15 +1585,25 @@ Return only a JSON array of ${count} strings.`
   const handleSaveEditChecklist = (checklist: EditingChecklist, title?: string, hook?: string, script?: string) => {
     if (!editingEditCard) return;
 
-    // Move card to 'to-edit' column (Edit step) and update data
-    moveCardToColumn(editingEditCard.id, 'to-edit', {
-      editingChecklist: checklist,
-      ...(title !== undefined && { title }),
-      ...(hook !== undefined && { hook }),
-      ...(script !== undefined && { script }),
-    });
-
-    setEditingEditCard(null);
+    // Update card data in place (keep it in its current column)
+    const now = new Date().toISOString();
+    setColumns((prev) =>
+      prev.map((col) => ({
+        ...col,
+        cards: col.cards.map((card) =>
+          card.id === editingEditCard.id
+            ? {
+                ...card,
+                editingChecklist: checklist,
+                ...(title !== undefined && { title }),
+                ...(hook !== undefined && { hook }),
+                ...(script !== undefined && { script }),
+                lastUpdated: now,
+              }
+            : card
+        ),
+      }))
+    );
   };
 
   const handleScheduleContent = (cardId: string, date: Date) => {
@@ -1678,7 +1710,7 @@ Return only a JSON array of ${count} strings.`
             onClick={() => scrollToAndHighlightColumn('ideate')}
             className="text-[#8B7082] hover:text-[#6B5062] font-medium underline underline-offset-2"
           >
-            Ideate
+            Bank of Ideas
           </button>
         </span>
       )
@@ -1828,11 +1860,18 @@ Return only a JSON array of ${count} strings.`
   const handleSaveIdeateCard = () => {
     if (!editingIdeateCard) return;
 
-    // Keep card in 'ideate' column (Ideate step) and update data
-    moveCardToColumn(editingIdeateCard.id, 'ideate', {
-      title: ideateCardTitle,
-      description: ideateCardNotes,
-    });
+    // Update card data in place (keep it in its current column)
+    const now = new Date().toISOString();
+    setColumns((prev) =>
+      prev.map((col) => ({
+        ...col,
+        cards: col.cards.map((card) =>
+          card.id === editingIdeateCard.id
+            ? { ...card, title: ideateCardTitle, description: ideateCardNotes, lastUpdated: now }
+            : card
+        ),
+      }))
+    );
 
     resetIdeateCardEditorState();
   };
@@ -1949,7 +1988,8 @@ Return only a JSON array of ${count} strings.`
     return 'ideate';
   };
 
-  // Close content flow dialog and place card in appropriate column based on content
+  // Close content flow dialog — save parent-controlled data for steps 1 & 2.
+  // Steps 3 (Film), 4 (Edit), 5 (Schedule) save their own data on unmount.
   const handleCloseContentFlowDialog = () => {
     if (!contentFlowCard) {
       setActiveContentFlowStep(null);
@@ -1957,60 +1997,59 @@ Return only a JSON array of ${count} strings.`
       return;
     }
 
-    // Get the latest card data from columns state (in case it was updated during the session)
-    let latestCardFromColumns: ProductionCard | undefined;
-    for (const col of columns) {
-      const found = col.cards.find(c => c.id === contentFlowCard.id);
-      if (found) {
-        latestCardFromColumns = found;
-        break;
-      }
+    const currentStep = activeContentFlowStep;
+
+    // For steps 1 & 2, save the parent-controlled state to columns
+    if (currentStep === 1 || currentStep === 2) {
+      const now = new Date().toISOString();
+      setColumns((prev) =>
+        prev.map((col) => ({
+          ...col,
+          cards: col.cards.map((card) => {
+            if (card.id !== contentFlowCard.id) return card;
+            const updates: Partial<ProductionCard> = {
+              contentType,
+              lastUpdated: now,
+            };
+            if (currentStep === 1) {
+              // Ideate step — parent controls title/notes
+              if (ideateCardTitle) updates.title = ideateCardTitle;
+              if (ideateCardTitle) updates.hook = ideateCardTitle;
+              if (ideateCardNotes !== undefined) updates.description = ideateCardNotes;
+            } else if (currentStep === 2) {
+              // Script/Concept step — parent controls hook, script, tags, etc.
+              if (cardHook) { updates.hook = cardHook; updates.title = cardHook; }
+              if (scriptContent) updates.script = scriptContent;
+              if (platformTags.length > 0) updates.platforms = platformTags;
+              if (formatTags.length > 0) updates.formats = formatTags;
+              updates.locationChecked = locationChecked;
+              updates.locationText = locationText;
+              updates.outfitChecked = outfitChecked;
+              updates.outfitText = outfitText;
+              updates.propsChecked = propsChecked;
+              updates.propsText = propsText;
+              if (filmingNotes) updates.filmingNotes = filmingNotes;
+              if (cardStatus) updates.status = cardStatus;
+              if (caption) updates.caption = caption;
+              if (visualReferences.length > 0) updates.visualReferences = visualReferences;
+              if (linkPreviews.length > 0) updates.linkPreviews = linkPreviews;
+              if (slides.length > 0) updates.slides = slides;
+            }
+            return { ...card, ...updates };
+          }),
+        }))
+      );
     }
-    const baseCard = latestCardFromColumns || contentFlowCard;
+    // Steps 3/4/5: child dialogs save via their unmount cleanup — no action needed here
 
-    // Gather all current state into an updated card object
-    const updatedCardData: Partial<ProductionCard> = {
-      // Content type
-      contentType,
-      // From Ideate step
-      title: ideateCardTitle || cardTitle || baseCard.title,
-      description: ideateCardNotes || baseCard.description,
-      // From Script step (video) / shared
-      hook: cardHook || baseCard.hook,
-      script: contentType === 'image' ? (caption || baseCard.caption || baseCard.script) : (scriptContent || baseCard.script),
-      platforms: platformTags.length > 0 ? platformTags : baseCard.platforms,
-      formats: formatTags.length > 0 ? formatTags : baseCard.formats,
-      locationChecked,
-      locationText,
-      outfitChecked,
-      outfitText,
-      propsChecked,
-      propsText,
-      filmingNotes,
-      status: cardStatus || baseCard.status,
-      // From Film step (storyboard) - video only
-      storyboard: editingStoryboardCard?.storyboard || baseCard.storyboard,
-      // From Edit step
-      editingChecklist: editingEditCard?.editingChecklist || baseCard.editingChecklist,
-      // From Schedule step
-      scheduledDate: baseCard.scheduledDate,
-      schedulingStatus: baseCard.schedulingStatus,
-      // Image-specific data from Concept step
-      caption: caption || baseCard.caption,
-      visualReferences: visualReferences.length > 0 ? visualReferences : baseCard.visualReferences,
-      linkPreviews: linkPreviews.length > 0 ? linkPreviews : baseCard.linkPreviews,
-      slides: slides.length > 0 ? slides : baseCard.slides,
-    };
-
-    // Determine target column based on content
-    const targetColumnId = determineColumnByContent(updatedCardData);
-
-    // Move card to the appropriate column
-    moveCardToColumn(contentFlowCard.id, targetColumnId, updatedCardData);
-
-    // Reset state
+    // Reset dialog state — note: editingStoryboardCard and editingEditCard are NOT
+    // reset here because their child dialogs need them during unmount cleanup saves.
+    // They get re-initialized when the next dialog opens via handleOpenContentFlowForCard.
     setActiveContentFlowStep(null);
     setContentFlowCard(null);
+    setEditingIdeateCard(null);
+    setEditingScriptCard(null);
+    setSchedulingCard(null);
   };
 
   // Handle content type toggle (Video <-> Image)
@@ -2256,7 +2295,7 @@ Return only a JSON array of ${count} strings.`
     });
 
     const stepLabels: Record<number, string> = {
-      1: 'Ideate',
+      1: 'Bank of Ideas',
       2: 'Script',
       3: 'Film',
       4: 'Edit',
@@ -2663,7 +2702,7 @@ Return only a JSON array of ${count} strings.`
       )
     );
 
-    toast.success("Added to Ideate!", {
+    toast.success("Added to Bank of Ideas!", {
       action: {
         label: "View",
         onClick: () => {
@@ -2983,7 +3022,7 @@ Return only a JSON array of ${count} strings.`
                       {column.id === 'to-film' && <Video className="w-5 h-5 text-[#612A4F]" style={{ strokeWidth: 1.5 }} />}
                       {column.id === 'to-edit' && <Scissors className="w-5 h-5 text-[#612A4F]" style={{ strokeWidth: 1.5 }} />}
                       {column.id === 'to-schedule' && <CalendarDays className="w-5 h-5 text-[#612A4F]" style={{ strokeWidth: 1.5 }} />}
-                      <h2 className="text-[18px] tracking-[0.02em] capitalize text-[#612A4F]" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>
+                      <h2 className="text-[18px] tracking-[0.02em] text-[#612A4F]" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>
                         {column.title}
                       </h2>
                     </div>
@@ -4683,7 +4722,7 @@ Return only a JSON array of ${count} strings.`
                                     col.id === 'ideate' ? { ...col, cards: [...col.cards, newCard] } : col
                                   )
                                 );
-                                toast.success("Added to Ideate!", {
+                                toast.success("Added to Bank of Ideas!", {
                                   action: {
                                     label: "View",
                                     onClick: () => {
@@ -4702,7 +4741,7 @@ Return only a JSON array of ${count} strings.`
                               }}
                               className="opacity-0 group-hover:opacity-100 transition-opacity bg-[#7BA393] hover:bg-[#6B9080] text-white text-xs px-3 py-1.5 h-auto whitespace-nowrap"
                             >
-                              Add to Ideate
+                              Add to Bank of Ideas
                             </Button>
                           </motion.div>
                         ))}
@@ -4874,7 +4913,7 @@ Return only a JSON array of ${count} strings.`
                               onClick={() => handleSelectAngle(angle)}
                               className="opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-r from-[#9B8AB8] to-[#7A6A94] hover:from-[#8A7AA8] hover:to-[#695A84] text-white text-xs px-3 py-1.5 h-auto whitespace-nowrap rounded-lg"
                             >
-                              Add to Ideate
+                              Add to Bank of Ideas
                             </Button>
                           </motion.div>
                         ))}

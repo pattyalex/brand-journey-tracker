@@ -42,8 +42,8 @@ interface MobileCardEditorProps {
 }
 
 const columnLabels: Record<string, string> = {
-  'ideate': 'Ideate',
-  'shape-ideas': 'Script Ideas',
+  'ideate': 'Bank of Ideas',
+  'shape-ideas': 'Script and Concept',
   'to-film': 'To Film',
   'to-edit': 'To Edit',
   'to-schedule': 'To Schedule',

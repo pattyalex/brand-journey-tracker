@@ -1340,7 +1340,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = ({
       const missingSteps: string[] = [];
       if (cardToDrop) {
         if (!cardToDrop.hook?.trim() && !cardToDrop.title?.trim()) {
-          missingSteps.push("Title/Hook (Ideate)");
+          missingSteps.push("Title/Hook (Bank of Ideas)");
         }
         if (!cardToDrop.script?.trim()) {
           missingSteps.push("Script");

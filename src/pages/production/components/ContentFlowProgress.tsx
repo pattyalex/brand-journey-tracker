@@ -9,15 +9,15 @@ interface Step {
 }
 
 const VIDEO_STEPS: Step[] = [
-  { label: "Ideate", shortLabel: "Ideate" },
-  { label: "Script Ideas", shortLabel: "Script" },
+  { label: "Bank of Ideas", shortLabel: "Ideas" },
+  { label: "Script and Concept", shortLabel: "Script" },
   { label: "Film", shortLabel: "Film" },
   { label: "To Edit", shortLabel: "Edit" },
   { label: "To Schedule", shortLabel: "Schedule" },
 ];
 
 const IMAGE_STEPS: Step[] = [
-  { label: "Ideate", shortLabel: "Ideate" },
+  { label: "Bank of Ideas", shortLabel: "Ideas" },
   { label: "Concept", shortLabel: "Concept" },
   { label: "To Edit", shortLabel: "Edit" },
   { label: "To Schedule", shortLabel: "Schedule" },

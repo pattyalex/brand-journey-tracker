@@ -9,8 +9,8 @@ interface MobileContentViewProps {
 }
 
 const columnConfig: Record<string, { icon: React.ElementType; color: string; gradient: string; label: string }> = {
-  'ideate': { icon: Lightbulb, color: '#612a4f', gradient: 'linear-gradient(135deg, rgba(97, 42, 79, 0.1) 0%, rgba(139, 112, 130, 0.05) 100%)', label: 'Ideate' },
-  'shape-ideas': { icon: PenLine, color: '#612a4f', gradient: 'linear-gradient(135deg, rgba(97, 42, 79, 0.1) 0%, rgba(139, 112, 130, 0.05) 100%)', label: 'Script Ideas' },
+  'ideate': { icon: Lightbulb, color: '#612a4f', gradient: 'linear-gradient(135deg, rgba(97, 42, 79, 0.1) 0%, rgba(139, 112, 130, 0.05) 100%)', label: 'Bank of Ideas' },
+  'shape-ideas': { icon: PenLine, color: '#612a4f', gradient: 'linear-gradient(135deg, rgba(97, 42, 79, 0.1) 0%, rgba(139, 112, 130, 0.05) 100%)', label: 'Script and Concept' },
   'to-film': { icon: Clapperboard, color: '#612a4f', gradient: 'linear-gradient(135deg, rgba(97, 42, 79, 0.1) 0%, rgba(139, 112, 130, 0.05) 100%)', label: 'To Film' },
   'to-edit': { icon: Scissors, color: '#612a4f', gradient: 'linear-gradient(135deg, rgba(97, 42, 79, 0.1) 0%, rgba(139, 112, 130, 0.05) 100%)', label: 'To Edit' },
   'to-schedule': { icon: CalendarDays, color: '#612a4f', gradient: 'linear-gradient(135deg, rgba(97, 42, 79, 0.1) 0%, rgba(139, 112, 130, 0.05) 100%)', label: 'To Schedule' },

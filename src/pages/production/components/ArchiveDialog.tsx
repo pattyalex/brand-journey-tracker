@@ -322,7 +322,7 @@ const ArchiveDialog: React.FC<ArchiveDialogProps> = ({
                       </button>
                       <div className="absolute top-full right-0 mt-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none w-56 text-center leading-relaxed">
                         <span className="block font-semibold mb-1">Want to reuse this idea?</span>
-                        Send a copy to Ideate and refine it for a new post
+                        Send a copy to Bank of Ideas and refine it for a new post
                         <div className="absolute bottom-full right-6 border-4 border-transparent border-b-gray-900"></div>
                       </div>
                     </div>
