@@ -1252,7 +1252,7 @@
     .constellation-line-pulse {
       stroke-dasharray: 4 12;
       stroke-dashoffset: 0;
-      animation: lineFlow 3s linear infinite;
+      animation: lineFlow 2.5s linear infinite;
       opacity: 0.5;
     }
 
@@ -1968,6 +1968,204 @@
       font-size: 10px;
       color: #4d3e48;
       line-height: 1.4;
+    }
+
+    /* ==================== AI STORYBOARD GENERATION ==================== */
+
+    .storyboard-visual {
+      padding: 0 !important;
+      overflow: hidden !important;
+      background: #ffffff !important;
+    }
+
+    .storyboard-gen {
+      width: 100%;
+      padding: 20px;
+    }
+
+    /* Header */
+    .sb-header {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 10px 14px;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, #faf7fb, #f4eff8);
+      border-radius: 10px;
+      opacity: 0;
+      transform: translateY(-8px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    .sb-header-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sb-header-subtitle {
+      font-size: 11px;
+      font-weight: 400;
+      color: #8a7a85;
+    }
+
+    .sb-header.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .sb-header-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #2a1f26;
+    }
+
+    .sb-ai-badge {
+      font-size: 9px;
+      background: linear-gradient(135deg, #612a4f, #8B7082);
+      color: white;
+      padding: 3px 8px;
+      border-radius: 10px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .sb-status {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: #8a7a85;
+      font-weight: 500;
+    }
+
+    .sb-status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #c4a8b9;
+      animation: sbPulse 1s ease-in-out infinite;
+    }
+
+    .sb-status.complete .sb-status-dot {
+      background: #5ba67a;
+      animation: none;
+    }
+
+    .sb-status.complete {
+      color: #5ba67a;
+    }
+
+    @keyframes sbPulse {
+      0%, 100% { opacity: 0.4; transform: scale(0.8); }
+      50% { opacity: 1; transform: scale(1.2); }
+    }
+
+    /* Scene Grid */
+    .sb-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    /* Scene Card */
+    .sb-card {
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(16px) scale(0.95);
+      transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1), transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .sb-card.revealed {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    .sb-card img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 16px;
+    }
+
+    /* Shimmer overlay on top of card */
+    .sb-shimmer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 2;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #eee9ef 0%, #e4dfe8 100%);
+      overflow: hidden;
+      opacity: 1;
+      transition: opacity 0.5s ease 0.15s;
+    }
+
+    .sb-shimmer::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.4) 35%,
+        rgba(255, 255, 255, 0.65) 50%,
+        rgba(255, 255, 255, 0.4) 65%,
+        transparent 100%
+      );
+      animation: sbShimmer 1.3s ease-in-out infinite;
+    }
+
+    /* Skeleton content hints */
+    .sb-shimmer::after {
+      content: '';
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      right: 14px;
+      bottom: 14px;
+      background:
+        linear-gradient(#d8d0dd 100%, transparent 0%) 0% 0 / 30% 10px no-repeat,
+        linear-gradient(#d8d0dd 100%, transparent 0%) 0% 18px / 50% 8px no-repeat,
+        linear-gradient(rgba(200,190,210,0.25) 100%, transparent 0%) 0% 36px / 100% 40% no-repeat,
+        linear-gradient(#d8d0dd 100%, transparent 0%) 0% calc(36px + 40% + 8px) / 85% 7px no-repeat,
+        linear-gradient(#d8d0dd 100%, transparent 0%) 0% calc(36px + 40% + 22px) / 70% 7px no-repeat,
+        linear-gradient(rgba(200,190,210,0.18) 100%, transparent 0%) 0% calc(100% - 14px) / 100% 22% no-repeat;
+      border-radius: 6px;
+    }
+
+    @keyframes sbShimmer {
+      0% { left: -100%; }
+      100% { left: 100%; }
+    }
+
+    .sb-card.revealing .sb-shimmer {
+      opacity: 0;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .sb-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .sb-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+      .storyboard-gen {
+        padding: 14px;
+      }
     }
 
     /* Calendar Mockup */
@@ -3768,8 +3966,27 @@
         <h3>AI Storyboard</h3>
         <p>MegAI builds a scene-by-scene storyboard from your script. It tells you what to shoot, how to frame it, and what to say.</p>
       </div>
-      <div class="feature-visual reveal-visual" style="overflow: visible;">
-        <img src="storyboard-preview.png" alt="HeyMeg AI Storyboard" class="feature-screenshot" style="border-radius: 12px; transform: scale(1.12); transform-origin: center;">
+      <div class="feature-visual reveal-visual storyboard-visual">
+        <div class="storyboard-gen" id="storyboard-gen">
+          <div class="sb-header">
+            <div class="sb-header-top">
+              <span class="sb-header-title">MegAI Storyboard</span>
+              <span class="sb-ai-badge">AI</span>
+              <span class="sb-status" id="sb-status">
+                <span class="sb-status-dot"></span>
+                <span id="sb-status-text">Generating...</span>
+              </span>
+            </div>
+          </div>
+          <div class="sb-grid">
+            <div class="sb-card"><img src="scene-1.png" alt="Scene 1 — Medium Shot"><div class="sb-shimmer"></div></div>
+            <div class="sb-card"><img src="scene-2.png" alt="Scene 2 — Hands Doing Something"><div class="sb-shimmer"></div></div>
+            <div class="sb-card"><img src="scene-3.png" alt="Scene 3 — Close-Up Shot"><div class="sb-shimmer"></div></div>
+            <div class="sb-card"><img src="scene-4.png" alt="Scene 4 — Moving Through the Space"><div class="sb-shimmer"></div></div>
+            <div class="sb-card"><img src="scene-5.png" alt="Scene 5 — Reaction Moment"><div class="sb-shimmer"></div></div>
+            <div class="sb-card"><img src="scene-6.png" alt="Scene 6 — Hands Doing Something"><div class="sb-shimmer"></div></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -4124,6 +4341,48 @@
     }, { threshold: 0.3 });
 
     visualElements.forEach(el => visualObserver.observe(el));
+
+    // ── AI Storyboard Generation Effect ──
+    (function() {
+      const el = document.getElementById('storyboard-gen');
+      if (!el) return;
+      let played = false;
+
+      const obs = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting && !played) {
+            played = true;
+            obs.unobserve(el);
+            runStoryboard();
+          }
+        });
+      }, { threshold: 0.25 });
+      obs.observe(el);
+
+      function runStoryboard() {
+        const header = el.querySelector('.sb-header');
+        const cards = el.querySelectorAll('.sb-card');
+        const status = document.getElementById('sb-status');
+        const statusText = document.getElementById('sb-status-text');
+
+        // Header slides in
+        header.classList.add('active');
+
+        // Cards appear one by one with shimmer → reveal
+        cards.forEach((card, i) => {
+          // Show card (shimmer visible on top)
+          setTimeout(() => card.classList.add('revealed'), 300 + i * 280);
+          // Fade shimmer out to reveal image
+          setTimeout(() => card.classList.add('revealing'), 300 + i * 280 + 200);
+        });
+
+        // Mark complete after last card
+        setTimeout(() => {
+          status.classList.add('complete');
+          statusText.textContent = 'Complete ✓';
+        }, 300 + cards.length * 280 + 400);
+      }
+    })();
 
     // Pricing selection
     function selectMonthly() {
