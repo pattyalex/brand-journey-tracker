@@ -369,23 +369,29 @@
     /* Creator avatar overlay — flows over the dashboard edge */
     .hero-avatar {
       position: absolute;
-      top: -12px;
+      top: 2px;
       right: 10px;
-      width: 60px;
-      height: 60px;
+      width: 48px;
+      height: 48px;
       border-radius: 50%;
       object-fit: cover;
-      border: 4px solid white;
+      border: 3px solid white;
       box-shadow: 0 8px 24px rgba(97,42,79,0.15), 0 2px 8px rgba(0,0,0,0.08);
       z-index: 10;
       animation: fadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) 1.3s forwards;
       opacity: 0;
     }
 
+    @keyframes avatarFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
     @media (max-width: 768px) {
       .hero-avatar {
-        width: 40px;
-        height: 40px;
+        width: 32px;
+        height: 32px;
+        border-width: 2px;
         top: -12px;
         right: 4px;
       }
@@ -1682,7 +1688,7 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 32px;
-      max-width: 1100px;
+      max-width: 1280px;
       margin: 0 auto 120px;
       align-items: center;
     }
@@ -3495,10 +3501,10 @@
       <p class="social-proof-text">Trusted by content creators, experts, coaches, and entrepreneurs worldwide</p>
       <div class="social-proof-avatars">
         <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="User">
-        <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="User">
+        <img src="https://randomuser.me/api/portraits/women/48.jpg" alt="User">
         <img src="https://randomuser.me/api/portraits/men/86.jpg" alt="User">
-        <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="User">
-        <img src="https://randomuser.me/api/portraits/men/75.jpg" alt="User">
+        <img src="https://randomuser.me/api/portraits/women/26.jpg" alt="User">
+        <img src="https://randomuser.me/api/portraits/women/63.jpg" alt="User">
         <img src="https://randomuser.me/api/portraits/women/90.jpg" alt="User">
       </div>
       <div class="social-proof-rating">
@@ -3762,45 +3768,8 @@
         <h3>AI Storyboard</h3>
         <p>MegAI builds a scene-by-scene storyboard from your script. It tells you what to shoot, how to frame it, and what to say.</p>
       </div>
-      <div class="feature-visual reveal-visual">
-        <div class="storyboard-container">
-          <div class="storyboard-header">
-            <span>🎬 MegAI Storyboard</span>
-            <span class="ai-badge">AI</span>
-          </div>
-          <div class="scene-grid">
-            <div class="scene-card">
-              <div class="scene-number">Scene 1</div>
-              <div class="scene-shot-type">Wide Shot</div>
-              <div class="scene-description">Open at desk, camera slowly pulls in. Hook: "Most creators don't fail because of talent..."</div>
-            </div>
-            <div class="scene-card">
-              <div class="scene-number">Scene 2</div>
-              <div class="scene-shot-type">Close-Up</div>
-              <div class="scene-description">Cut to hands on keyboard. Show the chaos — tabs open, notes everywhere.</div>
-            </div>
-            <div class="scene-card">
-              <div class="scene-number">Scene 3</div>
-              <div class="scene-shot-type">Medium Shot</div>
-              <div class="scene-description">Face camera directly. Deliver the solution. Confident energy, clean background.</div>
-            </div>
-            <div class="scene-card">
-              <div class="scene-number">Scene 4</div>
-              <div class="scene-shot-type">Screen Record</div>
-              <div class="scene-description">Walk through HeyMeg dashboard. Show the Kanban board in action.</div>
-            </div>
-            <div class="scene-card">
-              <div class="scene-number">Scene 5</div>
-              <div class="scene-shot-type">Close-Up</div>
-              <div class="scene-description">End with CTA. Look into camera: "Link in bio to get started."</div>
-            </div>
-            <div class="scene-card">
-              <div class="scene-number">Scene 6</div>
-              <div class="scene-shot-type">B-Roll</div>
-              <div class="scene-description">Overlay shots: coffee, planner, phone notification. Aesthetic montage close.</div>
-            </div>
-          </div>
-        </div>
+      <div class="feature-visual reveal-visual" style="overflow: visible;">
+        <img src="storyboard-preview.png" alt="HeyMeg AI Storyboard" class="feature-screenshot" style="border-radius: 12px; transform: scale(1.12); transform-origin: center;">
       </div>
     </div>
 

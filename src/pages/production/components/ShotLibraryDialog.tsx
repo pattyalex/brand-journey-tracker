@@ -60,6 +60,8 @@ import reactionManBored from "@/assets/shot-illustrations/reaction-moment/man-bo
 import handsTyping from "@/assets/shot-illustrations/hands-doing/typing.png";
 import handsBag from "@/assets/shot-illustrations/hands-doing/bag.png";
 import handsPerfume from "@/assets/shot-illustrations/hands-doing/perfume.png";
+import handsResting from "@/assets/shot-illustrations/hands-doing/resting.png";
+import handsPhone from "@/assets/shot-illustrations/hands-doing/phone.png";
 import closeDetailDesk from "@/assets/shot-illustrations/close-detail/desk.png";
 import closeDetailSkincare from "@/assets/shot-illustrations/close-detail/skincare.png";
 import closeDetailSunglasses from "@/assets/shot-illustrations/close-detail/sunglasses.png";
@@ -115,6 +117,8 @@ export const variantImages: Record<string, Record<string, string>> = {
     "typing": handsTyping,
     "bag": handsBag,
     "perfume": handsPerfume,
+    "resting": handsResting,
+    "phone": handsPhone,
   },
   "close-detail": {
     "default": closeDetailIllustration,

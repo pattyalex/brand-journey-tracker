@@ -136,6 +136,8 @@ export const shotTemplates: ShotTemplate[] = [
       { id: "typing", name: "Typing" },
       { id: "bag", name: "Bag" },
       { id: "perfume", name: "Perfume" },
+      { id: "resting", name: "Resting" },
+      { id: "phone", name: "Phone" },
     ]
   },
   {
