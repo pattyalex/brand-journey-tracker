@@ -36,8 +36,11 @@ interface ConceptEditorDialogProps {
   setLinkPreviews: (value: LinkPreview[]) => void;
   slides: ImageSlide[];
   setSlides: (value: ImageSlide[]) => void;
+  imageMode: 'image' | 'carousel';
+  setImageMode: (value: 'image' | 'carousel') => void;
   platformTags: string[];
   setPlatformTags: (value: string[]) => void;
+  onAddPlatformTag: (tag: string) => void;
   showCustomPlatformInput: boolean;
   setShowCustomPlatformInput: (value: boolean) => void;
   customPlatformInput: string;
@@ -65,8 +68,11 @@ const ConceptEditorDialog: React.FC<ConceptEditorDialogProps> = ({
   setLinkPreviews,
   slides,
   setSlides,
+  imageMode,
+  setImageMode,
   platformTags,
   setPlatformTags,
+  onAddPlatformTag,
   showCustomPlatformInput,
   setShowCustomPlatformInput,
   customPlatformInput,
@@ -115,7 +121,7 @@ const ConceptEditorDialog: React.FC<ConceptEditorDialogProps> = ({
   }, []);
 
   const slideCount = slides.length;
-  const isCarousel = slideCount > 1;
+  const isCarousel = imageMode === 'carousel';
 
   const handleAddSlide = () => {
     const newSlide: ImageSlide = {
@@ -617,24 +623,46 @@ Guidelines:
 
           {/* Right Column - Slides */}
           <div className="space-y-6 pt-0">
-            {/* Dynamic header */}
+            {/* Image / Carousel toggle */}
             <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                {isCarousel ? (
-                  <Layers className="w-4 h-4 text-[#612A4F]" />
-                ) : (
-                  <ImageIcon className="w-4 h-4 text-[#612A4F]" />
-                )}
-                <h4 className="text-[12px] font-medium text-[#612A4F] uppercase tracking-wider">
-                  {isCarousel ? 'Carousel' : 'Image'}
-                </h4>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => {
+                    setImageMode('image');
+                    // Trim to 1 slide when switching to single image
+                    if (slides.length > 1) {
+                      setSlides([slides[0]]);
+                    }
+                  }}
+                  className={cn(
+                    "flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[12px] font-medium uppercase tracking-wider transition-all",
+                    !isCarousel
+                      ? "bg-[#612A4F]/10 text-[#612A4F]"
+                      : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+                  )}
+                >
+                  <ImageIcon className="w-3.5 h-3.5" />
+                  Image
+                </button>
+                <button
+                  onClick={() => setImageMode('carousel')}
+                  className={cn(
+                    "flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[12px] font-medium uppercase tracking-wider transition-all",
+                    isCarousel
+                      ? "bg-[#612A4F]/10 text-[#612A4F]"
+                      : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+                  )}
+                >
+                  <Layers className="w-3.5 h-3.5" />
+                  Carousel
+                </button>
                 <span className="text-[11px] text-gray-400 ml-auto">
                   {slideCount} {slideCount === 1 ? 'image' : 'slides'}
                 </span>
               </div>
               <p className="text-xs text-gray-400">
                 {isCarousel
-                  ? 'Plan what each image will look like and how to shoot it'
+                  ? 'Plan what each slide will look like and how to shoot it'
                   : 'Plan what your image will look like and how to shoot it'
                 }
               </p>
@@ -725,14 +753,16 @@ Guidelines:
                 );
               })}
 
-              {/* Add slide button */}
-              <button
-                onClick={handleAddSlide}
-                className="w-full flex items-center justify-center gap-2 py-2.5 border border-dashed border-gray-300 rounded-lg text-sm text-gray-500 hover:border-[#8B7082] hover:text-[#612A4F] hover:bg-[#612A4F]/[0.03] transition-colors"
-              >
-                <Plus className="w-4 h-4" />
-                Add slide
-              </button>
+              {/* Add slide button - only in carousel mode */}
+              {isCarousel && (
+                <button
+                  onClick={handleAddSlide}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 border border-dashed border-gray-300 rounded-lg text-sm text-gray-500 hover:border-[#8B7082] hover:text-[#612A4F] hover:bg-[#612A4F]/[0.03] transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add slide
+                </button>
+              )}
             </div>
 
             {/* Platforms */}
@@ -760,7 +790,7 @@ Guidelines:
                         if (isSelected) {
                           onRemovePlatformTag(platform.name);
                         } else {
-                          setPlatformTags([...platformTags, platform.name]);
+                          onAddPlatformTag(platform.name);
                         }
                       }}
                       className={cn(
@@ -799,9 +829,7 @@ Guidelines:
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && customPlatformInput.trim()) {
                         e.preventDefault();
-                        if (!platformTags.includes(customPlatformInput.trim())) {
-                          setPlatformTags([...platformTags, customPlatformInput.trim()]);
-                        }
+                        onAddPlatformTag(customPlatformInput.trim());
                         setCustomPlatformInput("");
                         setShowCustomPlatformInput(false);
                       }
@@ -813,8 +841,8 @@ Guidelines:
                   <Button
                     type="button"
                     onClick={() => {
-                      if (customPlatformInput.trim() && !platformTags.includes(customPlatformInput.trim())) {
-                        setPlatformTags([...platformTags, customPlatformInput.trim()]);
+                      if (customPlatformInput.trim()) {
+                        onAddPlatformTag(customPlatformInput.trim());
                         setCustomPlatformInput("");
                         setShowCustomPlatformInput(false);
                       }

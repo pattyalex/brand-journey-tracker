@@ -183,16 +183,11 @@ const ContentTable = memo(({
                   <TableCell>
                     {item.platforms && item.platforms.length > 0 ? (
                       <div className="flex flex-wrap gap-1">
-                        {item.platforms.slice(0, 2).map((platform, idx) => (
+                        {item.platforms.map((platform, idx) => (
                           <Badge key={idx} variant="outline" className="text-xs">
                             {platform}
                           </Badge>
                         ))}
-                        {item.platforms.length > 2 && (
-                          <Badge variant="outline" className="text-xs">
-                            +{item.platforms.length - 2}
-                          </Badge>
-                        )}
                       </div>
                     ) : (
                       <span className="text-muted-foreground text-sm">-</span>

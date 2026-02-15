@@ -85,6 +85,7 @@ interface ScriptEditorDialogProps {
   setCustomFormatInput: (value: string) => void;
   platformTags: string[];
   setPlatformTags: (value: string[]) => void;
+  onAddPlatformTag: (tag: string) => void;
   showCustomPlatformInput: boolean;
   setShowCustomPlatformInput: (value: boolean) => void;
   customPlatformInput: string;
@@ -140,6 +141,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
   setCustomFormatInput,
   platformTags,
   setPlatformTags,
+  onAddPlatformTag,
   showCustomPlatformInput,
   setShowCustomPlatformInput,
   customPlatformInput,
@@ -774,7 +776,7 @@ Guidelines:
                         if (isSelected) {
                           onRemovePlatformTag(platform.name);
                         } else {
-                          setPlatformTags([...platformTags, platform.name]);
+                          onAddPlatformTag(platform.name);
                         }
                       }}
                       className={cn(
@@ -813,9 +815,7 @@ Guidelines:
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && customPlatformInput.trim()) {
                         e.preventDefault();
-                        if (!platformTags.includes(customPlatformInput.trim())) {
-                          setPlatformTags([...platformTags, customPlatformInput.trim()]);
-                        }
+                        onAddPlatformTag(customPlatformInput.trim());
                         setCustomPlatformInput("");
                         setShowCustomPlatformInput(false);
                       }
@@ -827,8 +827,8 @@ Guidelines:
                   <Button
                     type="button"
                     onClick={() => {
-                      if (customPlatformInput.trim() && !platformTags.includes(customPlatformInput.trim())) {
-                        setPlatformTags([...platformTags, customPlatformInput.trim()]);
+                      if (customPlatformInput.trim()) {
+                        onAddPlatformTag(customPlatformInput.trim());
                         setCustomPlatformInput("");
                         setShowCustomPlatformInput(false);
                       }

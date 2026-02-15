@@ -257,7 +257,7 @@ const ArchiveDialog: React.FC<ArchiveDialogProps> = ({
                           {/* Platforms */}
                           {platforms.length > 0 && (
                             <div className="flex gap-1">
-                              {platforms.slice(0, 3).map((platform, idx) => (
+                              {platforms.map((platform, idx) => (
                                 <span key={idx} className="text-gray-400">
                                   {getPlatformIcon(platform, "w-3 h-3")}
                                 </span>

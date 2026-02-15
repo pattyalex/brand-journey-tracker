@@ -169,7 +169,7 @@ const CalendarContentItem: React.FC<CalendarContentItemProps> = ({
 
       {content.platforms && content.platforms.length > 0 && (
         <div className="flex flex-wrap gap-1 mt-1 ml-1">
-          {content.platforms.slice(0, 2).map((platform, idx) => (
+          {content.platforms.map((platform, idx) => (
             <Badge
               key={`cal-platform-${content.id}-${idx}`}
               className="bg-purple-100 text-purple-800 text-xs px-1.5 py-0 rounded-full flex items-center gap-0.5"
@@ -178,11 +178,6 @@ const CalendarContentItem: React.FC<CalendarContentItemProps> = ({
               <span className="text-[9px]">{platform}</span>
             </Badge>
           ))}
-          {content.platforms.length > 2 && (
-            <Badge className="bg-purple-100 text-purple-800 text-[9px]">
-              +{content.platforms.length - 2}
-            </Badge>
-          )}
         </div>
       )}
 

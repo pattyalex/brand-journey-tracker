@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, MoreVertical, Trash2, Pencil, Sparkles, Check, Plus, ArrowLeft, Lightbulb, Pin, Clapperboard, Video, Circle, Wrench, CheckCircle2, Camera, CheckSquare, Scissors, PlayCircle, PenLine, CalendarDays, X, Maximize2, PartyPopper, Archive, FolderOpen, ChevronRight, RefreshCw, Compass, TrendingUp, BarChart3, Zap, LayoutGrid, RotateCcw } from "lucide-react";
+import { PlusCircle, MoreVertical, Trash2, Pencil, Sparkles, Check, Plus, ArrowLeft, Lightbulb, Pin, Clapperboard, Video, Circle, Wrench, CheckCircle2, Camera, CheckSquare, Scissors, PlayCircle, PenLine, CalendarDays, X, Maximize2, PartyPopper, Archive, FolderOpen, ChevronRight, RefreshCw, Compass, TrendingUp, BarChart3, Zap, LayoutGrid, RotateCcw, Image as ImageIcon, Layers } from "lucide-react";
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine, RiPushpinFill } from "react-icons/ri";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -125,7 +125,7 @@ const getPlatformIcon = (platform: string): React.ReactNode => {
   if (lowercased.includes("linkedin")) {
     return <SiLinkedin className={iconClass} />;
   }
-  if (lowercased.includes("twitter") || lowercased.includes("x.com") || lowercased.includes("x /")) {
+  if (lowercased === "x" || lowercased.includes("twitter") || lowercased.includes("x.com") || lowercased.includes("x /")) {
     return <RiTwitterXLine className={iconClass} />;
   }
   if (lowercased.includes("threads")) {
@@ -284,6 +284,7 @@ const Production = () => {
   const [visualReferences, setVisualReferences] = useState<VisualReference[]>([]);
   const [linkPreviews, setLinkPreviews] = useState<LinkPreview[]>([]);
   const [slides, setSlides] = useState<ImageSlide[]>([]);
+  const [imageMode, setImageMode] = useState<'image' | 'carousel'>('image');
 
   // Archive state - load from localStorage
   const [archivedCards, setArchivedCards] = useState<ProductionCard[]>(() => {
@@ -554,7 +555,7 @@ Return only a JSON array of strings.`
   };
 
   // Helper function to generate content angles using Claude API
-  const generateAnglesWithAI = async (ideaText: string, count: number = 10): Promise<string[]> => {
+  const generateAnglesWithAI = async (ideaText: string, count: number = 10, options?: { direction?: string; alreadyGenerated?: string[] }): Promise<string[]> => {
     const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
 
     if (!apiKey) {
@@ -563,18 +564,8 @@ Return only a JSON array of strings.`
     }
 
     try {
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": apiKey,
-          "anthropic-version": "2023-06-01",
-          "anthropic-dangerous-direct-browser-access": "true"
-        },
-        body: JSON.stringify({
-          model: "claude-3-5-haiku-20241022",
-          max_tokens: 800,
-          system: `You are a creative content strategist helping creators find unique, SPECIFIC angles for their content.
+      // Build system prompt with direction if provided
+      let systemPrompt = `You are a creative content strategist helping creators find unique, SPECIFIC angles for their content.
 
 BEFORE generating hooks, first analyze what the user wrote:
 1. What specific emotions are they expressing? (not just "lonely" but WHY they felt lonely)
@@ -595,14 +586,38 @@ RULES:
 - NO emojis
 - NO generic templates like "How to X" or "5 tips for Y"
 
-Return ONLY a JSON array of strings, nothing else.`,
+Return ONLY a JSON array of strings, nothing else.`;
+
+      // Build user message
+      let userMessage = `The creator shared this idea: "${ideaText}"
+
+Generate ${count} highly specific content angles. Each hook should feel like it could ONLY come from this person's unique experience. Don't create generic hooks - create ones that reference the specific emotions, situations, or insights they mentioned.`;
+
+      if (options?.direction) {
+        userMessage += `\n\n⚠️ CRITICAL INSTRUCTION FROM THE CREATOR — YOU MUST FOLLOW THIS:\n${options.direction}\n\nThis is the creator's feedback on the previous batch of ideas. You MUST adapt your output to match exactly what they're asking for. If they say shorter, make them SHORT. If they say funnier, make them FUNNY. Their direction overrides the default rules above.`;
+      }
+
+      if (options?.alreadyGenerated && options.alreadyGenerated.length > 0) {
+        userMessage += `\n\nAlready generated (do NOT repeat these, create completely different ones): ${options.alreadyGenerated.join(" | ")}`;
+      }
+
+      userMessage += `\n\nReturn only a JSON array of ${count} strings.`;
+
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": apiKey,
+          "anthropic-version": "2023-06-01",
+          "anthropic-dangerous-direct-browser-access": "true"
+        },
+        body: JSON.stringify({
+          model: "claude-3-5-haiku-20241022",
+          max_tokens: 800,
+          system: systemPrompt,
           messages: [{
             role: "user",
-            content: `The creator shared this idea: "${ideaText}"
-
-Generate ${count} highly specific content angles. Each hook should feel like it could ONLY come from this person's unique experience. Don't create generic hooks - create ones that reference the specific emotions, situations, or insights they mentioned.
-
-Return only a JSON array of ${count} strings.`
+            content: userMessage
           }]
         })
       });
@@ -1834,6 +1849,7 @@ Return only a JSON array of ${count} strings.`
     setVisualReferences(card.visualReferences || []);
     setLinkPreviews(card.linkPreviews || []);
     setSlides(card.slides || []);
+    setImageMode(card.imageMode || 'image');
 
     // Check for brain dump suggestion
     // Only show if notes exist AND haven't already been handled (dismissed or appended)
@@ -2020,8 +2036,8 @@ Return only a JSON array of ${count} strings.`
               // Script/Concept step — parent controls hook, script, tags, etc.
               if (cardHook) { updates.hook = cardHook; updates.title = cardHook; }
               if (scriptContent) updates.script = scriptContent;
-              if (platformTags.length > 0) updates.platforms = platformTags;
-              if (formatTags.length > 0) updates.formats = formatTags;
+              updates.platforms = platformTags;
+              updates.formats = formatTags;
               updates.locationChecked = locationChecked;
               updates.locationText = locationText;
               updates.outfitChecked = outfitChecked;
@@ -2034,6 +2050,7 @@ Return only a JSON array of ${count} strings.`
               if (visualReferences.length > 0) updates.visualReferences = visualReferences;
               if (linkPreviews.length > 0) updates.linkPreviews = linkPreviews;
               if (slides.length > 0) updates.slides = slides;
+              updates.imageMode = imageMode;
             }
             return { ...card, ...updates };
           }),
@@ -2241,12 +2258,8 @@ Return only a JSON array of ${count} strings.`
       if (scriptContent !== undefined) {
         currentFormData.script = scriptContent;
       }
-      if (platformTags.length > 0) {
-        currentFormData.platforms = platformTags;
-      }
-      if (formatTags.length > 0) {
-        currentFormData.formats = formatTags;
-      }
+      currentFormData.platforms = platformTags;
+      currentFormData.formats = formatTags;
       currentFormData.locationChecked = locationChecked;
       currentFormData.locationText = locationText;
       currentFormData.outfitChecked = outfitChecked;
@@ -2265,6 +2278,8 @@ Return only a JSON array of ${count} strings.`
       if (customPhotoFormats.length > 0) {
         currentFormData.customPhotoFormats = customPhotoFormats;
       }
+      currentFormData.contentType = contentType;
+      currentFormData.imageMode = imageMode;
     }
     // Steps 3, 4, 5 save their own data through their respective dialogs
 
@@ -2333,6 +2348,7 @@ Return only a JSON array of ${count} strings.`
             setVisualReferences(latestCard!.visualReferences || []);
             setLinkPreviews(latestCard!.linkPreviews || []);
             setSlides(latestCard!.slides || []);
+            setImageMode(latestCard!.imageMode || 'image');
             setPlatformTags(latestCard!.platforms || []);
             break;
           }
@@ -2458,13 +2474,6 @@ Return only a JSON array of ${count} strings.`
     performNavigation();
   };
 
-  const handleAddPlatformTag = () => {
-    if (platformInput.trim() && !platformTags.includes(platformInput.trim())) {
-      setPlatformTags([...platformTags, platformInput.trim()]);
-      setPlatformInput("");
-    }
-  };
-
   const handleAddFormatTag = () => {
     if (formatInput.trim() && !formatTags.includes(formatInput.trim())) {
       setFormatTags([...formatTags, formatInput.trim()]);
@@ -2472,12 +2481,16 @@ Return only a JSON array of ${count} strings.`
     }
   };
 
+  const handleAddPlatformTag = (tag: string) => {
+    setPlatformTags(prev => prev.includes(tag) ? prev : [...prev, tag]);
+  };
+
   const handleRemovePlatformTag = (tag: string) => {
-    setPlatformTags(platformTags.filter(t => t !== tag));
+    setPlatformTags(prev => prev.filter(t => t !== tag));
   };
 
   const handleRemoveFormatTag = (tag: string) => {
-    setFormatTags(formatTags.filter(t => t !== tag));
+    setFormatTags(prev => prev.filter(t => t !== tag));
   };
 
   const handleStartAddingCard = (columnId: string) => {
@@ -2661,18 +2674,13 @@ Return only a JSON array of ${count} strings.`
     setIsGeneratingAngles(true);
 
     try {
-      // Build the prompt with direction feedback if provided
-      let promptText = ideaExpanderText;
-      if (feedbackDirection) {
-        promptText = `${ideaExpanderText}\n\nDIRECTION FROM USER: ${feedbackDirection}\n\nALREADY GENERATED (create different ones): ${expandedAngles.join(", ")}`;
-      } else {
-        promptText = `${ideaExpanderText}\n\nALREADY GENERATED (create different ones): ${expandedAngles.join(", ")}`;
-      }
-
-      const moreAngles = await generateAnglesWithAI(promptText, 7);
+      const moreAngles = await generateAnglesWithAI(ideaExpanderText, 7, {
+        direction: feedbackDirection || undefined,
+        alreadyGenerated: expandedAngles.length > 0 ? expandedAngles : undefined,
+      });
       if (moreAngles.length > 0) {
         setExpandedAngles([...expandedAngles, ...moreAngles]);
-        setShowAngleFeedback(false); // Hide feedback after generating
+        // Keep feedback section visible so user can keep refining direction
         setAngleFeedbackText("");
         setSelectedAngleDirection(null);
       }
@@ -3560,7 +3568,7 @@ Return only a JSON array of ${count} strings.`
                                 </div>
                             </div>
                             {/* Tags for cards with metadata */}
-                            {column.id !== "ideate" && ((card.formats && card.formats.length > 0) || card.schedulingStatus || (card.platforms && card.platforms.length > 0)) && (() => {
+                            {column.id !== "ideate" && ((card.formats && card.formats.length > 0) || card.contentType === 'image' || card.schedulingStatus || (card.platforms && card.platforms.length > 0)) && (() => {
                               const formats = card.formats || [];
                               const hasStatus = false; // Status now shown via badge at top of card
                               const schedulingStatus = card.schedulingStatus;
@@ -3581,7 +3589,7 @@ Return only a JSON array of ${count} strings.`
                               ];
 
                               const renderPlatformIcons = () => (
-                                <div className="flex gap-1.5 items-center">
+                                <div className="flex gap-1.5 items-center flex-wrap flex-shrink-0">
                                   {platforms.map((platform, idx) => {
                                     const icon = getPlatformIcon(platform);
                                     return icon ? (
@@ -3619,6 +3627,26 @@ Return only a JSON array of ${count} strings.`
                                       </span>
                                     );
                                   })}
+                                  {/* Image/Carousel content type label when no format tags */}
+                                  {card.contentType === 'image' && formats.length === 0 && (() => {
+                                    const isCardCarousel = card.imageMode === 'carousel';
+                                    const label = isCardCarousel ? 'Carousel' : 'Image';
+                                    const icon = isCardCarousel ? <Layers className="w-3 h-3" /> : <ImageIcon className="w-3 h-3" />;
+                                    return hasPlatforms ? (
+                                      <div className="flex items-center justify-between">
+                                        <span className="inline-flex items-center gap-1 text-[12px] px-2 py-0.5 rounded-full text-gray-500/80 font-normal">
+                                          {icon}
+                                          {label}
+                                        </span>
+                                        {renderPlatformIcons()}
+                                      </div>
+                                    ) : (
+                                      <span className="inline-flex items-center gap-1 text-[12px] px-2 py-0.5 rounded-full text-gray-500/80 font-normal">
+                                        {icon}
+                                        {label}
+                                      </span>
+                                    );
+                                  })()}
                                   {/* Status tag - only for scheduling column */}
                                   {hasStatus && (
                                     <div className={hasPlatforms ? "flex items-center justify-between" : ""}>
@@ -3640,8 +3668,8 @@ Return only a JSON array of ${count} strings.`
                                       {hasPlatforms && renderPlatformIcons()}
                                     </div>
                                   )}
-                                  {/* If only platforms, no formats or status */}
-                                  {!hasStatus && formats.length === 0 && hasPlatforms && (
+                                  {/* If only platforms, no formats or status (and not image type, which is handled above) */}
+                                  {!hasStatus && formats.length === 0 && card.contentType !== 'image' && hasPlatforms && (
                                     <div className="flex items-center justify-end">
                                       {renderPlatformIcons()}
                                     </div>
@@ -4617,7 +4645,58 @@ Return only a JSON array of ${count} strings.`
                                 : "bg-white border border-gray-300 text-gray-700 hover:border-[#9AC0B3] hover:bg-[#F0F7F4]"
                             )}
                           >
-                            {subCat}
+                            {newSubCategoryIndex === index ? (
+                              <input
+                                type="text"
+                                value={subCat}
+                                onChange={(e) => {
+                                  const currentSubCats = [...(pillarSubCategories[selectedUserPillar] || [])];
+                                  currentSubCats[index] = e.target.value;
+                                  setPillarSubCategories(prev => ({
+                                    ...prev,
+                                    [selectedUserPillar]: currentSubCats
+                                  }));
+                                }}
+                                onKeyDown={async (e) => {
+                                  if (e.key === 'Enter') {
+                                    e.currentTarget.blur();
+                                  }
+                                }}
+                                onBlur={async () => {
+                                  setNewSubCategoryIndex(null);
+                                  const name = subCat.trim();
+                                  if (!name) {
+                                    // Remove empty sub-category
+                                    const currentSubCats = (pillarSubCategories[selectedUserPillar] || []).filter((_, i) => i !== index);
+                                    setPillarSubCategories(prev => ({
+                                      ...prev,
+                                      [selectedUserPillar]: currentSubCats
+                                    }));
+                                    return;
+                                  }
+                                  // Select it and generate ideas
+                                  setSelectedSubCategory(name);
+                                  setCascadeIdeas([]);
+                                  setIsGeneratingCascadeIdeas(true);
+                                  try {
+                                    const ideas = await generateContentIdeasWithAI(selectedUserPillar, name);
+                                    setCascadeIdeas(ideas);
+                                  } catch (error) {
+                                    console.error('Error generating content ideas:', error);
+                                    setCascadeIdeas([]);
+                                  } finally {
+                                    setIsGeneratingCascadeIdeas(false);
+                                  }
+                                }}
+                                autoFocus
+                                className="bg-transparent border-none outline-none text-center min-w-[60px] max-w-[150px] text-gray-700 placeholder:text-gray-400"
+                                placeholder="Type..."
+                                size={subCat.length || 6}
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            ) : (
+                              subCat
+                            )}
                           </button>
                           {(pillarSubCategories[selectedUserPillar]?.length || 0) > 1 && (
                             <button
@@ -5038,6 +5117,7 @@ Return only a JSON array of ${count} strings.`
           customPlatformInput={customPlatformInput}
           setCustomPlatformInput={setCustomPlatformInput}
           onRemoveFormatTag={handleRemoveFormatTag}
+          onAddPlatformTag={handleAddPlatformTag}
           onRemovePlatformTag={handleRemovePlatformTag}
           locationText={locationText}
           setLocationText={setLocationText}
@@ -5176,6 +5256,7 @@ Return only a JSON array of ${count} strings.`
               customPhotoFormats={customPhotoFormats}
               setCustomPhotoFormats={setCustomPhotoFormats}
               onRemoveFormatTag={handleRemoveFormatTag}
+              onAddPlatformTag={handleAddPlatformTag}
               onRemovePlatformTag={handleRemovePlatformTag}
               onNavigateToStep={handleNavigateToStep}
               slideDirection={slideDirection}
@@ -5206,13 +5287,16 @@ Return only a JSON array of ${count} strings.`
               setLinkPreviews={setLinkPreviews}
               slides={slides}
               setSlides={setSlides}
+              imageMode={imageMode}
+              setImageMode={setImageMode}
               platformTags={platformTags}
               setPlatformTags={setPlatformTags}
               showCustomPlatformInput={showCustomPlatformInput}
               setShowCustomPlatformInput={setShowCustomPlatformInput}
               customPlatformInput={customPlatformInput}
               setCustomPlatformInput={setCustomPlatformInput}
-              onRemovePlatformTag={(tag) => setPlatformTags(platformTags.filter(t => t !== tag))}
+              onAddPlatformTag={handleAddPlatformTag}
+              onRemovePlatformTag={handleRemovePlatformTag}
               onNavigateToStep={handleNavigateToStep}
               slideDirection={slideDirection}
               embedded={true}

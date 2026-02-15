@@ -28,9 +28,9 @@ export const ContentCardContent = ({
           </span>
         )}
         
-        {platforms.length > 0 && platforms.slice(0, 2).map((platform, index) => (
-          <span 
-            key={`platform-${index}`} 
+        {platforms.length > 0 && platforms.map((platform, index) => (
+          <span
+            key={`platform-${index}`}
             className="bg-purple-100 text-purple-800 text-xs px-2 py-0.5 rounded-full"
           >
             {platform}
