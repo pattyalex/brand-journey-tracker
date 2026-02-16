@@ -1851,7 +1851,7 @@
       z-index: 110;
       pointer-events: none;
       transform: translateZ(50px);
-      animation: cursorPath 4.5s ease-in-out infinite;
+      animation: cursorPath 3.5s linear infinite;
       filter: drop-shadow(0 2px 4px rgba(0,0,0,0.18));
       opacity: 0;
     }
@@ -1866,7 +1866,7 @@
       z-index: 100;
       pointer-events: none;
       transform: translateZ(50px);
-      animation: ghostDrag 4.5s ease-in-out infinite;
+      animation: ghostDrag 3.5s linear infinite;
       font-family: 'DM Sans', sans-serif;
       opacity: 0;
     }
@@ -1912,27 +1912,22 @@
         top: 82px;
         opacity: 0;
       }
-      7% {
-        left: 297px;
-        top: 112px;
+      4% {
+        left: 300px;
+        top: 100px;
         opacity: 1;
       }
       14% {
-        left: 282px;
-        top: 130px;
-        opacity: 1;
-      }
-      22% {
         left: 280px;
         top: 135px;
         opacity: 1;
       }
-      24% {
+      17% {
         left: 280px;
         top: 138px;
         opacity: 1;
       }
-      30% {
+      24% {
         left: 292px;
         top: 125px;
         opacity: 1;
@@ -1967,21 +1962,21 @@
         transform: translateZ(50px) rotate(0deg) scale(1);
         box-shadow: 0 2px 8px rgba(97,42,79,0.08);
       }
-      21% {
+      14% {
         left: 195px;
         top: 78px;
         opacity: 0;
         transform: translateZ(50px) rotate(0deg) scale(1);
         box-shadow: 0 2px 8px rgba(97,42,79,0.08);
       }
-      24% {
+      17% {
         left: 195px;
         top: 78px;
         opacity: 1;
         transform: translateZ(50px) rotate(0deg) scale(1);
         box-shadow: 0 2px 8px rgba(97,42,79,0.08);
       }
-      30% {
+      24% {
         left: 205px;
         top: 68px;
         opacity: 1;
