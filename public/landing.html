@@ -1696,8 +1696,8 @@
 
     .feature-row.reversed {
       direction: rtl;
-      grid-template-columns: 1fr 0.8fr;
-      gap: 60px;
+      grid-template-columns: 0.9fr 1.1fr;
+      gap: 80px;
     }
 
     .feature-row.reversed > * {
@@ -1705,7 +1705,8 @@
     }
 
     .feature-row.reversed .feature-text {
-      padding-left: 60px;
+      padding-left: 20px;
+      margin-right: -60px;
     }
 
     .feature-text {
@@ -1762,6 +1763,8 @@
       background: transparent !important;
       box-shadow: none !important;
       border: none !important;
+      position: relative;
+      left: -40px;
     }
 
     .pipeline-visual::before {
@@ -2563,6 +2566,15 @@
 
     /* ==================== AI STORYBOARD GENERATION ==================== */
 
+    .storyboard-row {
+      grid-template-columns: 0.9fr 1.1fr;
+    }
+
+    .storyboard-row .storyboard-visual {
+      position: relative;
+      left: 40px;
+    }
+
     .storyboard-visual {
       padding: 0 !important;
       overflow: hidden !important;
@@ -2657,7 +2669,7 @@
     .sb-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
+      gap: 14px;
     }
 
     /* Scene Card */
@@ -4725,14 +4737,14 @@
     </div>
 
     <!-- Feature 1: AI Storyboard -->
-    <div class="feature-row">
+    <div class="feature-row storyboard-row">
       <div class="feature-text">
         <h3>AI Storyboard</h3>
         <p>MegAI builds a scene-by-scene storyboard from your script. It tells you what to shoot, how to frame it, and what to say.</p>
       </div>
       <div class="feature-visual reveal-visual storyboard-visual">
         <div class="storyboard-gen" id="storyboard-gen">
-          <div class="sb-header">
+          <div class="sb-header" style="display:none;">
             <div class="sb-header-top">
               <span class="sb-header-title">MegAI Storyboard</span>
               <span class="sb-ai-badge">AI</span>
