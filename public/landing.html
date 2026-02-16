@@ -1704,6 +1704,10 @@
       direction: ltr;
     }
 
+    .feature-row.reversed .feature-text {
+      padding-left: 60px;
+    }
+
     .feature-text {
       padding: 20px 0;
     }
@@ -1811,7 +1815,7 @@
     .pipeline-col.visible:nth-child(1) { transform: translateZ(0px); opacity: 0.7; filter: blur(0.5px); }
     .pipeline-col.visible:nth-child(2) { transform: translateZ(20px); opacity: 1; filter: blur(0); }
     .pipeline-col.visible:nth-child(3) { transform: translateZ(20px); opacity: 1; filter: blur(0); }
-    .pipeline-col.visible:nth-child(4) { transform: translateZ(0px); opacity: 0.7; filter: blur(0.5px); width: 160px; }
+    .pipeline-col.visible:nth-child(4) { transform: translateZ(0px); opacity: 0.7; filter: blur(0.5px); width: 160px; margin-left: 10px; }
 
     .pipeline-col-label {
       display: flex;
@@ -3563,6 +3567,11 @@
 
       .feature-row.reversed {
         direction: ltr;
+        grid-template-columns: 1fr;
+      }
+
+      .feature-row.reversed .feature-text {
+        padding-left: 0;
       }
 
       .scene-grid {
@@ -3609,6 +3618,52 @@
 
       .scene-grid {
         grid-template-columns: 1fr 1fr;
+      }
+
+      .pipeline-visual {
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 12px !important;
+        opacity: 0;
+      }
+
+      .pipeline-visual.scroll-ready {
+        opacity: 1;
+      }
+
+      .pipeline-board {
+        overflow: visible;
+        min-width: 1000px;
+        padding: 40px 345px 60px 275px;
+      }
+
+      .pipeline-board-inner {
+        margin-left: 0;
+      }
+
+      .pipeline-visual::-webkit-scrollbar {
+        height: 6px;
+      }
+
+      .pipeline-visual::-webkit-scrollbar-track {
+        background: rgba(180, 168, 175, 0.15);
+        border-radius: 3px;
+        margin: 0 20px;
+      }
+
+      .pipeline-visual::-webkit-scrollbar-thumb {
+        background: rgba(97, 42, 79, 0.25);
+        border-radius: 3px;
+      }
+
+      .pipeline-visual::-webkit-scrollbar-thumb:hover {
+        background: rgba(97, 42, 79, 0.4);
+      }
+
+      .pipeline-visual {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(97, 42, 79, 0.25) rgba(180, 168, 175, 0.15);
       }
 
     }
@@ -4663,6 +4718,13 @@
             order.forEach((colIdx, i) => {
               setTimeout(() => cols[colIdx].classList.add('visible'), i * 150);
             });
+            // On mobile, set scroll position before showing, so no flash of wrong position
+            if (window.innerWidth <= 600) {
+              pipelineVisual.scrollLeft = 160;
+              requestAnimationFrame(() => {
+                pipelineVisual.classList.add('scroll-ready');
+              });
+            }
           }
         });
       }, { threshold: 0.2 });
