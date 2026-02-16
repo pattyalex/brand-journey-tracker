@@ -1908,28 +1908,28 @@
 
     @keyframes cursorPath {
       0% {
-        left: 312px;
-        top: 82px;
+        left: 280px;
+        top: 135px;
         opacity: 0;
       }
-      4% {
-        left: 300px;
-        top: 100px;
-        opacity: 1;
-      }
-      14% {
+      2% {
         left: 280px;
         top: 135px;
         opacity: 1;
       }
-      17% {
+      4% {
         left: 280px;
         top: 138px;
         opacity: 1;
       }
-      24% {
+      12% {
         left: 292px;
         top: 125px;
+        opacity: 1;
+      }
+      48% {
+        left: 475px;
+        top: 92px;
         opacity: 1;
       }
       58% {
@@ -1937,12 +1937,7 @@
         top: 92px;
         opacity: 1;
       }
-      68% {
-        left: 475px;
-        top: 92px;
-        opacity: 1;
-      }
-      75% {
+      65% {
         left: 475px;
         top: 92px;
         opacity: 0;
@@ -1962,49 +1957,49 @@
         transform: translateZ(50px) rotate(0deg) scale(1);
         box-shadow: 0 2px 8px rgba(97,42,79,0.08);
       }
-      14% {
+      3% {
         left: 195px;
         top: 78px;
         opacity: 0;
         transform: translateZ(50px) rotate(0deg) scale(1);
         box-shadow: 0 2px 8px rgba(97,42,79,0.08);
       }
-      17% {
+      4% {
         left: 195px;
         top: 78px;
         opacity: 1;
         transform: translateZ(50px) rotate(0deg) scale(1);
         box-shadow: 0 2px 8px rgba(97,42,79,0.08);
       }
-      24% {
+      12% {
         left: 205px;
         top: 68px;
         opacity: 1;
         transform: translateZ(50px) rotate(2deg) scale(1.02);
         box-shadow: 0 12px 40px rgba(0,0,0,0.15);
       }
-      58% {
+      48% {
         left: 385px;
         top: 40px;
         opacity: 1;
         transform: translateZ(50px) rotate(2deg) scale(1.02);
         box-shadow: 0 12px 40px rgba(0,0,0,0.15);
       }
-      63% {
+      53% {
         left: 385px;
         top: 40px;
         opacity: 1;
         transform: translateZ(50px) rotate(0deg) scale(1.03);
         box-shadow: 0 4px 16px rgba(97,42,79,0.1);
       }
-      68% {
+      58% {
         left: 385px;
         top: 40px;
         opacity: 1;
         transform: translateZ(50px) rotate(0deg) scale(1);
         box-shadow: 0 2px 8px rgba(97,42,79,0.08);
       }
-      75% {
+      65% {
         left: 385px;
         top: 40px;
         opacity: 0;
@@ -2048,29 +2043,373 @@
     }
 
     .partnerships-visual {
-      background: transparent;
-      box-shadow: none;
-      padding: 0;
+      background: transparent !important;
+      box-shadow: none !important;
+      padding: 0 !important;
+      position: relative;
+      overflow: visible !important;
+    }
+
+    .partnerships-board {
+      perspective: 1600px;
+      perspective-origin: center center;
       position: relative;
     }
 
-    .partnerships-visual::before {
+    .partnerships-board-inner {
+      transform: none;
+      transform-style: flat;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 115%;
+      margin-left: -7.5%;
+    }
+
+    @keyframes partnershipsFloat {
+      0%, 100% { transform: rotateY(10deg) rotateX(2deg) translateY(0); }
+      50% { transform: rotateY(10deg) rotateX(2deg) translateY(-8px); }
+    }
+
+    .partnerships-board-inner img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(97,42,79,0.12), 0 2px 8px rgba(0,0,0,0.06);
+      background: #ffffff;
+      padding: 8px;
+      opacity: 0;
+      transform: translateY(30px);
+      filter: saturate(0.85) brightness(1.08) contrast(1.02);
+    }
+
+    .partnerships-board-inner img.visible {
+      animation: partnershipsSlideUp 0.6s ease-out forwards;
+    }
+
+    .partnerships-board-inner > img.visible {
+      animation-delay: 0.3s;
+    }
+
+    .deal-cards-wrapper img.visible {
+      animation-delay: 0.6s;
+    }
+
+    @keyframes partnershipsSlideUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Surface shadow under the board */
+    .partnerships-board::after {
       content: '';
       position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 90%;
-      height: 80%;
-      background: radial-gradient(ellipse at center, rgba(200,180,220,0.3) 0%, transparent 70%);
-      filter: blur(30px);
-      z-index: 0;
+      bottom: -20px;
+      left: 10%;
+      width: 80%;
+      height: 40px;
+      background: radial-gradient(ellipse at center, rgba(97,42,79,0.12) 0%, transparent 70%);
+      filter: blur(12px);
+      z-index: -1;
     }
 
-    .partnerships-visual .feature-screenshot {
+    /* Payment notification */
+    .payment-notification {
+      position: absolute;
+      bottom: -60px;
+      left: 3%;
+      z-index: 10;
+      background: #fff;
+      border-radius: 11px;
+      padding: 9px 12px;
+      box-shadow: 0 8px 30px rgba(45,107,79,0.2), 0 2px 8px rgba(0,0,0,0.06);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      opacity: 0;
+      transform: translateY(-15px) scale(0.95);
+      pointer-events: none;
+      font-family: 'DM Sans', sans-serif;
+      transition: opacity 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .payment-notification.show {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    .payment-icon {
+      width: 30px;
+      height: 30px;
+      background: rgba(45,107,79,0.12);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .payment-text strong {
+      display: block;
+      color: #2D6B4F;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .payment-text span {
+      color: #8B7082;
+      font-size: 9.5px;
+    }
+
+    .publish-notification {
+      position: absolute;
+      bottom: -25px;
+      left: 42%;
+      z-index: 10;
+      background: #fff;
+      border-radius: 11px;
+      padding: 9px 12px;
+      box-shadow: 0 8px 30px rgba(97,42,79,0.15), 0 2px 8px rgba(0,0,0,0.06);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      opacity: 0;
+      transform: translateY(-15px) scale(0.95);
+      pointer-events: none;
+      font-family: 'DM Sans', sans-serif;
+      transition: opacity 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .publish-notification.show {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    .publish-icon {
+      width: 30px;
+      height: 30px;
+      background: rgba(97,42,79,0.12);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .publish-text strong {
+      display: block;
+      color: #612a4f;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .publish-text span {
+      color: #8B7082;
+      font-size: 9.5px;
+    }
+
+    /* ── Partnerships cursor check animation ── */
+    .deal-cards-wrapper {
       position: relative;
-      z-index: 1;
-      box-shadow: 0 8px 40px rgba(97,42,79,0.1), 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    #partnershipCursor {
+      position: absolute;
+      width: 28px;
+      height: 28px;
+      z-index: 15;
+      pointer-events: none;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.18));
+      opacity: 0;
+    }
+
+    .deal-cards-wrapper.cursor-active #partnershipCursor {
+      animation: partnershipCursorPath 5s linear infinite;
+    }
+
+    .fake-checkbox {
+      position: absolute;
+      width: 1.9%;
+      min-width: 11px;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 12;
+      transform: translate(-50%, -50%);
+    }
+
+    #aloCheck { left: 30%; top: 86.5%; }
+    #sephoraCheck { left: 62.5%; top: 76.5%; }
+
+    #aloCheck .cb-unchecked {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 1.5px solid #c4b5bc;
+      background: #f8f5f7;
+      box-sizing: border-box;
+      opacity: 0;
+    }
+
+    .deal-cards-wrapper.cursor-active #aloCheck .cb-unchecked {
+      animation: aloUncheck 5s linear infinite;
+    }
+
+    .fake-checkbox .cb-checked {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      border-radius: 50%;
+      background: #4a7c5e;
+      transform: scale(0);
+    }
+
+    .fake-checkbox .cb-checked::after {
+      content: '';
+      position: absolute;
+      left: 33%;
+      top: 15%;
+      width: 25%;
+      height: 52%;
+      border: solid white;
+      border-width: 0 1.5px 1.5px 0;
+      transform: rotate(45deg);
+    }
+
+    .deal-cards-wrapper.cursor-active #aloCheck .cb-checked {
+      animation: aloCheckPop 5s linear infinite;
+    }
+
+    .deal-cards-wrapper.cursor-active #sephoraCheck .cb-checked {
+      animation: sephoraCheckPop 5s linear infinite;
+    }
+
+    #sephoraCheck .cb-unchecked { display: none; }
+
+    .fake-checkbox .cb-ripple {
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 100%; height: 100%;
+      border-radius: 50%;
+      border: 2px solid #4a7c5e;
+      transform: translate(-50%, -50%) scale(0);
+      opacity: 0;
+    }
+
+    .deal-cards-wrapper.cursor-active #aloCheck .cb-ripple {
+      animation: aloRipple 5s linear infinite;
+    }
+
+    .deal-cards-wrapper.cursor-active #sephoraCheck .cb-ripple {
+      animation: sephoraRipple 5s linear infinite;
+    }
+
+    @keyframes partnershipCursorPath {
+      0%     { left: 30.3%; top: 87%; opacity: 0; transform: scale(1); }
+      2%     { left: 30.3%; top: 87%; opacity: 1; transform: scale(1); }
+      4%     { left: 30.3%; top: 87%; opacity: 1; transform: scale(1); }
+      6%     { left: 30.3%; top: 87.5%; opacity: 1; transform: scale(0.82); }
+      8%     { left: 30.3%; top: 87.5%; opacity: 1; transform: scale(0.82); }
+      10%    { left: 30.3%; top: 86.8%; opacity: 1; transform: scale(1); }
+      15%    { left: 30.3%; top: 86.8%; opacity: 1; transform: scale(1); }
+      19%    { left: 37%; top: 83%; opacity: 1; transform: scale(1); }
+      27%    { left: 51%; top: 78%; opacity: 1; transform: scale(1); }
+      30%    { left: 58%; top: 76.5%; opacity: 1; transform: scale(1); }
+      32%    { left: 62.5%; top: 76.3%; opacity: 1; transform: scale(1); }
+      34%    { left: 62.5%; top: 76.3%; opacity: 1; transform: scale(1); }
+      36%    { left: 62.5%; top: 76.8%; opacity: 1; transform: scale(0.82); }
+      38%    { left: 62.5%; top: 76.8%; opacity: 1; transform: scale(0.82); }
+      40%    { left: 62.5%; top: 76.1%; opacity: 1; transform: scale(1); }
+      47%    { left: 62.5%; top: 76.1%; opacity: 1; }
+      53%    { left: 62.5%; top: 76.1%; opacity: 0; }
+      100%   { left: 62.5%; top: 76.1%; opacity: 0; }
+    }
+
+    @keyframes aloUncheck {
+      0%     { opacity: 1; }
+      5.5%   { opacity: 1; }
+      6%     { opacity: 0; }
+      92%    { opacity: 0; }
+      96%    { opacity: 1; }
+      100%   { opacity: 1; }
+    }
+
+    @keyframes aloCheckPop {
+      0%, 5.5%   { transform: scale(0); }
+      7%         { transform: scale(1.3); }
+      9%         { transform: scale(0.88); }
+      11%        { transform: scale(1.08); }
+      13%        { transform: scale(1); }
+      88%        { transform: scale(1); opacity: 1; }
+      94%        { transform: scale(0); opacity: 0; }
+      100%       { transform: scale(0); opacity: 0; }
+    }
+
+    @keyframes sephoraCheckPop {
+      0%, 35.5%  { transform: scale(0); }
+      37%        { transform: scale(1.3); }
+      39%        { transform: scale(0.88); }
+      41%        { transform: scale(1.08); }
+      43%        { transform: scale(1); }
+      88%        { transform: scale(1); opacity: 1; }
+      94%        { transform: scale(0); opacity: 0; }
+      100%       { transform: scale(0); opacity: 0; }
+    }
+
+    @keyframes aloRipple {
+      0%, 5.5%   { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+      6%         { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+      16%        { transform: translate(-50%, -50%) scale(2.5); opacity: 0; }
+      100%       { transform: translate(-50%, -50%) scale(2.5); opacity: 0; }
+    }
+
+    @keyframes sephoraRipple {
+      0%, 35.5%  { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+      36%        { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+      46%        { transform: translate(-50%, -50%) scale(2.5); opacity: 0; }
+      100%       { transform: translate(-50%, -50%) scale(2.5); opacity: 0; }
+    }
+
+    /* Sparkle dots */
+    .sparkle {
+      position: absolute;
+      width: 5px;
+      height: 5px;
+      background: #2D6B4F;
+      border-radius: 50%;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .payment-notification.show .sparkle,
+    .publish-notification.show .sparkle {
+      animation: sparkleBurst 0.8s ease-out forwards;
+    }
+
+    .publish-notification .sparkle {
+      background: #612a4f;
+    }
+
+    .sparkle:nth-child(1) { top: -4px; right: 20px; animation-delay: 0.1s; }
+    .sparkle:nth-child(2) { top: -8px; right: 50px; animation-delay: 0.2s; }
+    .sparkle:nth-child(3) { top: 2px; right: -6px; animation-delay: 0.15s; }
+    .sparkle:nth-child(4) { top: -10px; right: 35px; animation-delay: 0.25s; }
+    .sparkle:nth-child(5) { top: -2px; right: 65px; animation-delay: 0.18s; }
+
+    .payment-notification.show .sparkle:nth-child(1) { animation-delay: 0.1s; }
+    .payment-notification.show .sparkle:nth-child(2) { animation-delay: 0.2s; }
+    .payment-notification.show .sparkle:nth-child(3) { animation-delay: 0.15s; }
+    .payment-notification.show .sparkle:nth-child(4) { animation-delay: 0.25s; }
+    .payment-notification.show .sparkle:nth-child(5) { animation-delay: 0.18s; }
+
+    @keyframes sparkleBurst {
+      0% { opacity: 0; transform: translateY(0) scale(0); }
+      40% { opacity: 1; transform: translateY(-18px) scale(1.2); }
+      100% { opacity: 0; transform: translateY(-30px) scale(0); }
     }
 
     .ai-visual {
@@ -4353,11 +4692,48 @@
     <!-- Feature 3: Partnerships Tracker -->
     <div class="feature-row">
       <div class="feature-text">
-        <h3>Partnerships Tracker</h3>
-        <p>Brand deal tracking, made easy. Stay on top of deliverables, deadlines, and payments. No more spreadsheets.</p>
+        <h3>Brand Deals</h3>
+        <p>Track every partnership in one place. See what you've earned, what's expected, and never miss a deliverable deadline again.</p>
       </div>
       <div class="feature-visual reveal-visual partnerships-visual">
-        <img src="partnerships-tracker.png" alt="HeyMeg Partnerships Tracker" class="feature-screenshot" style="background: white; border-radius: 12px;">
+        <div class="partnerships-board">
+          <div class="partnerships-board-inner">
+            <img src="stats-row.png" alt="Earnings stats">
+            <div class="deal-cards-wrapper">
+              <img src="deal-cards.png" alt="Brand deal cards">
+              <!-- Fake cursor for check animation -->
+              <svg id="partnershipCursor" viewBox="0 0 20 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M0,0 L0,18 L4.5,13.5 L8.5,21 L11,19.5 L7,12 L13,12 Z" fill="#4e2040" stroke="#ffffff" stroke-width="0.8" stroke-linejoin="round"/>
+              </svg>
+              <!-- Fake checkbox: Alo bottom (Content Paid $3,200) -->
+              <div class="fake-checkbox" id="aloCheck">
+                <div class="cb-unchecked"></div>
+                <div class="cb-checked"></div>
+                <div class="cb-ripple"></div>
+              </div>
+              <!-- Fake checkbox: Sephora 2nd (Publish: Feb 11) -->
+              <div class="fake-checkbox" id="sephoraCheck">
+                <div class="cb-unchecked"></div>
+                <div class="cb-checked"></div>
+                <div class="cb-ripple"></div>
+              </div>
+            </div>
+          </div>
+          <div class="payment-notification" id="paymentNotification">
+            <div class="payment-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#2D6B4F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+            <div class="payment-text">
+              <strong>Payment Received!</strong>
+              <span>Alo — $3,200</span>
+            </div>
+          </div>
+          <div class="publish-notification" id="publishNotification">
+            <div class="publish-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#612a4f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 15 22l-4-9-9-4z"/></svg></div>
+            <div class="publish-text">
+              <strong>Content Published!</strong>
+              <span>Sephora — Feb 11</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -4717,6 +5093,47 @@
         });
       }, { threshold: 0.2 });
       pipelineObserver.observe(pipelineVisual);
+    }
+
+    // ── Partnerships 3D board reveal ──
+    const partnershipsVisual = document.querySelector('.partnerships-visual');
+    if (partnershipsVisual) {
+      const partnershipImgs = partnershipsVisual.querySelectorAll('.partnerships-board-inner img');
+      const paymentNotif = document.getElementById('paymentNotification');
+      let partnershipsPlayed = false;
+
+      const partnershipsObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting && !partnershipsPlayed) {
+            partnershipsPlayed = true;
+            partnershipImgs.forEach(img => img.classList.add('visible'));
+            // Start cursor check animation after images slide up
+            const dcw = document.querySelector('.deal-cards-wrapper');
+            if (dcw) {
+              setTimeout(() => dcw.classList.add('cursor-active'), 2000);
+            }
+            // Loop notifications in sync with 7s cursor animation
+            const publishNotif = document.getElementById('publishNotification');
+            function notifLoop() {
+              // Alo click at ~6% of 5s = 0.3s into loop
+              setTimeout(() => { if (paymentNotif) paymentNotif.classList.add('show'); }, 400);
+              // Sephora click at ~36% of 5s = 1.8s into loop
+              setTimeout(() => { if (publishNotif) publishNotif.classList.add('show'); }, 1900);
+              // Hide both before loop restarts
+              setTimeout(() => {
+                if (paymentNotif) paymentNotif.classList.remove('show');
+                if (publishNotif) publishNotif.classList.remove('show');
+              }, 4200);
+            }
+            // Start first loop when cursor-active begins (2s)
+            setTimeout(() => {
+              notifLoop();
+              setInterval(notifLoop, 5000);
+            }, 2000);
+          }
+        });
+      }, { threshold: 0.2 });
+      partnershipsObserver.observe(partnershipsVisual);
     }
 
     // ── AI Storyboard Generation Effect ──
