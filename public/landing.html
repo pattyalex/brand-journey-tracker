@@ -100,10 +100,9 @@
       white-space: nowrap;
       padding: 8px 8px 8px 12px;
       border-radius: 60px;
-      background: rgba(255,255,255,0.65);
-      backdrop-filter: blur(20px) saturate(180%);
-      -webkit-backdrop-filter: blur(20px) saturate(180%);
-      transform: translateX(-50%);
+      background: rgba(255,255,255,0.92);
+      transform: translateX(-50%) translateZ(0);
+      isolation: isolate;
       border: 1px solid rgba(255,255,255,0.45);
       box-shadow: 0 1px 8px rgba(0,0,0,0.06), 0 0 0 1px rgba(255,255,255,0.5), inset 0 0 0 1px rgba(255,255,255,0.4);
       opacity: 0;
@@ -113,11 +112,11 @@
     @keyframes slideDown {
       from {
         opacity: 0;
-        transform: translateX(-50%) translateY(-30px);
+        transform: translateX(-50%) translateY(-30px) translateZ(0);
       }
       to {
         opacity: 1;
-        transform: translateX(-50%) translateY(0);
+        transform: translateX(-50%) translateY(0) translateZ(0);
       }
     }
 
@@ -1770,6 +1769,7 @@
       perspective-origin: left center;
       display: flex;
       justify-content: flex-start;
+      isolation: isolate;
     }
 
     .pipeline-board-inner {
@@ -1778,6 +1778,9 @@
       transform: rotateY(-12deg) rotateX(4deg);
       transform-style: preserve-3d;
       animation: pipelineFloat 6s ease-in-out infinite;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      will-change: transform;
     }
 
     @keyframes pipelineFloat {
@@ -1794,6 +1797,8 @@
       transition: opacity 0.6s ease, filter 0.6s ease, transform 0.6s ease;
       opacity: 0;
       transform: translateY(20px);
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
     }
 
     .pipeline-col.visible {
@@ -1805,7 +1810,7 @@
     .pipeline-col.visible:nth-child(1) { transform: translateZ(0px); opacity: 0.7; filter: blur(0.5px); }
     .pipeline-col.visible:nth-child(2) { transform: translateZ(20px); opacity: 1; filter: blur(0); }
     .pipeline-col.visible:nth-child(3) { transform: translateZ(20px); opacity: 1; filter: blur(0); }
-    .pipeline-col.visible:nth-child(4) { transform: translateZ(0px); opacity: 0.7; filter: blur(0.5px); }
+    .pipeline-col.visible:nth-child(4) { transform: translateZ(0px); opacity: 0.7; filter: blur(0.5px); width: 160px; }
 
     .pipeline-col-label {
       display: flex;
@@ -4082,7 +4087,7 @@
             </div>
             <div class="pipeline-col">
               <div class="pipeline-col-label">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 5-2.414-2.414A2 2 0 0 0 14.172 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2"/><path d="M21.5 15a3 3 0 0 0-3-3H16a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h2.5a3 3 0 0 0 3-3v-2z"/><path d="M8 18h1"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><path d="M8.12 8.12 12 12"/><path d="M20 4 8.12 15.88"/><circle cx="6" cy="18" r="3"/><path d="M14.8 14.8 20 20"/></svg>
                 To Edit
               </div>
               <img src="col-3-film.png" alt="To Edit">
