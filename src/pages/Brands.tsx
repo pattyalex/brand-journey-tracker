@@ -556,7 +556,7 @@ const Brands = () => {
 
             {/* Dashboard Summary */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 mb-8 sm:mb-10">
-              <Card className="group p-4 sm:p-6 bg-white border border-[#D8C8D3] rounded-xl sm:rounded-2xl shadow-[0_4px_16px_rgba(0,0,0,0.05),0_1px_4px_rgba(0,0,0,0.03)]">
+              <Card className="group p-4 sm:p-6 bg-white border border-[#D8C8D3] rounded-xl sm:rounded-2xl shadow-none">
                 <div className="flex items-center gap-1.5 sm:gap-2 mb-2 sm:mb-3">
                   <Wallet className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-[#8B7082]" strokeWidth={1.5} />
                   <p className="text-[9px] sm:text-[10px] text-[#8B7082] font-medium uppercase tracking-[0.08em] truncate">
@@ -567,7 +567,7 @@ const Brands = () => {
                   ${isYearView ? metrics.yearlyEarnings.toLocaleString() : metrics.monthlyEarnings.toLocaleString()}
                 </p>
               </Card>
-              <Card className="group p-4 sm:p-6 bg-white border border-[#D8C8D3] rounded-xl sm:rounded-2xl shadow-[0_4px_16px_rgba(0,0,0,0.05),0_1px_4px_rgba(0,0,0,0.03)]">
+              <Card className="group p-4 sm:p-6 bg-white border border-[#D8C8D3] rounded-xl sm:rounded-2xl shadow-none">
                 <div className="flex items-center gap-1.5 sm:gap-2 mb-2 sm:mb-3">
                   <ArrowUpRight className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-[#8B7082]" />
                   <p className="text-[9px] sm:text-[10px] text-[#8B7082] font-medium uppercase tracking-[0.08em] truncate">
@@ -578,14 +578,14 @@ const Brands = () => {
                   {isYearView ? filteredDeals.length : `$${metrics.yearlyEarnings.toLocaleString()}`}
                 </p>
               </Card>
-              <Card className="group p-4 sm:p-6 bg-white border border-[#D8C8D3] rounded-xl sm:rounded-2xl shadow-[0_4px_16px_rgba(0,0,0,0.05),0_1px_4px_rgba(0,0,0,0.03)]">
+              <Card className="group p-4 sm:p-6 bg-white border border-[#D8C8D3] rounded-xl sm:rounded-2xl shadow-none">
                 <div className="flex items-center gap-1.5 sm:gap-2 mb-2 sm:mb-3">
                   <Clock className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-[#8B7082]" strokeWidth={1.5} />
                   <p className="text-[9px] sm:text-[10px] text-[#8B7082] font-medium uppercase tracking-[0.08em] truncate">EXPECTED</p>
                 </div>
                 <p className="text-xl sm:text-[32px] font-normal text-[#612a4f] tracking-[-0.02em] leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>${metrics.pendingAmount.toLocaleString()}</p>
               </Card>
-              <Card className="group p-4 sm:p-6 bg-white border border-[#D8C8D3] rounded-xl sm:rounded-2xl shadow-[0_4px_16px_rgba(0,0,0,0.05),0_1px_4px_rgba(0,0,0,0.03)]">
+              <Card className="group p-4 sm:p-6 bg-white border border-[#D8C8D3] rounded-xl sm:rounded-2xl shadow-none">
                 <div className="flex items-center gap-1.5 sm:gap-2 mb-2 sm:mb-3">
                   <svg className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-[#8B7082]" viewBox="0 0 24 24" fill="currentColor" fillOpacity="0.2" stroke="currentColor" strokeWidth="1.5"><path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" /></svg>
                   <p className="text-[9px] sm:text-[10px] text-[#8B7082] font-medium uppercase tracking-[0.08em] truncate">ACTIVE DEALS</p>
@@ -923,7 +923,7 @@ const DealCard = ({ deal, selectedMonth, isYearView, showArchived, onDragStart, 
       draggable
       onDragStart={() => onDragStart(deal.id)}
       onClick={() => onEdit(deal)}
-      className="group bg-gradient-to-br from-white via-white to-[#FAF9F8] rounded-xl p-3 sm:p-4 shadow-[0_6px_20px_rgba(0,0,0,0.06),0_2px_6px_rgba(0,0,0,0.03)] border border-[#D8C8D3] cursor-pointer hover:shadow-[0_8px_24px_rgba(0,0,0,0.08),0_3px_8px_rgba(0,0,0,0.04)] transition-shadow duration-200 min-h-[260px] sm:min-h-[300px] flex flex-col"
+      className="group bg-gradient-to-br from-white via-white to-[#FAF9F8] rounded-xl p-3 sm:p-4 shadow-none border border-[#D8C8D3] cursor-pointer hover:shadow-[0_8px_24px_rgba(0,0,0,0.08),0_3px_8px_rgba(0,0,0,0.04)] transition-shadow duration-200 min-h-[260px] sm:min-h-[300px] flex flex-col"
       style={{ fontFamily: "'DM Sans', sans-serif" }}
     >
       <div className="flex items-start justify-between mb-3">
