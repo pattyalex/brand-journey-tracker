@@ -2062,8 +2062,14 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
-      width: 115%;
-      margin-left: -7.5%;
+      width: 100%;
+    }
+
+    @media (min-width: 1300px) {
+      .partnerships-board-inner {
+        width: 115%;
+        margin-left: -7.5%;
+      }
     }
 
     @keyframes partnershipsFloat {
@@ -3912,6 +3918,25 @@
       .pipeline-board-inner {
         margin-left: calc(50vw - 390px);
       }
+
+      /* Brand Deals section - tablet */
+      .partnerships-visual {
+        overflow: hidden !important;
+      }
+
+      .partnerships-board-inner {
+        gap: 8px;
+      }
+
+      .payment-notification {
+        bottom: -50px;
+        left: 2%;
+      }
+
+      .publish-notification {
+        bottom: -20px;
+        left: 38%;
+      }
     }
 
     @media (max-width: 600px) {
@@ -3991,6 +4016,100 @@
       .pipeline-visual {
         scrollbar-width: thin;
         scrollbar-color: rgba(97, 42, 79, 0.25) rgba(180, 168, 175, 0.15);
+      }
+
+      /* Brand Deals section - mobile */
+      .feature-row {
+        gap: 20px;
+        margin-bottom: 80px;
+      }
+
+      .feature-text {
+        padding: 0 4px;
+        text-align: center;
+      }
+
+      .feature-text h3 {
+        font-size: 1.5rem;
+      }
+
+      .feature-text p {
+        font-size: 1rem;
+      }
+
+      .partnerships-visual {
+        margin: 0 -8px;
+      }
+
+      .partnerships-board-inner {
+        width: 100%;
+        margin-left: 0;
+        gap: 8px;
+      }
+
+      .partnerships-board-inner img {
+        border-radius: 10px;
+        padding: 4px;
+      }
+
+      .payment-notification {
+        bottom: -45px;
+        left: 0;
+        padding: 7px 10px;
+        border-radius: 9px;
+      }
+
+      .payment-icon {
+        width: 24px;
+        height: 24px;
+      }
+
+      .payment-icon svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      .payment-text strong {
+        font-size: 10px;
+      }
+
+      .payment-text span {
+        font-size: 8.5px;
+      }
+
+      .publish-notification {
+        bottom: -12px;
+        left: auto;
+        right: 0;
+        padding: 7px 10px;
+        border-radius: 9px;
+      }
+
+      .publish-icon {
+        width: 24px;
+        height: 24px;
+      }
+
+      .publish-icon svg {
+        width: 13px;
+        height: 13px;
+      }
+
+      .publish-text strong {
+        font-size: 10px;
+      }
+
+      .publish-text span {
+        font-size: 8.5px;
+      }
+
+      .partnerships-board {
+        margin-bottom: 60px;
+      }
+
+      #partnershipCursor {
+        width: 20px;
+        height: 20px;
       }
 
     }
