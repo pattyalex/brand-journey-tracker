@@ -1707,6 +1707,7 @@
     .feature-row.reversed .feature-text {
       padding-left: 20px;
       margin-right: -60px;
+      padding-top: 80px;
     }
 
     .feature-text {
@@ -2051,6 +2052,85 @@
       padding: 0 !important;
       position: relative;
       overflow: visible !important;
+    }
+
+    .master-cal-visual {
+      background: transparent !important;
+      box-shadow: none !important;
+      padding: 0 !important;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      overflow: visible !important;
+    }
+
+    /* Tab bar */
+    .mc-tab-bar {
+      display: flex;
+      align-items: center;
+      background: #f0edf4;
+      border-radius: 50px;
+      padding: 5px 6px;
+      gap: 2px;
+    }
+
+    .mc-tab {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 9px 18px;
+      border-radius: 40px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: #888;
+      white-space: nowrap;
+      z-index: 1;
+    }
+
+    .mc-tab svg {
+      flex-shrink: 0;
+    }
+
+    .mc-tab-indicator {
+      position: absolute;
+      inset: 0;
+      border-radius: 40px;
+      border: 1.5px solid #8B6080;
+      background: white;
+      opacity: 0;
+      z-index: -1;
+      box-shadow: 0 1px 4px rgba(139,96,128,0.12);
+    }
+
+    .mc-tab.tasks-tab-btn .mc-tab-indicator { animation: tab-tasks 16s infinite; }
+    .mc-tab.content-tab-btn .mc-tab-indicator { animation: tab-content 16s infinite; }
+    .mc-tab.both-tab-btn .mc-tab-indicator { animation: tab-both 16s infinite; }
+
+    @keyframes tab-tasks {
+      0%, 22% { opacity: 1; }
+      25%, 93% { opacity: 0; }
+      96%, 100% { opacity: 1; }
+    }
+    @keyframes tab-content {
+      0%, 22% { opacity: 0; }
+      25%, 35% { opacity: 1; }
+      38%, 100% { opacity: 0; }
+    }
+    @keyframes tab-both {
+      0%, 35% { opacity: 0; }
+      38%, 63% { opacity: 1; }
+      66%, 100% { opacity: 0; }
+    }
+
+    .master-cal-visual .mc-calendar-tilt {
+      width: 100%;
+    }
+
+    .master-cal-visual .mc-calendar-stack {
+      width: 100%;
     }
 
     .partnerships-board {
@@ -3806,8 +3886,8 @@
     /* Stacked Calendar Images */
     .mc-calendar-stack {
       position: relative;
-      width: 420px;
-      aspect-ratio: 1172 / 1560;
+      width: 1000px;
+      aspect-ratio: 1936 / 1316;
     }
 
     .mc-cal-img {
@@ -3841,8 +3921,8 @@
 
     @keyframes cal-both {
       0%, 35% { opacity: 0; }
-      38%, 87.5% { opacity: 1; }
-      93.75%, 100% { opacity: 0; }
+      38%, 63% { opacity: 1; }
+      66%, 100% { opacity: 0; }
     }
 
     /* Purple glow border on "Both" state */
@@ -3860,8 +3940,8 @@
     @keyframes glow-border {
       0%, 35% { opacity: 0; }
       38% { opacity: 0.6; }
-      50%, 80% { opacity: 0.4; }
-      93.75%, 100% { opacity: 0; }
+      50%, 60% { opacity: 0.4; }
+      66%, 100% { opacity: 0; }
     }
 
     /* Shimmer sweep effect */
@@ -3908,35 +3988,130 @@
     @keyframes cursor-path {
       0% {
         opacity: 1;
-        top: 30px;
-        left: 120px;
+        top: -28px;
+        left: 200px;
       }
       /* Move to Content Calendar tab */
       18% {
-        top: 30px;
-        left: 120px;
+        top: -28px;
+        left: 200px;
       }
       22% {
-        top: 30px;
-        left: 250px;
+        top: -28px;
+        left: 370px;
       }
       /* Move to Both tab */
       30% {
-        top: 30px;
-        left: 250px;
+        top: -28px;
+        left: 370px;
       }
       35% {
-        top: 30px;
-        left: 365px;
+        top: -28px;
+        left: 498px;
       }
       87.5% {
         opacity: 1;
-        top: 30px;
-        left: 365px;
+        top: -28px;
+        left: 498px;
       }
       93.75%, 100% {
         opacity: 0;
       }
+    }
+
+    /* Ghost flying events */
+    .mc-ghost-event {
+      position: absolute;
+      top: 225px;
+      left: 140px;
+      background: rgba(86, 63, 90, 0.88);
+      color: white;
+      border-radius: 8px;
+      padding: 7px 11px;
+      font-size: 0.72rem;
+      font-weight: 500;
+      white-space: nowrap;
+      opacity: 0;
+      z-index: 30;
+      pointer-events: none;
+      animation: ghost-fly 16s infinite;
+    }
+
+    @keyframes ghost-fly {
+      0% {
+        opacity: 0;
+        transform: translate(900px, 200px) scale(0.75);
+      }
+      3% {
+        opacity: 0;
+        transform: translate(900px, 200px) scale(0.75);
+      }
+      7% {
+        opacity: 1;
+        transform: translate(0, 0) scale(1);
+      }
+      18% {
+        opacity: 1;
+        transform: translate(0, 0) scale(1);
+      }
+      22% {
+        opacity: 0;
+        transform: translate(0, 0) scale(0.9);
+      }
+      96%, 100% {
+        opacity: 0;
+        transform: translate(900px, 200px) scale(0.75);
+      }
+    }
+
+    .mc-ghost-event-2 {
+      position: absolute;
+      top: 360px;
+      left: 270px;
+      background: rgba(86, 63, 90, 0.88);
+      color: white;
+      border-radius: 8px;
+      padding: 7px 11px;
+      font-size: 0.72rem;
+      font-weight: 500;
+      white-space: nowrap;
+      opacity: 0;
+      z-index: 30;
+      pointer-events: none;
+      animation: ghost-fly-2 16s infinite;
+    }
+
+    @keyframes ghost-fly-2 {
+      0%, 5% { opacity: 0; transform: translate(900px, 200px) scale(0.75); }
+      9%     { opacity: 1; transform: translate(0, 0) scale(1); }
+      18%    { opacity: 1; transform: translate(0, 0) scale(1); }
+      22%    { opacity: 0; transform: translate(0, 0) scale(0.9); }
+      96%, 100% { opacity: 0; transform: translate(900px, 200px) scale(0.75); }
+    }
+
+    .mc-ghost-event-3 {
+      position: absolute;
+      top: 130px;
+      left: 405px;
+      background: rgba(86, 63, 90, 0.88);
+      color: white;
+      border-radius: 8px;
+      padding: 7px 11px;
+      font-size: 0.72rem;
+      font-weight: 500;
+      white-space: nowrap;
+      opacity: 0;
+      z-index: 30;
+      pointer-events: none;
+      animation: ghost-fly-3 16s infinite;
+    }
+
+    @keyframes ghost-fly-3 {
+      0%, 7%  { opacity: 0; transform: translate(900px, 200px) scale(0.75); }
+      11%     { opacity: 1; transform: translate(0, 0) scale(1); }
+      18%     { opacity: 1; transform: translate(0, 0) scale(1); }
+      22%     { opacity: 0; transform: translate(0, 0) scale(0.9); }
+      96%, 100% { opacity: 0; transform: translate(900px, 200px) scale(0.75); }
     }
 
     /* Click rings */
@@ -3952,20 +4127,20 @@
     }
 
     .mc-click-ring.tasks-tab {
-      top: 38px;
-      left: 130px;
+      top: -30px;
+      left: 210px;
       animation: click-ring-tasks 16s infinite;
     }
 
     .mc-click-ring.content-tab {
-      top: 38px;
-      left: 260px;
+      top: -30px;
+      left: 380px;
       animation: click-ring-content 16s infinite;
     }
 
     .mc-click-ring.both-tab {
-      top: 38px;
-      left: 375px;
+      top: -30px;
+      left: 550px;
       animation: click-ring-both 16s infinite;
     }
 
@@ -3992,10 +4167,11 @@
 
     /* Google Calendar Card */
     .gcal-card {
-      position: absolute;
-      left: -230px;
-      top: 120px;
-      width: 200px;
+      position: relative;
+      left: auto;
+      top: auto;
+      margin-top: 28px;
+      width: 220px;
       background: white;
       border-radius: 12px;
       box-shadow: 0 6px 24px rgba(0,0,0,0.08);
@@ -4006,11 +4182,11 @@
     }
 
     @keyframes gcal-slide {
-      0%, 50% { opacity: 0; transform: translateX(-40px); }
-      56% { opacity: 1; transform: translateX(0); }
-      68% { opacity: 1; transform: translateX(0); }
-      75% { opacity: 0; transform: translateX(-20px); }
-      100% { opacity: 0; transform: translateX(-40px); }
+      0% { opacity: 0; transform: translateY(16px); }
+      3% { opacity: 1; transform: translateY(0); }
+      18% { opacity: 1; transform: translateY(0); }
+      22% { opacity: 0; transform: translateY(8px); }
+      96%, 100% { opacity: 0; transform: translateY(16px); }
     }
 
     .gcal-header {
@@ -4144,11 +4320,11 @@
     }
 
     @keyframes toast-bounce {
-      0%, 71.875% { opacity: 0; transform: translateY(20px) scale(0.9); }
-      75% { opacity: 1; transform: translateY(-5px) scale(1.02); }
-      78.125% { opacity: 1; transform: translateY(0) scale(1); }
-      87.5% { opacity: 1; transform: translateY(0) scale(1); }
-      93.75%, 100% { opacity: 0; transform: translateY(20px) scale(0.9); }
+      0%, 50% { opacity: 0; transform: translateY(20px) scale(0.9); }
+      53% { opacity: 1; transform: translateY(-5px) scale(1.02); }
+      56% { opacity: 1; transform: translateY(0) scale(1); }
+      62% { opacity: 1; transform: translateY(0) scale(1); }
+      66%, 100% { opacity: 0; transform: translateY(20px) scale(0.9); }
     }
 
     .mc-toast-icon {
@@ -5365,6 +5541,87 @@
       </div>
     </div>
 
+    <!-- Feature 4: Master Calendar (reversed - image left, text right) -->
+    <div class="feature-row reversed">
+      <div class="feature-text">
+        <h3>Master Calendar</h3>
+        <p>Plan your content and your tasks — together. Connect your Google Calendar and see it all in one spot.</p>
+        <!-- Google Calendar notification card -->
+        <div class="gcal-card">
+          <div class="gcal-header">
+            <svg class="gcal-logo" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+              <rect width="48" height="48" rx="8" fill="#fff" stroke="#e0e0e0" stroke-width="1.5"/>
+              <rect x="6" y="14" width="36" height="28" rx="3" fill="#fff" stroke="#dadce0" stroke-width="1.5"/>
+              <rect x="6" y="14" width="36" height="10" rx="3" fill="#1a73e8"/>
+              <rect x="6" y="20" width="36" height="4" fill="#1a73e8"/>
+              <text x="24" y="36" font-family="Arial" font-size="11" font-weight="700" fill="#1a73e8" text-anchor="middle">31</text>
+              <line x1="16" y1="14" x2="16" y2="8" stroke="#dadce0" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="32" y1="14" x2="32" y2="8" stroke="#dadce0" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
+            <div class="gcal-title">Google Calendar<span>3 events synced</span></div>
+          </div>
+          <div class="gcal-event blue"><span class="dot"></span>Team Meeting</div>
+          <div class="gcal-event green"><span class="dot"></span>Manicure Appt</div>
+          <div class="gcal-event yellow"><span class="dot"></span>Lunch Break</div>
+        </div>
+      </div>
+      <div class="feature-visual reveal-visual master-cal-visual">
+        <!-- Tab bar -->
+        <div class="mc-tab-bar">
+          <div class="mc-tab tasks-tab-btn">
+            <div class="mc-tab-indicator"></div>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <circle cx="2.5" cy="5" r="1.4" stroke="currentColor" stroke-width="1.2"/>
+              <line x1="5.5" y1="5" x2="14" y2="5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+              <circle cx="2.5" cy="10.5" r="1.4" stroke="currentColor" stroke-width="1.2"/>
+              <line x1="5.5" y1="10.5" x2="14" y2="10.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+            </svg>
+            <span>Tasks Calendar</span>
+          </div>
+          <div class="mc-tab content-tab-btn">
+            <div class="mc-tab-indicator"></div>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <rect x="1.5" y="2.5" width="13" height="11" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
+              <line x1="1.5" y1="6" x2="14.5" y2="6" stroke="currentColor" stroke-width="1.2"/>
+              <line x1="5" y1="1" x2="5" y2="4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+              <line x1="11" y1="1" x2="11" y2="4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+            </svg>
+            <span>Content Calendar</span>
+          </div>
+          <div class="mc-tab both-tab-btn">
+            <div class="mc-tab-indicator"></div>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <rect x="1.5" y="1.5" width="5.5" height="5.5" rx="1" stroke="currentColor" stroke-width="1.2"/>
+              <rect x="9" y="1.5" width="5.5" height="5.5" rx="1" stroke="currentColor" stroke-width="1.2"/>
+              <rect x="1.5" y="9" width="5.5" height="5.5" rx="1" stroke="currentColor" stroke-width="1.2"/>
+              <rect x="9" y="9" width="5.5" height="5.5" rx="1" stroke="currentColor" stroke-width="1.2"/>
+            </svg>
+            <span>Both</span>
+          </div>
+        </div>
+        <div class="mc-calendar-tilt">
+          <div class="mc-glow-border"></div>
+          <div class="mc-calendar-stack">
+            <img src="cal-tasks.png" alt="Tasks Calendar" class="mc-cal-img tasks">
+            <img src="cal-content.png" alt="Content Calendar" class="mc-cal-img content">
+            <img src="cal-both.png" alt="Combined Calendar" class="mc-cal-img both">
+            <div class="mc-shimmer"></div>
+          </div>
+          <div class="mc-cursor">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 2L4 20L8.5 15.5L12 22L14.5 21L11 14.5L17 14.5L4 2Z" fill="#4a3f4a" stroke="white" stroke-width="1" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="mc-click-ring tasks-tab"></div>
+          <div class="mc-click-ring content-tab"></div>
+          <div class="mc-click-ring both-tab"></div>
+          <div class="mc-ghost-event">Team Meeting</div>
+          <div class="mc-ghost-event-2">Manicure Appt</div>
+          <div class="mc-ghost-event-3">Business Call</div>
+        </div>
+      </div>
+    </div>
+
   </section>
 
   <!-- AI Section -->
@@ -5402,89 +5659,6 @@
     </div>
   </section>
 
-  <!-- Master Calendar Section -->
-  <section class="master-calendar-section reveal">
-    <div class="mc-header">
-      <div class="mc-label">PLANNER</div>
-      <h2 class="mc-title">Master Calendar</h2>
-      <p class="mc-subtitle">Plan your content and your tasks — together</p>
-    </div>
-
-    <div class="mc-demo-container">
-      <div class="mc-3d-wrapper">
-        <!-- Google Calendar Card -->
-        <div class="gcal-card" id="gcalCard">
-          <div class="gcal-header">
-            <svg class="gcal-logo" viewBox="0 0 200 200">
-              <rect x="40" y="40" width="120" height="120" rx="10" fill="#fff" stroke="#ddd" stroke-width="4"/>
-              <rect x="55" y="30" width="16" height="30" rx="4" fill="#4285f4"/>
-              <rect x="130" y="30" width="16" height="30" rx="4" fill="#4285f4"/>
-              <rect x="55" y="80" width="30" height="25" rx="4" fill="#ea4335"/>
-              <rect x="95" y="80" width="50" height="25" rx="4" fill="#fbbc04"/>
-              <rect x="55" y="115" width="50" height="25" rx="4" fill="#34a853"/>
-              <rect x="115" y="115" width="30" height="25" rx="4" fill="#4285f4"/>
-            </svg>
-            <div class="gcal-title">
-              Google Calendar
-              <span>3 events this week</span>
-            </div>
-          </div>
-          <div class="gcal-event blue" id="event1">
-            <span class="dot"></span>
-            Dentist
-          </div>
-          <div class="gcal-event green" id="event2">
-            <span class="dot"></span>
-            Coffee with Sarah
-          </div>
-          <div class="gcal-event yellow" id="event3">
-            <span class="dot"></span>
-            Yoga Class
-          </div>
-        </div>
-
-        <div class="mc-calendar-tilt">
-          <div class="mc-glow-border"></div>
-          <div class="mc-calendar-stack">
-            <img src="cal-tasks.png" alt="Tasks Calendar" class="mc-cal-img tasks">
-            <img src="cal-content.png" alt="Content Calendar" class="mc-cal-img content">
-            <img src="cal-both.png" alt="Combined Calendar" class="mc-cal-img both">
-            <div class="mc-shimmer"></div>
-          </div>
-
-          <!-- Fake Cursor (macOS style) -->
-          <div class="mc-cursor">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M4 2L4 20L8.5 15.5L12 22L14.5 21L11 14.5L17 14.5L4 2Z" fill="#4a3f4a" stroke="white" stroke-width="1" stroke-linejoin="round"/>
-            </svg>
-          </div>
-
-          <!-- Click Rings -->
-          <div class="mc-click-ring tasks-tab"></div>
-          <div class="mc-click-ring content-tab"></div>
-          <div class="mc-click-ring both-tab"></div>
-
-          <!-- Event Landing Flashes -->
-          <div class="mc-event-flash blue"></div>
-          <div class="mc-event-flash green"></div>
-          <div class="mc-event-flash yellow"></div>
-
-          <!-- Sync Toast -->
-          <div class="mc-sync-toast">
-            <div class="mc-toast-icon">
-              <svg viewBox="0 0 24 24" fill="none">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-            </div>
-            <div class="mc-toast-text">
-              Google Calendar synced
-              <span>3 events imported</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
 
   <!-- Supporting Features Section -->
   <section class="supporting-section reveal">
@@ -6113,6 +6287,76 @@
     } else {
       animateGcalEvents();
     }
+
+    // Dynamically anchor ghost fly animations to gcal card events
+    function setupGhostFly() {
+      const calTilt = document.querySelector('.mc-calendar-tilt');
+      if (!calTilt) return;
+      const calRect = calTilt.getBoundingClientRect();
+
+      const existing = document.getElementById('ghost-fly-dynamic');
+      if (existing) existing.remove();
+      const style = document.createElement('style');
+      style.id = 'ghost-fly-dynamic';
+      let css = '';
+
+      // Ghost 1: anchored to blue (Film Content) event, resting at top:225px left:140px
+      const blueEvent = document.querySelector('.gcal-event.blue');
+      if (blueEvent) {
+        const r = blueEvent.getBoundingClientRect();
+        const tx = Math.round(r.left + 12 - (calRect.left + 140));
+        const ty = Math.round(r.top + r.height / 2 - (calRect.top + 225));
+        css += `
+          @keyframes ghost-fly {
+            0%, 3% { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); }
+            7%      { opacity: 1; transform: translate(0, 0) scale(1); }
+            18%     { opacity: 1; transform: translate(0, 0) scale(1); }
+            22%     { opacity: 0; transform: translate(0, 0) scale(0.9); }
+            96%, 100% { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); }
+          }
+        `;
+      }
+
+      // Ghost 2: anchored to green (Manicure Appt) event, resting at top:360px left:270px
+      const greenEvent = document.querySelector('.gcal-event.green');
+      if (greenEvent) {
+        const r = greenEvent.getBoundingClientRect();
+        const tx = Math.round(r.left + 12 - (calRect.left + 270));
+        const ty = Math.round(r.top + r.height / 2 - (calRect.top + 360));
+        css += `
+          @keyframes ghost-fly-2 {
+            0%, 5% { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); }
+            9%      { opacity: 1; transform: translate(0, 0) scale(1); }
+            18%     { opacity: 1; transform: translate(0, 0) scale(1); }
+            22%     { opacity: 0; transform: translate(0, 0) scale(0.9); }
+            96%, 100% { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); }
+          }
+        `;
+      }
+
+      // Ghost 3: anchored to yellow (Lunch Break) event, resting at top:290px left:450px
+      const yellowEvent = document.querySelector('.gcal-event.yellow');
+      if (yellowEvent) {
+        const r = yellowEvent.getBoundingClientRect();
+        const tx = Math.round(r.left + 12 - (calRect.left + 405));
+        const ty = Math.round(r.top + r.height / 2 - (calRect.top + 130));
+        css += `
+          @keyframes ghost-fly-3 {
+            0%, 7%  { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); }
+            11%     { opacity: 1; transform: translate(0, 0) scale(1); }
+            18%     { opacity: 1; transform: translate(0, 0) scale(1); }
+            22%     { opacity: 0; transform: translate(0, 0) scale(0.9); }
+            96%, 100% { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); }
+          }
+        `;
+      }
+
+      style.textContent = css;
+      document.head.appendChild(style);
+    }
+
+    window.addEventListener('load', setupGhostFly);
+    window.addEventListener('resize', setupGhostFly);
   </script>
 </body>
 </html>
