@@ -2104,29 +2104,101 @@
       z-index: -1;
     }
 
-    .mc-tab.tasks-tab-btn .mc-tab-indicator { animation: tab-tasks 16s infinite; }
-    .mc-tab.content-tab-btn .mc-tab-indicator { animation: tab-content 16s infinite; }
-    .mc-tab.both-tab-btn .mc-tab-indicator { animation: tab-both 16s infinite; }
+    /* ── Tab indicator sequence ──
+       0-13%:   Tasks Calendar active
+       14.5-27%: Content Calendar active
+       28-100%: Both active (stays for rest of cycle)
+    */
 
-    @keyframes tab-tasks {
-      0%, 22% { opacity: 1; }
-      24%, 47% { opacity: 0; }
-      50%, 72% { opacity: 1; }
-      74%, 100% { opacity: 0; }
+    /* Tasks Calendar tab text + indicator */
+    .mc-tab.tasks-tab-btn {
+      animation: tasks-tab-color 10s infinite;
+      transition: none;
     }
-    @keyframes tab-content {
-      0%, 24% { opacity: 0; }
-      25%, 35% { opacity: 1; }
-      37%, 74% { opacity: 0; }
-      75%, 85% { opacity: 1; }
-      87%, 100% { opacity: 0; }
+    @keyframes tasks-tab-color {
+      0%        { color: #7a3868; }
+      21%       { color: #7a3868; }
+      23%       { color: #888; }
+      65%       { color: #888; }
+      67%       { color: #7a3868; }
+      100%      { color: #7a3868; }
     }
-    @keyframes tab-both {
-      0%, 35% { opacity: 0; }
-      37%, 47% { opacity: 1; }
-      49%, 85% { opacity: 0; }
-      87%, 97% { opacity: 1; }
-      99%, 100% { opacity: 0; }
+    .mc-tab.tasks-tab-btn .mc-tab-indicator {
+      animation: tasks-indicator-anim 10s infinite;
+    }
+    @keyframes tasks-indicator-anim {
+      0%       { opacity: 1; }
+      21%      { opacity: 1; }
+      23%      { opacity: 0; }
+      65%      { opacity: 0; }
+      67%      { opacity: 1; }
+      100%     { opacity: 1; }
+    }
+
+    /* Content Calendar tab text + indicator */
+    .mc-tab.content-tab-btn {
+      animation: content-tab-color 10s infinite;
+      transition: none;
+    }
+    @keyframes content-tab-color {
+      0%, 21%    { color: #888; }
+      22%        { color: #7a3868; }
+      35%        { color: #7a3868; }
+      37%        { color: #888; }
+      100%       { color: #888; }
+    }
+    .mc-tab.content-tab-btn .mc-tab-indicator {
+      animation: content-indicator-anim 10s infinite;
+    }
+    @keyframes content-indicator-anim {
+      0%, 21%   { opacity: 0; }
+      22%       { opacity: 1; }
+      35%       { opacity: 1; }
+      37%       { opacity: 0; }
+      100%      { opacity: 0; }
+    }
+
+    /* Both tab text + indicator */
+    .mc-tab.both-tab-btn {
+      animation: both-tab-color 10s infinite;
+      transition: none;
+    }
+    @keyframes both-tab-color {
+      0%, 36%   { color: #888; }
+      38%       { color: #7a3868; }
+      65%       { color: #7a3868; }
+      67%       { color: #888; }
+      100%      { color: #888; }
+    }
+    .mc-tab.both-tab-btn .mc-tab-indicator {
+      animation: both-indicator-anim 10s infinite;
+    }
+    @keyframes both-indicator-anim {
+      0%, 36%  { opacity: 0; }
+      38%      { opacity: 1; }
+      65%      { opacity: 1; }
+      67%      { opacity: 0; }
+      100%     { opacity: 0; }
+    }
+
+    /* Click ring on Content Calendar tab (position set by JS) */
+    .mc-content-click-ring {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid rgba(122,56,104,0.65);
+      transform: translate(-50%, -50%) scale(0.4);
+      pointer-events: none;
+      z-index: 200;
+      opacity: 0;
+      animation: content-click-ring-anim 10s infinite;
+    }
+    @keyframes content-click-ring-anim {
+      0%, 21.9%  { opacity: 0;   transform: translate(-50%, -50%) scale(0.4); }
+      22%        { opacity: 0.9; transform: translate(-50%, -50%) scale(0.4); animation-timing-function: cubic-bezier(0, 0, 0.2, 1); }
+      24%        { opacity: 0;   transform: translate(-50%, -50%) scale(1.8); }
+      100%       { opacity: 0; }
     }
 
     .master-cal-visual .mc-calendar-tilt {
@@ -3905,34 +3977,14 @@
       box-shadow: 0 12px 40px rgba(97, 42, 79, 0.12);
       opacity: 0;
       will-change: opacity;
+      transform: translateZ(0);
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
     }
 
-    .mc-cal-img.tasks { animation: cal-tasks 16s infinite; }
-    .mc-cal-img.content { animation: cal-content 16s infinite; }
-    .mc-cal-img.both { animation: cal-both 16s infinite; }
-
-    @keyframes cal-tasks {
-      0%, 22% { opacity: 1; }
-      24%, 47% { opacity: 0; }
-      50%, 72% { opacity: 1; }
-      74%, 100% { opacity: 0; }
-    }
-
-    @keyframes cal-content {
-      0%, 24% { opacity: 0; }
-      25%, 35% { opacity: 1; }
-      37%, 74% { opacity: 0; }
-      75%, 85% { opacity: 1; }
-      87%, 100% { opacity: 0; }
-    }
-
-    @keyframes cal-both {
-      0%, 35% { opacity: 0; }
-      37%, 47% { opacity: 1; }
-      49%, 85% { opacity: 0; }
-      87%, 97% { opacity: 1; }
-      99%, 100% { opacity: 0; }
-    }
+    .mc-cal-img.tasks { opacity: 1; }
+    .mc-cal-img.content { opacity: 0; }
+    .mc-cal-img.both { opacity: 0; }
 
     /* Purple glow border on "Both" state */
     .mc-glow-border {
@@ -3953,7 +4005,7 @@
       );
       transform: translateX(-100%);
       opacity: 0;
-      animation: shimmer-sweep 16s infinite;
+      animation: shimmer-sweep 10s infinite;
       pointer-events: none;
     }
 
@@ -3971,8 +4023,10 @@
       height: 32px;
       z-index: 100;
       pointer-events: none;
-      opacity: 0;
-      animation: cursor-path 16s infinite;
+      opacity: 1;
+      top: -28px;
+      left: 498px;
+      animation: cursor-to-content 10s infinite;
     }
 
     .mc-cursor svg {
@@ -3981,29 +4035,11 @@
       filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
     }
 
-    @keyframes cursor-path {
-      /* Cycle 1 */
-      0% { opacity: 1; top: -28px; left: 200px; }
-      20% { top: -28px; left: 200px; }
-      22% { top: -28px; left: 370px; }
-      33% { top: -28px; left: 370px; }
-      35% { top: -28px; left: 498px; }
-      47% { opacity: 1; top: -28px; left: 498px; }
-      49% { opacity: 0; }
-      /* Cycle 2 */
-      50% { opacity: 1; top: -28px; left: 200px; }
-      70% { top: -28px; left: 200px; }
-      72% { top: -28px; left: 370px; }
-      83% { top: -28px; left: 370px; }
-      85% { top: -28px; left: 498px; }
-      97% { opacity: 1; top: -28px; left: 498px; }
-      99%, 100% { opacity: 0; }
-    }
 
     /* Ghost flying events */
     .mc-ghost-event {
       position: absolute;
-      top: 225px;
+      top: 220px;
       left: 140px;
       background: rgba(74, 111, 165, 0.88);
       color: white;
@@ -4015,19 +4051,18 @@
       opacity: 0;
       z-index: 30;
       pointer-events: none;
-      animation: ghost-fly 16s infinite;
+      animation: ghost-fly 10s infinite;
+      will-change: transform, opacity;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
     }
 
     @keyframes ghost-fly {
-      0%, 3% { opacity: 0; transform: translate(900px, 200px) scale(0.75); }
-      7%     { opacity: 1; transform: translate(0, 0) scale(1); }
-      22%    { opacity: 1; transform: translate(0, 0) scale(1); }
-      24%    { opacity: 0; transform: translate(0, 0) scale(0.9); }
-      49%    { opacity: 0; transform: translate(900px, 200px) scale(0.75); }
-      53%    { opacity: 1; transform: translate(0, 0) scale(1); }
-      72%    { opacity: 1; transform: translate(0, 0) scale(1); }
-      74%    { opacity: 0; transform: translate(0, 0) scale(0.9); }
-      100%   { opacity: 0; transform: translate(900px, 200px) scale(0.75); }
+      0%, 5%  { opacity: 0; transform: translate3d(900px, 200px, 0) scale(0.75); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+      13%     { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+      43%     { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+      47%     { opacity: 0; transform: translate3d(0, 0, 0) scale(0.9); }
+      100%    { opacity: 0; transform: translate3d(900px, 200px, 0) scale(0.75); }
     }
 
     .mc-ghost-event-2 {
@@ -4044,24 +4079,23 @@
       opacity: 0;
       z-index: 30;
       pointer-events: none;
-      animation: ghost-fly-2 16s infinite;
+      animation: ghost-fly-2 10s infinite;
+      will-change: transform, opacity;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
     }
 
     @keyframes ghost-fly-2 {
-      0%, 5% { opacity: 0; transform: translate(900px, 200px) scale(0.75); }
-      9%     { opacity: 1; transform: translate(0, 0) scale(1); }
-      22%    { opacity: 1; transform: translate(0, 0) scale(1); }
-      24%    { opacity: 0; transform: translate(0, 0) scale(0.9); }
-      49%    { opacity: 0; transform: translate(900px, 200px) scale(0.75); }
-      55%    { opacity: 1; transform: translate(0, 0) scale(1); }
-      72%    { opacity: 1; transform: translate(0, 0) scale(1); }
-      74%    { opacity: 0; transform: translate(0, 0) scale(0.9); }
-      100%   { opacity: 0; transform: translate(900px, 200px) scale(0.75); }
+      0%, 7%  { opacity: 0; transform: translate3d(900px, 200px, 0) scale(0.75); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+      15%     { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+      43%     { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+      47%     { opacity: 0; transform: translate3d(0, 0, 0) scale(0.9); }
+      100%    { opacity: 0; transform: translate3d(900px, 200px, 0) scale(0.75); }
     }
 
     .mc-ghost-event-3 {
       position: absolute;
-      top: 130px;
+      top: 143px;
       left: 405px;
       background: rgba(74, 111, 165, 0.88);
       color: white;
@@ -4073,85 +4107,134 @@
       opacity: 0;
       z-index: 30;
       pointer-events: none;
-      animation: ghost-fly-3 16s infinite;
+      animation: ghost-fly-3 10s infinite;
+      will-change: transform, opacity;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
     }
 
     @keyframes ghost-fly-3 {
-      0%, 7%  { opacity: 0; transform: translate(900px, 200px) scale(0.75); }
-      11%     { opacity: 1; transform: translate(0, 0) scale(1); }
-      22%     { opacity: 1; transform: translate(0, 0) scale(1); }
-      24%     { opacity: 0; transform: translate(0, 0) scale(0.9); }
-      49%     { opacity: 0; transform: translate(900px, 200px) scale(0.75); }
-      57%     { opacity: 1; transform: translate(0, 0) scale(1); }
-      72%     { opacity: 1; transform: translate(0, 0) scale(1); }
-      74%     { opacity: 0; transform: translate(0, 0) scale(0.9); }
-      100%    { opacity: 0; transform: translate(900px, 200px) scale(0.75); }
+      0%, 9%  { opacity: 0; transform: translate3d(900px, 200px, 0) scale(0.75); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+      17%     { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+      43%     { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+      47%     { opacity: 0; transform: translate3d(0, 0, 0) scale(0.9); }
+      100%    { opacity: 0; transform: translate3d(900px, 200px, 0) scale(0.75); }
     }
 
-    /* Click rings */
-    .mc-click-ring {
+    /* Ghost Content Pill Cards */
+    .mc-content-pill {
       position: absolute;
-      width: 32px;
-      height: 32px;
-      border: 2px solid var(--brand);
-      border-radius: 50%;
+      border-radius: 999px;
+      padding: 5px 11px 5px 9px;
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: white;
+      white-space: nowrap;
       opacity: 0;
+      z-index: 25;
       pointer-events: none;
-      transform: translate(-50%, -50%) scale(0.3);
+      letter-spacing: 0.01em;
+      will-change: transform, opacity;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
     }
 
-    .mc-click-ring.tasks-tab {
-      top: -30px;
-      left: 210px;
-      animation: click-ring-tasks 16s infinite;
+    .mc-content-pill svg {
+      flex-shrink: 0;
     }
 
-    .mc-click-ring.content-tab {
-      top: -30px;
-      left: 380px;
-      animation: click-ring-content 16s infinite;
+    .mc-content-pill-1 {
+      top: 130px;
+      left: 10px;
+      background: linear-gradient(135deg, #7a3868 0%, #612a4f 50%, #4e2040 100%);
+      box-shadow: 0 2px 10px rgba(97,42,79,0.5);
+      animation: content-fly-1 10s infinite;
     }
 
-    .mc-click-ring.both-tab {
-      top: -30px;
-      left: 550px;
-      animation: click-ring-both 16s infinite;
+    .mc-content-pill-2 {
+      top: 110px;
+      left: 140px;
+      background: linear-gradient(135deg, #7a3868 0%, #612a4f 50%, #4e2040 100%);
+      box-shadow: 0 2px 10px rgba(97,42,79,0.5);
+      animation: content-fly-2 10s infinite;
     }
 
-    @keyframes click-ring-tasks {
-      0%, 2%   { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
-      3%       { opacity: 0.8; transform: translate(-50%, -50%) scale(0.5); }
-      6%       { opacity: 0; transform: translate(-50%, -50%) scale(1.2); }
-      50%, 52% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
-      53%      { opacity: 0.8; transform: translate(-50%, -50%) scale(0.5); }
-      56%      { opacity: 0; transform: translate(-50%, -50%) scale(1.2); }
-      100%     { opacity: 0; }
+    .mc-content-pill-3 {
+      top: 128px;
+      left: 275px;
+      background: linear-gradient(135deg, #7a3868 0%, #612a4f 50%, #4e2040 100%);
+      box-shadow: 0 2px 10px rgba(97,42,79,0.5);
+      animation: content-fly-3 10s infinite;
     }
 
-    @keyframes click-ring-content {
-      0%, 17%  { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
-      18%      { opacity: 0.8; transform: translate(-50%, -50%) scale(0.5); }
-      21%      { opacity: 0; transform: translate(-50%, -50%) scale(1.2); }
-      50%, 67% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
-      68%      { opacity: 0.8; transform: translate(-50%, -50%) scale(0.5); }
-      71%      { opacity: 0; transform: translate(-50%, -50%) scale(1.2); }
-      100%     { opacity: 0; }
+    .mc-content-pill-4 {
+      top: 173px;
+      left: 530px;
+      background: linear-gradient(135deg, #7a3868 0%, #612a4f 50%, #4e2040 100%);
+      box-shadow: 0 2px 10px rgba(97,42,79,0.5);
+      animation: content-fly-4 10s infinite;
     }
 
-    @keyframes click-ring-both {
-      0%, 34%  { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
-      35%      { opacity: 0.8; transform: translate(-50%, -50%) scale(0.5); }
-      38%      { opacity: 0; transform: translate(-50%, -50%) scale(1.2); }
-      50%, 84% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
-      85%      { opacity: 0.8; transform: translate(-50%, -50%) scale(0.5); }
-      88%      { opacity: 0; transform: translate(-50%, -50%) scale(1.2); }
-      100%     { opacity: 0; }
+    @keyframes content-fly-1 {
+      0%, 15%  { opacity: 0; transform: translate3d(750px, 150px, 0) scale(0.75); }
+      19%      { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+      43%      { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+      45%      { opacity: 0; transform: translate3d(0, 0, 0) scale(0.9); }
+      64%      { opacity: 0; transform: translate3d(750px, 150px, 0) scale(0.75); }
+      68%      { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+      92%      { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+      94%      { opacity: 0; transform: translate3d(0, 0, 0) scale(0.9); }
+      100%     { opacity: 0; transform: translate3d(750px, 150px, 0) scale(0.75); }
+    }
+
+    @keyframes content-fly-2 {
+      0%, 17%  { opacity: 0; transform: translate3d(750px, 150px, 0) scale(0.75); }
+      21%      { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+      43%      { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+      45%      { opacity: 0; transform: translate3d(0, 0, 0) scale(0.9); }
+      66%      { opacity: 0; transform: translate3d(750px, 150px, 0) scale(0.75); }
+      70%      { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+      92%      { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+      94%      { opacity: 0; transform: translate3d(0, 0, 0) scale(0.9); }
+      100%     { opacity: 0; transform: translate3d(750px, 150px, 0) scale(0.75); }
+    }
+
+    @keyframes content-fly-3 {
+      0%, 19%  { opacity: 0; transform: translate3d(750px, 150px, 0) scale(0.75); }
+      23%      { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+      43%      { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+      45%      { opacity: 0; transform: translate3d(0, 0, 0) scale(0.9); }
+      68%      { opacity: 0; transform: translate3d(750px, 150px, 0) scale(0.75); }
+      72%      { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+      92%      { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+      94%      { opacity: 0; transform: translate3d(0, 0, 0) scale(0.9); }
+      100%     { opacity: 0; transform: translate3d(750px, 150px, 0) scale(0.75); }
+    }
+
+    @keyframes content-fly-4 {
+      0%, 21%  { opacity: 0; transform: translate3d(750px, 150px, 0) scale(0.75); }
+      25%      { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+      43%      { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+      45%      { opacity: 0; transform: translate3d(0, 0, 0) scale(0.9); }
+      70%      { opacity: 0; transform: translate3d(750px, 150px, 0) scale(0.75); }
+      74%      { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+      92%      { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+      94%      { opacity: 0; transform: translate3d(0, 0, 0) scale(0.9); }
+      100%     { opacity: 0; transform: translate3d(750px, 150px, 0) scale(0.75); }
+    }
+
+    /* Click rings — hidden (cursor is now static) */
+    .mc-click-ring {
+      display: none;
     }
 
     /* Google Calendar Card */
     .gcal-card {
       position: absolute;
-      bottom: -10px;
+      bottom: -40px;
       left: -40px;
       width: 152px;
       background: white;
@@ -4162,19 +4245,18 @@
       padding: 0;
       opacity: 0;
       z-index: 50;
-      animation: gcal-slide 16s infinite;
+      animation: gcal-slide 10s infinite;
+      will-change: transform, opacity;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
     }
 
     @keyframes gcal-slide {
-      0% { opacity: 0; transform: translateY(16px); }
-      3% { opacity: 1; transform: translateY(0); }
-      22% { opacity: 1; transform: translateY(0); }
-      24% { opacity: 0; transform: translateY(8px); }
-      49% { opacity: 0; transform: translateY(16px); }
-      53% { opacity: 1; transform: translateY(0); }
-      72% { opacity: 1; transform: translateY(0); }
-      74% { opacity: 0; transform: translateY(8px); }
-      100% { opacity: 0; transform: translateY(16px); }
+      0%    { opacity: 0; transform: translate3d(-120px, 0, 0); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+      5%    { opacity: 1; transform: translate3d(0, 0, 0); }
+      18%   { opacity: 1; transform: translate3d(0, 0, 0); animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45); }
+      21%   { opacity: 0; transform: translate3d(-120px, 0, 0); }
+      100%  { opacity: 0; transform: translate3d(-120px, 0, 0); }
     }
 
     .gcal-header {
@@ -4291,21 +4373,21 @@
       background: rgba(66, 133, 244, 0.6);
       top: 140px;
       left: 100px;
-      animation: event-land-blue 16s infinite;
+      animation: event-land-blue 10s infinite;
     }
 
     .mc-event-flash.green {
       background: rgba(52, 168, 83, 0.6);
       top: 200px;
       left: 220px;
-      animation: event-land-green 16s infinite;
+      animation: event-land-green 10s infinite;
     }
 
     .mc-event-flash.yellow {
       background: rgba(251, 188, 4, 0.6);
       top: 260px;
       left: 350px;
-      animation: event-land-yellow 16s infinite;
+      animation: event-land-yellow 10s infinite;
     }
 
     @keyframes event-land-blue {
@@ -4344,7 +4426,7 @@
       opacity: 0;
       transform: translateY(20px) scale(0.9);
       z-index: 100;
-      animation: toast-bounce 16s infinite;
+      animation: toast-bounce 10s infinite;
     }
 
     @keyframes toast-bounce {
@@ -5570,7 +5652,7 @@
     </div>
 
     <!-- Feature 4: Master Calendar (reversed - image left, text right) -->
-    <div class="feature-row reversed">
+    <div class="feature-row reversed mc-feature-row">
       <div class="feature-text">
         <h3>Master Calendar</h3>
         <p>Plan your content and your tasks — together. Connect your Google Calendar and see it all in one spot.</p>
@@ -5623,9 +5705,17 @@
             </svg>
           </div>
 
+          <div class="mc-content-click-ring"></div>
+
           <div class="mc-ghost-event">Team Meeting</div>
           <div class="mc-ghost-event-2">Manicure Appt</div>
           <div class="mc-ghost-event-3">Business Call</div>
+
+          <div class="mc-content-pill mc-content-pill-1"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m22 8-6 4 6 4V8z"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>Post Video</div>
+          <div class="mc-content-pill mc-content-pill-2"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>Post Image</div>
+          <div class="mc-content-pill mc-content-pill-3"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m22 8-6 4 6 4V8z"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>Post Video</div>
+          <div class="mc-content-pill mc-content-pill-4"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/></svg>Post Carousel</div>
+
           <div class="gcal-card">
             <div class="gcal-header">
               <div class="gcal-logo-wrap">
@@ -5948,6 +6038,42 @@
     }, { threshold: 0.3 });
 
     visualElements.forEach(el => visualObserver.observe(el));
+
+    // Master Calendar — restart gcal + ghost animations each time section enters view
+    const masterCalVisual = document.querySelector('.master-cal-visual');
+    if (masterCalVisual) {
+      const gcalCard = masterCalVisual.querySelector('.gcal-card');
+      const ghosts = masterCalVisual.querySelectorAll('.mc-ghost-event, .mc-ghost-event-2, .mc-ghost-event-3');
+      const contentPills = masterCalVisual.querySelectorAll('.mc-content-pill');
+      const tasksTabBtn = masterCalVisual.querySelector('.tasks-tab-btn');
+      const tasksTabIndicator = masterCalVisual.querySelector('.tasks-tab-btn .mc-tab-indicator');
+      const contentTabBtn = masterCalVisual.querySelector('.content-tab-btn');
+      const contentTabIndicator = masterCalVisual.querySelector('.content-tab-btn .mc-tab-indicator');
+      const bothTabBtn = masterCalVisual.querySelector('.both-tab-btn');
+      const bothTabIndicator = masterCalVisual.querySelector('.both-tab-btn .mc-tab-indicator');
+      const cursorEl = masterCalVisual.querySelector('.mc-cursor');
+      const clickRingEl = masterCalVisual.querySelector('.mc-content-click-ring');
+
+      const restartMcAnimations = () => {
+        const extras = [tasksTabBtn, tasksTabIndicator, contentTabBtn, contentTabIndicator, bothTabBtn, bothTabIndicator, cursorEl, clickRingEl].filter(Boolean);
+        const els = gcalCard ? [gcalCard, ...ghosts, ...contentPills, ...extras] : [...ghosts, ...contentPills, ...extras];
+        els.forEach(el => {
+          el.style.animation = 'none';
+          void el.offsetWidth; // force reflow
+          el.style.animation = '';
+        });
+      };
+
+      const mcObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            setTimeout(restartMcAnimations, 1000);
+          }
+        });
+      }, { threshold: 0.3 });
+
+      mcObserver.observe(masterCalVisual);
+    }
 
     // ── Pipeline 3D board staggered reveal ──
     const pipelineVisual = document.querySelector('.pipeline-visual');
@@ -6316,15 +6442,11 @@
         const ty = Math.round(r.top + r.height / 2 - (calRect.top + 225));
         css += `
           @keyframes ghost-fly {
-            0%, 3% { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); }
-            7%     { opacity: 1; transform: translate(0, 0) scale(1); }
-            22%    { opacity: 1; transform: translate(0, 0) scale(1); }
-            24%    { opacity: 0; transform: translate(0, 0) scale(0.9); }
-            49%    { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); }
-            53%    { opacity: 1; transform: translate(0, 0) scale(1); }
-            72%    { opacity: 1; transform: translate(0, 0) scale(1); }
-            74%    { opacity: 0; transform: translate(0, 0) scale(0.9); }
-            100%   { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); }
+            0%, 5%  { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+            13%     { opacity: 1; transform: translate(0, 0) scale(1); }
+            43%     { opacity: 1; transform: translate(0, 0) scale(1); }
+            47%     { opacity: 0; transform: translate(0, 0) scale(0.9); }
+            100%    { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); }
           }
         `;
       }
@@ -6337,15 +6459,11 @@
         const ty = Math.round(r.top + r.height / 2 - (calRect.top + 360));
         css += `
           @keyframes ghost-fly-2 {
-            0%, 5% { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); }
-            9%     { opacity: 1; transform: translate(0, 0) scale(1); }
-            22%    { opacity: 1; transform: translate(0, 0) scale(1); }
-            24%    { opacity: 0; transform: translate(0, 0) scale(0.9); }
-            49%    { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); }
-            55%    { opacity: 1; transform: translate(0, 0) scale(1); }
-            72%    { opacity: 1; transform: translate(0, 0) scale(1); }
-            74%    { opacity: 0; transform: translate(0, 0) scale(0.9); }
-            100%   { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); }
+            0%, 7%  { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+            15%     { opacity: 1; transform: translate(0, 0) scale(1); }
+            43%     { opacity: 1; transform: translate(0, 0) scale(1); }
+            47%     { opacity: 0; transform: translate(0, 0) scale(0.9); }
+            100%    { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); }
           }
         `;
       }
@@ -6358,14 +6476,10 @@
         const ty = Math.round(r.top + r.height / 2 - (calRect.top + 130));
         css += `
           @keyframes ghost-fly-3 {
-            0%, 7%  { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); }
-            11%     { opacity: 1; transform: translate(0, 0) scale(1); }
-            22%     { opacity: 1; transform: translate(0, 0) scale(1); }
-            24%     { opacity: 0; transform: translate(0, 0) scale(0.9); }
-            49%     { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); }
-            57%     { opacity: 1; transform: translate(0, 0) scale(1); }
-            72%     { opacity: 1; transform: translate(0, 0) scale(1); }
-            74%     { opacity: 0; transform: translate(0, 0) scale(0.9); }
+            0%, 9%  { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+            17%     { opacity: 1; transform: translate(0, 0) scale(1); }
+            43%     { opacity: 1; transform: translate(0, 0) scale(1); }
+            47%     { opacity: 0; transform: translate(0, 0) scale(0.9); }
             100%    { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); }
           }
         `;
@@ -6377,6 +6491,115 @@
 
     window.addEventListener('load', setupGhostFly);
     window.addEventListener('resize', setupGhostFly);
+
+    // Anchor content pill animations to the Content tab position
+    function setupContentPills() {
+      const calTilt = document.querySelector('.mc-calendar-tilt');
+      const contentTab = document.querySelector('.content-tab-btn');
+      if (!calTilt || !contentTab) return;
+
+      const calRect = calTilt.getBoundingClientRect();
+      const tabRect = contentTab.getBoundingClientRect();
+
+      // Origin point: center of the Content tab, relative to calTilt
+      const ox = Math.round(tabRect.left + tabRect.width / 2 - calRect.left);
+      const oy = Math.round(tabRect.top + tabRect.height / 2 - calRect.top);
+
+      // Each pill's resting position (matches CSS top/left)
+      const pills = [
+        { name: 'content-fly-1', top: 320, left: 140 },
+        { name: 'content-fly-2', top: 195, left: 270 },
+        { name: 'content-fly-3', top: 450, left: 405 },
+        { name: 'content-fly-4', top: 280, left: 665 },
+      ];
+
+      const existing = document.getElementById('content-pills-dynamic');
+      if (existing) existing.remove();
+      const style = document.createElement('style');
+      style.id = 'content-pills-dynamic';
+      let css = '';
+
+      const delays = [22, 24, 26, 28]; // % into 16s cycle when each pill starts
+
+      pills.forEach((pill, i) => {
+        const tx = Math.round(ox - pill.left);
+        const ty = Math.round(oy - pill.top);
+        const d1 = delays[i];
+        const land1 = d1 + 4;
+        css += `
+          @keyframes ${pill.name} {
+            0%, ${d1}%   { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+            ${land1}%    { opacity: 1; transform: translate(0, 0) scale(1); }
+            43%          { opacity: 1; transform: translate(0, 0) scale(1); }
+            47%          { opacity: 0; transform: translate(0, 0) scale(0.9); }
+            100%         { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); }
+          }
+        `;
+      });
+
+      style.textContent = css;
+      document.head.appendChild(style);
+    }
+
+    window.addEventListener('load', setupContentPills);
+    window.addEventListener('resize', setupContentPills);
+
+    // Animate cursor: Tasks Calendar → Content Calendar → Both (stays)
+    function setupCursorMove() {
+      const calTilt = document.querySelector('.mc-calendar-tilt');
+      const tasksTab = document.querySelector('.tasks-tab-btn');
+      const contentTab = document.querySelector('.content-tab-btn');
+      const bothTab = document.querySelector('.both-tab-btn');
+      const cursor = document.querySelector('.mc-cursor');
+      const clickRing = document.querySelector('.mc-content-click-ring');
+      if (!calTilt || !tasksTab || !contentTab || !bothTab || !cursor || !clickRing) return;
+
+      const calRect = calTilt.getBoundingClientRect();
+      const tasksRect = tasksTab.getBoundingClientRect();
+      const contentRect = contentTab.getBoundingClientRect();
+      const bothRect = bothTab.getBoundingClientRect();
+
+      // Anchor cursor base position to Tasks Calendar tab centre
+      const tasksCX = Math.round(tasksRect.left + tasksRect.width / 2 - calRect.left);
+      const tasksCY = Math.round(tasksRect.top + tasksRect.height / 2 - calRect.top) + 8;
+      cursor.style.left = tasksCX + 'px';
+      cursor.style.top = tasksCY + 'px';
+
+      // Compute deltas from Tasks to Content and Tasks to Both
+      const contentCX = Math.round(contentRect.left + contentRect.width / 2 - calRect.left);
+      const contentCY = Math.round(contentRect.top + contentRect.height / 2 - calRect.top) + 8;
+      const bothCX = Math.round(bothRect.left + bothRect.width / 2 - calRect.left);
+      const bothCY = Math.round(bothRect.top + bothRect.height / 2 - calRect.top) + 8;
+
+      const dxContent = contentCX - tasksCX;
+      const dyContent = contentCY - tasksCY;
+      const dxBoth = bothCX - tasksCX;
+      const dyBoth = bothCY - tasksCY;
+
+      // Position click ring at Content Calendar tab centre
+      clickRing.style.left = contentCX + 'px';
+      clickRing.style.top = contentCY + 'px';
+
+      const existing = document.getElementById('cursor-move-dynamic');
+      if (existing) existing.remove();
+      const style = document.createElement('style');
+      style.id = 'cursor-move-dynamic';
+      style.textContent = `
+        @keyframes cursor-to-content {
+          0%   { transform: translate(0, 0); }
+          20%  { transform: translate(0, 0); animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
+          22%  { transform: translate(${dxContent}px, ${dyContent}px); }
+          33%  { transform: translate(${dxContent}px, ${dyContent}px); animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
+          37%  { transform: translate(${dxBoth}px, ${dyBoth}px); }
+          65%  { transform: translate(${dxBoth}px, ${dyBoth}px); animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
+          100% { transform: translate(0, 0); }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    window.addEventListener('load', setupCursorMove);
+    window.addEventListener('resize', setupCursorMove);
   </script>
 </body>
 </html>
