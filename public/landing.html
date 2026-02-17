@@ -2102,7 +2102,6 @@
       background: white;
       opacity: 0;
       z-index: -1;
-      box-shadow: 0 1px 4px rgba(139,96,128,0.12);
     }
 
     .mc-tab.tasks-tab-btn .mc-tab-indicator { animation: tab-tasks 16s infinite; }
@@ -2110,19 +2109,24 @@
     .mc-tab.both-tab-btn .mc-tab-indicator { animation: tab-both 16s infinite; }
 
     @keyframes tab-tasks {
-      0%, 22% { opacity: 1; }
-      25%, 93% { opacity: 0; }
-      96%, 100% { opacity: 1; }
+      0%, 18% { opacity: 1; }
+      20%, 47% { opacity: 0; }
+      50%, 68% { opacity: 1; }
+      70%, 100% { opacity: 0; }
     }
     @keyframes tab-content {
-      0%, 22% { opacity: 0; }
-      25%, 35% { opacity: 1; }
-      38%, 100% { opacity: 0; }
+      0%, 20% { opacity: 0; }
+      21%, 33% { opacity: 1; }
+      35%, 70% { opacity: 0; }
+      71%, 83% { opacity: 1; }
+      85%, 100% { opacity: 0; }
     }
     @keyframes tab-both {
       0%, 35% { opacity: 0; }
-      38%, 63% { opacity: 1; }
-      66%, 100% { opacity: 0; }
+      37%, 47% { opacity: 1; }
+      49%, 85% { opacity: 0; }
+      87%, 97% { opacity: 1; }
+      99%, 100% { opacity: 0; }
     }
 
     .master-cal-visual .mc-calendar-tilt {
@@ -3908,40 +3912,31 @@
     .mc-cal-img.both { animation: cal-both 16s infinite; }
 
     @keyframes cal-tasks {
-      0%, 22% { opacity: 1; }
-      25%, 93% { opacity: 0; }
-      96%, 100% { opacity: 1; }
+      0%, 18% { opacity: 1; }
+      20%, 47% { opacity: 0; }
+      50%, 68% { opacity: 1; }
+      70%, 100% { opacity: 0; }
     }
 
     @keyframes cal-content {
-      0%, 22% { opacity: 0; }
-      25%, 35% { opacity: 1; }
-      38%, 100% { opacity: 0; }
+      0%, 20% { opacity: 0; }
+      21%, 33% { opacity: 1; }
+      35%, 70% { opacity: 0; }
+      71%, 83% { opacity: 1; }
+      85%, 100% { opacity: 0; }
     }
 
     @keyframes cal-both {
       0%, 35% { opacity: 0; }
-      38%, 63% { opacity: 1; }
-      66%, 100% { opacity: 0; }
+      37%, 47% { opacity: 1; }
+      49%, 85% { opacity: 0; }
+      87%, 97% { opacity: 1; }
+      99%, 100% { opacity: 0; }
     }
 
     /* Purple glow border on "Both" state */
     .mc-glow-border {
-      position: absolute;
-      inset: -4px;
-      border-radius: 20px;
-      background: linear-gradient(135deg, #8B7082, #612a4f, #8B7082);
-      opacity: 0;
-      z-index: -1;
-      animation: glow-border 16s infinite;
-      filter: blur(8px);
-    }
-
-    @keyframes glow-border {
-      0%, 35% { opacity: 0; }
-      38% { opacity: 0.6; }
-      50%, 60% { opacity: 0.4; }
-      66%, 100% { opacity: 0; }
+      display: none;
     }
 
     /* Shimmer sweep effect */
@@ -3986,37 +3981,22 @@
     }
 
     @keyframes cursor-path {
-      0% {
-        opacity: 1;
-        top: -28px;
-        left: 200px;
-      }
-      /* Move to Content Calendar tab */
-      18% {
-        top: -28px;
-        left: 200px;
-      }
-      22% {
-        top: -28px;
-        left: 370px;
-      }
-      /* Move to Both tab */
-      30% {
-        top: -28px;
-        left: 370px;
-      }
-      35% {
-        top: -28px;
-        left: 498px;
-      }
-      87.5% {
-        opacity: 1;
-        top: -28px;
-        left: 498px;
-      }
-      93.75%, 100% {
-        opacity: 0;
-      }
+      /* Cycle 1 */
+      0% { opacity: 1; top: -28px; left: 200px; }
+      16% { top: -28px; left: 200px; }
+      18% { top: -28px; left: 370px; }
+      32% { top: -28px; left: 370px; }
+      35% { top: -28px; left: 498px; }
+      47% { opacity: 1; top: -28px; left: 498px; }
+      49% { opacity: 0; }
+      /* Cycle 2 */
+      50% { opacity: 1; top: -28px; left: 200px; }
+      66% { top: -28px; left: 200px; }
+      68% { top: -28px; left: 370px; }
+      82% { top: -28px; left: 370px; }
+      85% { top: -28px; left: 498px; }
+      97% { opacity: 1; top: -28px; left: 498px; }
+      99%, 100% { opacity: 0; }
     }
 
     /* Ghost flying events */
@@ -4038,30 +4018,15 @@
     }
 
     @keyframes ghost-fly {
-      0% {
-        opacity: 0;
-        transform: translate(900px, 200px) scale(0.75);
-      }
-      3% {
-        opacity: 0;
-        transform: translate(900px, 200px) scale(0.75);
-      }
-      7% {
-        opacity: 1;
-        transform: translate(0, 0) scale(1);
-      }
-      18% {
-        opacity: 1;
-        transform: translate(0, 0) scale(1);
-      }
-      22% {
-        opacity: 0;
-        transform: translate(0, 0) scale(0.9);
-      }
-      96%, 100% {
-        opacity: 0;
-        transform: translate(900px, 200px) scale(0.75);
-      }
+      0%, 3% { opacity: 0; transform: translate(900px, 200px) scale(0.75); }
+      7%     { opacity: 1; transform: translate(0, 0) scale(1); }
+      17%    { opacity: 1; transform: translate(0, 0) scale(1); }
+      20%    { opacity: 0; transform: translate(0, 0) scale(0.9); }
+      49%    { opacity: 0; transform: translate(900px, 200px) scale(0.75); }
+      53%    { opacity: 1; transform: translate(0, 0) scale(1); }
+      67%    { opacity: 1; transform: translate(0, 0) scale(1); }
+      70%    { opacity: 0; transform: translate(0, 0) scale(0.9); }
+      100%   { opacity: 0; transform: translate(900px, 200px) scale(0.75); }
     }
 
     .mc-ghost-event-2 {
@@ -4084,9 +4049,13 @@
     @keyframes ghost-fly-2 {
       0%, 5% { opacity: 0; transform: translate(900px, 200px) scale(0.75); }
       9%     { opacity: 1; transform: translate(0, 0) scale(1); }
-      18%    { opacity: 1; transform: translate(0, 0) scale(1); }
-      22%    { opacity: 0; transform: translate(0, 0) scale(0.9); }
-      96%, 100% { opacity: 0; transform: translate(900px, 200px) scale(0.75); }
+      17%    { opacity: 1; transform: translate(0, 0) scale(1); }
+      20%    { opacity: 0; transform: translate(0, 0) scale(0.9); }
+      49%    { opacity: 0; transform: translate(900px, 200px) scale(0.75); }
+      55%    { opacity: 1; transform: translate(0, 0) scale(1); }
+      67%    { opacity: 1; transform: translate(0, 0) scale(1); }
+      70%    { opacity: 0; transform: translate(0, 0) scale(0.9); }
+      100%   { opacity: 0; transform: translate(900px, 200px) scale(0.75); }
     }
 
     .mc-ghost-event-3 {
@@ -4109,9 +4078,13 @@
     @keyframes ghost-fly-3 {
       0%, 7%  { opacity: 0; transform: translate(900px, 200px) scale(0.75); }
       11%     { opacity: 1; transform: translate(0, 0) scale(1); }
-      18%     { opacity: 1; transform: translate(0, 0) scale(1); }
-      22%     { opacity: 0; transform: translate(0, 0) scale(0.9); }
-      96%, 100% { opacity: 0; transform: translate(900px, 200px) scale(0.75); }
+      17%     { opacity: 1; transform: translate(0, 0) scale(1); }
+      20%     { opacity: 0; transform: translate(0, 0) scale(0.9); }
+      49%     { opacity: 0; transform: translate(900px, 200px) scale(0.75); }
+      57%     { opacity: 1; transform: translate(0, 0) scale(1); }
+      67%     { opacity: 1; transform: translate(0, 0) scale(1); }
+      70%     { opacity: 0; transform: translate(0, 0) scale(0.9); }
+      100%    { opacity: 0; transform: translate(900px, 200px) scale(0.75); }
     }
 
     /* Click rings */
@@ -4145,24 +4118,33 @@
     }
 
     @keyframes click-ring-tasks {
-      0%, 4% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
-      5% { opacity: 0.8; transform: translate(-50%, -50%) scale(0.5); }
-      8% { opacity: 0; transform: translate(-50%, -50%) scale(1.2); }
-      100% { opacity: 0; }
+      0%, 2%   { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
+      3%       { opacity: 0.8; transform: translate(-50%, -50%) scale(0.5); }
+      6%       { opacity: 0; transform: translate(-50%, -50%) scale(1.2); }
+      50%, 52% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
+      53%      { opacity: 0.8; transform: translate(-50%, -50%) scale(0.5); }
+      56%      { opacity: 0; transform: translate(-50%, -50%) scale(1.2); }
+      100%     { opacity: 0; }
     }
 
     @keyframes click-ring-content {
-      0%, 21% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
-      22% { opacity: 0.8; transform: translate(-50%, -50%) scale(0.5); }
-      25% { opacity: 0; transform: translate(-50%, -50%) scale(1.2); }
-      100% { opacity: 0; }
+      0%, 17%  { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
+      18%      { opacity: 0.8; transform: translate(-50%, -50%) scale(0.5); }
+      21%      { opacity: 0; transform: translate(-50%, -50%) scale(1.2); }
+      50%, 67% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
+      68%      { opacity: 0.8; transform: translate(-50%, -50%) scale(0.5); }
+      71%      { opacity: 0; transform: translate(-50%, -50%) scale(1.2); }
+      100%     { opacity: 0; }
     }
 
     @keyframes click-ring-both {
-      0%, 34% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
-      35% { opacity: 0.8; transform: translate(-50%, -50%) scale(0.5); }
-      38% { opacity: 0; transform: translate(-50%, -50%) scale(1.2); }
-      100% { opacity: 0; }
+      0%, 34%  { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
+      35%      { opacity: 0.8; transform: translate(-50%, -50%) scale(0.5); }
+      38%      { opacity: 0; transform: translate(-50%, -50%) scale(1.2); }
+      50%, 84% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
+      85%      { opacity: 0.8; transform: translate(-50%, -50%) scale(0.5); }
+      88%      { opacity: 0; transform: translate(-50%, -50%) scale(1.2); }
+      100%     { opacity: 0; }
     }
 
     /* Google Calendar Card */
@@ -4184,9 +4166,13 @@
     @keyframes gcal-slide {
       0% { opacity: 0; transform: translateY(16px); }
       3% { opacity: 1; transform: translateY(0); }
-      18% { opacity: 1; transform: translateY(0); }
-      22% { opacity: 0; transform: translateY(8px); }
-      96%, 100% { opacity: 0; transform: translateY(16px); }
+      17% { opacity: 1; transform: translateY(0); }
+      20% { opacity: 0; transform: translateY(8px); }
+      49% { opacity: 0; transform: translateY(16px); }
+      53% { opacity: 1; transform: translateY(0); }
+      67% { opacity: 1; transform: translateY(0); }
+      70% { opacity: 0; transform: translateY(8px); }
+      100% { opacity: 0; transform: translateY(16px); }
     }
 
     .gcal-header {
@@ -4320,11 +4306,11 @@
     }
 
     @keyframes toast-bounce {
-      0%, 50% { opacity: 0; transform: translateY(20px) scale(0.9); }
-      53% { opacity: 1; transform: translateY(-5px) scale(1.02); }
-      56% { opacity: 1; transform: translateY(0) scale(1); }
-      62% { opacity: 1; transform: translateY(0) scale(1); }
-      66%, 100% { opacity: 0; transform: translateY(20px) scale(0.9); }
+      0%, 38% { opacity: 0; transform: translateY(20px) scale(0.9); }
+      41% { opacity: 1; transform: translateY(-5px) scale(1.02); }
+      43% { opacity: 1; transform: translateY(0) scale(1); }
+      47% { opacity: 1; transform: translateY(0) scale(1); }
+      51%, 100% { opacity: 0; transform: translateY(20px) scale(0.9); }
     }
 
     .mc-toast-icon {
@@ -6309,10 +6295,14 @@
         css += `
           @keyframes ghost-fly {
             0%, 3% { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); }
-            7%      { opacity: 1; transform: translate(0, 0) scale(1); }
-            18%     { opacity: 1; transform: translate(0, 0) scale(1); }
-            22%     { opacity: 0; transform: translate(0, 0) scale(0.9); }
-            96%, 100% { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); }
+            7%     { opacity: 1; transform: translate(0, 0) scale(1); }
+            17%    { opacity: 1; transform: translate(0, 0) scale(1); }
+            20%    { opacity: 0; transform: translate(0, 0) scale(0.9); }
+            49%    { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); }
+            53%    { opacity: 1; transform: translate(0, 0) scale(1); }
+            67%    { opacity: 1; transform: translate(0, 0) scale(1); }
+            70%    { opacity: 0; transform: translate(0, 0) scale(0.9); }
+            100%   { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); }
           }
         `;
       }
@@ -6326,10 +6316,14 @@
         css += `
           @keyframes ghost-fly-2 {
             0%, 5% { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); }
-            9%      { opacity: 1; transform: translate(0, 0) scale(1); }
-            18%     { opacity: 1; transform: translate(0, 0) scale(1); }
-            22%     { opacity: 0; transform: translate(0, 0) scale(0.9); }
-            96%, 100% { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); }
+            9%     { opacity: 1; transform: translate(0, 0) scale(1); }
+            17%    { opacity: 1; transform: translate(0, 0) scale(1); }
+            20%    { opacity: 0; transform: translate(0, 0) scale(0.9); }
+            49%    { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); }
+            55%    { opacity: 1; transform: translate(0, 0) scale(1); }
+            67%    { opacity: 1; transform: translate(0, 0) scale(1); }
+            70%    { opacity: 0; transform: translate(0, 0) scale(0.9); }
+            100%   { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); }
           }
         `;
       }
@@ -6344,9 +6338,13 @@
           @keyframes ghost-fly-3 {
             0%, 7%  { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); }
             11%     { opacity: 1; transform: translate(0, 0) scale(1); }
-            18%     { opacity: 1; transform: translate(0, 0) scale(1); }
-            22%     { opacity: 0; transform: translate(0, 0) scale(0.9); }
-            96%, 100% { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); }
+            17%     { opacity: 1; transform: translate(0, 0) scale(1); }
+            20%     { opacity: 0; transform: translate(0, 0) scale(0.9); }
+            49%     { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); }
+            57%     { opacity: 1; transform: translate(0, 0) scale(1); }
+            67%     { opacity: 1; transform: translate(0, 0) scale(1); }
+            70%     { opacity: 0; transform: translate(0, 0) scale(0.9); }
+            100%    { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); }
           }
         `;
       }
