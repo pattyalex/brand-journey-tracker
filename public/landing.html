@@ -6,7 +6,7 @@
   <title>HeyMeg — Your Content is a Business</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Instrument+Serif:ital@0;1&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
       --brand: #8B7082;
@@ -3738,6 +3738,485 @@
       margin-top: 4px;
     }
 
+    /* ==================== MASTER CALENDAR SECTION ==================== */
+    .master-calendar-section {
+      background: #fcfafe;
+      padding: 60px 0 100px;
+      position: relative;
+      overflow: visible;
+    }
+
+    .mc-header {
+      text-align: center;
+      margin-bottom: 40px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .mc-label {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--brand);
+      margin-bottom: 12px;
+      padding: 6px 14px;
+      background: rgba(139, 112, 130, 0.1);
+      border-radius: 20px;
+    }
+
+    .mc-title {
+      font-family: 'Playfair Display', 'Instrument Serif', Georgia, serif;
+      font-size: 2.5rem;
+      font-weight: 500;
+      color: var(--text-dark);
+      margin-bottom: 12px;
+      line-height: 1.2;
+    }
+
+    .mc-subtitle {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .mc-demo-container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 24px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Calendar Wrapper */
+    .mc-3d-wrapper {
+      position: relative;
+    }
+
+    .mc-calendar-tilt {
+      position: relative;
+      border-radius: 20px;
+      overflow: visible;
+    }
+
+    /* Stacked Calendar Images */
+    .mc-calendar-stack {
+      position: relative;
+      width: 420px;
+      aspect-ratio: 1172 / 1560;
+    }
+
+    .mc-cal-img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 12px;
+      box-shadow: 0 12px 40px rgba(97, 42, 79, 0.12);
+      opacity: 0;
+      transition: box-shadow 0.5s ease;
+    }
+
+    .mc-cal-img.tasks { animation: cal-tasks 16s infinite; }
+    .mc-cal-img.content { animation: cal-content 16s infinite; }
+    .mc-cal-img.both { animation: cal-both 16s infinite; }
+
+    @keyframes cal-tasks {
+      0%, 22% { opacity: 1; }
+      25%, 93% { opacity: 0; }
+      96%, 100% { opacity: 1; }
+    }
+
+    @keyframes cal-content {
+      0%, 22% { opacity: 0; }
+      25%, 35% { opacity: 1; }
+      38%, 100% { opacity: 0; }
+    }
+
+    @keyframes cal-both {
+      0%, 35% { opacity: 0; }
+      38%, 87.5% { opacity: 1; }
+      93.75%, 100% { opacity: 0; }
+    }
+
+    /* Purple glow border on "Both" state */
+    .mc-glow-border {
+      position: absolute;
+      inset: -4px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #8B7082, #612a4f, #8B7082);
+      opacity: 0;
+      z-index: -1;
+      animation: glow-border 16s infinite;
+      filter: blur(8px);
+    }
+
+    @keyframes glow-border {
+      0%, 35% { opacity: 0; }
+      38% { opacity: 0.6; }
+      50%, 80% { opacity: 0.4; }
+      93.75%, 100% { opacity: 0; }
+    }
+
+    /* Shimmer sweep effect */
+    .mc-shimmer {
+      position: absolute;
+      inset: 0;
+      border-radius: 16px;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255,255,255,0.4) 50%,
+        transparent 100%
+      );
+      transform: translateX(-100%);
+      opacity: 0;
+      animation: shimmer-sweep 16s infinite;
+      pointer-events: none;
+    }
+
+    @keyframes shimmer-sweep {
+      0%, 37% { transform: translateX(-100%); opacity: 0; }
+      38% { transform: translateX(-100%); opacity: 1; }
+      44% { transform: translateX(100%); opacity: 1; }
+      45%, 100% { opacity: 0; }
+    }
+
+    /* Fake Cursor */
+    .mc-cursor {
+      position: absolute;
+      width: 32px;
+      height: 32px;
+      z-index: 100;
+      pointer-events: none;
+      opacity: 0;
+      animation: cursor-path 16s infinite;
+    }
+
+    .mc-cursor svg {
+      width: 100%;
+      height: 100%;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    }
+
+    @keyframes cursor-path {
+      0% {
+        opacity: 1;
+        top: 30px;
+        left: 120px;
+      }
+      /* Move to Content Calendar tab */
+      18% {
+        top: 30px;
+        left: 120px;
+      }
+      22% {
+        top: 30px;
+        left: 250px;
+      }
+      /* Move to Both tab */
+      30% {
+        top: 30px;
+        left: 250px;
+      }
+      35% {
+        top: 30px;
+        left: 365px;
+      }
+      87.5% {
+        opacity: 1;
+        top: 30px;
+        left: 365px;
+      }
+      93.75%, 100% {
+        opacity: 0;
+      }
+    }
+
+    /* Click rings */
+    .mc-click-ring {
+      position: absolute;
+      width: 32px;
+      height: 32px;
+      border: 2px solid var(--brand);
+      border-radius: 50%;
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, -50%) scale(0.3);
+    }
+
+    .mc-click-ring.tasks-tab {
+      top: 38px;
+      left: 130px;
+      animation: click-ring-tasks 16s infinite;
+    }
+
+    .mc-click-ring.content-tab {
+      top: 38px;
+      left: 260px;
+      animation: click-ring-content 16s infinite;
+    }
+
+    .mc-click-ring.both-tab {
+      top: 38px;
+      left: 375px;
+      animation: click-ring-both 16s infinite;
+    }
+
+    @keyframes click-ring-tasks {
+      0%, 4% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
+      5% { opacity: 0.8; transform: translate(-50%, -50%) scale(0.5); }
+      8% { opacity: 0; transform: translate(-50%, -50%) scale(1.2); }
+      100% { opacity: 0; }
+    }
+
+    @keyframes click-ring-content {
+      0%, 21% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
+      22% { opacity: 0.8; transform: translate(-50%, -50%) scale(0.5); }
+      25% { opacity: 0; transform: translate(-50%, -50%) scale(1.2); }
+      100% { opacity: 0; }
+    }
+
+    @keyframes click-ring-both {
+      0%, 34% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
+      35% { opacity: 0.8; transform: translate(-50%, -50%) scale(0.5); }
+      38% { opacity: 0; transform: translate(-50%, -50%) scale(1.2); }
+      100% { opacity: 0; }
+    }
+
+    /* Google Calendar Card */
+    .gcal-card {
+      position: absolute;
+      left: -230px;
+      top: 120px;
+      width: 200px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.08);
+      padding: 14px;
+      opacity: 0;
+      z-index: 10;
+      animation: gcal-slide 16s infinite;
+    }
+
+    @keyframes gcal-slide {
+      0%, 50% { opacity: 0; transform: translateX(-40px); }
+      56% { opacity: 1; transform: translateX(0); }
+      68% { opacity: 1; transform: translateX(0); }
+      75% { opacity: 0; transform: translateX(-20px); }
+      100% { opacity: 0; transform: translateX(-40px); }
+    }
+
+    .gcal-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .gcal-logo {
+      width: 28px;
+      height: 28px;
+    }
+
+    .gcal-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .gcal-title span {
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 400;
+      color: #888;
+      margin-top: 2px;
+    }
+
+    .gcal-event {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      margin-bottom: 6px;
+      border-radius: 6px;
+      background: #f8f8f8;
+      font-size: 0.8rem;
+      color: #333;
+      opacity: 1;
+      transform: translateX(0);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .gcal-event .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .gcal-event.blue .dot { background: #4285f4; }
+    .gcal-event.green .dot { background: #34a853; }
+    .gcal-event.yellow .dot { background: #fbbc04; }
+
+    .gcal-event.flying {
+      opacity: 0;
+      transform: translateX(300px) scale(0.5);
+    }
+
+    /* Event landing flashes */
+    .mc-event-flash {
+      position: absolute;
+      width: 50px;
+      height: 18px;
+      border-radius: 4px;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 50;
+    }
+
+    .mc-event-flash.blue {
+      background: rgba(66, 133, 244, 0.6);
+      top: 140px;
+      left: 100px;
+      animation: event-land-blue 16s infinite;
+    }
+
+    .mc-event-flash.green {
+      background: rgba(52, 168, 83, 0.6);
+      top: 200px;
+      left: 220px;
+      animation: event-land-green 16s infinite;
+    }
+
+    .mc-event-flash.yellow {
+      background: rgba(251, 188, 4, 0.6);
+      top: 260px;
+      left: 350px;
+      animation: event-land-yellow 16s infinite;
+    }
+
+    @keyframes event-land-blue {
+      0%, 62.5% { opacity: 0; transform: scale(0.5); }
+      65.625% { opacity: 1; transform: scale(1.2); }
+      68.75% { opacity: 0.3; transform: scale(1); }
+      75%, 100% { opacity: 0; }
+    }
+
+    @keyframes event-land-green {
+      0%, 65.625% { opacity: 0; transform: scale(0.5); }
+      68.75% { opacity: 1; transform: scale(1.2); }
+      71.875% { opacity: 0.3; transform: scale(1); }
+      78%, 100% { opacity: 0; }
+    }
+
+    @keyframes event-land-yellow {
+      0%, 68.75% { opacity: 0; transform: scale(0.5); }
+      71.875% { opacity: 1; transform: scale(1.2); }
+      75% { opacity: 0.3; transform: scale(1); }
+      81%, 100% { opacity: 0; }
+    }
+
+    /* Sync Toast */
+    .mc-sync-toast {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.1);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      opacity: 0;
+      transform: translateY(20px) scale(0.9);
+      z-index: 100;
+      animation: toast-bounce 16s infinite;
+    }
+
+    @keyframes toast-bounce {
+      0%, 71.875% { opacity: 0; transform: translateY(20px) scale(0.9); }
+      75% { opacity: 1; transform: translateY(-5px) scale(1.02); }
+      78.125% { opacity: 1; transform: translateY(0) scale(1); }
+      87.5% { opacity: 1; transform: translateY(0) scale(1); }
+      93.75%, 100% { opacity: 0; transform: translateY(20px) scale(0.9); }
+    }
+
+    .mc-toast-icon {
+      width: 24px;
+      height: 24px;
+      background: #34a853;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .mc-toast-icon svg {
+      width: 14px;
+      height: 14px;
+      stroke: white;
+      stroke-width: 3;
+    }
+
+    .mc-toast-text {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .mc-toast-text span {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 400;
+      color: #888;
+      margin-top: 2px;
+    }
+
+    /* Master Calendar Responsive */
+    @media (max-width: 1100px) {
+      .gcal-card {
+        display: none;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .mc-calendar-stack {
+        max-width: 350px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .mc-title {
+        font-size: 2rem;
+      }
+
+      .mc-subtitle {
+        font-size: 1rem;
+      }
+
+      .mc-calendar-stack {
+        max-width: 100%;
+      }
+
+      .mc-cursor,
+      .mc-click-ring,
+      .mc-event-flash,
+      .mc-sync-toast {
+        display: none;
+      }
+    }
+
     /* ==================== SUPPORTING FEATURES SECTION ==================== */
     .supporting-section {
       position: relative;
@@ -3768,6 +4247,11 @@
       max-width: 1100px;
       margin: 0 auto;
       padding: 0 24px;
+    }
+
+    .bento-cards.bento-cards-single {
+      grid-template-columns: 1fr;
+      max-width: 550px;
     }
 
     .bento-card-new {
@@ -4918,6 +5402,90 @@
     </div>
   </section>
 
+  <!-- Master Calendar Section -->
+  <section class="master-calendar-section reveal">
+    <div class="mc-header">
+      <div class="mc-label">PLANNER</div>
+      <h2 class="mc-title">Master Calendar</h2>
+      <p class="mc-subtitle">Plan your content and your tasks — together</p>
+    </div>
+
+    <div class="mc-demo-container">
+      <div class="mc-3d-wrapper">
+        <!-- Google Calendar Card -->
+        <div class="gcal-card" id="gcalCard">
+          <div class="gcal-header">
+            <svg class="gcal-logo" viewBox="0 0 200 200">
+              <rect x="40" y="40" width="120" height="120" rx="10" fill="#fff" stroke="#ddd" stroke-width="4"/>
+              <rect x="55" y="30" width="16" height="30" rx="4" fill="#4285f4"/>
+              <rect x="130" y="30" width="16" height="30" rx="4" fill="#4285f4"/>
+              <rect x="55" y="80" width="30" height="25" rx="4" fill="#ea4335"/>
+              <rect x="95" y="80" width="50" height="25" rx="4" fill="#fbbc04"/>
+              <rect x="55" y="115" width="50" height="25" rx="4" fill="#34a853"/>
+              <rect x="115" y="115" width="30" height="25" rx="4" fill="#4285f4"/>
+            </svg>
+            <div class="gcal-title">
+              Google Calendar
+              <span>3 events this week</span>
+            </div>
+          </div>
+          <div class="gcal-event blue" id="event1">
+            <span class="dot"></span>
+            Dentist
+          </div>
+          <div class="gcal-event green" id="event2">
+            <span class="dot"></span>
+            Coffee with Sarah
+          </div>
+          <div class="gcal-event yellow" id="event3">
+            <span class="dot"></span>
+            Yoga Class
+          </div>
+        </div>
+
+        <div class="mc-calendar-tilt">
+          <div class="mc-glow-border"></div>
+          <div class="mc-calendar-stack">
+            <img src="cal-tasks.png" alt="Tasks Calendar" class="mc-cal-img tasks">
+            <img src="cal-content.png" alt="Content Calendar" class="mc-cal-img content">
+            <img src="cal-both.png" alt="Combined Calendar" class="mc-cal-img both">
+            <div class="mc-shimmer"></div>
+          </div>
+
+          <!-- Fake Cursor (macOS style) -->
+          <div class="mc-cursor">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 2L4 20L8.5 15.5L12 22L14.5 21L11 14.5L17 14.5L4 2Z" fill="#4a3f4a" stroke="white" stroke-width="1" stroke-linejoin="round"/>
+            </svg>
+          </div>
+
+          <!-- Click Rings -->
+          <div class="mc-click-ring tasks-tab"></div>
+          <div class="mc-click-ring content-tab"></div>
+          <div class="mc-click-ring both-tab"></div>
+
+          <!-- Event Landing Flashes -->
+          <div class="mc-event-flash blue"></div>
+          <div class="mc-event-flash green"></div>
+          <div class="mc-event-flash yellow"></div>
+
+          <!-- Sync Toast -->
+          <div class="mc-sync-toast">
+            <div class="mc-toast-icon">
+              <svg viewBox="0 0 24 24" fill="none">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </div>
+            <div class="mc-toast-text">
+              Google Calendar synced
+              <span>3 events imported</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- Supporting Features Section -->
   <section class="supporting-section reveal">
     <div class="supporting-header">
@@ -4930,20 +5498,8 @@
       <h2>The rest of your workflow, covered</h2>
     </div>
 
-    <div class="bento-cards">
-      <!-- Card 1: Calendar -->
-      <div class="bento-card-new">
-        <div class="bento-card-text">
-          <span class="bento-label">Planner</span>
-          <h3>Master Calendar</h3>
-          <p>Plan your content and your tasks</p>
-        </div>
-        <div class="bento-card-preview">
-          <img src="planner-preview.png" alt="HeyMeg Tasks Calendar">
-        </div>
-      </div>
-
-      <!-- Card 2: Goals -->
+    <div class="bento-cards bento-cards-single">
+      <!-- Card: Goals -->
       <div class="bento-card-new">
         <div class="bento-card-text">
           <span class="bento-label">Strategy</span>
@@ -5523,6 +6079,39 @@
       }, { threshold: 0.3 });
 
       constellationObserver.observe(constellationContainer);
+    }
+
+    // Master Calendar - Google Calendar event fly-out animation
+    function animateGcalEvents() {
+      const events = ['event1', 'event2', 'event3'];
+      const delays = [9500, 10000, 10500]; // staggered timing
+
+      function runCycle() {
+        // Reset events
+        events.forEach(id => {
+          document.getElementById(id)?.classList.remove('flying');
+        });
+
+        // Trigger fly animations
+        events.forEach((id, i) => {
+          setTimeout(() => {
+            document.getElementById(id)?.classList.add('flying');
+          }, delays[i]);
+        });
+      }
+
+      // Initial run
+      runCycle();
+
+      // Repeat every 16 seconds
+      setInterval(runCycle, 16000);
+    }
+
+    // Start event animation when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', animateGcalEvents);
+    } else {
+      animateGcalEvents();
     }
   </script>
 </body>
