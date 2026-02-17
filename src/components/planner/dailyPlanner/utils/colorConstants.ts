@@ -199,7 +199,7 @@ export const scheduleColors: Record<string, { bg: string; text: string }> = {
 };
 
 // Default color for all scheduled content cards
-export const defaultScheduledColor = { bg: '#8B7082', text: '#ffffff' };
+export const defaultScheduledColor = { bg: '#612a4f', text: '#ffffff' };
 
 // Helper to determine if a hex color is dark (for contrast purposes)
 export const isColorDark = (hex: string | undefined): boolean => {

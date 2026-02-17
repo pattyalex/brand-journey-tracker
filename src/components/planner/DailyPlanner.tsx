@@ -1132,6 +1132,7 @@ export const DailyPlanner = () => {
         content={contentDialogState.content}
         type={contentDialogState.type}
         onSave={() => helpers.loadProductionContent()}
+        onOpenFullFlow={(cardId) => setContentFlowCardId(cardId)}
       />
 
       {/* Standalone Content Flow (for scheduled content) */}
