@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { addDays, format } from "date-fns";
 import { Trash2, Video, Lightbulb, X, Clock, FileText, ArrowRight, ListTodo, Check, GripHorizontal, Calendar, ExternalLink } from "lucide-react";
+import { SiInstagram, SiTiktok, SiYoutube, SiFacebook, SiLinkedin } from "react-icons/si";
+import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
 import { Input } from "@/components/ui/input";
 import { autoFormatTime } from "../utils/timeUtils";
 import { toast } from "sonner";
@@ -100,6 +102,17 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
   const contentColorPalette = useColorPalette();
   const contentColor = contentColorPalette.selectedColor;
   const setContentColor = contentColorPalette.setSelectedColor;
+
+  // Content hover tooltip state
+  const [contentTooltip, setContentTooltip] = useState<{
+    text: string;
+    timeStr: string;
+    isPlanned: boolean;
+    platforms?: string[];
+    formats?: string[];
+    x: number;
+    y: number;
+  } | null>(null);
 
   // Dialog drag state
   const [dialogDragOffset, setDialogDragOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -1246,17 +1259,27 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                   data-start-minutes={startTotalMinutes}
                   data-duration-minutes={durationMinutes}
                   onClick={() => {
-                    if (isPlanned) {
-                      onOpenContentDialog?.(content, 'planned');
-                    } else {
-                      // Open content flow dialog directly for scheduled content
-                      onOpenContentFlow?.(content.id);
-                    }
+                    onOpenContentDialog?.(content, isPlanned ? 'planned' : 'scheduled');
                   }}
-                  className={cn(
-                    "absolute rounded-2xl cursor-pointer hover:brightness-95 overflow-hidden group border-l-4",
-                    "shadow-[0_2px_8px_rgba(139,112,130,0.25)] hover:shadow-[0_4px_12px_rgba(139,112,130,0.35)]"
-                  )}
+                  onMouseEnter={(e) => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const derivedFormats = [...(content.formats || [])];
+                    if (content.contentType === 'image') {
+                      const imageLabel = content.imageMode === 'carousel' ? 'Carousel' : 'Image';
+                      if (!derivedFormats.includes(imageLabel)) derivedFormats.unshift(imageLabel);
+                    }
+                    setContentTooltip({
+                      text: content.hook || content.title || '',
+                      timeStr: `${convert24To12Hour(startTimeStr)} – ${convert24To12Hour(endTimeStr)}`,
+                      isPlanned,
+                      platforms: content.platforms || [],
+                      formats: derivedFormats,
+                      x: rect.left,
+                      y: rect.bottom + 8,
+                    });
+                  }}
+                  onMouseLeave={() => setContentTooltip(null)}
+                  className="absolute rounded-2xl cursor-pointer hover:brightness-95 group border-l-4 overflow-hidden shadow-[0_2px_8px_rgba(139,112,130,0.25)] hover:shadow-[0_4px_12px_rgba(139,112,130,0.35)]"
                   style={{
                     top: `${top}px`,
                     height: `${height}px`,
@@ -1264,12 +1287,12 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                     ...(showTasks ? { right: 0, width: '45%' } : { left: 0, width: '88%' }),
                     background: isPlanned
                       ? 'linear-gradient(180deg, #FFFFFF 0%, #F5F2F4 50%, #E0D5DC 100%)'
-                      : 'linear-gradient(180deg, #A08898 0%, #8B7082 50%, #5A4052 100%)',
+                      : 'linear-gradient(135deg, #7a3868 0%, #612a4f 50%, #4e2040 100%)',
                     borderLeftColor: isPlanned ? '#B8A0AD' : '#4a2a3f',
                     zIndex: 20,
                   }}
                 >
-                  <div className="p-2 h-full flex flex-col">
+                  <div className="p-2 h-full flex flex-col overflow-hidden">
                     <div className="flex items-start gap-1.5">
                       {isPlanned ? (
                         <Lightbulb className="w-3.5 h-3.5 text-[#8B7082] flex-shrink-0 mt-0.5" />
@@ -1688,6 +1711,77 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
           </div>
         </div>
       )}
+
+      {/* Fixed-position content tooltip — renders above all stacking contexts */}
+      {contentTooltip && (() => {
+        const platformIconMap: Record<string, React.ReactNode> = {
+          instagram: <SiInstagram style={{ color: '#ffffff' }} />,
+          tiktok: <SiTiktok style={{ color: '#ffffff' }} />,
+          youtube: <SiYoutube style={{ color: '#ffffff' }} />,
+          facebook: <SiFacebook style={{ color: '#ffffff' }} />,
+          linkedin: <SiLinkedin style={{ color: '#ffffff' }} />,
+          x: <RiTwitterXLine style={{ color: '#ffffff' }} />,
+          twitter: <RiTwitterXLine style={{ color: '#ffffff' }} />,
+          threads: <RiThreadsLine style={{ color: '#ffffff' }} />,
+        };
+        const platforms = contentTooltip.platforms || [];
+        const formats = contentTooltip.formats || [];
+        return (
+          <div
+            className="pointer-events-none px-3 py-2.5 rounded-xl text-white text-[11px] leading-snug shadow-xl"
+            style={{
+              position: 'fixed',
+              left: contentTooltip.x,
+              top: contentTooltip.y,
+              background: contentTooltip.isPlanned
+                ? 'linear-gradient(135deg, #9a8090 0%, #7a6070 100%)'
+                : 'linear-gradient(135deg, #7a3868 0%, #4e2040 100%)',
+              zIndex: 99999,
+              maxWidth: '240px',
+            }}
+          >
+            <p className="font-semibold whitespace-normal">{contentTooltip.text}</p>
+            <p className="opacity-75 mt-0.5 text-[10px]">{contentTooltip.timeStr}</p>
+
+            {/* Formats */}
+            {formats.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-2">
+                {formats.map(f => (
+                  <span
+                    key={f}
+                    className="px-1.5 py-0.5 rounded-md text-[10px] font-medium"
+                    style={{ background: 'rgba(255,255,255,0.18)', whiteSpace: 'nowrap' }}
+                  >
+                    {f}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Platform icons */}
+            {platforms.length > 0 && (
+              <div className="flex items-center gap-1.5 mt-2">
+                {platforms.map(p => {
+                  const icon = platformIconMap[p.toLowerCase()];
+                  return icon ? (
+                    <span key={p} className="text-[14px] leading-none" title={p}>
+                      {icon}
+                    </span>
+                  ) : (
+                    <span
+                      key={p}
+                      className="px-1.5 py-0.5 rounded text-[10px]"
+                      style={{ background: 'rgba(255,255,255,0.18)' }}
+                    >
+                      {p}
+                    </span>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+      })()}
     </>
   );
 };

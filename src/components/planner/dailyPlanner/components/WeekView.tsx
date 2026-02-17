@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { addDays, eachDayOfInterval, endOfWeek, format, isSameDay, startOfWeek } from "date-fns";
 import { Trash2, Video, Lightbulb, X, Clock, FileText, ArrowRight, ListTodo, Check, GripHorizontal, Calendar, ExternalLink } from "lucide-react";
+import { SiInstagram, SiTiktok, SiYoutube, SiFacebook, SiLinkedin } from "react-icons/si";
+import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
 import { Input } from "@/components/ui/input";
 import { autoFormatTime } from "../utils/timeUtils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -203,6 +205,17 @@ export const WeekView = ({
   const contentColorPalette = useColorPalette();
   const contentColor = contentColorPalette.selectedColor;
   const setContentColor = contentColorPalette.setSelectedColor;
+
+  // Content hover tooltip state
+  const [contentTooltip, setContentTooltip] = useState<{
+    text: string;
+    timeStr: string;
+    isPlanned: boolean;
+    platforms?: string[];
+    formats?: string[];
+    x: number;
+    y: number;
+  } | null>(null);
 
   // Dialog drag state
   const [dialogDragOffset, setDialogDragOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -688,20 +701,40 @@ export const WeekView = ({
                                   const fromDate = e.dataTransfer.getData('fromDate');
                                   const fromAllTasks = e.dataTransfer.getData('fromAllTasks');
 
-                                  // Handle content drops (move between days)
+                                  // Handle content drops (move between days AND update time slot)
                                   if (contentId && contentType) {
                                     const savedData = getString(StorageKeys.productionKanban);
                                     if (savedData) {
                                       try {
                                         const columns: KanbanColumn[] = JSON.parse(savedData);
 
+                                        // Calculate new time from drop position
+                                        const rect = e.currentTarget.getBoundingClientRect();
+                                        const relativeY = e.clientY - rect.top;
+                                        const minuteFraction = relativeY / (48 * weeklyZoomLevel);
+                                        const rawMinute = Math.floor(minuteFraction * 60);
+                                        const roundedMinute = Math.round(rawMinute / 30) * 30;
+                                        const newStartTime = `${hour.toString().padStart(2, '0')}:${roundedMinute.toString().padStart(2, '0')}`;
+
                                         if (contentType === 'scheduled') {
                                           const toScheduleColumn = columns.find(c => c.id === 'to-schedule');
                                           if (toScheduleColumn) {
                                             const card = toScheduleColumn.cards.find(c => c.id === contentId);
                                             if (card) {
+                                              // Preserve original duration
+                                              let durationMinutes = 60;
+                                              if (card.scheduledStartTime && card.scheduledEndTime) {
+                                                const [sH, sM] = card.scheduledStartTime.split(':').map(Number);
+                                                const [eH, eM] = card.scheduledEndTime.split(':').map(Number);
+                                                durationMinutes = (eH * 60 + eM) - (sH * 60 + sM);
+                                              }
+                                              const newStartMinutes = hour * 60 + roundedMinute;
+                                              const newEndMinutes = newStartMinutes + Math.max(durationMinutes, 30);
+                                              const newEndTime = `${Math.floor(newEndMinutes / 60).toString().padStart(2, '0')}:${(newEndMinutes % 60).toString().padStart(2, '0')}`;
                                               card.scheduledDate = dayString;
                                               card.schedulingStatus = 'scheduled';
+                                              card.scheduledStartTime = newStartTime;
+                                              card.scheduledEndTime = newEndTime;
                                               setString(StorageKeys.productionKanban, JSON.stringify(columns));
                                               emit(window, EVENTS.productionKanbanUpdated);
                                               emit(window, EVENTS.scheduledContentUpdated);
@@ -714,7 +747,19 @@ export const WeekView = ({
                                           if (ideateColumn) {
                                             const card = ideateColumn.cards.find(c => c.id === contentId);
                                             if (card) {
+                                              // Preserve original duration
+                                              let durationMinutes = 60;
+                                              if (card.plannedStartTime && card.plannedEndTime) {
+                                                const [sH, sM] = card.plannedStartTime.split(':').map(Number);
+                                                const [eH, eM] = card.plannedEndTime.split(':').map(Number);
+                                                durationMinutes = (eH * 60 + eM) - (sH * 60 + sM);
+                                              }
+                                              const newStartMinutes = hour * 60 + roundedMinute;
+                                              const newEndMinutes = newStartMinutes + Math.max(durationMinutes, 30);
+                                              const newEndTime = `${Math.floor(newEndMinutes / 60).toString().padStart(2, '0')}:${(newEndMinutes % 60).toString().padStart(2, '0')}`;
                                               card.plannedDate = dayString;
+                                              card.plannedStartTime = newStartTime;
+                                              card.plannedEndTime = newEndTime;
                                               setString(StorageKeys.productionKanban, JSON.stringify(columns));
                                               emit(window, EVENTS.productionKanbanUpdated);
                                               emit(window, EVENTS.scheduledContentUpdated);
@@ -935,6 +980,16 @@ export const WeekView = ({
                                 ? { bg: '#F5F2F4', text: '#8B7082' }
                                 : defaultScheduledColor;
 
+                              // Check if this content overlaps in time with any task for the same day
+                              const overlapsWithTask = showTasks && (dayData?.items || []).some(task => {
+                                if (!task.startTime || !task.endTime) return false;
+                                const [tStartH, tStartM] = task.startTime.split(':').map(Number);
+                                const [tEndH, tEndM] = task.endTime.split(':').map(Number);
+                                const taskStart = tStartH * 60 + tStartM;
+                                const taskEnd = tEndH * 60 + tEndM;
+                                return startTotalMinutes < taskEnd && endTotalMinutes > taskStart;
+                              });
+
                               return (
                                 <div
                                   key={content.id}
@@ -954,30 +1009,46 @@ export const WeekView = ({
                                     e.currentTarget.style.opacity = '1';
                                   }}
                                   onClick={() => {
-                                    if (isPlanned) {
-                                      onOpenContentDialog?.(content, 'planned');
-                                    } else {
-                                      // Open content flow dialog directly for scheduled content
-                                      onOpenContentFlow?.(content.id);
-                                    }
+                                    onOpenContentDialog?.(content, isPlanned ? 'planned' : 'scheduled');
                                   }}
-                                  className={cn(
-                                    "absolute rounded-2xl cursor-pointer hover:brightness-95 overflow-hidden group border-l-4",
-                                    "shadow-[0_2px_8px_rgba(139,112,130,0.25)] hover:shadow-[0_4px_12px_rgba(139,112,130,0.35)]"
-                                  )}
+                                  onMouseEnter={(e) => {
+                                    const rect = e.currentTarget.getBoundingClientRect();
+                                    const derivedFormats = [...(content.formats || [])];
+                                    if (content.contentType === 'image') {
+                                      const imageLabel = content.imageMode === 'carousel' ? 'Carousel' : 'Image';
+                                      if (!derivedFormats.includes(imageLabel)) derivedFormats.unshift(imageLabel);
+                                    }
+                                    setContentTooltip({
+                                      text: content.hook || content.title || '',
+                                      timeStr: `${convert24To12Hour(startTimeStr)} – ${convert24To12Hour(endTimeStr)}`,
+                                      isPlanned,
+                                      platforms: content.platforms || [],
+                                      formats: derivedFormats,
+                                      x: rect.left,
+                                      y: rect.bottom + 8,
+                                    });
+                                  }}
+                                  onMouseLeave={() => setContentTooltip(null)}
+                                  className="absolute rounded-2xl cursor-pointer hover:brightness-95 group overflow-hidden"
                                   style={{
                                     top: `${topPos}px`,
                                     height: `${height}px`,
-                                    // In "Both" mode: content on right side (45% width). In "Content only" mode: full width
-                                    ...(showTasks ? { right: '4px', width: '45%' } : { left: '4px', width: '85%' }),
+                                    // Full width by default; half the task width on the right when overlapping with a task
+                                    ...(overlapsWithTask ? { right: '4px', width: '42.5%' } : { left: '4px', width: '85%' }),
                                     background: isPlanned
                                       ? 'linear-gradient(180deg, #FFFFFF 0%, #F5F2F4 50%, #E0D5DC 100%)'
-                                      : 'linear-gradient(180deg, #A08898 0%, #8B7082 50%, #5A4052 100%)',
-                                    borderLeftColor: isPlanned ? '#B8A0AD' : '#4a2a3f',
+                                      : 'linear-gradient(135deg, #7a3868 0%, #612a4f 50%, #4e2040 100%)',
+                                    borderTop: isPlanned ? '1px solid #d4b0c4' : '1px solid #5a2248',
+                                    borderRight: isPlanned ? '1px solid #d4b0c4' : '1px solid #5a2248',
+                                    borderBottom: isPlanned ? '1px solid #d4b0c4' : '1px solid #5a2248',
+                                    borderLeft: isPlanned ? '5px solid #c4a0b4' : '5px solid #3a1830',
+                                    boxShadow: isPlanned
+                                      ? '0 2px 12px rgba(180, 130, 160, 0.45), 0 0 18px rgba(180, 130, 160, 0.2)'
+                                      : '0 2px 12px rgba(97, 42, 79, 0.55), 0 0 18px rgba(97, 42, 79, 0.3)',
                                     zIndex: 120,
                                   }}
                                 >
-                                  <div className="p-1 h-full flex flex-col">
+                                  <div className="p-1 h-full flex flex-col overflow-hidden">
                                     <div className="flex items-start gap-1">
                                       {isPlanned ? (
                                         <Lightbulb className="w-3 h-3 flex-shrink-0 mt-0.5" style={{ color: colors.text }} />
@@ -995,7 +1066,7 @@ export const WeekView = ({
                                       )}
                                       <div className="flex-1 min-w-0">
                                         <div className={cn(
-                                          "text-[10px] font-medium line-clamp-2",
+                                          "text-[10px] font-medium truncate",
                                           content.isCompleted && "line-through opacity-60"
                                         )} style={{ color: colors.text }}>
                                           {content.hook || content.title}
@@ -1142,8 +1213,8 @@ export const WeekView = ({
                               const taskColorInfo = getTaskColorByHex(colorToUse);
 
                               // Calculate width and position for overlapping tasks
-                              // When showing both content and tasks, tasks take left 50%, content takes right 45%
-                              const maxTaskWidth = showContent ? 50 : 85;
+                              // Tasks always take full width; content handles its own overlap detection
+                              const maxTaskWidth = 85;
                               let widthPercent, leftPercent, zIndex;
 
                               if (isBackground) {
@@ -1153,8 +1224,8 @@ export const WeekView = ({
                                 zIndex = 105;
                               } else if (inOverlapGroup) {
                                 // Foreground tasks: position starting from left for better visibility
-                                const availableSpace = showContent ? 40 : 70;
-                                const startPosition = showContent ? 5 : 10;
+                                const availableSpace = 70;
+                                const startPosition = 10;
                                 widthPercent = availableSpace / totalColumns;
                                 leftPercent = startPosition + (column * widthPercent);
                                 zIndex = 115 + column;
@@ -1178,6 +1249,78 @@ export const WeekView = ({
                                     left: `${leftPercent}%`,
                                     width: `${widthPercent}%`,
                                     zIndex
+                                  }}
+                                  onDragOver={(e) => {
+                                    if (e.dataTransfer.types.includes('contentid')) {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                    }
+                                  }}
+                                  onDrop={(e) => {
+                                    const contentId = e.dataTransfer.getData('contentId');
+                                    const contentType = e.dataTransfer.getData('contentType');
+                                    if (!contentId || !contentType) return;
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    // Compute drop time from position relative to the timeline container
+                                    const timelineEl = e.currentTarget.closest('[data-timeline]') as HTMLElement;
+                                    if (!timelineEl) return;
+                                    const timelineRect = timelineEl.getBoundingClientRect();
+                                    const relativeY = e.clientY - timelineRect.top;
+                                    const totalMinutes = relativeY / (0.8 * weeklyZoomLevel);
+                                    const dropHour = Math.floor(totalMinutes / 60);
+                                    const dropMinuteRaw = Math.floor(totalMinutes % 60);
+                                    const dropMinute = Math.round(dropMinuteRaw / 30) * 30;
+                                    const newStartTime = `${dropHour.toString().padStart(2, '0')}:${dropMinute.toString().padStart(2, '0')}`;
+                                    const savedData = getString(StorageKeys.productionKanban);
+                                    if (!savedData) return;
+                                    try {
+                                      const columns: KanbanColumn[] = JSON.parse(savedData);
+                                      if (contentType === 'scheduled') {
+                                        const col = columns.find(c => c.id === 'to-schedule');
+                                        const card = col?.cards.find(c => c.id === contentId);
+                                        if (card) {
+                                          let dur = 60;
+                                          if (card.scheduledStartTime && card.scheduledEndTime) {
+                                            const [sH, sM] = card.scheduledStartTime.split(':').map(Number);
+                                            const [eH, eM] = card.scheduledEndTime.split(':').map(Number);
+                                            dur = (eH * 60 + eM) - (sH * 60 + sM);
+                                          }
+                                          const endMins = dropHour * 60 + dropMinute + Math.max(dur, 30);
+                                          card.scheduledDate = dayString;
+                                          card.schedulingStatus = 'scheduled';
+                                          card.scheduledStartTime = newStartTime;
+                                          card.scheduledEndTime = `${Math.floor(endMins / 60).toString().padStart(2, '0')}:${(endMins % 60).toString().padStart(2, '0')}`;
+                                          setString(StorageKeys.productionKanban, JSON.stringify(columns));
+                                          emit(window, EVENTS.productionKanbanUpdated);
+                                          emit(window, EVENTS.scheduledContentUpdated);
+                                          loadProductionContent?.();
+                                          toast.success('Content moved');
+                                        }
+                                      } else if (contentType === 'planned') {
+                                        const col = columns.find(c => c.id === 'ideate');
+                                        const card = col?.cards.find(c => c.id === contentId);
+                                        if (card) {
+                                          let dur = 60;
+                                          if (card.plannedStartTime && card.plannedEndTime) {
+                                            const [sH, sM] = card.plannedStartTime.split(':').map(Number);
+                                            const [eH, eM] = card.plannedEndTime.split(':').map(Number);
+                                            dur = (eH * 60 + eM) - (sH * 60 + sM);
+                                          }
+                                          const endMins = dropHour * 60 + dropMinute + Math.max(dur, 30);
+                                          card.plannedDate = dayString;
+                                          card.plannedStartTime = newStartTime;
+                                          card.plannedEndTime = `${Math.floor(endMins / 60).toString().padStart(2, '0')}:${(endMins % 60).toString().padStart(2, '0')}`;
+                                          setString(StorageKeys.productionKanban, JSON.stringify(columns));
+                                          emit(window, EVENTS.productionKanbanUpdated);
+                                          emit(window, EVENTS.scheduledContentUpdated);
+                                          loadProductionContent?.();
+                                          toast.success('Content moved');
+                                        }
+                                      }
+                                    } catch (err) {
+                                      console.error('Error moving content onto task:', err);
+                                    }
                                   }}
                                 >
                                   <div
@@ -1448,13 +1591,26 @@ export const WeekView = ({
                                     key={content.id}
                                     draggable={true}
                                     onClick={() => {
-                                      if (isPlanned) {
-                                        onOpenContentDialog?.(content, 'planned');
-                                      } else {
-                                        // Open content flow dialog directly for scheduled content
-                                        onOpenContentFlow?.(content.id);
-                                      }
+                                      onOpenContentDialog?.(content, isPlanned ? 'planned' : 'scheduled');
                                     }}
+                                    onMouseEnter={(e) => {
+                                      const rect = e.currentTarget.getBoundingClientRect();
+                                      const derivedFormats = [...(content.formats || [])];
+                                      if (content.contentType === 'image') {
+                                        const imageLabel = content.imageMode === 'carousel' ? 'Carousel' : 'Image';
+                                        if (!derivedFormats.includes(imageLabel)) derivedFormats.unshift(imageLabel);
+                                      }
+                                      setContentTooltip({
+                                        text: content.hook || content.title || '',
+                                        timeStr: isPlanned ? 'Planned · No time set' : 'Scheduled · No time set',
+                                        isPlanned,
+                                        platforms: content.platforms || [],
+                                        formats: derivedFormats,
+                                        x: rect.left,
+                                        y: rect.bottom + 8,
+                                      });
+                                    }}
+                                    onMouseLeave={() => setContentTooltip(null)}
                                     onDragStart={(e) => {
                                       e.stopPropagation();
                                       e.dataTransfer.setData('contentId', content.id);
@@ -1466,16 +1622,19 @@ export const WeekView = ({
                                     onDragEnd={(e) => {
                                       e.currentTarget.style.opacity = '1';
                                     }}
-                                    className={cn(
-                                      "group text-xs px-2 py-1.5 rounded-2xl transition-all cursor-pointer relative border-l-4",
-                                      "shadow-[0_2px_8px_rgba(139,112,130,0.25)] hover:shadow-[0_4px_12px_rgba(139,112,130,0.35)]"
-                                    )}
+                                    className="group text-xs px-2 py-1.5 rounded-2xl transition-all cursor-pointer relative overflow-hidden"
                                     style={{
                                       background: isPlanned
                                         ? 'linear-gradient(180deg, #FFFFFF 0%, #E8B8D0 50%, #C090A8 100%)'
                                         : 'linear-gradient(180deg, #C8A0B8 0%, #8B5070 50%, #4A2040 100%)',
-                                      borderLeftColor: isPlanned ? '#B8A0AD' : '#4a2a3f',
-                                      opacity: isPast ? 0.5 : 1
+                                      borderTop: isPlanned ? '1px solid #d4b0c4' : '1px solid #5a2248',
+                                      borderRight: isPlanned ? '1px solid #d4b0c4' : '1px solid #5a2248',
+                                      borderBottom: isPlanned ? '1px solid #d4b0c4' : '1px solid #5a2248',
+                                      borderLeft: isPlanned ? '5px solid #c4a0b4' : '5px solid #3a1830',
+                                      boxShadow: isPlanned
+                                        ? '0 2px 10px rgba(180, 130, 160, 0.4), 0 0 14px rgba(180, 130, 160, 0.2)'
+                                        : '0 2px 10px rgba(97, 42, 79, 0.5), 0 0 14px rgba(97, 42, 79, 0.25)',
+                                      opacity: isPast ? 0.5 : 1,
                                     }}
                                   >
                                     <div className="flex items-center gap-1.5">
@@ -1494,7 +1653,7 @@ export const WeekView = ({
                                         </button>
                                       )}
                                       <span className={cn(
-                                        "break-words flex-1 text-[11px]",
+                                        "truncate flex-1 text-[11px]",
                                         content.isCompleted && "line-through opacity-60"
                                       )} style={{ color: colors.text }}>
                                         {content.hook || content.title}
@@ -1504,7 +1663,7 @@ export const WeekView = ({
                                           e.stopPropagation();
                                           handleDeleteContent(content.id, isPlanned ? 'planned' : 'scheduled');
                                         }}
-                                        className="p-1 rounded text-gray-400 hover:text-red-600 hover:bg-white/80 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        className="p-1 rounded text-gray-400 hover:text-red-600 hover:bg-white/80 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
                                       >
                                         <X size={10} />
                                       </button>
@@ -1934,6 +2093,77 @@ export const WeekView = ({
           </div>
         </div>
       )}
+
+      {/* Fixed-position content tooltip — renders above all stacking contexts */}
+      {contentTooltip && (() => {
+        const platformIconMap: Record<string, React.ReactNode> = {
+          instagram: <SiInstagram style={{ color: '#ffffff' }} />,
+          tiktok: <SiTiktok style={{ color: '#ffffff' }} />,
+          youtube: <SiYoutube style={{ color: '#ffffff' }} />,
+          facebook: <SiFacebook style={{ color: '#ffffff' }} />,
+          linkedin: <SiLinkedin style={{ color: '#ffffff' }} />,
+          x: <RiTwitterXLine style={{ color: '#ffffff' }} />,
+          twitter: <RiTwitterXLine style={{ color: '#ffffff' }} />,
+          threads: <RiThreadsLine style={{ color: '#ffffff' }} />,
+        };
+        const platforms = contentTooltip.platforms || [];
+        const formats = contentTooltip.formats || [];
+        return (
+          <div
+            className="pointer-events-none px-3 py-2.5 rounded-xl text-white text-[11px] leading-snug shadow-xl"
+            style={{
+              position: 'fixed',
+              left: contentTooltip.x,
+              top: contentTooltip.y,
+              background: contentTooltip.isPlanned
+                ? 'linear-gradient(135deg, #9a8090 0%, #7a6070 100%)'
+                : 'linear-gradient(135deg, #7a3868 0%, #4e2040 100%)',
+              zIndex: 99999,
+              maxWidth: '240px',
+            }}
+          >
+            <p className="font-semibold whitespace-normal">{contentTooltip.text}</p>
+            <p className="opacity-75 mt-0.5 text-[10px]">{contentTooltip.timeStr}</p>
+
+            {/* Formats */}
+            {formats.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-2">
+                {formats.map(f => (
+                  <span
+                    key={f}
+                    className="px-1.5 py-0.5 rounded-md text-[10px] font-medium"
+                    style={{ background: 'rgba(255,255,255,0.18)', whiteSpace: 'nowrap' }}
+                  >
+                    {f}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Platform icons */}
+            {platforms.length > 0 && (
+              <div className="flex items-center gap-1.5 mt-2">
+                {platforms.map(p => {
+                  const icon = platformIconMap[p.toLowerCase()];
+                  return icon ? (
+                    <span key={p} className="text-[14px] leading-none" title={p}>
+                      {icon}
+                    </span>
+                  ) : (
+                    <span
+                      key={p}
+                      className="px-1.5 py-0.5 rounded text-[10px]"
+                      style={{ background: 'rgba(255,255,255,0.18)' }}
+                    >
+                      {p}
+                    </span>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+      })()}
     </>
   );
 };
