@@ -3904,7 +3904,7 @@
       border-radius: 12px;
       box-shadow: 0 12px 40px rgba(97, 42, 79, 0.12);
       opacity: 0;
-      transition: box-shadow 0.5s ease;
+      will-change: opacity;
     }
 
     .mc-cal-img.tasks { animation: cal-tasks 16s infinite; }
@@ -3941,6 +3941,7 @@
 
     /* Shimmer sweep effect */
     .mc-shimmer {
+      display: none;
       position: absolute;
       inset: 0;
       border-radius: 16px;
@@ -4004,7 +4005,7 @@
       position: absolute;
       top: 225px;
       left: 140px;
-      background: rgba(86, 63, 90, 0.88);
+      background: rgba(162, 110, 145, 0.92);
       color: white;
       border-radius: 8px;
       padding: 7px 11px;
@@ -4033,7 +4034,7 @@
       position: absolute;
       top: 360px;
       left: 270px;
-      background: rgba(86, 63, 90, 0.88);
+      background: rgba(162, 110, 145, 0.92);
       color: white;
       border-radius: 8px;
       padding: 7px 11px;
@@ -4062,7 +4063,7 @@
       position: absolute;
       top: 130px;
       left: 405px;
-      background: rgba(86, 63, 90, 0.88);
+      background: rgba(162, 110, 145, 0.92);
       color: white;
       border-radius: 8px;
       padding: 7px 11px;
@@ -5598,9 +5599,7 @@
               <path d="M4 2L4 20L8.5 15.5L12 22L14.5 21L11 14.5L17 14.5L4 2Z" fill="#4a3f4a" stroke="white" stroke-width="1" stroke-linejoin="round"/>
             </svg>
           </div>
-          <div class="mc-click-ring tasks-tab"></div>
-          <div class="mc-click-ring content-tab"></div>
-          <div class="mc-click-ring both-tab"></div>
+
           <div class="mc-ghost-event">Team Meeting</div>
           <div class="mc-ghost-event-2">Manicure Appt</div>
           <div class="mc-ghost-event-3">Business Call</div>
