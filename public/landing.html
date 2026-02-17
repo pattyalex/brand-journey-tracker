@@ -6064,15 +6064,28 @@
         });
       };
 
+      let mcReady = false;
       const mcObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            setTimeout(restartMcAnimations, 1000);
+          if (entry.isIntersecting && mcReady) {
+            setTimeout(restartMcAnimations, 100);
           }
         });
       }, { threshold: 0.3 });
 
       mcObserver.observe(masterCalVisual);
+
+      // Run all dynamic CSS setups together, then restart animations once cleanly.
+      // This prevents each separate style injection from disrupting mid-animation state.
+      window.addEventListener('load', () => {
+        setupGhostFly();
+        setupContentPills();
+        setupCursorMove();
+        requestAnimationFrame(() => {
+          restartMcAnimations();
+          mcReady = true;
+        });
+      });
     }
 
     // ── Pipeline 3D board staggered reveal ──
@@ -6489,7 +6502,6 @@
       document.head.appendChild(style);
     }
 
-    window.addEventListener('load', setupGhostFly);
     window.addEventListener('resize', setupGhostFly);
 
     // Anchor content pill animations to the Content tab position
@@ -6541,7 +6553,6 @@
       document.head.appendChild(style);
     }
 
-    window.addEventListener('load', setupContentPills);
     window.addEventListener('resize', setupContentPills);
 
     // Animate cursor: Tasks Calendar → Content Calendar → Both (stays)
@@ -6598,7 +6609,6 @@
       document.head.appendChild(style);
     }
 
-    window.addEventListener('load', setupCursorMove);
     window.addEventListener('resize', setupCursorMove);
   </script>
 </body>
