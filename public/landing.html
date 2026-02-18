@@ -4470,9 +4470,7 @@
     /* ─── Master Calendar Responsive ─── */
 
     @media (max-width: 1100px) {
-      .gcal-card {
-        display: none;
-      }
+      /* gcal card stays visible — repositioned below for mobile */
     }
 
     /* Single column: remove wrong 350px cap, fix reversed-row padding, reduce gap */
@@ -4493,9 +4491,8 @@
       }
     }
 
-    /* Tablet: hide cursor, clip overflow from effects */
+    /* Tablet */
     @media (max-width: 768px) {
-      .mc-cursor,
       .mc-content-click-ring,
       .mc-event-flash,
       .mc-sync-toast {
@@ -4503,11 +4500,16 @@
       }
       .mc-calendar-tilt {
         border-radius: 16px;
-        overflow: hidden;
       }
       .mc-tab {
         font-size: 0.76rem;
         padding: 8px 14px;
+      }
+      /* Reposition gcal card so it stays on-screen at mobile widths */
+      .gcal-card {
+        left: 2%;
+        bottom: -5%;
+        width: min(152px, 39vw);
       }
     }
 
