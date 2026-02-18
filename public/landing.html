@@ -4017,8 +4017,8 @@
     /* Fake Cursor */
     .mc-cursor {
       position: absolute;
-      width: 32px;
-      height: 32px;
+      width: min(32px, 4.85vw);
+      height: min(32px, 4.85vw);
       z-index: 100;
       pointer-events: none;
       opacity: 1;
@@ -4509,8 +4509,18 @@
       .gcal-card {
         left: 2%;
         bottom: -5%;
-        width: min(152px, 39vw);
       }
+    }
+
+    /* Scale gcal card and cursor proportionally as viewport shrinks */
+    @media (max-width: 600px) {
+      .gcal-card { zoom: 0.85; }
+    }
+    @media (max-width: 480px) {
+      .gcal-card { zoom: 0.70; }
+    }
+    @media (max-width: 380px) {
+      .gcal-card { zoom: 0.58; }
     }
 
     /* Small screens: compact tab bar only — positions and font-sizes scale via min()/vw globally */
