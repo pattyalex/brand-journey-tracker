@@ -3438,6 +3438,184 @@
       }
     }
 
+    /* ==================== MERGED RIBBONS + PRICING SECTION ==================== */
+    .ribbons-pricing-merged {
+      position: relative;
+      z-index: 1;
+      padding: 80px 24px 120px;
+      background: linear-gradient(180deg, #fcfafe 0%, #f8f4fb 50%, #fcfafe 100%);
+      overflow: hidden;
+      scroll-margin-top: 40px;
+    }
+
+    .ribbons-pricing-merged::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 100%; max-width: 1200px; height: 100%;
+      background:
+        radial-gradient(ellipse 80% 50% at 20% 20%, rgba(139,112,130,0.08) 0%, transparent 50%),
+        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(97,42,79,0.06) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .merged-header {
+      text-align: center;
+      margin-bottom: 60px;
+      position: relative;
+    }
+
+    .merged-h2 {
+      font-family: 'Instrument Serif', serif;
+      font-size: clamp(2rem, 4vw, 3rem);
+      color: var(--text-dark);
+      margin-bottom: 16px;
+      line-height: 1.2;
+    }
+
+    .merged-h2 em {
+      font-style: italic;
+      color: #612a4f;
+    }
+
+    .merged-layout {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      max-width: 1100px;
+      margin: 0 auto;
+      gap: 0;
+    }
+
+    .merged-ribbons {
+      flex: 1;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+    }
+
+    .merged-ribbons .ribbons-container {
+      max-width: 420px;
+      width: 100%;
+      margin: 0;
+    }
+
+    /* Convergence column */
+    .convergence-col {
+      flex: 0 0 80px;
+      width: 80px;
+      align-self: stretch;
+      position: relative;
+    }
+
+    .convergence-svg {
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+
+    /* Line draw animation */
+    .conv-line {
+      stroke-dasharray: 300;
+      stroke-dashoffset: 300;
+    }
+
+    .conv-line.draw {
+      animation: convDraw 0.55s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    .conv-line-1.draw { animation-delay: 0.85s; }
+    .conv-line-2.draw { animation-delay: 1.00s; }
+    .conv-line-3.draw { animation-delay: 1.15s; }
+    .conv-line-4.draw { animation-delay: 1.30s; }
+
+    @keyframes convDraw {
+      to { stroke-dashoffset: 0; }
+    }
+
+    /* Convergence dot */
+    .conv-dot {
+      transition: opacity 0.3s ease 1.6s;
+    }
+
+    .conv-dot.show { opacity: 1 !important; }
+
+    /* Pulsing ring */
+    @keyframes convPulse {
+      0%   { opacity: 0.7; r: 5; }
+      100% { opacity: 0;   r: 18; }
+    }
+
+    .conv-ring.pulse {
+      animation: convPulse 1.6s ease-out infinite;
+      animation-delay: 1.7s;
+    }
+
+    /* Right: Pricing column */
+    .merged-pricing {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      max-width: 460px;
+    }
+
+    .merged-pricing .pricing-cards {
+      width: 100%;
+      max-width: 100%;
+      margin: 0;
+    }
+
+    .merged-pricing .pricing-card {
+      max-width: 100%;
+    }
+
+    .merged-pricing .pricing-toggle-wrapper {
+      margin-bottom: 24px;
+      justify-content: flex-start;
+    }
+
+    .merged-pricing .pricing-guarantee {
+      justify-content: flex-start;
+    }
+
+    /* Mobile: stack vertically, lines face down */
+    @media (max-width: 900px) {
+      .merged-layout {
+        flex-direction: column;
+        gap: 0;
+      }
+
+      .merged-ribbons {
+        justify-content: center;
+        width: 100%;
+      }
+
+      .merged-ribbons .ribbons-container {
+        max-width: 600px;
+        margin: 0 auto;
+      }
+
+      .convergence-col {
+        flex: 0 0 auto;
+        width: 360px;
+        height: 80px;
+        align-self: center;
+      }
+
+      .merged-pricing {
+        align-items: center;
+        max-width: 100%;
+        width: 100%;
+      }
+
+      .merged-pricing .pricing-toggle-wrapper,
+      .merged-pricing .pricing-guarantee {
+        justify-content: center;
+      }
+    }
+
     /* ==================== WHY HEYMEG RIBBONS SECTION ==================== */
     .ribbons-section {
       position: relative;
@@ -5851,148 +6029,148 @@
   </section>
 
   <!-- Why HeyMeg Ribbons Section -->
-  <section class="ribbons-section reveal">
-    <div class="badge-pill">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-        <circle cx="12" cy="7" r="4"/>
-      </svg>
-      <span>Built for Solo Creators</span>
-    </div>
-    <h2>You don't need a team.<br><em>You need a better system.</em></h2>
-    <p class="ribbons-subtitle">HeyMeg makes it easy for you to...</p>
-
-    <div class="ribbons-container">
-      <div class="ribbon r4">
-        <div class="r-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="2" y="2" width="8" height="8" rx="1"/>
-            <rect x="14" y="2" width="8" height="8" rx="1"/>
-            <rect x="2" y="14" width="8" height="8" rx="1"/>
-            <rect x="14" y="14" width="8" height="8" rx="1"/>
-          </svg>
-        </div>
-        <span>Plan Like a Producer</span>
-      </div>
-      <div class="ribbon r3">
-        <div class="r-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 19l7-7 3 3-7 7-3-3z"/>
-            <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
-            <path d="M2 2l7.586 7.586"/>
-            <circle cx="11" cy="11" r="2"/>
-          </svg>
-        </div>
-        <span>Script Like a Writer</span>
-      </div>
-      <div class="ribbon r2">
-        <div class="r-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="4" width="18" height="18" rx="2"/>
-            <line x1="16" y1="2" x2="16" y2="6"/>
-            <line x1="8" y1="2" x2="8" y2="6"/>
-            <line x1="3" y1="10" x2="21" y2="10"/>
-          </svg>
-        </div>
-        <span>Schedule Like a Manager</span>
-      </div>
-      <div class="ribbon r1">
-        <div class="r-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
-            <polyline points="16 7 22 7 22 13"/>
-          </svg>
-        </div>
-        <span>Grow Like a Strategist</span>
-      </div>
-    </div>
-  </section>
-
-  <!-- Pricing Section -->
-  <section class="pricing-section reveal" id="pricing">
-    <div class="pricing-header">
-      <div class="pricing-badge">
+  <!-- Merged: Built for Solo Creators + Pricing -->
+  <section class="ribbons-pricing-merged reveal" id="pricing">
+    <!-- Centered header -->
+    <div class="merged-header">
+      <div class="badge-pill">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-          <path d="M2 17l10 5 10-5"/>
-          <path d="M2 12l10 5 10-5"/>
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
         </svg>
-        <span>Simple Pricing</span>
+        <span>Built for Solo Creators</span>
       </div>
-      <h2>One plan. <em>Everything included.</em></h2>
+      <h2 class="merged-h2">You don't need a team.<br><em>You need a better system.</em></h2>
+      <p class="ribbons-subtitle">HeyMeg makes it easy for you to...</p>
     </div>
 
-    <div class="pricing-toggle-wrapper">
-      <span class="toggle-label" id="monthly-label" onclick="selectMonthly()">Monthly</span>
-      <span class="toggle-label active" id="yearly-label" onclick="selectYearly()">Yearly <span class="save-badge">Save 18%</span></span>
-    </div>
+    <!-- Side-by-side layout -->
+    <div class="merged-layout">
 
-    <div class="pricing-cards">
-      <div class="pricing-card">
-        <div class="popular-tag" id="popular-tag">Most Popular</div>
-        <div class="pricing-card-header">
-          <h3 class="plan-name">Creator Pro</h3>
-          <p class="plan-desc">Everything you need to grow</p>
-        </div>
-
-        <div class="price-wrapper">
-          <div class="price">
-            <span class="currency">$</span>
-            <span class="amount" id="price-amount">14</span>
+      <!-- Left: Role Ribbons (unchanged) -->
+      <div class="merged-ribbons">
+        <div class="ribbons-container">
+          <div class="ribbon r4">
+            <div class="r-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="2" width="8" height="8" rx="1"/>
+                <rect x="14" y="2" width="8" height="8" rx="1"/>
+                <rect x="2" y="14" width="8" height="8" rx="1"/>
+                <rect x="14" y="14" width="8" height="8" rx="1"/>
+              </svg>
+            </div>
+            <span>Plan Like a Producer</span>
           </div>
-          <span class="period">per month</span>
-          <span class="price-note" id="price-note">Billed as $168/year</span>
+          <div class="ribbon r3">
+            <div class="r-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 19l7-7 3 3-7 7-3-3z"/>
+                <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
+                <path d="M2 2l7.586 7.586"/>
+                <circle cx="11" cy="11" r="2"/>
+              </svg>
+            </div>
+            <span>Script Like a Writer</span>
+          </div>
+          <div class="ribbon r2">
+            <div class="r-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+            </div>
+            <span>Schedule Like a Manager</span>
+          </div>
+          <div class="ribbon r1">
+            <div class="r-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
+                <polyline points="16 7 22 7 22 13"/>
+              </svg>
+            </div>
+            <span>Grow Like a Strategist</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Middle: SVG convergence lines -->
+      <div class="convergence-col">
+        <svg class="convergence-svg" xmlns="http://www.w3.org/2000/svg" overflow="visible">
+          <path class="conv-line conv-line-1" fill="none" stroke="#d4a4c4" stroke-width="2" stroke-linecap="round"/>
+          <path class="conv-line conv-line-2" fill="none" stroke="#a8a4d8" stroke-width="2" stroke-linecap="round"/>
+          <path class="conv-line conv-line-3" fill="none" stroke="#c0a8d8" stroke-width="2" stroke-linecap="round"/>
+          <path class="conv-line conv-line-4" fill="none" stroke="#d0aac4" stroke-width="2" stroke-linecap="round"/>
+          <circle class="conv-dot" r="5" fill="#6B2D5B" opacity="0"/>
+          <circle class="conv-ring" r="5" fill="none" stroke="#6B2D5B" stroke-width="2" opacity="0"/>
+        </svg>
+      </div>
+
+      <!-- Right: Pricing card (unchanged) -->
+      <div class="merged-pricing">
+        <div class="pricing-toggle-wrapper">
+          <span class="toggle-label" id="monthly-label" onclick="selectMonthly()">Monthly</span>
+          <span class="toggle-label active" id="yearly-label" onclick="selectYearly()">Yearly <span class="save-badge">Save 18%</span></span>
         </div>
 
-        <ul class="pricing-features">
-          <li>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
-            <span>Unlimited content ideas & scripts</span>
-          </li>
-          <li>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
-            <span>AI-powered content assistance</span>
-          </li>
-          <li>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
-            <span>Full production pipeline (Kanban + Storyboards)</span>
-          </li>
-          <li>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
-            <span>Smart daily planner & calendar</span>
-          </li>
-          <li>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
-            <span>Brand deal tracking and partnership management</span>
-          </li>
-          <li>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
-            <span>Strategy & growth goal setting</span>
-          </li>
-        </ul>
+        <div class="pricing-cards">
+          <div class="pricing-card">
+            <div class="popular-tag" id="popular-tag">Most Popular</div>
+            <div class="pricing-card-header">
+              <h3 class="plan-name">Creator Pro</h3>
+              <p class="plan-desc">Everything you need to grow</p>
+            </div>
 
-        <a href="/onboarding" class="pricing-cta">Start Your 14-Day Free Trial</a>
+            <div class="price-wrapper">
+              <div class="price">
+                <span class="currency">$</span>
+                <span class="amount" id="price-amount">14</span>
+              </div>
+              <span class="period">per month</span>
+              <span class="price-note" id="price-note">Billed as $168/year</span>
+            </div>
+
+            <ul class="pricing-features">
+              <li>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>Unlimited content ideas & scripts</span>
+              </li>
+              <li>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>AI-powered content assistance</span>
+              </li>
+              <li>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>Full production pipeline (Kanban + Storyboards)</span>
+              </li>
+              <li>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>Smart daily planner & calendar</span>
+              </li>
+              <li>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>Brand deal tracking and partnership management</span>
+              </li>
+              <li>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>Strategy & growth goal setting</span>
+              </li>
+            </ul>
+
+            <a href="/onboarding" class="pricing-cta">Start Your 14-Day Free Trial</a>
+          </div>
+        </div>
+
+        <div class="pricing-guarantee">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <polyline points="9 12 11 14 15 10"/>
+          </svg>
+          <span>Cancel anytime</span>
+        </div>
       </div>
-    </div>
 
-    <div class="pricing-guarantee">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-        <polyline points="9 12 11 14 15 10"/>
-      </svg>
-      <span>Cancel anytime</span>
     </div>
   </section>
 
@@ -6316,21 +6494,92 @@
 
     // 3D tilt effect on dashboard - disabled (flat layout)
 
-    // Ribbons falling animation
-    const ribbonsSection = document.querySelector('.ribbons-section');
+    // Ribbons falling animation + convergence lines
+    const ribbonsSection = document.querySelector('.ribbons-pricing-merged');
     const ribbons = document.querySelectorAll('.ribbon');
     let ribbonsAnimated = false;
+
+    function drawConvergenceLines() {
+      const col = document.querySelector('.convergence-col');
+      const svg = document.querySelector('.convergence-svg');
+      if (!col || !svg) return;
+
+      const isMobile = window.innerWidth <= 900;
+      const colRect = col.getBoundingClientRect();
+
+      // Convergence point: center of the pricing card
+      const pricingCard = document.querySelector('.merged-pricing .pricing-card');
+      if (!pricingCard) return;
+      const cardRect = pricingCard.getBoundingClientRect();
+
+      // Convergence point relative to the SVG col
+      let convX, convY;
+      if (isMobile) {
+        // Lines go downward: convergence at bottom-center of the col
+        convX = colRect.width / 2;
+        convY = colRect.height;
+      } else {
+        // Lines go right: convergence at right edge, vertically centered on pricing card
+        convX = colRect.width;
+        convY = cardRect.top + cardRect.height / 2 - colRect.top;
+      }
+
+      // Ribbon colors (r4, r3, r2, r1)
+      const colors = ['#d4a4c4', '#a8a4d8', '#c0a8d8', '#d0aac4'];
+      const ribbonEls = document.querySelectorAll('.ribbon');
+
+      ribbonEls.forEach((ribbon, i) => {
+        const rRect = ribbon.getBoundingClientRect();
+        const rCenterY = rRect.top + rRect.height / 2 - colRect.top;
+        const rCenterX = rRect.left + rRect.width / 2 - colRect.left;
+
+        let d;
+        if (isMobile) {
+          // Start from bottom of ribbon (center-x), go down to convergence
+          const startX = rCenterX;
+          const startY = rRect.bottom - colRect.top;
+          d = `M ${startX},${startY} C ${startX},${startY + 30} ${convX},${convY - 30} ${convX},${convY}`;
+        } else {
+          // Start from right edge of ribbon, go to convergence point
+          const startX = rRect.right - colRect.left;
+          d = `M ${startX},${rCenterY} C ${startX + 30},${rCenterY} ${convX - 30},${convY} ${convX},${convY}`;
+        }
+
+        const path = svg.querySelector(`.conv-line-${i + 1}`);
+        if (path) {
+          path.setAttribute('d', d);
+          const len = path.getTotalLength();
+          path.style.strokeDasharray = len;
+          path.style.strokeDashoffset = len;
+        }
+      });
+
+      // Position dot and ring at convergence point
+      const dot = svg.querySelector('.conv-dot');
+      const ring = svg.querySelector('.conv-ring');
+      if (dot) { dot.setAttribute('cx', convX); dot.setAttribute('cy', convY); }
+      if (ring) { ring.setAttribute('cx', convX); ring.setAttribute('cy', convY); }
+
+      // Trigger draw animations
+      requestAnimationFrame(() => {
+        svg.querySelectorAll('.conv-line').forEach(l => l.classList.add('draw'));
+        setTimeout(() => {
+          if (dot) dot.classList.add('show');
+          if (ring) ring.classList.add('pulse');
+        }, 1650);
+      });
+    }
 
     const ribbonsObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting && !ribbonsAnimated) {
           ribbonsAnimated = true;
-          ribbons.forEach(ribbon => {
-            ribbon.classList.add('fallen');
-          });
+          ribbons.forEach(ribbon => ribbon.classList.add('fallen'));
+          // Draw lines after last ribbon finishes (r1 delay: 0.75s + 1.2s = ~2s)
+          setTimeout(drawConvergenceLines, 750);
         }
       });
-    }, { threshold: 0.6 });
+    }, { threshold: 0.3 });
 
     if (ribbonsSection) {
       ribbonsObserver.observe(ribbonsSection);
