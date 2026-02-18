@@ -2119,8 +2119,8 @@
       0%        { color: #7a3868; }
       21%       { color: #7a3868; }
       23%       { color: #888; }
-      64.9%     { color: #888; }
-      65%       { color: #7a3868; }
+      68.9%     { color: #888; }
+      69%       { color: #7a3868; }
       100%      { color: #7a3868; }
     }
     .mc-tab.tasks-tab-btn .mc-tab-indicator {
@@ -2130,8 +2130,8 @@
       0%       { opacity: 1; }
       21%      { opacity: 1; }
       23%      { opacity: 0; }
-      64.9%    { opacity: 0; }
-      65%      { opacity: 1; }
+      68.9%    { opacity: 0; }
+      69%      { opacity: 1; }
       100%     { opacity: 1; }
     }
 
@@ -2141,20 +2141,20 @@
       transition: none;
     }
     @keyframes content-tab-color {
-      0%, 21%    { color: #888; }
-      22%        { color: #7a3868; }
-      35%        { color: #7a3868; }
-      37%        { color: #888; }
+      0%, 23%    { color: #888; }
+      24%        { color: #7a3868; }
+      44%        { color: #7a3868; }
+      48%        { color: #888; }
       100%       { color: #888; }
     }
     .mc-tab.content-tab-btn .mc-tab-indicator {
       animation: content-indicator-anim 10s infinite;
     }
     @keyframes content-indicator-anim {
-      0%, 21%   { opacity: 0; }
-      22%       { opacity: 1; }
-      35%       { opacity: 1; }
-      37%       { opacity: 0; }
+      0%, 23%   { opacity: 0; }
+      24%       { opacity: 1; }
+      44%       { opacity: 1; }
+      48%       { opacity: 0; }
       100%      { opacity: 0; }
     }
 
@@ -2164,8 +2164,8 @@
       transition: none;
     }
     @keyframes both-tab-color {
-      0%, 36%   { color: #888; }
-      38%       { color: #7a3868; }
+      0%, 47%   { color: #888; }
+      48%       { color: #7a3868; }
       64.9%     { color: #7a3868; }
       65%       { color: #888; }
       100%      { color: #888; }
@@ -2174,8 +2174,8 @@
       animation: both-indicator-anim 10s infinite;
     }
     @keyframes both-indicator-anim {
-      0%, 36%  { opacity: 0; }
-      38%      { opacity: 1; }
+      0%, 47%  { opacity: 0; }
+      48%      { opacity: 1; }
       64.9%    { opacity: 1; }
       65%      { opacity: 0; }
       100%     { opacity: 0; }
@@ -2192,12 +2192,12 @@
       pointer-events: none;
       z-index: 200;
       opacity: 0;
-      animation: content-click-ring-anim 10s infinite;
+      animation: none;
     }
     @keyframes content-click-ring-anim {
-      0%, 21.9%  { opacity: 0;   transform: translate(-50%, -50%) scale(0.4); }
-      22%        { opacity: 0.9; transform: translate(-50%, -50%) scale(0.4); animation-timing-function: cubic-bezier(0, 0, 0.2, 1); }
-      24%        { opacity: 0;   transform: translate(-50%, -50%) scale(1.8); }
+      0%, 23.9%  { opacity: 0;   transform: translate(-50%, -50%) scale(0.4); }
+      24%        { opacity: 0.9; transform: translate(-50%, -50%) scale(0.4); animation-timing-function: cubic-bezier(0, 0, 0.2, 1); }
+      26%        { opacity: 0;   transform: translate(-50%, -50%) scale(1.8); }
       100%       { opacity: 0; }
     }
 
@@ -6531,7 +6531,7 @@
       style.id = 'content-pills-dynamic';
       let css = '';
 
-      const delays = [22, 24, 26, 28]; // % into 16s cycle when each pill starts
+      const delays = [29, 31, 33, 35]; // % into 10s cycle when each pill starts
 
       pills.forEach((pill, i) => {
         const tx = Math.round(ox - pill.left);
@@ -6599,10 +6599,11 @@
         @keyframes cursor-to-content {
           0%   { transform: translate(0, 0); }
           20%  { transform: translate(0, 0); animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
-          22%  { transform: translate(${dxContent}px, ${dyContent}px); }
-          33%  { transform: translate(${dxContent}px, ${dyContent}px); animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
-          37%  { transform: translate(${dxBoth}px, ${dyBoth}px); }
-          65%  { transform: translate(${dxBoth}px, ${dyBoth}px); animation-timing-function: steps(1, start); }
+          24%  { transform: translate(${dxContent}px, ${dyContent}px); }
+          44%  { transform: translate(${dxContent}px, ${dyContent}px); animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
+          48%  { transform: translate(${dxBoth}px, ${dyBoth}px); }
+          65%  { transform: translate(${dxBoth}px, ${dyBoth}px); animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
+          69%  { transform: translate(0, 0); }
           100% { transform: translate(0, 0); }
         }
       `;
