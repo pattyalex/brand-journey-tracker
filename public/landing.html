@@ -4473,20 +4473,11 @@
 
     /* ─── Master Calendar Responsive ─── */
 
-    /* Move gcal card to bottom-right on medium/small screens */
+    /* Nudge gcal card right so it doesn't overflow the left viewport edge */
     @media (max-width: 1100px) {
       .gcal-card {
-        left: auto;
-        right: -2%;
+        left: 10px;
         bottom: -8%;
-      }
-      /* Slide in from the right to match new position */
-      @keyframes gcal-slide {
-        0%    { opacity: 0; transform: translate3d(60px, 0, 0); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
-        6.7%  { opacity: 1; transform: translate3d(0, 0, 0); }
-        24%   { opacity: 1; transform: translate3d(0, 0, 0); animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45); }
-        28%   { opacity: 0; transform: translate3d(60px, 0, 0); }
-        100%  { opacity: 0; transform: translate3d(60px, 0, 0); }
       }
     }
 
