@@ -2112,73 +2112,71 @@
 
     /* Tasks Calendar tab text + indicator */
     .mc-tab.tasks-tab-btn {
-      animation: tasks-tab-color 10s infinite;
+      animation: tasks-tab-color 7.5s infinite;
       transition: none;
     }
     @keyframes tasks-tab-color {
       0%        { color: #7a3868; }
-      21%       { color: #7a3868; }
-      23%       { color: #888; }
-      89.9%     { color: #888; }
-      90%       { color: #7a3868; }
+      26.7%     { color: #7a3868; }
+      28.7%     { color: #888; }
+      99.9%     { color: #888; }
       100%      { color: #7a3868; }
     }
     .mc-tab.tasks-tab-btn .mc-tab-indicator {
-      animation: tasks-indicator-anim 10s infinite;
+      animation: tasks-indicator-anim 7.5s infinite;
     }
     @keyframes tasks-indicator-anim {
       0%       { opacity: 1; }
-      21%      { opacity: 1; }
-      23%      { opacity: 0; }
-      89.9%    { opacity: 0; }
-      90%      { opacity: 1; }
+      26.7%    { opacity: 1; }
+      28.7%    { opacity: 0; }
+      99.9%    { opacity: 0; }
       100%     { opacity: 1; }
     }
 
     /* Content Calendar tab text + indicator */
     .mc-tab.content-tab-btn {
-      animation: content-tab-color 10s infinite;
+      animation: content-tab-color 7.5s infinite;
       transition: none;
     }
     @keyframes content-tab-color {
-      0%, 23%    { color: #888; }
-      24%        { color: #7a3868; }
-      44%        { color: #7a3868; }
-      48%        { color: #888; }
+      0%, 30.7%  { color: #888; }
+      32%        { color: #7a3868; }
+      58.7%      { color: #7a3868; }
+      64%        { color: #888; }
       100%       { color: #888; }
     }
     .mc-tab.content-tab-btn .mc-tab-indicator {
-      animation: content-indicator-anim 10s infinite;
+      animation: content-indicator-anim 7.5s infinite;
     }
     @keyframes content-indicator-anim {
-      0%, 23%   { opacity: 0; }
-      24%       { opacity: 1; }
-      44%       { opacity: 1; }
-      48%       { opacity: 0; }
-      100%      { opacity: 0; }
+      0%, 30.7%  { opacity: 0; }
+      32%        { opacity: 1; }
+      58.7%      { opacity: 1; }
+      64%        { opacity: 0; }
+      100%       { opacity: 0; }
     }
 
     /* Both tab text + indicator */
     .mc-tab.both-tab-btn {
-      animation: both-tab-color 10s infinite;
+      animation: both-tab-color 7.5s infinite;
       transition: none;
     }
     @keyframes both-tab-color {
-      0%, 47%   { color: #888; }
-      48%       { color: #7a3868; }
-      85.9%     { color: #7a3868; }
-      86%       { color: #888; }
-      100%      { color: #888; }
+      0%, 60.9%  { color: #888; }
+      61.3%      { color: #7a3868; }
+      94.3%      { color: #7a3868; }
+      94.7%      { color: #888; }
+      100%       { color: #888; }
     }
     .mc-tab.both-tab-btn .mc-tab-indicator {
-      animation: both-indicator-anim 10s infinite;
+      animation: both-indicator-anim 7.5s infinite;
     }
     @keyframes both-indicator-anim {
-      0%, 47%  { opacity: 0; }
-      48%      { opacity: 1; }
-      85.9%    { opacity: 1; }
-      86%      { opacity: 0; }
-      100%     { opacity: 0; }
+      0%, 60.9%  { opacity: 0; }
+      61.3%      { opacity: 1; }
+      94.3%      { opacity: 1; }
+      94.7%      { opacity: 0; }
+      100%       { opacity: 0; }
     }
 
     /* Click ring on Content Calendar tab (position set by JS) */
@@ -4026,7 +4024,7 @@
       opacity: 1;
       top: -28px;
       left: 498px;
-      animation: cursor-to-content 10s infinite;
+      animation: cursor-to-content 7.5s infinite;
     }
 
     .mc-cursor svg {
@@ -4051,18 +4049,18 @@
       opacity: 0;
       z-index: 30;
       pointer-events: none;
-      animation: ghost-fly 10s infinite;
+      animation: ghost-fly 7.5s infinite;
       will-change: transform, opacity;
       backface-visibility: hidden;
       -webkit-backface-visibility: hidden;
     }
 
     @keyframes ghost-fly {
-      0%, 5%  { opacity: 0; transform: translate3d(900px, 200px, 0) scale(0.75); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
-      13%     { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
-      82%     { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
-      86%     { opacity: 0; transform: translate3d(0, 0, 0) scale(0.9); }
-      100%    { opacity: 0; transform: translate3d(900px, 200px, 0) scale(0.75); }
+      0%, 6.7%  { opacity: 0; transform: translate3d(900px, 200px, 0) scale(0.75); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+      17.3%     { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+      89.3%     { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+      94.7%     { opacity: 0; transform: translate3d(0, 0, 0) scale(0.9); }
+      100%      { opacity: 0; transform: translate3d(900px, 200px, 0) scale(0.75); }
     }
 
     .mc-ghost-event-2 {
@@ -4079,18 +4077,18 @@
       opacity: 0;
       z-index: 30;
       pointer-events: none;
-      animation: ghost-fly-2 10s infinite;
+      animation: ghost-fly-2 7.5s infinite;
       will-change: transform, opacity;
       backface-visibility: hidden;
       -webkit-backface-visibility: hidden;
     }
 
     @keyframes ghost-fly-2 {
-      0%, 7%  { opacity: 0; transform: translate3d(900px, 200px, 0) scale(0.75); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
-      15%     { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
-      82%     { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
-      86%     { opacity: 0; transform: translate3d(0, 0, 0) scale(0.9); }
-      100%    { opacity: 0; transform: translate3d(900px, 200px, 0) scale(0.75); }
+      0%, 9.3%  { opacity: 0; transform: translate3d(900px, 200px, 0) scale(0.75); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+      20%       { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+      89.3%     { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+      94.7%     { opacity: 0; transform: translate3d(0, 0, 0) scale(0.9); }
+      100%      { opacity: 0; transform: translate3d(900px, 200px, 0) scale(0.75); }
     }
 
     .mc-ghost-event-3 {
@@ -4107,18 +4105,18 @@
       opacity: 0;
       z-index: 30;
       pointer-events: none;
-      animation: ghost-fly-3 10s infinite;
+      animation: ghost-fly-3 7.5s infinite;
       will-change: transform, opacity;
       backface-visibility: hidden;
       -webkit-backface-visibility: hidden;
     }
 
     @keyframes ghost-fly-3 {
-      0%, 9%  { opacity: 0; transform: translate3d(900px, 200px, 0) scale(0.75); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
-      17%     { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
-      82%     { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
-      86%     { opacity: 0; transform: translate3d(0, 0, 0) scale(0.9); }
-      100%    { opacity: 0; transform: translate3d(900px, 200px, 0) scale(0.75); }
+      0%, 12%  { opacity: 0; transform: translate3d(900px, 200px, 0) scale(0.75); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+      22.7%    { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+      89.3%    { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+      94.7%    { opacity: 0; transform: translate3d(0, 0, 0) scale(0.9); }
+      100%     { opacity: 0; transform: translate3d(900px, 200px, 0) scale(0.75); }
     }
 
     /* Ghost Content Pill Cards */
@@ -4151,7 +4149,7 @@
       left: 10px;
       background: linear-gradient(135deg, #7a3868 0%, #612a4f 50%, #4e2040 100%);
       box-shadow: 0 2px 10px rgba(97,42,79,0.5);
-      animation: content-fly-1 10s infinite;
+      animation: content-fly-1 7.5s infinite;
     }
 
     .mc-content-pill-2 {
@@ -4159,7 +4157,7 @@
       left: 140px;
       background: linear-gradient(135deg, #7a3868 0%, #612a4f 50%, #4e2040 100%);
       box-shadow: 0 2px 10px rgba(97,42,79,0.5);
-      animation: content-fly-2 10s infinite;
+      animation: content-fly-2 7.5s infinite;
     }
 
     .mc-content-pill-3 {
@@ -4167,7 +4165,7 @@
       left: 275px;
       background: linear-gradient(135deg, #7a3868 0%, #612a4f 50%, #4e2040 100%);
       box-shadow: 0 2px 10px rgba(97,42,79,0.5);
-      animation: content-fly-3 10s infinite;
+      animation: content-fly-3 7.5s infinite;
     }
 
     .mc-content-pill-4 {
@@ -4175,7 +4173,7 @@
       left: 530px;
       background: linear-gradient(135deg, #7a3868 0%, #612a4f 50%, #4e2040 100%);
       box-shadow: 0 2px 10px rgba(97,42,79,0.5);
-      animation: content-fly-4 10s infinite;
+      animation: content-fly-4 7.5s infinite;
     }
 
     @keyframes content-fly-1 {
@@ -4245,7 +4243,7 @@
       padding: 0;
       opacity: 0;
       z-index: 50;
-      animation: gcal-slide 10s infinite;
+      animation: gcal-slide 7.5s infinite;
       will-change: transform, opacity;
       backface-visibility: hidden;
       -webkit-backface-visibility: hidden;
@@ -4253,9 +4251,9 @@
 
     @keyframes gcal-slide {
       0%    { opacity: 0; transform: translate3d(-120px, 0, 0); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
-      5%    { opacity: 1; transform: translate3d(0, 0, 0); }
-      18%   { opacity: 1; transform: translate3d(0, 0, 0); animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45); }
-      21%   { opacity: 0; transform: translate3d(-120px, 0, 0); }
+      6.7%  { opacity: 1; transform: translate3d(0, 0, 0); }
+      24%   { opacity: 1; transform: translate3d(0, 0, 0); animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45); }
+      28%   { opacity: 0; transform: translate3d(-120px, 0, 0); }
       100%  { opacity: 0; transform: translate3d(-120px, 0, 0); }
     }
 
@@ -6455,11 +6453,11 @@
         const ty = Math.round(r.top + r.height / 2 - (calRect.top + 225));
         css += `
           @keyframes ghost-fly {
-            0%, 5%  { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
-            13%     { opacity: 1; transform: translate(0, 0) scale(1); }
-            82%     { opacity: 1; transform: translate(0, 0) scale(1); }
-            86%     { opacity: 0; transform: translate(0, 0) scale(0.9); }
-            100%    { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); }
+            0%, 6.7%  { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+            17.3%     { opacity: 1; transform: translate(0, 0) scale(1); }
+            89.3%     { opacity: 1; transform: translate(0, 0) scale(1); }
+            94.7%     { opacity: 0; transform: translate(0, 0) scale(0.9); }
+            100%      { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); }
           }
         `;
       }
@@ -6472,11 +6470,11 @@
         const ty = Math.round(r.top + r.height / 2 - (calRect.top + 360));
         css += `
           @keyframes ghost-fly-2 {
-            0%, 7%  { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
-            15%     { opacity: 1; transform: translate(0, 0) scale(1); }
-            82%     { opacity: 1; transform: translate(0, 0) scale(1); }
-            86%     { opacity: 0; transform: translate(0, 0) scale(0.9); }
-            100%    { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); }
+            0%, 9.3%  { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+            20%       { opacity: 1; transform: translate(0, 0) scale(1); }
+            89.3%     { opacity: 1; transform: translate(0, 0) scale(1); }
+            94.7%     { opacity: 0; transform: translate(0, 0) scale(0.9); }
+            100%      { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); }
           }
         `;
       }
@@ -6489,11 +6487,11 @@
         const ty = Math.round(r.top + r.height / 2 - (calRect.top + 130));
         css += `
           @keyframes ghost-fly-3 {
-            0%, 9%  { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
-            17%     { opacity: 1; transform: translate(0, 0) scale(1); }
-            82%     { opacity: 1; transform: translate(0, 0) scale(1); }
-            86%     { opacity: 0; transform: translate(0, 0) scale(0.9); }
-            100%    { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); }
+            0%, 12%  { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+            22.7%    { opacity: 1; transform: translate(0, 0) scale(1); }
+            89.3%    { opacity: 1; transform: translate(0, 0) scale(1); }
+            94.7%    { opacity: 0; transform: translate(0, 0) scale(0.9); }
+            100%     { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); }
           }
         `;
       }
@@ -6531,19 +6529,19 @@
       style.id = 'content-pills-dynamic';
       let css = '';
 
-      const delays = [29, 31, 33, 35]; // % into 10s cycle when each pill starts
+      const delays = [38.7, 41.3, 44.0, 46.7]; // % into 7.5s cycle when each pill starts
 
       pills.forEach((pill, i) => {
         const tx = Math.round(ox - pill.left);
         const ty = Math.round(oy - pill.top);
         const d1 = delays[i];
-        const land1 = d1 + 4;
+        const land1 = +(d1 + 5.3).toFixed(1);
         css += `
           @keyframes ${pill.name} {
             0%, ${d1}%   { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
             ${land1}%    { opacity: 1; transform: translate(0, 0) scale(1); }
-            82%          { opacity: 1; transform: translate(0, 0) scale(1); }
-            86%          { opacity: 0; transform: translate(0, 0) scale(0.9); }
+            89.3%        { opacity: 1; transform: translate(0, 0) scale(1); }
+            94.7%        { opacity: 0; transform: translate(0, 0) scale(0.9); }
             100%         { opacity: 0; transform: translate(${tx}px, ${ty}px) scale(0.75); }
           }
         `;
@@ -6597,14 +6595,13 @@
       style.id = 'cursor-move-dynamic';
       style.textContent = `
         @keyframes cursor-to-content {
-          0%   { transform: translate(0, 0); }
-          20%  { transform: translate(0, 0); animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
-          24%  { transform: translate(${dxContent}px, ${dyContent}px); }
-          44%  { transform: translate(${dxContent}px, ${dyContent}px); animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
-          48%  { transform: translate(${dxBoth}px, ${dyBoth}px); }
-          86%  { transform: translate(${dxBoth}px, ${dyBoth}px); animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
-          90%  { transform: translate(0, 0); }
-          100% { transform: translate(0, 0); }
+          0%    { transform: translate(0, 0); }
+          26.7% { transform: translate(0, 0); animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
+          32%   { transform: translate(${dxContent}px, ${dyContent}px); }
+          58.7% { transform: translate(${dxContent}px, ${dyContent}px); animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
+          64%   { transform: translate(${dxBoth}px, ${dyBoth}px); }
+          94.7% { transform: translate(${dxBoth}px, ${dyBoth}px); animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
+          100%  { transform: translate(0, 0); }
         }
       `;
       document.head.appendChild(style);
