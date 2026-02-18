@@ -4467,37 +4467,107 @@
       margin-top: 2px;
     }
 
-    /* Master Calendar Responsive */
+    /* ─── Master Calendar Responsive ─── */
+
     @media (max-width: 1100px) {
       .gcal-card {
         display: none;
       }
     }
 
+    /* Single column: remove wrong 350px cap, fix reversed-row padding, reduce gap */
     @media (max-width: 900px) {
-      .mc-calendar-stack {
-        max-width: 350px;
-      }
-    }
-
-    @media (max-width: 768px) {
-      .mc-title {
-        font-size: 2rem;
-      }
-
-      .mc-subtitle {
-        font-size: 1rem;
-      }
-
       .mc-calendar-stack {
         max-width: 100%;
       }
+      .master-cal-visual {
+        width: 100%;
+      }
+      /* Remove the desktop-only top padding from reversed feature text */
+      .mc-feature-row .feature-text {
+        padding-top: 0;
+      }
+      /* Reduce the desktop 80px gap to something tighter in single-column */
+      .mc-feature-row {
+        gap: 24px;
+      }
+    }
 
+    /* Tablet: hide cursor, clip overflow from effects */
+    @media (max-width: 768px) {
       .mc-cursor,
-      .mc-click-ring,
+      .mc-content-click-ring,
       .mc-event-flash,
       .mc-sync-toast {
         display: none;
+      }
+      .mc-calendar-tilt {
+        border-radius: 16px;
+        overflow: hidden;
+      }
+      .mc-tab {
+        font-size: 0.76rem;
+        padding: 8px 14px;
+      }
+    }
+
+    /* Small screens: compact tab bar, reposition effects with % so they stay on-calendar */
+    @media (max-width: 600px) {
+      .mc-tab {
+        font-size: 0.70rem;
+        padding: 6px 9px;
+        gap: 4px;
+      }
+      .mc-tab svg {
+        width: 13px;
+        height: 13px;
+      }
+      .mc-tab-bar {
+        padding: 4px 5px;
+        gap: 1px;
+      }
+      /* Reposition ghost events as % of calendar so they stay in-bounds */
+      .mc-ghost-event   { top: 32%; left: 12%; }
+      .mc-ghost-event-2 { top: 55%; left: 25%; }
+      .mc-ghost-event-3 { top: 18%; left: 55%; }
+      /* Reposition content pills as % of calendar */
+      .mc-content-pill-1 { top: 18%; left:  1%; }
+      .mc-content-pill-2 { top: 14%; left: 18%; }
+      .mc-content-pill-3 { top: 17%; left: 35%; }
+      .mc-content-pill-4 { top: 24%; left: 66%; }
+    }
+
+    /* Very small: icons-only tab bar, smaller effect text */
+    @media (max-width: 460px) {
+      .mc-tab span {
+        display: none;
+      }
+      .mc-tab {
+        padding: 8px 11px;
+        gap: 0;
+      }
+      .mc-tab svg {
+        width: 15px;
+        height: 15px;
+      }
+      .mc-tab-bar {
+        gap: 6px;
+      }
+      .mc-ghost-event,
+      .mc-ghost-event-2,
+      .mc-ghost-event-3 {
+        font-size: 0.60rem;
+        padding: 5px 8px;
+        border-radius: 6px;
+      }
+      .mc-content-pill {
+        font-size: 0.58rem;
+        padding: 4px 7px 4px 6px;
+        gap: 4px;
+      }
+      .mc-content-pill svg {
+        width: 8px;
+        height: 8px;
       }
     }
 
@@ -4686,6 +4756,7 @@
       .feature-row.reversed .feature-text {
         padding-left: 0;
         margin-right: 0;
+        padding-top: 0;
       }
 
       .pipeline-visual {
