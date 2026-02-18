@@ -2119,8 +2119,8 @@
       0%        { color: #7a3868; }
       21%       { color: #7a3868; }
       23%       { color: #888; }
-      65%       { color: #888; }
-      90%       { color: #7a3868; }
+      64.9%     { color: #888; }
+      65%       { color: #7a3868; }
       100%      { color: #7a3868; }
     }
     .mc-tab.tasks-tab-btn .mc-tab-indicator {
@@ -2130,8 +2130,8 @@
       0%       { opacity: 1; }
       21%      { opacity: 1; }
       23%      { opacity: 0; }
-      65%      { opacity: 0; }
-      90%      { opacity: 1; }
+      64.9%    { opacity: 0; }
+      65%      { opacity: 1; }
       100%     { opacity: 1; }
     }
 
@@ -2166,8 +2166,8 @@
     @keyframes both-tab-color {
       0%, 36%   { color: #888; }
       38%       { color: #7a3868; }
-      65%       { color: #7a3868; }
-      68%       { color: #888; }
+      64.9%     { color: #7a3868; }
+      65%       { color: #888; }
       100%      { color: #888; }
     }
     .mc-tab.both-tab-btn .mc-tab-indicator {
@@ -2176,8 +2176,8 @@
     @keyframes both-indicator-anim {
       0%, 36%  { opacity: 0; }
       38%      { opacity: 1; }
-      65%      { opacity: 1; }
-      68%      { opacity: 0; }
+      64.9%    { opacity: 1; }
+      65%      { opacity: 0; }
       100%     { opacity: 0; }
     }
 
@@ -6602,8 +6602,7 @@
           22%  { transform: translate(${dxContent}px, ${dyContent}px); }
           33%  { transform: translate(${dxContent}px, ${dyContent}px); animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
           37%  { transform: translate(${dxBoth}px, ${dyBoth}px); }
-          65%  { transform: translate(${dxBoth}px, ${dyBoth}px); animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
-          90%  { transform: translate(0, 0); }
+          65%  { transform: translate(${dxBoth}px, ${dyBoth}px); animation-timing-function: steps(1, start); }
           100% { transform: translate(0, 0); }
         }
       `;
