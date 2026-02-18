@@ -2290,12 +2290,12 @@
     /* Payment notification */
     .payment-notification {
       position: absolute;
-      bottom: -35px;
+      bottom: clamp(-50px, -2.8vw, -20px);
       left: 3%;
       z-index: 10;
       background: #e6f4ee;
       border-radius: 11px;
-      padding: 9px 12px;
+      padding: clamp(7px, 0.65vw, 10px) clamp(9px, 0.9vw, 13px);
       box-shadow: 0 8px 30px rgba(45,107,79,0.2), 0 2px 8px rgba(0,0,0,0.06);
       display: flex;
       align-items: center;
@@ -2313,8 +2313,8 @@
     }
 
     .payment-icon {
-      width: 30px;
-      height: 30px;
+      width: clamp(24px, 2.2vw, 32px);
+      height: clamp(24px, 2.2vw, 32px);
       background: rgba(45,107,79,0.12);
       border-radius: 50%;
       display: flex;
@@ -2327,23 +2327,23 @@
     .payment-text strong {
       display: block;
       color: #2D6B4F;
-      font-size: 11px;
+      font-size: clamp(10px, 0.8vw, 12px);
       font-weight: 700;
     }
 
     .payment-text span {
       color: #8B7082;
-      font-size: 9.5px;
+      font-size: clamp(8.5px, 0.65vw, 10px);
     }
 
     .publish-notification {
       position: absolute;
-      bottom: -15px;
+      bottom: clamp(-30px, -1.4vw, -5px);
       left: 42%;
       z-index: 10;
       background: #f3e8f0;
       border-radius: 11px;
-      padding: 9px 12px;
+      padding: clamp(7px, 0.65vw, 10px) clamp(9px, 0.9vw, 13px);
       box-shadow: 0 8px 30px rgba(97,42,79,0.15), 0 2px 8px rgba(0,0,0,0.06);
       display: flex;
       align-items: center;
@@ -2361,8 +2361,8 @@
     }
 
     .publish-icon {
-      width: 30px;
-      height: 30px;
+      width: clamp(24px, 2.2vw, 32px);
+      height: clamp(24px, 2.2vw, 32px);
       background: rgba(97,42,79,0.12);
       border-radius: 50%;
       display: flex;
@@ -2374,13 +2374,13 @@
     .publish-text strong {
       display: block;
       color: #612a4f;
-      font-size: 11px;
+      font-size: clamp(10px, 0.8vw, 12px);
       font-weight: 700;
     }
 
     .publish-text span {
       color: #8B7082;
-      font-size: 9.5px;
+      font-size: clamp(8.5px, 0.65vw, 10px);
     }
 
     /* ── Partnerships cursor check animation ── */
@@ -4758,12 +4758,10 @@
       }
 
       .payment-notification {
-        bottom: -40px;
         left: 2%;
       }
 
       .publish-notification {
-        bottom: -20px;
         left: 38%;
       }
     }
