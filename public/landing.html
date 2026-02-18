@@ -2064,6 +2064,8 @@
       justify-content: center;
       gap: 14px;
       overflow: visible !important;
+      container-type: inline-size;
+      container-name: mc-visual;
     }
 
     /* Tab bar */
@@ -2072,7 +2074,7 @@
       align-items: center;
       background: #f0edf4;
       border-radius: 50px;
-      padding: 5px 6px;
+      padding: clamp(3px, 0.76cqi, 5px) clamp(4px, 0.91cqi, 6px);
       gap: 2px;
     }
 
@@ -2080,10 +2082,10 @@
       position: relative;
       display: flex;
       align-items: center;
-      gap: 7px;
-      padding: 9px 18px;
+      gap: clamp(4px, 1.06cqi, 7px);
+      padding: clamp(6px, 1.36cqi, 9px) clamp(12px, 2.73cqi, 18px);
       border-radius: 40px;
-      font-size: 0.82rem;
+      font-size: clamp(0.55rem, 2cqi, 0.82rem);
       font-weight: 500;
       color: #888;
       white-space: nowrap;
@@ -2092,6 +2094,8 @@
 
     .mc-tab svg {
       flex-shrink: 0;
+      width: clamp(11px, 2.42cqi, 16px);
+      height: clamp(11px, 2.42cqi, 16px);
     }
 
     .mc-tab-indicator {
@@ -4017,8 +4021,8 @@
     /* Fake Cursor */
     .mc-cursor {
       position: absolute;
-      width: min(32px, 4.85vw);
-      height: min(32px, 4.85vw);
+      width: clamp(14px, 4.85cqi, 32px);
+      height: clamp(14px, 4.85cqi, 32px);
       z-index: 100;
       pointer-events: none;
       opacity: 1;
@@ -4042,8 +4046,8 @@
       background: rgba(74, 111, 165, 0.88);
       color: white;
       border-radius: 8px;
-      padding: min(7px, 1.06vw) min(11px, 1.67vw);
-      font-size: min(0.72rem, 1.75vw);
+      padding: clamp(4px, 1.06cqi, 7px) clamp(6px, 1.67cqi, 11px);
+      font-size: clamp(0.4rem, 1.75cqi, 0.72rem);
       font-weight: 500;
       white-space: nowrap;
       opacity: 0;
@@ -4070,8 +4074,8 @@
       background: rgba(74, 111, 165, 0.88);
       color: white;
       border-radius: 8px;
-      padding: min(7px, 1.06vw) min(11px, 1.67vw);
-      font-size: min(0.72rem, 1.75vw);
+      padding: clamp(4px, 1.06cqi, 7px) clamp(6px, 1.67cqi, 11px);
+      font-size: clamp(0.4rem, 1.75cqi, 0.72rem);
       font-weight: 500;
       white-space: nowrap;
       opacity: 0;
@@ -4098,8 +4102,8 @@
       background: rgba(74, 111, 165, 0.88);
       color: white;
       border-radius: 8px;
-      padding: min(7px, 1.06vw) min(11px, 1.67vw);
-      font-size: min(0.72rem, 1.75vw);
+      padding: clamp(4px, 1.06cqi, 7px) clamp(6px, 1.67cqi, 11px);
+      font-size: clamp(0.4rem, 1.75cqi, 0.72rem);
       font-weight: 500;
       white-space: nowrap;
       opacity: 0;
@@ -4123,8 +4127,8 @@
     .mc-content-pill {
       position: absolute;
       border-radius: 999px;
-      padding: min(5px, 0.76vw) min(11px, 1.67vw) min(5px, 0.76vw) min(9px, 1.36vw);
-      font-size: min(0.68rem, 1.65vw);
+      padding: clamp(3px, 0.76cqi, 5px) clamp(6px, 1.67cqi, 11px) clamp(3px, 0.76cqi, 5px) clamp(5px, 1.36cqi, 9px);
+      font-size: clamp(0.38rem, 1.65cqi, 0.68rem);
       font-weight: 600;
       color: white;
       white-space: nowrap;
@@ -4137,7 +4141,7 @@
       -webkit-backface-visibility: hidden;
       display: inline-flex;
       align-items: center;
-      gap: min(5px, 0.76vw);
+      gap: clamp(3px, 0.76cqi, 5px);
     }
 
     .mc-content-pill svg {
@@ -4469,10 +4473,6 @@
 
     /* ─── Master Calendar Responsive ─── */
 
-    @media (max-width: 1100px) {
-      /* gcal card stays visible — repositioned below for mobile */
-    }
-
     /* Single column: remove wrong 350px cap, fix reversed-row padding, reduce gap */
     @media (max-width: 900px) {
       .mc-calendar-stack {
@@ -4489,9 +4489,22 @@
       .mc-feature-row {
         gap: 24px;
       }
+      /* Reposition gcal card so it stays on-screen when layout is single-column */
+      .gcal-card {
+        left: 5%;
+        bottom: -8%;
+      }
+      /* Shorter slide-in distance so card doesn't enter from off-screen */
+      @keyframes gcal-slide {
+        0%    { opacity: 0; transform: translate3d(-60px, 0, 0); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+        6.7%  { opacity: 1; transform: translate3d(0, 0, 0); }
+        24%   { opacity: 1; transform: translate3d(0, 0, 0); animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45); }
+        28%   { opacity: 0; transform: translate3d(-60px, 0, 0); }
+        100%  { opacity: 0; transform: translate3d(-60px, 0, 0); }
+      }
     }
 
-    /* Tablet */
+    /* Tablet: hide decorative click/flash/toast elements */
     @media (max-width: 768px) {
       .mc-content-click-ring,
       .mc-event-flash,
@@ -4501,43 +4514,17 @@
       .mc-calendar-tilt {
         border-radius: 16px;
       }
-      .mc-tab {
-        font-size: 0.76rem;
-        padding: 8px 14px;
-      }
-      /* Reposition gcal card so it stays on-screen at mobile widths */
-      .gcal-card {
-        left: 2%;
-        bottom: -5%;
-      }
     }
 
-    /* Scale gcal card and cursor proportionally as viewport shrinks */
-    @media (max-width: 600px) {
+    /* gcal card scales via container queries — relative to the visual column width */
+    @container mc-visual (max-width: 580px) {
       .gcal-card { zoom: 0.85; }
     }
-    @media (max-width: 480px) {
+    @container mc-visual (max-width: 460px) {
       .gcal-card { zoom: 0.70; }
     }
-    @media (max-width: 380px) {
+    @container mc-visual (max-width: 380px) {
       .gcal-card { zoom: 0.58; }
-    }
-
-    /* Small screens: compact tab bar only — positions and font-sizes scale via min()/vw globally */
-    @media (max-width: 600px) {
-      .mc-tab {
-        font-size: 0.70rem;
-        padding: 6px 9px;
-        gap: 4px;
-      }
-      .mc-tab svg {
-        width: 13px;
-        height: 13px;
-      }
-      .mc-tab-bar {
-        padding: 4px 5px;
-        gap: 1px;
-      }
     }
 
     /* Very small: icons-only tab bar */
@@ -4546,15 +4533,8 @@
         display: none;
       }
       .mc-tab {
-        padding: 8px 11px;
+        padding: clamp(6px, 1.36cqi, 9px) clamp(8px, 2cqi, 11px);
         gap: 0;
-      }
-      .mc-tab svg {
-        width: 15px;
-        height: 15px;
-      }
-      .mc-tab-bar {
-        gap: 6px;
       }
     }
 
