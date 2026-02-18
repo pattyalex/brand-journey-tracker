@@ -3267,12 +3267,12 @@
     .pricing-card::before {
       content: '';
       position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 4px;
-      background: linear-gradient(90deg, #612a4f 0%, #8B7082 50%, #c4a8b9 100%);
-      border-radius: 28px 28px 0 0;
+      top: -1px;
+      left: 10%;
+      right: 10%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent 0%, rgba(180,100,160,0.6) 50%, transparent 100%);
+      border-radius: 0;
     }
 
     .popular-tag {
@@ -3351,6 +3351,13 @@
       color: #7a9a7a;
       font-weight: 500;
       margin-top: 8px;
+    }
+
+    .price-billing-cycle {
+      font-size: 11px;
+      color: #a89aa5;
+      margin-top: 4px;
+      letter-spacing: 0.03em;
     }
 
     .pricing-features {
@@ -3439,53 +3446,88 @@
     }
 
     /* ==================== MERGED RIBBONS + PRICING SECTION ==================== */
+    /* ==================== RIBBONS + PRICING — REDESIGN ==================== */
     .ribbons-pricing-merged {
       position: relative;
       z-index: 1;
-      padding: 80px 24px 120px;
-      background: linear-gradient(180deg, #fcfafe 0%, #f8f4fb 50%, #fcfafe 100%);
+      padding: 100px 12% 120px 24px;
+      background: linear-gradient(160deg, #1c0e1a 0%, #2d1528 55%, #1e1020 100%);
       overflow: hidden;
       scroll-margin-top: 40px;
     }
 
-    .ribbons-pricing-merged::before {
-      content: '';
+    /* Ambient background orbs */
+    .merged-orb {
       position: absolute;
-      top: 0; left: 50%;
-      transform: translateX(-50%);
-      width: 100%; max-width: 1200px; height: 100%;
-      background:
-        radial-gradient(ellipse 80% 50% at 20% 20%, rgba(139,112,130,0.08) 0%, transparent 50%),
-        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(97,42,79,0.06) 0%, transparent 50%);
+      border-radius: 50%;
       pointer-events: none;
+      filter: blur(90px);
+    }
+    .merged-orb-1 {
+      width: 700px; height: 700px;
+      background: radial-gradient(circle, rgba(107,45,91,0.45) 0%, transparent 65%);
+      top: -180px; left: -160px;
+      animation: orbFloat1 12s ease-in-out infinite;
+    }
+    .merged-orb-2 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(170,90,150,0.22) 0%, transparent 65%);
+      bottom: -100px; right: 25%;
+      animation: orbFloat2 15s ease-in-out infinite;
+    }
+    .merged-orb-3 {
+      width: 380px; height: 380px;
+      background: radial-gradient(circle, rgba(80,40,130,0.18) 0%, transparent 65%);
+      top: 30%; right: -60px;
+      animation: orbFloat1 18s ease-in-out infinite reverse;
+    }
+    @keyframes orbFloat1 {
+      0%, 100% { transform: translate(0, 0); }
+      50%       { transform: translate(30px, 20px); }
+    }
+    @keyframes orbFloat2 {
+      0%, 100% { transform: translate(0, 0); }
+      50%       { transform: translate(-20px, -30px); }
     }
 
-    .merged-header {
+    /* Header on dark bg */
+    .ribbons-pricing-merged .merged-header {
       text-align: center;
-      margin-bottom: 60px;
+      margin-bottom: 70px;
       position: relative;
+      /* stretch to full section width so text-align:center is truly centred */
+      margin-left: -24px;
+      margin-right: -12%;
     }
-
+    .ribbons-pricing-merged .badge-pill {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.14);
+      color: rgba(255,255,255,0.65);
+    }
+    .ribbons-pricing-merged .badge-pill svg { stroke: rgba(255,255,255,0.65); }
     .merged-h2 {
       font-family: 'Instrument Serif', serif;
       font-size: clamp(2rem, 4vw, 3rem);
-      color: var(--text-dark);
+      color: #ffffff;
       margin-bottom: 16px;
       line-height: 1.2;
     }
-
     .merged-h2 em {
       font-style: italic;
-      color: #612a4f;
+      color: #e8a8d8;
+    }
+    .ribbons-pricing-merged .ribbons-subtitle {
+      color: rgba(255,255,255,0.45);
     }
 
+    /* Side-by-side layout */
     .merged-layout {
       display: flex;
       align-items: center;
       justify-content: center;
-      max-width: 1100px;
+      max-width: 1080px;
       margin: 0 auto;
-      gap: 0;
+      gap: 56px;
     }
 
     .merged-ribbons {
@@ -3496,120 +3538,100 @@
     }
 
     .merged-ribbons .ribbons-container {
+      position: relative;
+      height: auto !important;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
       max-width: 420px;
       width: 100%;
       margin: 0;
     }
 
-    /* Convergence column */
-    .convergence-col {
-      flex: 0 0 80px;
-      width: 80px;
-      align-self: stretch;
-      position: relative;
-    }
-
-    .convergence-svg {
-      width: 100%;
-      height: 100%;
-      overflow: visible;
-    }
-
-    /* Line draw animation */
-    .conv-line {
-      stroke-dasharray: 300;
-      stroke-dashoffset: 300;
-    }
-
-    .conv-line.draw {
-      animation: convDraw 0.55s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-    }
-
-    .conv-line-1.draw { animation-delay: 0.85s; }
-    .conv-line-2.draw { animation-delay: 1.00s; }
-    .conv-line-3.draw { animation-delay: 1.15s; }
-    .conv-line-4.draw { animation-delay: 1.30s; }
-
-    @keyframes convDraw {
-      to { stroke-dashoffset: 0; }
-    }
-
-    /* Convergence dot */
-    .conv-dot {
-      transition: opacity 0.3s ease 1.6s;
-    }
-
-    .conv-dot.show { opacity: 1 !important; }
-
-    /* Pulsing ring */
-    @keyframes convPulse {
-      0%   { opacity: 0.7; r: 5; }
-      100% { opacity: 0;   r: 18; }
-    }
-
-    .conv-ring.pulse {
-      animation: convPulse 1.6s ease-out infinite;
-      animation-delay: 1.7s;
-    }
+    /* Convergence column — removed in new design */
+    .convergence-col { display: none; }
 
     /* Right: Pricing column */
     .merged-pricing {
-      flex: 1;
+      flex: 0 0 auto;
+      width: 360px;
       display: flex;
       flex-direction: column;
       align-items: flex-start;
-      max-width: 460px;
+      position: relative;
     }
-
-    .merged-pricing .pricing-cards {
-      width: 100%;
-      max-width: 100%;
-      margin: 0;
+    .merged-pricing::before {
+      content: '';
+      position: absolute;
+      inset: -50px;
+      background: radial-gradient(ellipse 80% 70% at 50% 50%, rgba(180,80,150,0.35) 0%, transparent 70%);
+      filter: blur(40px);
+      z-index: 0;
+      pointer-events: none;
     }
-
-    .merged-pricing .pricing-card {
-      max-width: 100%;
-    }
-
+    .merged-pricing > * { position: relative; z-index: 1; }
+    .merged-pricing .pricing-cards { width: 100%; max-width: 100%; margin: 0; }
+    .merged-pricing .pricing-card { max-width: 100%; padding: 28px 30px; }
+    .merged-pricing .pricing-card-header { margin-bottom: 18px; }
+    .merged-pricing .price-wrapper { margin-bottom: 18px; min-height: auto; }
+    .merged-pricing .pricing-features { margin-bottom: 20px; }
+    .merged-pricing .pricing-features li { padding: 7px 0; font-size: 13px; }
+    .merged-pricing .amount { font-size: 3.8rem; }
     .merged-pricing .pricing-toggle-wrapper {
-      margin-bottom: 24px;
-      justify-content: flex-start;
+      margin-bottom: 20px;
+      align-self: center;
+      display: inline-flex;
+      justify-content: center;
+      gap: 0;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 50px;
+      padding: 4px;
     }
-
-    .merged-pricing .pricing-guarantee {
-      justify-content: flex-start;
+    .merged-pricing .toggle-label {
+      font-size: 12px;
+      padding: 5px 14px;
+      border-radius: 50px;
+      border: none;
+      color: rgba(255,255,255,0.45);
+      font-weight: 500;
     }
+    .merged-pricing .toggle-label.active {
+      background: white;
+      color: #2d1528;
+      font-size: 12px;
+      padding: 5px 14px;
+      border: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      font-weight: 600;
+    }
+    .merged-pricing .save-badge {
+      font-size: 9px;
+      padding: 2px 6px;
+      margin-left: 5px;
+    }
+    .merged-pricing .pricing-guarantee { justify-content: center; align-self: center; color: rgba(255,255,255,0.5); }
+    .merged-pricing .pricing-guarantee svg { stroke: rgba(255,255,255,0.4); }
 
-    /* Mobile: stack vertically, lines face down */
+    /* Mobile */
     @media (max-width: 900px) {
       .merged-layout {
         flex-direction: column;
-        gap: 0;
+        gap: 48px;
       }
-
       .merged-ribbons {
         justify-content: center;
         width: 100%;
       }
-
       .merged-ribbons .ribbons-container {
-        max-width: 600px;
+        max-width: 500px;
         margin: 0 auto;
       }
-
-      .convergence-col {
-        flex: 0 0 auto;
-        width: 360px;
-        height: 80px;
-        align-self: center;
-      }
-
       .merged-pricing {
-        align-items: center;
-        max-width: 100%;
         width: 100%;
+        max-width: 400px;
+        align-items: center;
       }
-
       .merged-pricing .pricing-toggle-wrapper,
       .merged-pricing .pricing-guarantee {
         justify-content: center;
@@ -3652,116 +3674,119 @@
     .ribbons-container {
       max-width: 900px;
       margin: 0 auto;
-      height: 360px;
       position: relative;
     }
 
+    /* ── Ribbon card base ── */
     .ribbon {
-      position: absolute;
-      left: 50%;
+      position: relative;
       display: flex;
       align-items: center;
-      gap: 16px;
-      padding: 16px 32px 16px 20px;
-      border-radius: 50px;
-      font-size: 1.1rem;
+      gap: 12px;
+      padding: 14px 18px 14px 16px;
+      border-radius: 14px;
+      font-size: 1rem;
       font-weight: 500;
-      white-space: nowrap;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-    }
-
-    .ribbon.r1 {
-      bottom: 0;
-      background: linear-gradient(135deg, #f6eff5, #f2eaf4);
+      white-space: normal;
+      overflow: hidden;
+      background: rgba(255,255,255,0.055);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.09);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.25);
+      /* left accent glow bar via pseudo */
+      /* Entry state */
       opacity: 0;
-      transform: translateX(-50%) translateY(-300px) rotate(-15deg);
-      transition: none;
+      transform: translateX(-50px);
+      transition: opacity 0.55s ease, transform 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+                  background 0.25s ease, box-shadow 0.25s ease;
     }
 
-    .ribbon.r2 {
-      bottom: 80px;
-      background: linear-gradient(135deg, #edecf8, #e9e7f7);
-      opacity: 0;
-      transform: translateX(-50%) translateY(-300px) rotate(12deg);
-      transition: none;
+    /* Glowing left accent bar */
+    .ribbon::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 12%; bottom: 12%;
+      width: 3px;
+      border-radius: 0 2px 2px 0;
+      background: var(--r-accent, #9a5282);
+      box-shadow: 0 0 10px 3px var(--r-accent, #9a5282);
     }
 
-    .ribbon.r3 {
-      bottom: 160px;
-      background: linear-gradient(135deg, #f2edf6, #eee9f4);
-      opacity: 0;
-      transform: translateX(-50%) translateY(-300px) rotate(-10deg);
-      transition: none;
-    }
+    /* Per-ribbon accent colours */
+    .ribbon.r4 { --r-accent: #8050a0; }
+    .ribbon.r3 { --r-accent: #a0609a; margin-left: 28px; }
+    .ribbon.r2 { --r-accent: #c078b0; }
+    .ribbon.r1 { --r-accent: #d898c8; margin-left: 28px; }
 
-    .ribbon.r4 {
-      bottom: 240px;
-      background: linear-gradient(135deg, #f5eff4, #f1eaf3);
-      opacity: 0;
-      transform: translateX(-50%) translateY(-300px) rotate(14deg);
-      transition: none;
-    }
-
-    /* Fallen state - ribbons drop in sequence */
-    .ribbon.r4.fallen {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0) rotate(4deg);
-      transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.6s ease;
-    }
-
-    .ribbon.r3.fallen {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0) rotate(-2deg);
-      transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1) 0.25s, opacity 0.6s ease 0.25s;
-    }
-
-    .ribbon.r2.fallen {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0) rotate(3deg);
-      transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1) 0.5s, opacity 0.6s ease 0.5s;
-    }
-
-    .ribbon.r1.fallen {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0) rotate(-4deg);
-      transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1) 0.75s, opacity 0.6s ease 0.75s;
-    }
+    /* Fallen: slide in with stagger */
+    .ribbon.r4.fallen { opacity: 1; transform: translateX(0);
+      transition: opacity 0.55s ease, transform 0.65s cubic-bezier(0.22,1,0.36,1); }
+    .ribbon.r3.fallen { opacity: 1; transform: translateX(28px);
+      transition: opacity 0.55s ease 0.14s, transform 0.65s cubic-bezier(0.22,1,0.36,1) 0.14s; }
+    .ribbon.r2.fallen { opacity: 1; transform: translateX(0);
+      transition: opacity 0.55s ease 0.28s, transform 0.65s cubic-bezier(0.22,1,0.36,1) 0.28s; }
+    .ribbon.r1.fallen { opacity: 1; transform: translateX(28px);
+      transition: opacity 0.55s ease 0.42s, transform 0.65s cubic-bezier(0.22,1,0.36,1) 0.42s; }
 
     .ribbon.fallen:hover {
-      filter: brightness(1.02);
+      background: rgba(255,255,255,0.09);
+      box-shadow: 0 8px 36px rgba(0,0,0,0.35), 0 0 0 1px var(--r-accent);
+      transform: translateX(0) translateY(-3px);
+    }
+    .ribbon.r3.fallen:hover, .ribbon.r1.fallen:hover {
+      transform: translateX(28px) translateY(-3px);
     }
 
+    /* Icon badge */
     .r-icon {
-      width: 40px;
-      height: 40px;
-      background: white;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
       flex-shrink: 0;
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      background: var(--r-accent, #9a5282);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.3);
     }
-
     .r-icon svg {
-      width: 20px;
-      height: 20px;
-      color: #612a4f;
+      width: 16px; height: 16px;
+      color: rgba(255,255,255,0.92);
+      stroke: rgba(255,255,255,0.92);
     }
 
+    /* Text content */
+    .r-content {
+      flex: 1;
+      min-width: 0;
+    }
+    .r-title {
+      display: block;
+      font-family: 'Instrument Serif', serif;
+      font-size: 1.15rem;
+      font-style: italic;
+      color: rgba(255,255,255,0.92);
+      line-height: 1.25;
+      margin-bottom: 4px;
+    }
+    .r-tagline {
+      display: block;
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.42);
+      line-height: 1.4;
+      margin: 0;
+    }
+
+    /* Faint large number background */
     .r-num {
-      width: 32px;
-      height: 32px;
-      background: white;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
-      font-weight: 700;
-      color: #612a4f;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-      flex-shrink: 0;
+      position: absolute;
+      right: 18px; top: 50%;
+      transform: translateY(-50%);
+      font-size: 4.5rem;
+      font-weight: 900;
+      font-family: 'Instrument Serif', serif;
+      color: rgba(255,255,255,0.045);
+      line-height: 1;
+      pointer-events: none;
+      user-select: none;
     }
 
     /* ==================== AI SECTION ==================== */
@@ -4835,7 +4860,7 @@
     /* Responsive for new sections */
     @media (max-width: 900px) {
       .ribbons-container {
-        height: 420px;
+        height: auto !important;
       }
 
       .stats-grid {
@@ -4857,13 +4882,10 @@
     }
 
     @media (max-width: 600px) {
-      .ribbon {
-        width: 90%;
-        justify-content: center;
-        font-size: 0.95rem;
-        padding: 14px 20px 14px 16px;
-        gap: 12px;
-      }
+      .ribbon.r3, .ribbon.r1 { margin-left: 0; }
+      .ribbon.r3.fallen { transform: translateX(0); }
+      .ribbon.r1.fallen { transform: translateX(0); }
+      .ribbon.r3.fallen:hover, .ribbon.r1.fallen:hover { transform: translateX(0) translateY(-3px); }
 
       .stats-grid {
         gap: 16px;
@@ -6031,23 +6053,21 @@
   <!-- Why HeyMeg Ribbons Section -->
   <!-- Merged: Built for Solo Creators + Pricing -->
   <section class="ribbons-pricing-merged reveal" id="pricing">
+    <!-- Background orbs -->
+    <div class="merged-orb merged-orb-1"></div>
+    <div class="merged-orb merged-orb-2"></div>
+    <div class="merged-orb merged-orb-3"></div>
+
     <!-- Centered header -->
     <div class="merged-header">
-      <div class="badge-pill">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-          <circle cx="12" cy="7" r="4"/>
-        </svg>
-        <span>Built for Solo Creators</span>
-      </div>
       <h2 class="merged-h2">You don't need a team.<br><em>You need a better system.</em></h2>
-      <p class="ribbons-subtitle">HeyMeg makes it easy for you to...</p>
+      <p class="ribbons-subtitle">We built it. $14/month. Everything included.</p>
     </div>
 
     <!-- Side-by-side layout -->
     <div class="merged-layout">
 
-      <!-- Left: Role Ribbons (unchanged) -->
+      <!-- Left: Feature cards -->
       <div class="merged-ribbons">
         <div class="ribbons-container">
           <div class="ribbon r4">
@@ -6059,7 +6079,7 @@
                 <rect x="14" y="14" width="8" height="8" rx="1"/>
               </svg>
             </div>
-            <span>Plan Like a Producer</span>
+            <span class="r-title">Plan Like a Producer</span>
           </div>
           <div class="ribbon r3">
             <div class="r-icon">
@@ -6070,7 +6090,7 @@
                 <circle cx="11" cy="11" r="2"/>
               </svg>
             </div>
-            <span>Script Like a Writer</span>
+            <span class="r-title">Script Like a Writer</span>
           </div>
           <div class="ribbon r2">
             <div class="r-icon">
@@ -6081,7 +6101,7 @@
                 <line x1="3" y1="10" x2="21" y2="10"/>
               </svg>
             </div>
-            <span>Schedule Like a Manager</span>
+            <span class="r-title">Schedule Like a Manager</span>
           </div>
           <div class="ribbon r1">
             <div class="r-icon">
@@ -6090,21 +6110,9 @@
                 <polyline points="16 7 22 7 22 13"/>
               </svg>
             </div>
-            <span>Grow Like a Strategist</span>
+            <span class="r-title">Grow Like a Strategist</span>
           </div>
         </div>
-      </div>
-
-      <!-- Middle: SVG convergence lines -->
-      <div class="convergence-col">
-        <svg class="convergence-svg" xmlns="http://www.w3.org/2000/svg" overflow="visible">
-          <path class="conv-line conv-line-1" fill="none" stroke="#d4a4c4" stroke-width="2" stroke-linecap="round"/>
-          <path class="conv-line conv-line-2" fill="none" stroke="#a8a4d8" stroke-width="2" stroke-linecap="round"/>
-          <path class="conv-line conv-line-3" fill="none" stroke="#c0a8d8" stroke-width="2" stroke-linecap="round"/>
-          <path class="conv-line conv-line-4" fill="none" stroke="#d0aac4" stroke-width="2" stroke-linecap="round"/>
-          <circle class="conv-dot" r="5" fill="#6B2D5B" opacity="0"/>
-          <circle class="conv-ring" r="5" fill="none" stroke="#6B2D5B" stroke-width="2" opacity="0"/>
-        </svg>
       </div>
 
       <!-- Right: Pricing card (unchanged) -->
@@ -6129,6 +6137,7 @@
               </div>
               <span class="period">per month</span>
               <span class="price-note" id="price-note">Billed as $168/year</span>
+              <span class="price-billing-cycle" id="billing-cycle">billed monthly</span>
             </div>
 
             <ul class="pricing-features">
@@ -6412,12 +6421,14 @@
     function selectMonthly() {
       const priceAmount = document.getElementById('price-amount');
       const priceNote = document.getElementById('price-note');
+      const billingCycle = document.getElementById('billing-cycle');
       const monthlyLabel = document.getElementById('monthly-label');
       const yearlyLabel = document.getElementById('yearly-label');
       const popularTag = document.getElementById('popular-tag');
 
       priceAmount.textContent = '17';
       priceNote.textContent = '';
+      billingCycle.textContent = 'billed monthly';
       monthlyLabel.classList.add('active');
       yearlyLabel.classList.remove('active');
       popularTag.style.display = 'none';
@@ -6426,12 +6437,14 @@
     function selectYearly() {
       const priceAmount = document.getElementById('price-amount');
       const priceNote = document.getElementById('price-note');
+      const billingCycle = document.getElementById('billing-cycle');
       const monthlyLabel = document.getElementById('monthly-label');
       const yearlyLabel = document.getElementById('yearly-label');
       const popularTag = document.getElementById('popular-tag');
 
       priceAmount.textContent = '14';
       priceNote.textContent = 'Billed as $168/year';
+      billingCycle.textContent = 'billed yearly';
       monthlyLabel.classList.remove('active');
       yearlyLabel.classList.add('active');
       popularTag.style.display = 'block';
@@ -6494,92 +6507,19 @@
 
     // 3D tilt effect on dashboard - disabled (flat layout)
 
-    // Ribbons falling animation + convergence lines
+    // Ribbon cards slide-in animation
     const ribbonsSection = document.querySelector('.ribbons-pricing-merged');
     const ribbons = document.querySelectorAll('.ribbon');
     let ribbonsAnimated = false;
-
-    function drawConvergenceLines() {
-      const col = document.querySelector('.convergence-col');
-      const svg = document.querySelector('.convergence-svg');
-      if (!col || !svg) return;
-
-      const isMobile = window.innerWidth <= 900;
-      const colRect = col.getBoundingClientRect();
-
-      // Convergence point: center of the pricing card
-      const pricingCard = document.querySelector('.merged-pricing .pricing-card');
-      if (!pricingCard) return;
-      const cardRect = pricingCard.getBoundingClientRect();
-
-      // Convergence point relative to the SVG col
-      let convX, convY;
-      if (isMobile) {
-        // Lines go downward: convergence at bottom-center of the col
-        convX = colRect.width / 2;
-        convY = colRect.height;
-      } else {
-        // Lines go right: convergence at right edge, vertically centered on pricing card
-        convX = colRect.width;
-        convY = cardRect.top + cardRect.height / 2 - colRect.top;
-      }
-
-      // Ribbon colors (r4, r3, r2, r1)
-      const colors = ['#d4a4c4', '#a8a4d8', '#c0a8d8', '#d0aac4'];
-      const ribbonEls = document.querySelectorAll('.ribbon');
-
-      ribbonEls.forEach((ribbon, i) => {
-        const rRect = ribbon.getBoundingClientRect();
-        const rCenterY = rRect.top + rRect.height / 2 - colRect.top;
-        const rCenterX = rRect.left + rRect.width / 2 - colRect.left;
-
-        let d;
-        if (isMobile) {
-          // Start from bottom of ribbon (center-x), go down to convergence
-          const startX = rCenterX;
-          const startY = rRect.bottom - colRect.top;
-          d = `M ${startX},${startY} C ${startX},${startY + 30} ${convX},${convY - 30} ${convX},${convY}`;
-        } else {
-          // Start from right edge of ribbon, go to convergence point
-          const startX = rRect.right - colRect.left;
-          d = `M ${startX},${rCenterY} C ${startX + 30},${rCenterY} ${convX - 30},${convY} ${convX},${convY}`;
-        }
-
-        const path = svg.querySelector(`.conv-line-${i + 1}`);
-        if (path) {
-          path.setAttribute('d', d);
-          const len = path.getTotalLength();
-          path.style.strokeDasharray = len;
-          path.style.strokeDashoffset = len;
-        }
-      });
-
-      // Position dot and ring at convergence point
-      const dot = svg.querySelector('.conv-dot');
-      const ring = svg.querySelector('.conv-ring');
-      if (dot) { dot.setAttribute('cx', convX); dot.setAttribute('cy', convY); }
-      if (ring) { ring.setAttribute('cx', convX); ring.setAttribute('cy', convY); }
-
-      // Trigger draw animations
-      requestAnimationFrame(() => {
-        svg.querySelectorAll('.conv-line').forEach(l => l.classList.add('draw'));
-        setTimeout(() => {
-          if (dot) dot.classList.add('show');
-          if (ring) ring.classList.add('pulse');
-        }, 1650);
-      });
-    }
 
     const ribbonsObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting && !ribbonsAnimated) {
           ribbonsAnimated = true;
           ribbons.forEach(ribbon => ribbon.classList.add('fallen'));
-          // Draw lines after last ribbon finishes (r1 delay: 0.75s + 1.2s = ~2s)
-          setTimeout(drawConvergenceLines, 750);
         }
       });
-    }, { threshold: 0.3 });
+    }, { threshold: 0.25 });
 
     if (ribbonsSection) {
       ribbonsObserver.observe(ribbonsSection);
