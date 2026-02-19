@@ -3331,6 +3331,14 @@
       margin-top: 8px;
     }
 
+    .price-mo {
+      font-size: 1rem;
+      font-weight: 400;
+      color: #a89aa5;
+      align-self: flex-end;
+      margin-bottom: 6px;
+    }
+
     .amount {
       font-family: 'Instrument Serif', serif;
       font-size: 4.5rem;
@@ -6004,7 +6012,7 @@
           <span class="ai-pill" style="--delay: 0s; --x: -70px; --y: -100px;">Ideate</span>
           <span class="ai-pill" style="--delay: 0.4s; --x: 120px; --y: -70px;">Plan shoots</span>
           <span class="ai-pill" style="--delay: 0.8s; --x: -145px; --y: 10px;">Adjust tone</span>
-          <span class="ai-pill" style="--delay: 1.2s; --x: 130px; --y: 80px;">Write scripts</span>
+          <span class="ai-pill" style="--delay: 1.2s; --x: 130px; --y: 50px;">Write scripts</span>
           <span class="ai-pill" style="--delay: 1.6s; --x: -30px; --y: 120px;">Create hooks</span>
         </div>
       </div>
@@ -6129,10 +6137,10 @@
               <div class="price">
                 <span class="currency">$</span>
                 <span class="amount" id="price-amount">14</span>
+                <span class="price-mo">/mo</span>
               </div>
-              <span class="period">per month</span>
+
               <span class="price-note" id="price-note">Billed as $168/year</span>
-              <span class="price-billing-cycle" id="billing-cycle">billed monthly</span>
             </div>
 
             <ul class="pricing-features">
@@ -6415,14 +6423,13 @@
     function selectMonthly() {
       const priceAmount = document.getElementById('price-amount');
       const priceNote = document.getElementById('price-note');
-      const billingCycle = document.getElementById('billing-cycle');
       const monthlyLabel = document.getElementById('monthly-label');
       const yearlyLabel = document.getElementById('yearly-label');
       const popularTag = document.getElementById('popular-tag');
 
       priceAmount.textContent = '17';
-      priceNote.textContent = '';
-      billingCycle.textContent = 'billed monthly';
+      priceNote.textContent = 'Billed monthly';
+      priceNote.style.color = '#7a9a7a';
       monthlyLabel.classList.add('active');
       yearlyLabel.classList.remove('active');
       popularTag.style.display = 'none';
@@ -6431,14 +6438,12 @@
     function selectYearly() {
       const priceAmount = document.getElementById('price-amount');
       const priceNote = document.getElementById('price-note');
-      const billingCycle = document.getElementById('billing-cycle');
       const monthlyLabel = document.getElementById('monthly-label');
       const yearlyLabel = document.getElementById('yearly-label');
       const popularTag = document.getElementById('popular-tag');
 
       priceAmount.textContent = '14';
       priceNote.textContent = 'Billed as $168/year';
-      billingCycle.textContent = 'billed yearly';
       monthlyLabel.classList.remove('active');
       yearlyLabel.classList.add('active');
       popularTag.style.display = 'block';
