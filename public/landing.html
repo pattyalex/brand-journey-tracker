@@ -6,7 +6,7 @@
   <title>HeyMeg — Your Content is a Business</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Instrument+Serif:ital@0;1&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Instrument+Serif:ital@0;1&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
       --brand: #8B7082;
@@ -66,13 +66,13 @@
     /* ==================== BUTTONS ==================== */
     .btn-primary {
       display: inline-block;
-      background: linear-gradient(135deg, #7a3868 0%, #612a4f 50%, #4e2040 100%);
+      background: linear-gradient(135deg, #612a4f, #9B5080);
       color: white;
       border: none;
       border-top: 1px solid rgba(255,255,255,0.15);
       border-radius: 50px;
-      padding: 16px 36px;
-      font-size: 16px;
+      padding: 10px 34px;
+      font-size: 15px;
       font-family: 'DM Sans', sans-serif;
       font-weight: 600;
       cursor: pointer;
@@ -82,7 +82,7 @@
     }
 
     .btn-primary:hover {
-      background: linear-gradient(135deg, #8a4278, #6e3058, #562548);
+      background: linear-gradient(135deg, #7a3868, #b06090);
       transform: translateY(-2px);
       box-shadow: 0 4px 8px rgba(97,42,79,0.25), 0 12px 32px rgba(97,42,79,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
     }
@@ -163,24 +163,25 @@
     }
 
     .nav-login {
-      font-size: 14px;
-      font-weight: 500;
-      font-family: 'DM Sans', sans-serif;
-      color: var(--text-body);
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      font-weight: 400;
+      letter-spacing: 0.06em;
+      color: rgba(45,30,40,0.6);
       text-decoration: none;
-      padding: 8px 16px;
+      padding: 8px 14px;
       border-radius: 30px;
       transition: all 0.25s ease;
       margin-right: 8px;
     }
 
     .nav-login:hover {
-      color: var(--brand-dark);
-      background: rgba(139,112,130,0.1);
+      color: #612a4f;
+      background: rgba(0,0,0,0.03);
     }
 
     .nav-cta {
-      background: linear-gradient(135deg, #7a3868, #612a4f, #4e2040);
+      background: linear-gradient(135deg, #612a4f, #9B5080);
       color: white;
       border: none;
       border-top: 1px solid rgba(255,255,255,0.12);
@@ -197,7 +198,7 @@
     }
 
     .nav-cta:hover {
-      background: linear-gradient(135deg, #8a4278, #6e3058, #562548);
+      background: linear-gradient(135deg, #7a3868, #b06090);
       transform: translateY(-1px);
     }
 
@@ -238,11 +239,14 @@
     }
 
     .hero h1 {
-      font-size: clamp(2.8rem, 6vw, 4.5rem);
-      line-height: 1.1;
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 600;
+      font-size: clamp(42px, 6.5vw, 76px);
+      line-height: 1.0;
+      letter-spacing: -0.02em;
       max-width: 900px;
-      margin: 0 auto 24px;
-      color: var(--text-dark);
+      margin: 0 auto 36px;
+      color: #0f0a0d;
       opacity: 0;
       animation: fadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.35s forwards;
     }
@@ -250,13 +254,15 @@
     .hero h1 em {
       font-style: italic;
       color: #612a4f;
+      line-height: 1.05;
     }
 
     .hero-subtitle {
       font-size: clamp(1rem, 1.8vw, 1.15rem);
-      color: #8a7a85;
+      font-weight: 500;
+      color: #3a2030;
       line-height: 1.7;
-      max-width: 640px;
+      max-width: 800px;
       margin: 0 auto 8px;
       opacity: 0;
       animation: fadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.5s forwards;
@@ -275,6 +281,7 @@
       flex-direction: column;
       align-items: center;
       gap: 12px;
+      margin-top: 32px;
       opacity: 0;
       animation: fadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.65s forwards;
     }
@@ -285,12 +292,14 @@
     }
 
     .hero-accent {
-      font-size: clamp(1rem, 1.8vw, 1.15rem);
-      color: #8B7082;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #7a6570;
       line-height: 1.7;
       max-width: 640px;
-      margin: 0 auto 32px;
-      letter-spacing: 0.04em;
+      margin: 0 auto 24px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
       opacity: 0;
       animation: fadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.6s forwards;
     }
@@ -5431,16 +5440,10 @@
   <section class="hero">
     <h1>Your content is a business.<br><em>Run it like one.</em></h1>
     <p class="hero-subtitle">
-      A guided system for content creation
-      <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="#8B7082" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="5" y1="12" x2="19" y2="12"></line>
-        <polyline points="12 5 19 12 12 19"></polyline>
-      </svg>
-      from idea to publishing.
+      A workspace designed to simplify your content creation process. AI-Assisted.
     </p>
-    <p class="hero-accent">Plan Strategically. Post Consistently. AI-Assisted.</p>
     <div class="hero-cta">
-      <a href="/onboarding" class="btn-primary">Try HeyMeg For Free</a>
+      <a href="/onboarding" class="btn-primary">Start your 14-day free trial</a>
     </div>
 
     <!-- Hero Visual - Dashboard Preview -->
