@@ -637,14 +637,14 @@
     @keyframes whooshIn {
       0%, 1% {
         opacity: 0;
-        transform: translateX(-300px) scale(0.75);
+        transform: translateX(-700px) scale(0.75);
         animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
       }
-      5% {
+      8% {
         opacity: 1;
         transform: translateX(0) scale(1);
       }
-      96% {
+      80% {
         opacity: 1;
         transform: translateX(0) scale(1);
       }
@@ -717,87 +717,87 @@
         opacity: 1; transform: scale(1);
       }
       /* Arrive at "Evening wellness routine" */
-      12.4% {
+      8% {
         top: 36%; left: 54%;
         opacity: 1; transform: scale(1);
       }
       /* Click down */
-      14.5% {
+      10% {
         top: 36%; left: 54%;
         opacity: 1; transform: scale(0.82);
       }
       /* Click release */
-      16.5% {
+      12% {
         top: 36%; left: 54%;
         opacity: 1; transform: scale(1);
       }
       /* Hold, then move */
-      18.6% {
+      14% {
         top: 36%; left: 54%;
         opacity: 1; transform: scale(1);
       }
       /* Arrive at "Call grandma" checkbox */
-      27.9% {
+      19% {
         top: 33.5%; left: 41%;
         opacity: 1; transform: scale(1);
       }
       /* Click down on checkbox */
-      31% {
+      21% {
         top: 33.5%; left: 41%;
         opacity: 1; transform: scale(0.82);
       }
       /* Click release */
-      33% {
+      23% {
         top: 33.5%; left: 41%;
         opacity: 1; transform: scale(1);
       }
       /* Hold while strikethrough animates, then move */
-      36.2% {
+      26% {
         top: 33.5%; left: 41%;
         opacity: 1; transform: scale(1);
       }
       /* Arrive at "Great Progress" badge */
-      53.7% {
+      36% {
         top: 60.5%; left: 91.5%;
         opacity: 1; transform: scale(1);
       }
       /* Click down */
-      55.8% {
+      38% {
         top: 60.5%; left: 91.5%;
         opacity: 1; transform: scale(0.82);
       }
       /* Click release */
-      57.8% {
+      40% {
         top: 60.5%; left: 91.5%;
         opacity: 1; transform: scale(1);
       }
       /* Hold, then move */
-      62% {
+      43% {
         top: 60.5%; left: 91.5%;
         opacity: 1; transform: scale(1);
       }
       /* Arrive at "Expected This Month" section */
-      72.3% {
+      50% {
         top: 42%; left: 85%;
         opacity: 1; transform: scale(1);
       }
       /* Click down */
-      74.4% {
+      52% {
         top: 42%; left: 85%;
         opacity: 1; transform: scale(0.82);
       }
       /* Click release */
-      76.5% {
+      54% {
         top: 42%; left: 85%;
         opacity: 1; transform: scale(1);
       }
       /* Hold while popup shows */
-      89.8% {
+      70% {
         top: 42%; left: 85%;
         opacity: 1; transform: scale(1);
       }
       /* Fade out */
-      95% {
+      80% {
         top: 42%; left: 85%;
         opacity: 0; transform: scale(1);
       }
@@ -809,18 +809,18 @@
 
     /* Card highlight: glow on first click, stays until end */
     @keyframes cardHighlight {
-      0%, 13.5% {
+      0%, 8% {
         opacity: 0; transform: scale(1); box-shadow: none;
       }
-      16.5% {
+      10% {
         opacity: 1; transform: scale(1.03);
-        box-shadow: 0 4px 20px rgba(97,42,79,0.12), 0 0 0 2px rgba(97,42,79,0.08);
-        background: rgba(97,42,79,0.04);
+        box-shadow: 0 4px 20px rgba(150,50,115,0.18), 0 0 0 2px rgba(150,50,115,0.12);
+        background: rgba(150,50,115,0.06);
       }
-      96% {
+      80% {
         opacity: 1; transform: scale(1.03);
-        box-shadow: 0 4px 20px rgba(97,42,79,0.12), 0 0 0 2px rgba(97,42,79,0.08);
-        background: rgba(97,42,79,0.04);
+        box-shadow: 0 4px 20px rgba(150,50,115,0.18), 0 0 0 2px rgba(150,50,115,0.12);
+        background: rgba(150,50,115,0.06);
       }
       100% {
         opacity: 0; transform: scale(1); box-shadow: none; background: transparent;
@@ -865,13 +865,13 @@
 
     /* Strikethrough draws across "Call grandma" text */
     @keyframes strikethroughDraw {
-      0%, 32% {
+      0%, 19% {
         width: 0;
       }
-      36.2% {
+      21% {
         width: 5.5%;
       }
-      96% {
+      80% {
         width: 5.5%;
       }
       100% {
@@ -881,13 +881,13 @@
 
     /* Green checkmark fades in on click */
     @keyframes checkmarkAppear {
-      0%, 32% {
+      0%, 19% {
         opacity: 0; transform: scale(0.5);
       }
-      35.2% {
+      21% {
         opacity: 1; transform: scale(1);
       }
-      96% {
+      80% {
         opacity: 1; transform: scale(1);
       }
       100% {
@@ -897,16 +897,16 @@
 
     /* "Fully Completed!" badge appears on third click */
     @keyframes badgeSwap {
-      0%, 55.8% {
+      0%, 36% {
         opacity: 0; transform: scale(0.8);
       }
-      57.8% {
+      38% {
         opacity: 1; transform: scale(1.05);
       }
-      60% {
+      40% {
         opacity: 1; transform: scale(1);
       }
-      96% {
+      80% {
         opacity: 1; transform: scale(1);
       }
       100% {
@@ -916,13 +916,13 @@
 
     /* "Expected This Month" popup appears on hover */
     @keyframes expectedPopup {
-      0%, 75.5% {
+      0%, 50% {
         opacity: 0; transform: scale(0.9) translateY(10px);
       }
-      78.5% {
+      52% {
         opacity: 1; transform: scale(1) translateY(0);
       }
-      96% {
+      80% {
         opacity: 1; transform: scale(1) translateY(0);
       }
       100% {
