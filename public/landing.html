@@ -85,7 +85,7 @@
       position: fixed;
       top: 20px;
       left: 50%;
-      z-index: 1000;
+      z-index: 9999;
       display: flex;
       align-items: center;
       gap: 8px;
@@ -446,19 +446,32 @@
       position: absolute;
       width: 34px;
       height: 41px;
-      z-index: 20;
+      z-index: 30;
       pointer-events: none;
       filter: drop-shadow(0 2px 6px rgba(0,0,0,0.25));
-      top: 52%;
-      left: 64%;
       opacity: 0;
-      animation: cursorSequence 7s ease-in-out 1s infinite;
+    }
 
+    .hero.animate .hero-cursor {
+      animation: cursorSequence 7s ease-in-out 1s infinite;
     }
 
     .hero-cursor svg {
       width: 100%;
       height: 100%;
+    }
+
+    /* Top 3 Priorities card zoom overlay - using screenshot image */
+    .hero-priorities-card {
+      display: none;
+    }
+
+    .hero-priorities-card img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 12px;
+      opacity: 1;
     }
 
     /* Card highlight overlay — "Evening wellness routine" */
@@ -472,8 +485,10 @@
       pointer-events: none;
       border-radius: 10px;
       opacity: 0;
-      animation: cardHighlight 7s ease-in-out 1s infinite;
+    }
 
+    .hero.animate .hero-card-highlight {
+      animation: cardHighlight 7s ease-in-out 1s infinite;
     }
 
     /* Strikethrough line overlay — positioned over "Call grandma" text */
@@ -486,8 +501,10 @@
       background: rgba(90, 74, 82, 0.55);
       z-index: 15;
       pointer-events: none;
-      animation: strikethroughDraw 7s ease-in-out 1s infinite;
+    }
 
+    .hero.animate .hero-strikethrough {
+      animation: strikethroughDraw 7s ease-in-out 1s infinite;
     }
 
     /* Green checkmark overlay — positioned over "Call grandma" checkbox */
@@ -495,13 +512,15 @@
       position: absolute;
       top: 32.2%;
       left: 39.8%;
-      width: 2%;
-      height: 3.4%;
+      width: 1.6%;
+      height: 2.8%;
       z-index: 15;
       pointer-events: none;
       opacity: 0;
-      animation: checkmarkAppear 7s ease-in-out 1s infinite;
+    }
 
+    .hero.animate .hero-checkmark {
+      animation: checkmarkAppear 7s ease-in-out 1s infinite;
     }
 
     .hero-checkmark svg {
@@ -519,8 +538,10 @@
       z-index: 15;
       pointer-events: none;
       opacity: 0;
-      animation: badgeSwap 7s ease-in-out 1s infinite;
+    }
 
+    .hero.animate .hero-badge-overlay {
+      animation: badgeSwap 7s ease-in-out 1s infinite;
     }
 
     .hero-badge-overlay img {
@@ -533,7 +554,7 @@
     /* "Expected This Month" popup overlay */
     .hero-expected-popup {
       position: absolute;
-      top: 36.5%;
+      top: 36%;
       left: 72.5%;
       width: 25%;
       height: 3.5%;
@@ -542,8 +563,10 @@
       opacity: 0;
       border-radius: 16px;
       box-shadow: 0 12px 40px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.08);
-      animation: expectedPopup 7s ease-in-out 1s infinite;
+    }
 
+    .hero.animate .hero-expected-popup {
+      animation: expectedPopup 7s ease-in-out 1s infinite;
     }
 
     .hero-expected-popup img {
@@ -552,9 +575,138 @@
       display: block;
       border-radius: 16px;
       object-fit: fill;
+      border-bottom: 2px solid rgba(0,0,0,0.15);
+      box-sizing: border-box;
     }
 
-    /* ── Cursor: appear → click card → checkbox → badge → hover expected → fade out ── */
+    /* Work habits checkboxes overlay */
+    .hero-work-habits-overlay {
+      position: absolute;
+      top: 62%;
+      left: 42.2%;
+      width: 18.5%;
+      height: 11%;
+      z-index: 20;
+      pointer-events: none;
+      opacity: 1;
+    }
+
+    .hero-work-habits-overlay img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: contain;
+    }
+
+    /* Work habits checkmarks */
+    .hero-work-habit-check {
+      position: absolute;
+      width: 1.5%;
+      height: 2.5%;
+      z-index: 21;
+      pointer-events: none;
+      opacity: 0;
+    }
+
+    .hero.animate .hero-work-habit-check {
+      animation: whooshIn 7s ease-out 1s infinite;
+    }
+
+    .hero-work-habit-check svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Row 1 checkmarks */
+    .hero-work-habit-check-r1c1 { top: 62.6%; left: 42.6%; animation-delay: 1.0s; }
+    .hero-work-habit-check-r1c2 { top: 62.6%; left: 45.2%; animation-delay: 1.1s; }
+    .hero-work-habit-check-r1c3 { top: 62.6%; left: 47.8%; animation-delay: 1.2s; }
+    .hero-work-habit-check-r1c7 { top: 62.6%; left: 58.4%; animation-delay: 1.3s; }
+
+    /* Row 2 checkmarks */
+    .hero-work-habit-check-r2c1 { top: 66.8%; left: 42.6%; animation-delay: 1.4s; }
+    .hero-work-habit-check-r2c3 { top: 66.8%; left: 47.8%; animation-delay: 1.5s; }
+    .hero-work-habit-check-r2c4 { top: 66.8%; left: 50.4%; animation-delay: 1.6s; }
+    .hero-work-habit-check-r2c6 { top: 66.8%; left: 56%; animation-delay: 1.7s; }
+
+    /* Row 3 checkmarks */
+    .hero-work-habit-check-r3c1 { top: 71.2%; left: 42.6%; animation-delay: 1.8s; }
+    .hero-work-habit-check-r3c3 { top: 71.2%; left: 48%; animation-delay: 1.9s; }
+    .hero-work-habit-check-r3c6 { top: 71.2%; left: 56%; animation-delay: 2.0s; }
+
+    @keyframes whooshIn {
+      0%, 1% {
+        opacity: 0;
+        transform: translateX(-300px) scale(0.75);
+        animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      5% {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+      }
+      96% {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translateX(0) scale(0.9);
+      }
+    }
+
+    /* ── Simplified cursor showing clicks on each element ── */
+    @keyframes cursorClicks {
+      0%, 3% {
+        top: 36%; left: 54%;
+        opacity: 0; transform: scale(1);
+      }
+      4% {
+        top: 36%; left: 54%;
+        opacity: 1; transform: scale(1);
+      }
+      5% {
+        top: 36%; left: 54%;
+        opacity: 1; transform: scale(0.85);
+      }
+      6%, 13% {
+        opacity: 0;
+      }
+      14% {
+        top: 33.5%; left: 41%;
+        opacity: 1; transform: scale(1);
+      }
+      15% {
+        top: 33.5%; left: 41%;
+        opacity: 1; transform: scale(0.85);
+      }
+      16%, 23% {
+        opacity: 0;
+      }
+      24% {
+        top: 60.5%; left: 91.5%;
+        opacity: 1; transform: scale(1);
+      }
+      25% {
+        top: 60.5%; left: 91.5%;
+        opacity: 1; transform: scale(0.85);
+      }
+      26%, 33% {
+        opacity: 0;
+      }
+      34% {
+        top: 42%; left: 85%;
+        opacity: 1; transform: scale(1);
+      }
+      35% {
+        top: 42%; left: 85%;
+        opacity: 1; transform: scale(0.85);
+      }
+      36%, 100% {
+        opacity: 0;
+      }
+    }
+
+    /* ── Old cursor sequence (kept for reference) ── */
     @keyframes cursorSequence {
       0% {
         top: 52%; left: 64%;
@@ -565,87 +717,87 @@
         opacity: 1; transform: scale(1);
       }
       /* Arrive at "Evening wellness routine" */
-      12% {
+      12.4% {
         top: 36%; left: 54%;
         opacity: 1; transform: scale(1);
       }
       /* Click down */
-      14% {
+      14.5% {
         top: 36%; left: 54%;
         opacity: 1; transform: scale(0.82);
       }
       /* Click release */
-      16% {
+      16.5% {
         top: 36%; left: 54%;
         opacity: 1; transform: scale(1);
       }
       /* Hold, then move */
-      18% {
+      18.6% {
         top: 36%; left: 54%;
         opacity: 1; transform: scale(1);
       }
       /* Arrive at "Call grandma" checkbox */
-      28% {
+      27.9% {
         top: 33.5%; left: 41%;
         opacity: 1; transform: scale(1);
       }
       /* Click down on checkbox */
-      30% {
+      31% {
         top: 33.5%; left: 41%;
         opacity: 1; transform: scale(0.82);
       }
       /* Click release */
-      32% {
+      33% {
         top: 33.5%; left: 41%;
         opacity: 1; transform: scale(1);
       }
       /* Hold while strikethrough animates, then move */
-      35% {
+      36.2% {
         top: 33.5%; left: 41%;
         opacity: 1; transform: scale(1);
       }
       /* Arrive at "Great Progress" badge */
-      52% {
+      53.7% {
         top: 60.5%; left: 91.5%;
         opacity: 1; transform: scale(1);
       }
       /* Click down */
-      54% {
+      55.8% {
         top: 60.5%; left: 91.5%;
         opacity: 1; transform: scale(0.82);
       }
       /* Click release */
-      56% {
+      57.8% {
         top: 60.5%; left: 91.5%;
         opacity: 1; transform: scale(1);
       }
       /* Hold, then move */
-      60% {
+      62% {
         top: 60.5%; left: 91.5%;
         opacity: 1; transform: scale(1);
       }
       /* Arrive at "Expected This Month" section */
-      70% {
+      72.3% {
         top: 42%; left: 85%;
         opacity: 1; transform: scale(1);
       }
       /* Click down */
-      72% {
+      74.4% {
         top: 42%; left: 85%;
         opacity: 1; transform: scale(0.82);
       }
       /* Click release */
-      74% {
+      76.5% {
         top: 42%; left: 85%;
         opacity: 1; transform: scale(1);
       }
       /* Hold while popup shows */
-      87% {
+      89.8% {
         top: 42%; left: 85%;
         opacity: 1; transform: scale(1);
       }
       /* Fade out */
-      92% {
+      95% {
         top: 42%; left: 85%;
         opacity: 0; transform: scale(1);
       }
@@ -657,21 +809,54 @@
 
     /* Card highlight: glow on first click, stays until end */
     @keyframes cardHighlight {
-      0%, 13% {
+      0%, 13.5% {
         opacity: 0; transform: scale(1); box-shadow: none;
       }
-      16% {
+      16.5% {
         opacity: 1; transform: scale(1.03);
         box-shadow: 0 4px 20px rgba(97,42,79,0.12), 0 0 0 2px rgba(97,42,79,0.08);
         background: rgba(97,42,79,0.04);
       }
-      93% {
+      96% {
         opacity: 1; transform: scale(1.03);
         box-shadow: 0 4px 20px rgba(97,42,79,0.12), 0 0 0 2px rgba(97,42,79,0.08);
         background: rgba(97,42,79,0.04);
       }
-      98% {
+      100% {
         opacity: 0; transform: scale(1); box-shadow: none; background: transparent;
+      }
+    }
+
+    /* Top 3 Priorities card zoom animation - appears AFTER click */
+    @keyframes prioritiesZoom {
+      0%, 32% {
+        opacity: 0; transform: scale(1);
+        box-shadow: none;
+      }
+      /* Appear and start growing after cursor clicks */
+      33% {
+        opacity: 1; transform: scale(1.05);
+        box-shadow: 0 6px 25px rgba(97,42,79,0.15), 0 0 0 2px rgba(97,42,79,0.1);
+      }
+      /* Fully zoomed */
+      35% {
+        opacity: 1; transform: scale(1.2);
+        box-shadow: 0 12px 40px rgba(97,42,79,0.22), 0 0 0 3px rgba(97,42,79,0.15);
+      }
+      /* Stay large longer */
+      50% {
+        opacity: 1; transform: scale(1.2);
+        box-shadow: 0 12px 40px rgba(97,42,79,0.22), 0 0 0 3px rgba(97,42,79,0.15);
+      }
+      /* Shrink back */
+      54% {
+        opacity: 1; transform: scale(1);
+        box-shadow: 0 4px 15px rgba(97,42,79,0.08);
+      }
+      /* Fade out */
+      58% {
+        opacity: 0; transform: scale(1);
+        box-shadow: none;
       }
       100% {
         opacity: 0; transform: scale(1);
@@ -680,17 +865,14 @@
 
     /* Strikethrough draws across "Call grandma" text */
     @keyframes strikethroughDraw {
-      0%, 31% {
+      0%, 32% {
         width: 0;
       }
-      35% {
+      36.2% {
         width: 5.5%;
       }
-      93% {
+      96% {
         width: 5.5%;
-      }
-      98% {
-        width: 0;
       }
       100% {
         width: 0;
@@ -699,17 +881,14 @@
 
     /* Green checkmark fades in on click */
     @keyframes checkmarkAppear {
-      0%, 31% {
+      0%, 32% {
         opacity: 0; transform: scale(0.5);
       }
-      34% {
+      35.2% {
         opacity: 1; transform: scale(1);
       }
-      93% {
+      96% {
         opacity: 1; transform: scale(1);
-      }
-      98% {
-        opacity: 0; transform: scale(0.5);
       }
       100% {
         opacity: 0; transform: scale(0.5);
@@ -718,20 +897,17 @@
 
     /* "Fully Completed!" badge appears on third click */
     @keyframes badgeSwap {
-      0%, 54% {
+      0%, 55.8% {
         opacity: 0; transform: scale(0.8);
       }
-      56% {
+      57.8% {
         opacity: 1; transform: scale(1.05);
       }
-      58% {
+      60% {
         opacity: 1; transform: scale(1);
       }
-      93% {
+      96% {
         opacity: 1; transform: scale(1);
-      }
-      98% {
-        opacity: 0; transform: scale(0.8);
       }
       100% {
         opacity: 0; transform: scale(0.8);
@@ -740,17 +916,14 @@
 
     /* "Expected This Month" popup appears on hover */
     @keyframes expectedPopup {
-      0%, 73% {
+      0%, 75.5% {
         opacity: 0; transform: scale(0.9) translateY(10px);
       }
-      76% {
+      78.5% {
         opacity: 1; transform: scale(1) translateY(0);
       }
-      93% {
+      96% {
         opacity: 1; transform: scale(1) translateY(0);
-      }
-      98% {
-        opacity: 0; transform: scale(0.9) translateY(10px);
       }
       100% {
         opacity: 0; transform: scale(0.9) translateY(10px);
@@ -794,6 +967,7 @@
       bottom: 0;
       pointer-events: none;
       z-index: 10;
+      display: none;
     }
 
     .verb-tag {
@@ -5490,6 +5664,9 @@
           <img src="dashboard-preview.png" alt="HeyMeg Creator Studio Dashboard">
           <img src="creator-avatar.png" alt="Creator" class="hero-avatar">
           <!-- Animated cursor + card highlight + strikethrough + checkmark + badge -->
+          <div class="hero-priorities-card" aria-hidden="true">
+            <img src="top-3-priorities-card.png" alt="">
+          </div>
           <div class="hero-card-highlight" aria-hidden="true"></div>
           <div class="hero-strikethrough" aria-hidden="true"></div>
           <div class="hero-checkmark" aria-hidden="true">
@@ -5503,6 +5680,78 @@
           </div>
           <div class="hero-expected-popup" aria-hidden="true">
             <img src="expected-month-popup.png" alt="">
+          </div>
+          <div class="hero-work-habits-overlay" aria-hidden="true">
+            <img src="work-habits-checkboxes.png" alt="">
+          </div>
+          <!-- Work habits checkmarks - Row 1 -->
+          <div class="hero-work-habit-check hero-work-habit-check-r1c1" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="1" y="1" width="22" height="22" rx="5" fill="#5B8C5A" stroke="#5B8C5A" stroke-width="1"/>
+              <path d="M7 12.5L10.5 16L17 9" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="hero-work-habit-check hero-work-habit-check-r1c2" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="1" y="1" width="22" height="22" rx="5" fill="#5B8C5A" stroke="#5B8C5A" stroke-width="1"/>
+              <path d="M7 12.5L10.5 16L17 9" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="hero-work-habit-check hero-work-habit-check-r1c3" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="1" y="1" width="22" height="22" rx="5" fill="#5B8C5A" stroke="#5B8C5A" stroke-width="1"/>
+              <path d="M7 12.5L10.5 16L17 9" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="hero-work-habit-check hero-work-habit-check-r1c7" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="1" y="1" width="22" height="22" rx="5" fill="#5B8C5A" stroke="#5B8C5A" stroke-width="1"/>
+              <path d="M7 12.5L10.5 16L17 9" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <!-- Work habits checkmarks - Row 2 -->
+          <div class="hero-work-habit-check hero-work-habit-check-r2c1" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="1" y="1" width="22" height="22" rx="5" fill="#5B8C5A" stroke="#5B8C5A" stroke-width="1"/>
+              <path d="M7 12.5L10.5 16L17 9" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="hero-work-habit-check hero-work-habit-check-r2c3" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="1" y="1" width="22" height="22" rx="5" fill="#5B8C5A" stroke="#5B8C5A" stroke-width="1"/>
+              <path d="M7 12.5L10.5 16L17 9" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="hero-work-habit-check hero-work-habit-check-r2c4" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="1" y="1" width="22" height="22" rx="5" fill="#5B8C5A" stroke="#5B8C5A" stroke-width="1"/>
+              <path d="M7 12.5L10.5 16L17 9" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="hero-work-habit-check hero-work-habit-check-r2c6" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="1" y="1" width="22" height="22" rx="5" fill="#5B8C5A" stroke="#5B8C5A" stroke-width="1"/>
+              <path d="M7 12.5L10.5 16L17 9" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <!-- Work habits checkmarks - Row 3 -->
+          <div class="hero-work-habit-check hero-work-habit-check-r3c1" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="1" y="1" width="22" height="22" rx="5" fill="#5B8C5A" stroke="#5B8C5A" stroke-width="1"/>
+              <path d="M7 12.5L10.5 16L17 9" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="hero-work-habit-check hero-work-habit-check-r3c3" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="1" y="1" width="22" height="22" rx="5" fill="#5B8C5A" stroke="#5B8C5A" stroke-width="1"/>
+              <path d="M7 12.5L10.5 16L17 9" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="hero-work-habit-check hero-work-habit-check-r3c6" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="1" y="1" width="22" height="22" rx="5" fill="#5B8C5A" stroke="#5B8C5A" stroke-width="1"/>
+              <path d="M7 12.5L10.5 16L17 9" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
           </div>
           <div class="hero-cursor" aria-hidden="true">
             <svg viewBox="0 0 24 30" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -6273,6 +6522,30 @@
     }, { threshold: 0.1 });
 
     revealElements.forEach(el => observer.observe(el));
+
+    // Hero dashboard animations - trigger ONLY after user scrolls
+    const heroSection = document.querySelector('.hero');
+    if (heroSection) {
+      let hasScrolled = false;
+      let animationTriggered = false;
+
+      const heroObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting && hasScrolled && !animationTriggered) {
+            entry.target.classList.add('animate');
+            animationTriggered = true;
+          }
+        });
+      }, { threshold: 0.3 });
+
+      // Wait for actual scroll before enabling animations
+      window.addEventListener('scroll', () => {
+        if (!hasScrolled) {
+          hasScrolled = true;
+          heroObserver.observe(heroSection);
+        }
+      }, { once: false });
+    }
 
     // Feature visuals - appear when scrolled into view
     const visualElements = document.querySelectorAll('.reveal-visual');
