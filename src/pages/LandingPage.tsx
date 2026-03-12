@@ -1,194 +1,23 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { RotateCw, Handshake, Lightbulb, CheckCircle, Sparkles } from "lucide-react";
+import { RotateCw, Handshake, Lightbulb, CheckCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/lib/supabase";
-import { toast } from "sonner";
-// Keep the signUp import in case it's used elsewhere
-import { signUp } from "@/auth";
 import Layout from "@/components/Layout";
-import { useUser } from "@clerk/clerk-react";
 
 const LandingPage = () => {
   const navigate = useNavigate();
-  const { login, openLoginModal } = useAuth();
-  const { isSignedIn } = useUser();
-  const [isLoading, setIsLoading] = useState(false);
+  const { openLoginModal, isAuthenticated } = useAuth();
 
-  // Test Supabase connection
-  const testSupabaseConnection = async () => {
-    console.log("=== TESTING SUPABASE CONNECTION ===");
-    try {
-      const { data, error } = await supabase.from('users').select('*');
-      console.log('Supabase test:', data, error);
-      
-      if (error) {
-        console.error("=== SUPABASE TEST ERROR ===");
-        console.error("Error object:", error);
-        console.error("Error message:", error.message);
-        console.error("Error code:", error.code);
-        console.error("Error details:", error.details);
-        console.error("Error hint:", error.hint);
-      } else {
-        console.log("=== SUPABASE TEST SUCCESS ===");
-        console.log("Data returned:", data);
-        console.log("Number of records:", data?.length || 0);
-      }
-    } catch (err) {
-      console.error("=== SUPABASE TEST UNEXPECTED ERROR ===");
-      console.error("Caught error:", err);
-    }
-  };
-
-  const handleStartFreeTrial = async () => {
-    console.log("=== START: handleStartFreeTrial function started running ===");
-
-    // If user is already logged in with Clerk, redirect to dashboard
-    if (isSignedIn) {
-      console.log("User is already signed in, redirecting to dashboard");
+  const handleStartFreeTrial = () => {
+    // If user is already logged in, redirect to dashboard
+    if (isAuthenticated) {
       navigate("/home-page");
       return;
     }
 
-    // Otherwise, redirect to onboarding to sign up
-    console.log("User is not signed in, redirecting to onboarding");
-    navigate("/onboarding");
-    return;
-
-    // Test Supabase connection first
-    await testSupabaseConnection();
-
-    // Set to false to enable Supabase authentication
-    const bypassAuth = false;
-
-    if (bypassAuth) {
-      console.log("Bypassing auth for development");
-      login();
-      navigate("/onboarding");
-      return;
-    }
-
-    console.log("Checking Supabase environment variables...");
-    console.log("SUPABASE URL exists:", !!import.meta.env.VITE_SUPABASE_URL);
-    console.log("SUPABASE ANON KEY exists:", !!import.meta.env.VITE_SUPABASE_ANON_KEY);
-
-    // Generate a random email with timestamp to ensure uniqueness
-    const randomEmail = `user${Math.floor(Math.random() * 10000)}-${Date.now()}@example.com`;
-    // Use a strong static password
-    const strongPassword = "TestPassword123!";
-    const fullName = "Test User";
-
-    console.log("=== CREDENTIALS BEING SENT TO SUPABASE ===");
-    console.log(`Email: ${randomEmail}`);
-    console.log(`Password: ${strongPassword}`);
-    console.log(`Full Name: ${fullName}`);
-
-    try {
-      console.log("Using supabase client from @/lib/supabase...");
-
-      if (!supabase) {
-        console.error("Supabase client is undefined after import!");
-        return;
-      }
-
-      console.log("Supabase client imported successfully:", !!supabase);
-      console.log("Supabase auth available:", !!(supabase && supabase.auth));
-
-      // Sign up the user directly with Supabase client
-      console.log("=== SUPABASE CONFIG ===");
-      console.log("Supabase URL being used:", import.meta.env.VITE_SUPABASE_URL);
-      console.log("Auth endpoint:", `${import.meta.env.VITE_SUPABASE_URL}/auth/v1/signup`);
-
-      // Log the Supabase URL and Anon Key to ensure they're defined
-      console.log("=== SUPABASE CREDENTIALS CHECK ===");
-      console.log("Supabase URL:", import.meta.env.VITE_SUPABASE_URL);
-      console.log("Supabase Anon Key exists:", !!import.meta.env.VITE_SUPABASE_ANON_KEY);
-
-      // Make the signup request
-      console.log("=== SENDING SIGNUP REQUEST TO SUPABASE ===");
-      let signUpResponse;
-      try {
-        signUpResponse = await supabase.auth.signUp({
-          email: randomEmail,
-          password: strongPassword
-        });
-        console.log("Signup response:", signUpResponse);
-        console.log("Raw signup response received");
-      } catch (error) {
-        console.error("Signup failed:", error);
-        // Fall back to login for development
-        login();
-        navigate("/onboarding");
-        return;
-      }
-
-      // Log the full response
-      console.log("=== FULL SUPABASE SIGNUP RESPONSE ===");
-      try {
-        console.log(JSON.stringify(signUpResponse, null, 2));
-      } catch (jsonErr) {
-        console.error("Could not stringify response:", jsonErr);
-        console.log("Response type:", typeof signUpResponse);
-        console.log("Response keys:", signUpResponse ? Object.keys(signUpResponse) : "null response");
-      }
-
-      if (!signUpResponse) {
-        console.error("No response received from supabase.auth.signUp");
-        login();
-        navigate("/onboarding");
-        return;
-      }
-
-      const { data, error } = signUpResponse;
-
-      if (error) {
-        console.error("=== SUPABASE SIGNUP ERROR ===");
-        console.error("Error object:", error);
-        console.error("Error message:", error.message);
-        console.error("Error status:", error.status);
-        console.error("Error name:", error.name);
-        console.error("Error stack:", error.stack);
-
-        // Fall back to login and navigate anyway for development
-        login();
-        navigate("/onboarding");
-        return;
-      }
-
-      console.log("=== SUCCESS: SUPABASE SIGNUP SUCCESSFUL ===");
-      console.log("Response data:", data);
-      console.log(`User created with ID: ${data.user?.id}`);
-
-      // Create user profile
-      const { error: profileError } = await supabase.from('profiles').insert([
-        {
-          id: data.user?.id,
-          full_name: fullName,
-          is_on_trial: true,
-          trial_ends_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000) // 14 days from now
-        }
-      ]);
-
-      if (profileError) {
-        console.error("Profile creation failed:", profileError);
-      } else {
-        console.log("Profile created successfully for user:", data.user?.id);
-      }
-
-      // Log in and navigate to onboarding
-      login();
-      navigate("/onboarding");
-    } catch (error) {
-      console.error("Unexpected error during Supabase signup:", error);
-      // Fall back to login and navigate anyway for development
-      login();
-      navigate("/onboarding");
-    }
+    // Otherwise, open login modal where users can sign in or sign up
+    openLoginModal();
   };
 
   return (
@@ -208,7 +37,7 @@ const LandingPage = () => {
               className="bg-primary hover:bg-primary/90 text-white text-lg px-8 py-6"
               onClick={handleStartFreeTrial}
             >
-              {isSignedIn ? "Go to Dashboard" : "Start 14-Day Free Trial"}
+              {isAuthenticated ? "Go to Dashboard" : "Start 14-Day Free Trial"}
             </Button>
           </div>
         </section>
@@ -274,7 +103,7 @@ const LandingPage = () => {
                 className="w-full py-6"
                 onClick={handleStartFreeTrial}
               >
-                {isSignedIn ? "Go to Dashboard" : "Start 14-Day Free Trial"}
+                {isAuthenticated ? "Go to Dashboard" : "Start 14-Day Free Trial"}
               </Button>
               <p className="text-xs text-center text-muted-foreground mt-4">
                 Cancel anytime.
@@ -294,7 +123,7 @@ const LandingPage = () => {
             className="bg-primary hover:bg-primary/90 text-white px-8 py-6"
             onClick={handleStartFreeTrial}
           >
-            {isSignedIn ? "Go to Dashboard" : "Start Your Free Trial Today"}
+            {isAuthenticated ? "Go to Dashboard" : "Start Your Free Trial Today"}
           </Button>
         </section>
       </div>

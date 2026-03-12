@@ -16,11 +16,12 @@ import HomePage from './pages/HomePage';
 import OnboardingFlow from './pages/OnboardingFlow';
 import LoginPage from './pages/LoginPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
-import SSOCallback from './pages/SSOCallback';
 import Production from './pages/Production';
+import AuthCallback from './pages/AuthCallback';
 import StrategyGrowth from './pages/StrategyGrowth';
 import TaskBoard from './pages/TaskBoard';
 import Brands from './pages/Brands';
+import { MembershipPage } from './components/MembershipPage';
 
 // Lazy load less frequently used pages
 const ContentIdeation = lazy(() => import('./pages/ContentIdeation'));
@@ -37,7 +38,7 @@ const Help = lazy(() => import('./pages/Help'));
 const WeeklyContentTasks = lazy(() => import('./pages/WeeklyContentTasks'));
 const SocialMediaScheduler = lazy(() => import('./pages/SocialMediaScheduler'));
 const Index = lazy(() => import('./pages/Index'));
-const EmailVerificationCallback = lazy(() => import('./pages/EmailVerificationCallback'));
+// EmailVerificationCallback replaced by AuthCallback
 
 // Loading component - invisible to prevent flash during lazy load
 const PageLoader = () => null;
@@ -111,9 +112,8 @@ function App() {
               <Route path="/" element={<LandingRedirect />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-              <Route path="/sso-callback" element={<SSOCallback />} />
               <Route path="/onboarding" element={<OnboardingFlow />} />
-              <Route path="/auth/callback" element={<EmailVerificationCallback />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
 
               {/* Protected routes - require authentication */}
               <Route path="/app" element={
@@ -179,6 +179,11 @@ function App() {
               <Route path="/my-account" element={
                 <ProtectedRoute>
                   <MyAccount />
+                </ProtectedRoute>
+              } />
+              <Route path="/membership" element={
+                <ProtectedRoute>
+                  <MembershipPage />
                 </ProtectedRoute>
               } />
               <Route path="/help" element={

@@ -4,7 +4,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, X, Mail, Lock, ArrowRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from 'react-router-dom';
-import { useSignIn } from '@clerk/clerk-react';
+import { signIn } from '@/auth';
+import { supabase } from '@/lib/supabase';
 import EmailVerificationStatus from "@/components/EmailVerificationStatus";
 
 // Google icon component
@@ -19,7 +20,6 @@ const GoogleIcon = () => (
 
 const LoginModal: React.FC = () => {
   const { loginOpen, closeLoginModal, login } = useAuth();
-  const { signIn, isLoaded: isSignInLoaded } = useSignIn();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -31,17 +31,21 @@ const LoginModal: React.FC = () => {
   const [step, setStep] = useState<'email' | 'password'>('email');
 
   const handleGoogleSignIn = async () => {
-    if (!isSignInLoaded) return;
-
     setGoogleLoading(true);
     setError('');
 
     try {
-      await signIn.authenticateWithRedirect({
-        strategy: 'oauth_google',
-        redirectUrl: '/sso-callback',
-        redirectUrlComplete: '/home-page',
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`
+        }
       });
+
+      if (error) {
+        setError('Failed to sign in with Google. Please try again.');
+        setGoogleLoading(false);
+      }
     } catch (err: any) {
       console.error('Google sign in error:', err);
       setError('Failed to sign in with Google. Please try again.');
@@ -63,21 +67,23 @@ const LoginModal: React.FC = () => {
     setLoading(true);
 
     try {
-      const result = await signIn?.create({
-        identifier: email,
-        password,
-      });
+      const result = await signIn(email, password);
 
-      if (result?.status === 'complete') {
+      if (result.success) {
         login();
         closeLoginModal();
-        window.location.href = '/home-page';
+        navigate('/home-page');
       } else {
-        setError('Login failed. Please check your credentials.');
+        if (result.needsVerification) {
+          setShowEmailVerification(true);
+          setPendingVerificationEmail(email);
+        } else {
+          setError(result.error?.message || 'Invalid email or password');
+        }
       }
     } catch (err: any) {
       console.error('Login error:', err);
-      setError(err.errors?.[0]?.message || 'Invalid email or password');
+      setError('Invalid email or password');
     } finally {
       setLoading(false);
     }

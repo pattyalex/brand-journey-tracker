@@ -63,7 +63,7 @@
       color: white;
       border: none;
       border-top: 1px solid rgba(255,255,255,0.15);
-      border-radius: 50px;
+      border-radius: 16px;
       padding: 10px 34px;
       font-size: 15px;
       font-family: 'DM Sans', sans-serif;
@@ -92,7 +92,7 @@
       flex-wrap: nowrap;
       white-space: nowrap;
       padding: 8px 8px 8px 12px;
-      border-radius: 60px;
+      border-radius: 16px;
       background: rgba(255,255,255,0.92);
       transform: translateX(-50%) translateZ(0);
       isolation: isolate;
@@ -116,7 +116,7 @@
     .nav-logo {
       width: 36px;
       height: 36px;
-      border-radius: 50%;
+      border-radius: 8px;
       background: linear-gradient(135deg, #c9a3bb, #8B7082);
       display: flex;
       align-items: center;
@@ -178,7 +178,7 @@
       color: white;
       border: none;
       border-top: 1px solid rgba(255,255,255,0.12);
-      border-radius: 30px;
+      border-radius: 16px;
       padding: 8px 20px;
       font-size: 14px;
       font-weight: 500;
@@ -349,17 +349,17 @@
     .dashboard-preview {
       position: relative;
       z-index: 1;
-      width: 100%;
+      display: inline-block;
+      max-width: 100%;
       border-radius: 16px;
       overflow: visible;
-      transform: none;
-      transform-style: flat;
     }
 
     .dashboard-preview img:not(.hero-avatar) {
       width: 100%;
       height: auto;
       display: block;
+      max-width: 100%;
       border-radius: 16px;
       box-shadow:
         0 4px 6px rgba(0,0,0,0.02),
@@ -374,14 +374,17 @@
     /* Creator avatar overlay — flows over the dashboard edge */
     .hero-avatar {
       position: absolute;
-      top: 2px;
-      right: 12px;
-      width: 58px;
-      height: 58px;
+      top: 0.5%;
+      right: 1.5%;
+      width: 3.5%;
+      aspect-ratio: 1;
+      min-width: 32px;
+      max-width: 52px;
       border-radius: 50%;
       object-fit: cover;
       border: 4px solid white;
-      box-shadow: 0 8px 24px rgba(97,42,79,0.15), 0 2px 8px rgba(0,0,0,0.08);
+      background: white;
+      box-shadow: 0 0 0 2px white, 0 8px 24px rgba(97,42,79,0.15), 0 2px 8px rgba(0,0,0,0.08);
       z-index: 10;
       animation: fadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) 1.3s forwards;
       opacity: 0;
@@ -405,11 +408,10 @@
 
     @media (max-width: 768px) {
       .hero-avatar {
-        width: 38px;
-        height: 38px;
+        width: 3.5%;
+        min-width: 28px;
+        max-width: 40px;
         border-width: 2px;
-        top: -14px;
-        right: 5px;
       }
     }
 
@@ -602,7 +604,7 @@
     .hero-work-habit-check {
       position: absolute;
       width: 1.5%;
-      height: 2.5%;
+      aspect-ratio: 1;
       z-index: 21;
       pointer-events: none;
       opacity: 0;
@@ -633,6 +635,7 @@
     .hero-work-habit-check-r3c1 { top: 71.2%; left: 42.6%; animation-delay: 1.8s; }
     .hero-work-habit-check-r3c3 { top: 71.2%; left: 48%; animation-delay: 1.9s; }
     .hero-work-habit-check-r3c6 { top: 71.2%; left: 56%; animation-delay: 2.0s; }
+
 
     @keyframes whooshIn {
       0%, 1% {
@@ -1104,10 +1107,12 @@
     }
 
     .social-proof-text {
-      font-size: 1rem;
+      font-size: clamp(0.95rem, 2.2vw, 1.1rem);
       color: #000000;
       margin-top: 0;
       margin-bottom: 24px;
+      padding: 0 16px;
+      line-height: 1.5;
     }
 
     .social-proof-avatars {
@@ -1125,11 +1130,11 @@
 
     .social-proof-avatars img {
       display: block !important;
-      width: 38px !important;
-      height: 38px !important;
+      width: clamp(36px, 5vw, 48px) !important;
+      height: clamp(36px, 5vw, 48px) !important;
       border-radius: 50%;
       border: 2px solid #ffffff !important;
-      margin-left: -10px;
+      margin-left: clamp(-12px, -1.5vw, -10px);
       object-fit: cover;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
       visibility: visible !important;
@@ -1154,7 +1159,7 @@
 
     .rating-number {
       font-family: 'DM Sans', sans-serif;
-      font-size: 1.3rem;
+      font-size: clamp(1.5rem, 3vw, 2rem);
       font-weight: 600;
       color: #2a1f26;
     }
@@ -1166,7 +1171,7 @@
 
     .rating-stars span {
       color: #f5c518;
-      font-size: 1.2rem;
+      font-size: clamp(1.3rem, 2.8vw, 1.8rem);
     }
 
     .rating-stars .half-star {
@@ -1931,7 +1936,7 @@
 
     .feature-visual {
       background: #ffffff;
-      border-radius: 24px;
+      border-radius: 16px;
       padding: 20px;
       box-shadow: 0 12px 48px rgba(97,42,79,0.08), 0 2px 8px rgba(0,0,0,0.04);
       min-height: 300px;
@@ -5629,7 +5634,7 @@
       <a href="#pricing">Pricing</a>
     </div>
     <a href="/login" class="nav-login">Log In</a>
-    <a href="/onboarding" class="nav-cta">Start your 14-day free trial</a>
+    <a href="/login" class="nav-cta">Start your 14-day free trial</a>
   </nav>
 
   <!-- Hero Section -->
@@ -5639,7 +5644,7 @@
       A workspace designed to simplify your content creation process. AI-Assisted.
     </p>
     <div class="hero-cta">
-      <a href="/onboarding" class="btn-primary">Start your 14-day free trial</a>
+      <a href="/login" class="btn-primary">Start your 14-day free trial</a>
     </div>
 
     <!-- Hero Visual - Dashboard Preview -->
@@ -6446,7 +6451,7 @@
               </li>
             </ul>
 
-            <a href="/onboarding" class="pricing-cta">Start Your 14-Day Free Trial</a>
+            <a href="/login" class="pricing-cta">Start Your 14-Day Free Trial</a>
           </div>
         </div>
 
@@ -6467,7 +6472,7 @@
     <div class="cta-content">
       <span class="cta-eyebrow">Ready to level up?</span>
       <h2>Stop juggling tools.<br><em>Start creating.</em></h2>
-<a href="/onboarding" class="btn-primary btn-large">Start your 14-day free trial</a>
+<a href="/login" class="btn-primary btn-large">Start your 14-day free trial</a>
     </div>
   </section>
 

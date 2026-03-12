@@ -6,7 +6,6 @@ import MobileBottomNav from "./MobileBottomNav";
 import { Toaster } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useUser } from "@clerk/clerk-react";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -19,7 +18,6 @@ const Layout = ({ children, hideSidebar = false }: LayoutProps) => {
   const { isAuthenticated, hasCompletedOnboarding } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const { isSignedIn } = useUser();
 
   // Determine if sidebar should be shown
   const shouldShowSidebar = !hideSidebar &&

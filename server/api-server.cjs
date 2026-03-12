@@ -5,6 +5,7 @@ const express = require('express');
 const cors = require('cors');
 const Stripe = require('stripe');
 const puppeteer = require('puppeteer');
+const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
 const port = 3001;
@@ -17,55 +18,47 @@ if (!process.env.STRIPE_SECRET_KEY) {
 }
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder');
 
+// Initialize Supabase
+const supabase = createClient(
+  process.env.VITE_SUPABASE_URL,
+  process.env.VITE_SUPABASE_ANON_KEY
+);
+
 app.use(cors());
 app.use(express.json());
 
-// Clerk webhook handler for user deletion
-app.post('/api/webhooks/clerk', async (req, res) => {
-  try {
-    const { type, data } = req.body;
+// Auth middleware
+async function verifySupabaseAuth(req, res, next) {
+  const authHeader = req.headers.authorization;
 
-    console.log('Clerk webhook received:', type);
-
-    // Handle user deletion
-    if (type === 'user.deleted') {
-      const userId = data.id;
-      console.log('User deleted in Clerk:', userId);
-
-      // Import Supabase (you'll need to set this up properly)
-      // For now, we'll just handle Stripe deletion
-
-      // Find and delete Stripe customer
-      const customers = await stripe.customers.list({
-        limit: 100
-      });
-
-      const customer = customers.data.find(c => c.metadata.clerk_user_id === userId);
-
-      if (customer) {
-        console.log('Deleting Stripe customer:', customer.id);
-        await stripe.customers.del(customer.id);
-        console.log('Stripe customer deleted successfully');
-      } else {
-        console.log('No Stripe customer found for user:', userId);
-      }
-    }
-
-    res.json({ received: true });
-  } catch (error) {
-    console.error('Webhook error:', error);
-    res.status(400).json({ error: error.message });
+  if (!authHeader) {
+    return res.status(401).json({ error: 'No authorization header' });
   }
-});
+
+  const token = authHeader.replace('Bearer ', '');
+  const { data: { user }, error } = await supabase.auth.getUser(token);
+
+  if (error || !user) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+
+  req.user = user;
+  next();
+}
 
 // Create customer endpoint
-app.post('/api/create-customer', async (req, res) => {
+app.post('/api/create-customer', verifySupabaseAuth, async (req, res) => {
   try {
     const { email, name, userId } = req.body;
 
     console.log('Creating Stripe customer:', { email, name, userId });
 
-    // Check if customer already exists with this Clerk user ID
+    // Verify user ID matches authenticated user
+    if (userId !== req.user.id) {
+      return res.status(403).json({ error: 'User ID mismatch' });
+    }
+
+    // Check if customer already exists with this email
     const existingCustomers = await stripe.customers.list({
       email: email,
       limit: 1
@@ -80,7 +73,7 @@ app.post('/api/create-customer', async (req, res) => {
       email: email,
       name: name,
       metadata: {
-        clerk_user_id: userId // Store Clerk user ID
+        supabase_user_id: userId // Store Supabase user ID
       }
     });
 
@@ -94,7 +87,7 @@ app.post('/api/create-customer', async (req, res) => {
 });
 
 // Attach payment method endpoint
-app.post('/api/attach-payment-method', async (req, res) => {
+app.post('/api/attach-payment-method', verifySupabaseAuth, async (req, res) => {
   try {
     const { paymentMethodId, customerId } = req.body;
     
@@ -121,7 +114,7 @@ app.post('/api/attach-payment-method', async (req, res) => {
 });
 
 // Create subscription endpoint
-app.post('/api/create-subscription', async (req, res) => {
+app.post('/api/create-subscription', verifySupabaseAuth, async (req, res) => {
   try {
     const { customerId, priceId, paymentMethodId } = req.body;
     

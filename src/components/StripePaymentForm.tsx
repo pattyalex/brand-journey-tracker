@@ -3,6 +3,7 @@ import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2 } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 interface StripePaymentFormProps {
   billingPlan: 'monthly' | 'annual';
@@ -61,11 +62,20 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
         throw new Error('Card element not found');
       }
 
+      // Get auth token for API requests
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Not authenticated');
+      }
+
       console.log('Creating Stripe customer...');
       // Step 1: Create Stripe customer
       const customerResponse = await fetch('http://localhost:3001/api/create-customer', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
         body: JSON.stringify({
           email: userEmail,
           name: userName,
@@ -102,7 +112,10 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
       console.log('Attaching payment method to customer...');
       const attachResponse = await fetch('http://localhost:3001/api/attach-payment-method', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
         body: JSON.stringify({
           paymentMethodId: paymentMethod.id,
           customerId: customerId,
@@ -124,7 +137,10 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
       console.log('Creating subscription with price:', priceId);
       const subscriptionResponse = await fetch('http://localhost:3001/api/create-subscription', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
         body: JSON.stringify({
           customerId: customerId,
           priceId: priceId,

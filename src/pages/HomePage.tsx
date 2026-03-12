@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { useUser } from '@clerk/clerk-react';
+import { useAuth } from '@/contexts/AuthContext';
 import Layout from "@/components/Layout";
 import {
   Card,
@@ -105,7 +105,7 @@ const getDateString = (date: Date): string => {
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const { user } = useUser();
+  const { user } = useAuth();
   const [greeting, setGreeting] = useState("");
   const [greetingIcon, setGreetingIcon] = useState<React.ReactNode>(null);
   const [journalEntries, setJournalEntries] = useState({

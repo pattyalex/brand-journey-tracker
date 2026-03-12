@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { SignUp, useUser, UserButton, useClerk } from "@clerk/clerk-react";
+import { signUp as supabaseSignUp } from '@/auth';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -162,9 +162,7 @@ const socialAccountsSchema = z.object({
 const OnboardingFlow: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { isSignedIn, user, isLoaded: isUserLoaded } = useUser();
-  const { loaded: isClerkLoaded } = useClerk();
-  const { hasCompletedOnboarding } = useAuth();
+  const { user, isAuthLoaded, hasCompletedOnboarding, isAuthenticated } = useAuth();
   const [currentStep, setCurrentStep] = useState<OnboardingStep>("account-creation");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<string>('');
@@ -183,11 +181,11 @@ const OnboardingFlow: React.FC = () => {
 
   // Redirect users who have already completed onboarding
   useEffect(() => {
-    if (isSignedIn && hasCompletedOnboarding) {
+    if (isAuthenticated && hasCompletedOnboarding) {
       console.log('✅ User has already completed onboarding, redirecting to dashboard');
       navigate('/home-page');
     }
-  }, [isSignedIn, hasCompletedOnboarding, navigate]);
+  }, [isAuthenticated, hasCompletedOnboarding, navigate]);
 
   // Check URL parameters on mount to determine initial step
   useEffect(() => {
@@ -202,16 +200,16 @@ const OnboardingFlow: React.FC = () => {
   // (not when they explicitly navigate back)
   const [hasInitialized, setHasInitialized] = useState(false);
   useEffect(() => {
-    if (!hasInitialized && isSignedIn && currentStep === "account-creation") {
+    if (!hasInitialized && isAuthenticated && currentStep === "account-creation") {
       // Only auto-advance on first load, not when user clicks Back
       const stepParam = searchParams.get('step');
       if (!stepParam) {
-        console.log('✅ User is signed in with Clerk, advancing to plan selection');
+        console.log('✅ User is signed in, advancing to plan selection');
         setCurrentStep("plan-selection");
       }
       setHasInitialized(true);
     }
-  }, [isSignedIn, currentStep, hasInitialized, searchParams]);
+  }, [isAuthenticated, currentStep, hasInitialized, searchParams]);
 
   // Account Creation Form
   const accountForm = useForm<z.infer<typeof accountCreationSchema>>({
@@ -560,7 +558,7 @@ const OnboardingFlow: React.FC = () => {
 
       case "account-creation":
         // If user is already signed in (clicked Back from payment), show continue option
-        if (isSignedIn && user) {
+        if (isAuthenticated && user) {
           return (
             <div className="w-full max-w-md mx-auto">
               <div
@@ -580,7 +578,7 @@ const OnboardingFlow: React.FC = () => {
                   M
                 </div>
                 <h2 className="text-2xl font-semibold mb-2" style={{ color: '#1a1523' }}>
-                  Welcome, {user.firstName || 'there'}!
+                  Welcome, {user.user_metadata?.full_name?.split(' ')[0] || 'there'}!
                 </h2>
                 <p className="text-sm mb-6" style={{ color: '#6b6478' }}>
                   Your account is already set up. Continue to select your plan.
@@ -635,7 +633,7 @@ const OnboardingFlow: React.FC = () => {
               </label>
             </div>
 
-            {/* Clerk SignUp - dimmed until consent is given */}
+            {/* Custom Signup Form - dimmed until consent is given */}
             <div
               className="w-full transition-all duration-300"
               style={{
@@ -643,15 +641,55 @@ const OnboardingFlow: React.FC = () => {
                 pointerEvents: consentAccepted ? 'auto' : 'none',
               }}
             >
-              <SignUp
-                afterSignUpUrl="/onboarding?step=plan-selection"
-                appearance={{
-                  elements: {
-                    rootBox: "w-full",
-                    card: "shadow-lg"
-                  }
-                }}
-              />
+              <form onSubmit={accountForm.handleSubmit(onAccountSubmit)} className="space-y-4">
+                <Form {...accountForm}>
+                  <FormField
+                    control={accountForm.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Full Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter your full name" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={accountForm.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input type="email" placeholder="Enter your email" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={accountForm.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Password</FormLabel>
+                        <FormControl>
+                          <Input type="password" placeholder="At least 10 characters" {...field} />
+                        </FormControl>
+                        <FormDescription>
+                          Must include uppercase letter and special character
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button type="submit" className="w-full" disabled={isSubmitting}>
+                    {isSubmitting ? 'Creating Account...' : 'Create Account'}
+                  </Button>
+                </Form>
+              </form>
             </div>
           </div>
         );
@@ -736,8 +774,8 @@ const OnboardingFlow: React.FC = () => {
     }
   };
 
-  // Don't render anything until Clerk is loaded (prevents flash)
-  if (!isClerkLoaded || !isUserLoaded) {
+  // Don't render anything until auth is loaded (prevents flash)
+  if (!isAuthLoaded) {
     return <div className="min-h-screen bg-gradient-to-b from-white to-gray-100" />;
   }
 
@@ -769,19 +807,10 @@ const OnboardingFlow: React.FC = () => {
         }}
       />
 
-      {/* Header with auth button */}
+      {/* Header */}
       <header className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md border-b border-gray-100">
         <div className="flex h-14 items-center justify-end px-6 gap-2">
-          {isSignedIn && (
-            <UserButton
-              afterSignOutUrl="/"
-              appearance={{
-                elements: {
-                  avatarBox: "h-8 w-8"
-                }
-              }}
-            />
-          )}
+          {/* Optional: Add a simple sign out button or leave empty */}
         </div>
       </header>
 
