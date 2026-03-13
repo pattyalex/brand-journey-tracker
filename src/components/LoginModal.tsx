@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogPortal, DialogOverlay } from "@/components/ui/dialog";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, X, Mail, Lock, ArrowRight } from "lucide-react";
+import { AlertCircle, X, Mail, ArrowRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from 'react-router-dom';
-import { signIn } from '@/auth';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { signIn, signUp } from '@/auth';
 import { supabase } from '@/lib/supabase';
 import EmailVerificationStatus from "@/components/EmailVerificationStatus";
 
@@ -22,14 +22,26 @@ const GoogleIcon = () => (
 const LoginModal: React.FC = () => {
   const { loginOpen, closeLoginModal, login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState('');
   const [showEmailVerification, setShowEmailVerification] = useState(false);
   const [pendingVerificationEmail, setPendingVerificationEmail] = useState('');
   const [step, setStep] = useState<'email' | 'password'>('email');
+
+  // Set signup mode if URL has ?mode=signup
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('mode') === 'signup') {
+      setMode('signup');
+    }
+  }, [location.search]);
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
@@ -58,18 +70,43 @@ const LoginModal: React.FC = () => {
     e.preventDefault();
     setError('');
 
+    if (mode === 'signup') {
+      const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
+      if (!firstName.trim()) { setError('Please enter your first name.'); return; }
+      if (!email.trim()) { setError('Please enter your email.'); return; }
+      if (!password || password.length < 8) { setError('Password must be at least 8 characters.'); return; }
+      setLoading(true);
+      try {
+        const result = await signUp(email, password, fullName);
+        if (result.success) {
+          if (result.needsVerification) {
+            setShowEmailVerification(true);
+            setPendingVerificationEmail(email);
+          } else {
+            login();
+            closeLoginModal();
+            navigate('/onboarding');
+          }
+        } else {
+          setError(result.error?.message || 'Could not create account. Please try again.');
+        }
+      } catch (err: any) {
+        setError('Could not create account. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
     if (step === 'email') {
-      // Move to password step
       setStep('password');
       return;
     }
 
-    // Handle login
+    // Handle sign in
     setLoading(true);
-
     try {
       const result = await signIn(email, password);
-
       if (result.success) {
         login();
         closeLoginModal();
@@ -83,7 +120,6 @@ const LoginModal: React.FC = () => {
         }
       }
     } catch (err: any) {
-      console.error('Login error:', err);
       setError('Invalid email or password');
     } finally {
       setLoading(false);
@@ -102,6 +138,8 @@ const LoginModal: React.FC = () => {
     setStep('email');
     setEmail('');
     setPassword('');
+    setFirstName('');
+    setLastName('');
     setError('');
   };
 
@@ -169,10 +207,10 @@ const LoginModal: React.FC = () => {
                     className="text-[22px] font-semibold mb-1"
                     style={{ color: '#1a1523' }}
                   >
-                    Sign in to HeyMeg
+                    {mode === 'signup' ? 'Create your account' : 'Sign in to HeyMeg'}
                   </h2>
                   <p style={{ color: '#6b6478', fontSize: '14px' }}>
-                    Welcome back! Please sign in to continue
+                    {mode === 'signup' ? 'Start your 14-day free trial today' : 'Welcome back! Please sign in to continue'}
                   </p>
                 </div>
 
@@ -213,16 +251,83 @@ const LoginModal: React.FC = () => {
 
                 {/* Email/Password Form */}
                 <form onSubmit={handleEmailSubmit} className="space-y-4">
-                  {step === 'email' ? (
+                  {mode === 'signup' ? (
+                    <>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1.5">
+                          <label className="block text-sm font-medium" style={{ color: '#1a1523' }}>First name</label>
+                          <input
+                            type="text"
+                            placeholder="First name"
+                            value={firstName}
+                            onChange={(e) => setFirstName(e.target.value)}
+                            required
+                            autoFocus
+                            className="w-full px-3.5 py-2.5 rounded-lg border transition-all outline-none text-sm"
+                            style={{ borderColor: '#e5e5e5', color: '#1a1523' }}
+                            onFocus={(e) => e.target.style.borderColor = '#8B7082'}
+                            onBlur={(e) => e.target.style.borderColor = '#e5e5e5'}
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="block text-sm font-medium" style={{ color: '#1a1523' }}>Last name</label>
+                          <input
+                            type="text"
+                            placeholder="Last name"
+                            value={lastName}
+                            onChange={(e) => setLastName(e.target.value)}
+                            className="w-full px-3.5 py-2.5 rounded-lg border transition-all outline-none text-sm"
+                            style={{ borderColor: '#e5e5e5', color: '#1a1523' }}
+                            onFocus={(e) => e.target.style.borderColor = '#8B7082'}
+                            onBlur={(e) => e.target.style.borderColor = '#e5e5e5'}
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="block text-sm font-medium" style={{ color: '#1a1523' }}>Email address</label>
+                        <input
+                          type="email"
+                          placeholder="Enter your email address"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          required
+                          className="w-full px-3.5 py-2.5 rounded-lg border transition-all outline-none text-sm"
+                          style={{ borderColor: '#e5e5e5', color: '#1a1523' }}
+                          onFocus={(e) => e.target.style.borderColor = '#8B7082'}
+                          onBlur={(e) => e.target.style.borderColor = '#e5e5e5'}
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="block text-sm font-medium" style={{ color: '#1a1523' }}>Password</label>
+                        <input
+                          type="password"
+                          placeholder="At least 8 characters"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          required
+                          className="w-full px-3.5 py-2.5 rounded-lg border transition-all outline-none text-sm"
+                          style={{ borderColor: '#e5e5e5', color: '#1a1523' }}
+                          onFocus={(e) => e.target.style.borderColor = '#8B7082'}
+                          onBlur={(e) => e.target.style.borderColor = '#e5e5e5'}
+                        />
+                      </div>
+                      <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full py-2.5 rounded-lg text-white font-medium flex items-center justify-center gap-2 transition-all disabled:opacity-60"
+                        style={{ background: 'linear-gradient(135deg, #7a3868 0%, #612a4f 50%, #4e2040 100%)', fontSize: '14px' }}
+                      >
+                        {loading ? (
+                          <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Creating account...</>
+                        ) : (
+                          <>Start free trial <ArrowRight className="w-4 h-4" /></>
+                        )}
+                      </button>
+                    </>
+                  ) : step === 'email' ? (
                     <>
                       <div className="space-y-1.5">
-                        <label
-                          htmlFor="email"
-                          className="block text-sm font-medium"
-                          style={{ color: '#1a1523' }}
-                        >
-                          Email address
-                        </label>
+                        <label htmlFor="email" className="block text-sm font-medium" style={{ color: '#1a1523' }}>Email address</label>
                         <input
                           id="email"
                           type="email"
@@ -232,103 +337,55 @@ const LoginModal: React.FC = () => {
                           required
                           autoFocus
                           className="w-full px-3.5 py-2.5 rounded-lg border transition-all outline-none text-sm"
-                          style={{
-                            borderColor: '#e5e5e5',
-                            color: '#1a1523',
-                          }}
+                          style={{ borderColor: '#e5e5e5', color: '#1a1523' }}
                           onFocus={(e) => e.target.style.borderColor = '#8B7082'}
                           onBlur={(e) => e.target.style.borderColor = '#e5e5e5'}
                         />
                       </div>
-
                       <button
                         type="submit"
                         className="w-full py-2.5 rounded-lg text-white font-medium flex items-center justify-center gap-2 transition-all"
-                        style={{
-                          background: 'linear-gradient(135deg, #7a3868 0%, #612a4f 50%, #4e2040 100%)',
-                          fontSize: '14px'
-                        }}
+                        style={{ background: 'linear-gradient(135deg, #7a3868 0%, #612a4f 50%, #4e2040 100%)', fontSize: '14px' }}
                       >
-                        Continue
-                        <ArrowRight className="w-4 h-4" />
+                        Continue <ArrowRight className="w-4 h-4" />
                       </button>
                     </>
                   ) : (
                     <>
-                      {/* Show email being used */}
                       <div className="flex items-center gap-2 p-3 rounded-lg bg-gray-50 mb-1">
                         <Mail className="w-4 h-4 text-gray-500" />
                         <span className="text-sm text-gray-700 flex-1">{email}</span>
-                        <button
-                          type="button"
-                          onClick={() => setStep('email')}
-                          className="text-xs font-medium hover:underline"
-                          style={{ color: '#612a4f' }}
-                        >
-                          Change
-                        </button>
+                        <button type="button" onClick={() => setStep('email')} className="text-xs font-medium hover:underline" style={{ color: '#612a4f' }}>Change</button>
                       </div>
-
                       <div className="space-y-1.5">
                         <div className="flex items-center justify-between">
-                          <label
-                            htmlFor="password"
-                            className="block text-sm font-medium"
-                            style={{ color: '#1a1523' }}
-                          >
-                            Password
-                          </label>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              handleClose();
-                              window.location.href = '/forgot-password';
-                            }}
-                            className="text-xs font-medium transition-colors hover:underline"
-                            style={{ color: '#612a4f' }}
-                          >
-                            Forgot password?
-                          </button>
+                          <label htmlFor="password" className="block text-sm font-medium" style={{ color: '#1a1523' }}>Password</label>
+                          <button type="button" onClick={() => { handleClose(); window.location.href = '/forgot-password'; }} className="text-xs font-medium transition-colors hover:underline" style={{ color: '#612a4f' }}>Forgot password?</button>
                         </div>
-                        <div className="relative">
-                          <input
-                            id="password"
-                            type="password"
-                            placeholder="Enter your password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                            autoFocus
-                            className="w-full px-3.5 py-2.5 rounded-lg border transition-all outline-none text-sm"
-                            style={{
-                              borderColor: '#e5e5e5',
-                              color: '#1a1523',
-                            }}
-                            onFocus={(e) => e.target.style.borderColor = '#8B7082'}
-                            onBlur={(e) => e.target.style.borderColor = '#e5e5e5'}
-                          />
-                        </div>
+                        <input
+                          id="password"
+                          type="password"
+                          placeholder="Enter your password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          required
+                          autoFocus
+                          className="w-full px-3.5 py-2.5 rounded-lg border transition-all outline-none text-sm"
+                          style={{ borderColor: '#e5e5e5', color: '#1a1523' }}
+                          onFocus={(e) => e.target.style.borderColor = '#8B7082'}
+                          onBlur={(e) => e.target.style.borderColor = '#e5e5e5'}
+                        />
                       </div>
-
                       <button
                         type="submit"
                         disabled={loading}
                         className="w-full py-2.5 rounded-lg text-white font-medium flex items-center justify-center gap-2 transition-all disabled:opacity-60"
-                        style={{
-                          background: 'linear-gradient(135deg, #7a3868 0%, #612a4f 50%, #4e2040 100%)',
-                          fontSize: '14px'
-                        }}
+                        style={{ background: 'linear-gradient(135deg, #7a3868 0%, #612a4f 50%, #4e2040 100%)', fontSize: '14px' }}
                       >
                         {loading ? (
-                          <>
-                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                            Signing in...
-                          </>
+                          <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Signing in...</>
                         ) : (
-                          <>
-                            Sign in
-                            <ArrowRight className="w-4 h-4" />
-                          </>
+                          <>Sign in <ArrowRight className="w-4 h-4" /></>
                         )}
                       </button>
                     </>
@@ -345,14 +402,15 @@ const LoginModal: React.FC = () => {
               style={{ borderColor: '#f0f0f0', background: '#fafafa' }}
             >
               <p className="text-sm" style={{ color: '#6b6478' }}>
-                Don't have an account?{' '}
-                <a
-                  href="/onboarding"
+                {mode === 'signup' ? 'Already have an account? ' : "Don't have an account? "}
+                <button
+                  type="button"
+                  onClick={() => { resetForm(); setMode(mode === 'signup' ? 'signin' : 'signup'); }}
                   className="font-medium transition-colors hover:underline"
                   style={{ color: '#612a4f' }}
                 >
-                  Sign up
-                </a>
+                  {mode === 'signup' ? 'Sign in' : 'Sign up'}
+                </button>
               </p>
             </div>
           )}
