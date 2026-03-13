@@ -326,7 +326,7 @@ const Terms = () => {
               <div>
                 <h3 className="font-semibold text-[#2d2a26] mb-2">7.4 Data Export</h3>
                 <p>
-                  You may export Your Content at any time while your account is active. If you cancel your membership, your account will remain active through the end of your current billing period, and you may export Your Content until that date. Once your billing period ends, your account will be deactivated and Your Content will be permanently deleted.
+                  You may export Your Content at any time while your account is active. If you cancel your membership, your account will remain active through the end of your current billing period, and you may export Your Content until that date. Once your billing period ends, your account will be deactivated and Your Content will be permanently deleted. If you choose to delete your account at any time, all your data will be deleted immediately and permanently. We strongly recommend exporting your data before deleting your account, as this action cannot be undone.
                 </p>
               </div>
             </div>

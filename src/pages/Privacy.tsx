@@ -313,7 +313,7 @@ const Privacy = () => {
             </div>
             <div className="text-[15px] leading-relaxed text-[#4d3e48]">
               <p>
-                We retain your personal information as long as your account is active or as needed to provide you the Service. If you delete your account, we will delete or anonymize your data within 30 days, except where retention is required for legal, tax, or compliance purposes (e.g., financial logs, aggregated analytics). We use commercially reasonable means to ensure timely and thorough data deletion.
+                We retain your personal information as long as your account is active or as needed to provide you the Service. If you delete your account, your data is deleted immediately and permanently. We strongly recommend exporting your data before deleting your account, as this action cannot be undone and all your content, settings, and account information will be gone the moment you confirm deletion.
               </p>
             </div>
           </section>

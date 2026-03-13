@@ -8,7 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import {
   CreditCard, User, Lock, ChevronRight, Crown, Check, Plus, Shield, LogOut,
   Globe, Calendar, Download, Trash2, ChevronDown, Clock,
-  FileText, Camera, AlertTriangle
+  FileText, Camera, AlertTriangle, HelpCircle, MessageCircle, Mail
 } from 'lucide-react';
 import {
   Select,
@@ -44,9 +44,20 @@ const MyAccount = () => {
   // Profile state
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [bio, setBio] = useState('');
   const [loading, setLoading] = useState(true);
-  const [activeSection, setActiveSection] = useState('profile');
+  const [activeSection, setActiveSection] = useState('account');
+  const [expandedFaq, setExpandedFaq] = useState<number | null>(0);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteEmailInput, setDeleteEmailInput] = useState('');
+  const [deletingAccount, setDeletingAccount] = useState(false);
+
+  const faqs = [
+    { question: "How do I schedule content on the calendar?", answer: "Navigate to 'Planner and Calendar' from the sidebar. Click on any date to add a new task or content item. You can drag and drop items to reschedule them, and use the weekly or monthly views to plan ahead." },
+    { question: "How do I track brand partnerships?", answer: "Go to 'Partnerships' in the sidebar to manage all your brand deals. You can add new partnerships, track deliverables, set deadlines, and monitor payment status all in one place." },
+    { question: "How do I set my content goals?", answer: "Visit 'Strategy and Goals' to define your mission statement, set monthly goals, and track your top priorities. This helps you stay focused on what matters most for your brand growth." },
+    { question: "How do I change my timezone?", answer: "Go to Settings > Preferences and select your preferred timezone from the list. Your planner and calendar will automatically adjust to show times in your selected timezone." },
+    { question: "How do I export my data?", answer: "Navigate to Settings > Data where you can export all your account data as JSON or download your content calendar as a CSV or iCal file." },
+  ];
 
   // Password change state
   const [currentPassword, setCurrentPassword] = useState('');
@@ -72,7 +83,6 @@ const MyAccount = () => {
         if (user) {
           setName(user.user_metadata?.full_name || '');
           setEmail(user.email || '');
-          setBio(user.user_metadata?.bio || '');
         }
       } catch (error) {
         console.error('Error loading user data:', error);
@@ -90,7 +100,7 @@ const MyAccount = () => {
     setUpdatingProfile(true);
 
     try {
-      await updateUserProfile({ full_name: name, email, bio });
+      await updateUserProfile({ full_name: name, email });
       toast.success('Profile updated successfully');
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -148,6 +158,32 @@ const MyAccount = () => {
     localStorage.removeItem('supabase.auth.token');
     supabase.auth.signOut().catch(() => {}); // fire and forget, don't wait
     window.location.href = '/landing.html';
+  };
+
+  // --- Delete Account ---
+  const handleDeleteAccount = async () => {
+    if (deleteEmailInput.trim().toLowerCase() !== email.trim().toLowerCase()) return;
+    setDeletingAccount(true);
+    try {
+      const userId = user?.id;
+      if (userId) {
+        // Delete all user data from Supabase
+        await supabase.from('profiles').delete().eq('id', userId);
+        await supabase.from('users').delete().eq('id', userId);
+      }
+      // Clear all local storage
+      Object.keys(localStorage).forEach(k => { if (k.startsWith('sb-') || k.startsWith(userId ?? '___')) localStorage.removeItem(k); });
+      localStorage.clear();
+      // Delete the auth account
+      await supabase.auth.admin?.deleteUser?.(userId ?? '');
+      await supabase.auth.signOut();
+      window.location.replace('/landing.html');
+    } catch (err) {
+      console.error('Error deleting account:', err);
+      // Sign out anyway — account data is gone
+      await supabase.auth.signOut();
+      window.location.replace('/landing.html');
+    }
   };
 
   // --- Data Export Handlers ---
@@ -479,13 +515,14 @@ const MyAccount = () => {
   };
 
   const sections = [
-    { id: 'profile', label: 'Profile', icon: User },
-    { id: 'account', label: 'Account', icon: Lock },
+    { id: 'account', label: 'Account', icon: User },
     { id: 'membership', label: 'Membership', icon: Crown },
     { id: 'preferences', label: 'Calendar', icon: Calendar },
     { id: 'integrations', label: 'Integrations', icon: Calendar },
     { id: 'data', label: 'Data', icon: Download },
     { id: 'legal', label: 'Legal', icon: FileText },
+    { id: 'help', label: 'Help', icon: HelpCircle },
+    { id: 'contact', label: 'Contact Us', icon: MessageCircle },
   ];
 
   return (
@@ -557,125 +594,103 @@ const MyAccount = () => {
 
               {/* Main Content */}
               <div className="flex-1 space-y-6">
-                {/* ========== PROFILE SECTION ========== */}
-                {activeSection === 'profile' && (
-                  <div
-                    className="bg-white/80 rounded-[20px] p-6"
-                    style={{
-                      boxShadow: '0 4px 24px rgba(45, 42, 38, 0.04)',
-                      border: '1px solid rgba(139, 115, 130, 0.06)',
-                    }}
-                  >
-                    <div className="flex items-center gap-3 mb-6">
-                      <div
-                        className="w-10 h-10 rounded-xl flex items-center justify-center"
-                        style={{
-                          background: 'linear-gradient(145deg, #8b6a7e 0%, #4a3442 100%)',
-                          boxShadow: '0 4px 12px rgba(107, 74, 94, 0.2)',
-                        }}
-                      >
-                        <User className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <h2
-                          className="text-lg text-[#2d2a26]"
-                          style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
-                        >
-                          Profile
-                        </h2>
-                        <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                          Your personal information
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Profile Photo */}
-                    <div className="flex items-center gap-4 mb-6 pb-6 border-b border-[#8B7082]/10">
-                      <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#8b6a7e] to-[#4a3442] flex items-center justify-center text-white text-2xl font-semibold">
-                        {name ? name.charAt(0).toUpperCase() : 'U'}
-                      </div>
-                      <div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-9 px-4 rounded-lg border-[#8B7082]/30 text-[#612a4f] hover:bg-[#612a4f]/5 mb-2"
-                          style={{ fontFamily: "'DM Sans', sans-serif" }}
-                        >
-                          <Camera className="w-4 h-4 mr-2" />
-                          Upload Photo
-                        </Button>
-                        <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                          JPG, PNG or GIF. Max 2MB.
-                        </p>
-                      </div>
-                    </div>
-
-                    <form onSubmit={handleProfileUpdate} className="space-y-5">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                            Full Name
-                          </label>
-                          <input
-                            type="text"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            disabled={loading}
-                            placeholder="Enter your name"
-                            className="w-full h-11 px-4 rounded-xl border border-[#E8E4E6] bg-white text-sm focus:border-[#612a4f] focus:ring-2 focus:ring-[#612a4f]/20 outline-none transition-all disabled:opacity-50"
-                            style={{ fontFamily: "'DM Sans', sans-serif" }}
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                            Email Address
-                          </label>
-                          <input
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            disabled={loading}
-                            placeholder="Enter your email"
-                            className="w-full h-11 px-4 rounded-xl border border-[#E8E4E6] bg-white text-sm focus:border-[#612a4f] focus:ring-2 focus:ring-[#612a4f]/20 outline-none transition-all disabled:opacity-50"
-                            style={{ fontFamily: "'DM Sans', sans-serif" }}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                          Bio
-                        </label>
-                        <textarea
-                          value={bio}
-                          onChange={(e) => setBio(e.target.value)}
-                          disabled={loading}
-                          placeholder="Tell us a little about yourself..."
-                          rows={3}
-                          className="w-full px-4 py-3 rounded-xl border border-[#E8E4E6] bg-white text-sm focus:border-[#612a4f] focus:ring-2 focus:ring-[#612a4f]/20 outline-none transition-all disabled:opacity-50 resize-none"
-                          style={{ fontFamily: "'DM Sans', sans-serif" }}
-                        />
-                      </div>
-
-                      <Button
-                        type="submit"
-                        disabled={loading || updatingProfile}
-                        className="h-11 px-6 rounded-xl text-white font-medium"
-                        style={{
-                          fontFamily: "'DM Sans', sans-serif",
-                          background: 'linear-gradient(145deg, #612a4f 0%, #4a3442 100%)',
-                        }}
-                      >
-                        {updatingProfile ? 'Saving...' : 'Save Changes'}
-                      </Button>
-                    </form>
-                  </div>
-                )}
-
                 {/* ========== ACCOUNT SECTION ========== */}
                 {activeSection === 'account' && (
                   <div className="space-y-6">
+                    {/* Profile Info */}
+                    <div
+                      className="bg-white/80 rounded-[20px] p-6"
+                      style={{
+                        boxShadow: '0 4px 24px rgba(45, 42, 38, 0.04)',
+                        border: '1px solid rgba(139, 115, 130, 0.06)',
+                      }}
+                    >
+                      <div className="flex items-center gap-3 mb-6">
+                        <div
+                          className="w-10 h-10 rounded-xl flex items-center justify-center"
+                          style={{
+                            background: 'linear-gradient(145deg, #8b6a7e 0%, #4a3442 100%)',
+                            boxShadow: '0 4px 12px rgba(107, 74, 94, 0.2)',
+                          }}
+                        >
+                          <User className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                          <h2 className="text-lg text-[#2d2a26]" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>
+                            Account
+                          </h2>
+                          <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                            Your personal information
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Profile Photo */}
+                      <div className="flex items-center gap-4 mb-6 pb-6 border-b border-[#8B7082]/10">
+                        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#8b6a7e] to-[#4a3442] flex items-center justify-center text-white text-2xl font-semibold">
+                          {name ? name.charAt(0).toUpperCase() : 'U'}
+                        </div>
+                        <div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-9 px-4 rounded-lg border-[#8B7082]/30 text-[#612a4f] hover:bg-[#612a4f]/5 mb-2"
+                            style={{ fontFamily: "'DM Sans', sans-serif" }}
+                          >
+                            <Camera className="w-4 h-4 mr-2" />
+                            Upload Photo
+                          </Button>
+                          <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                            JPG, PNG or GIF. Max 2MB.
+                          </p>
+                        </div>
+                      </div>
+
+                      <form onSubmit={handleProfileUpdate} className="space-y-5">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                              Full Name
+                            </label>
+                            <input
+                              type="text"
+                              value={name}
+                              onChange={(e) => setName(e.target.value)}
+                              disabled={loading}
+                              placeholder="Enter your name"
+                              className="w-full h-11 px-4 rounded-xl border border-[#E8E4E6] bg-white text-sm focus:border-[#612a4f] focus:ring-2 focus:ring-[#612a4f]/20 outline-none transition-all disabled:opacity-50"
+                              style={{ fontFamily: "'DM Sans', sans-serif" }}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                              Email Address
+                            </label>
+                            <input
+                              type="email"
+                              value={email}
+                              onChange={(e) => setEmail(e.target.value)}
+                              disabled={loading}
+                              placeholder="Enter your email"
+                              className="w-full h-11 px-4 rounded-xl border border-[#E8E4E6] bg-white text-sm focus:border-[#612a4f] focus:ring-2 focus:ring-[#612a4f]/20 outline-none transition-all disabled:opacity-50"
+                              style={{ fontFamily: "'DM Sans', sans-serif" }}
+                            />
+                          </div>
+                        </div>
+                        <Button
+                          type="submit"
+                          disabled={loading || updatingProfile}
+                          className="h-11 px-6 rounded-xl text-white font-medium"
+                          style={{
+                            fontFamily: "'DM Sans', sans-serif",
+                            background: 'linear-gradient(145deg, #612a4f 0%, #4a3442 100%)',
+                          }}
+                        >
+                          {updatingProfile ? 'Saving...' : 'Save Changes'}
+                        </Button>
+                      </form>
+                    </div>
+
                     {/* Change Password */}
                     <div
                       className="bg-white/80 rounded-[20px] p-6"
@@ -776,39 +791,6 @@ const MyAccount = () => {
                       </form>
                     </div>
 
-                    {/* Two-Factor Authentication */}
-                    <div
-                      className="bg-white/80 rounded-[20px] p-6"
-                      style={{
-                        boxShadow: '0 4px 24px rgba(45, 42, 38, 0.04)',
-                        border: '1px solid rgba(139, 115, 130, 0.06)',
-                      }}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-lg bg-[#8B7082]/10 flex items-center justify-center">
-                            <Shield className="w-4 h-4 text-[#612a4f]" />
-                          </div>
-                          <div>
-                            <h3 className="text-sm font-medium text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                              Two-Factor Authentication
-                            </h3>
-                            <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                              Add an extra layer of security
-                            </p>
-                          </div>
-                        </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-9 px-4 rounded-lg border-[#8B7082]/30 text-[#612a4f] hover:bg-[#612a4f]/5"
-                          style={{ fontFamily: "'DM Sans', sans-serif" }}
-                        >
-                          Enable
-                        </Button>
-                      </div>
-                    </div>
-
                     {/* Delete Account */}
                     <div
                       className="bg-white/80 rounded-[20px] p-6"
@@ -827,13 +809,15 @@ const MyAccount = () => {
                               Delete Account
                             </h3>
                             <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                              Permanently delete your account and all data
+                              Permanently deletes your account and all data immediately
                             </p>
                           </div>
                         </div>
                         <Button
+                          type="button"
                           variant="outline"
                           size="sm"
+                          onClick={() => { setDeleteEmailInput(''); setShowDeleteDialog(true); }}
                           className="h-9 px-4 rounded-lg border-red-200 text-red-500 hover:bg-red-50"
                           style={{ fontFamily: "'DM Sans', sans-serif" }}
                         >
@@ -841,6 +825,92 @@ const MyAccount = () => {
                         </Button>
                       </div>
                     </div>
+
+                    {/* Delete Account Confirmation Dialog */}
+                    {showDeleteDialog && (
+                      <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.5)' }}>
+                        <div
+                          className="bg-white rounded-[24px] p-8 w-full max-w-md shadow-2xl"
+                          style={{ border: '1px solid rgba(220, 38, 38, 0.15)' }}
+                        >
+                          {/* Header */}
+                          <div className="flex items-center gap-3 mb-6">
+                            <div className="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center flex-shrink-0">
+                              <AlertTriangle className="w-6 h-6 text-red-500" />
+                            </div>
+                            <div>
+                              <h2 className="text-lg text-[#2d2a26]" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>
+                                Delete your account?
+                              </h2>
+                              <p className="text-xs text-red-500 font-medium" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                                This cannot be undone
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Warning box */}
+                          <div className="rounded-xl bg-red-50 border border-red-100 p-4 mb-6 space-y-2">
+                            <p className="text-sm font-medium text-red-700" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                              Everything will be deleted immediately:
+                            </p>
+                            <ul className="text-sm text-red-600 space-y-1 list-disc list-inside" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                              <li>Your profile and account info</li>
+                              <li>All your content, ideas, and notes</li>
+                              <li>Your calendar and partnerships</li>
+                              <li>All settings and preferences</li>
+                            </ul>
+                          </div>
+
+                          {/* Export nudge */}
+                          <div className="rounded-xl bg-[#612a4f]/5 border border-[#612a4f]/10 p-4 mb-6 flex items-start gap-3">
+                            <Download className="w-4 h-4 text-[#612a4f] mt-0.5 flex-shrink-0" />
+                            <p className="text-sm text-[#612a4f]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                              <strong>Export your data first.</strong> Go to the Data section in Settings to download everything before you delete. You won't be able to recover it after.
+                            </p>
+                          </div>
+
+                          {/* Email confirmation */}
+                          <div className="space-y-2 mb-6">
+                            <label className="text-sm font-medium text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                              Type your email address to confirm
+                            </label>
+                            <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                              {email}
+                            </p>
+                            <input
+                              type="email"
+                              value={deleteEmailInput}
+                              onChange={(e) => setDeleteEmailInput(e.target.value)}
+                              placeholder="Enter your email"
+                              className="w-full h-11 px-4 rounded-xl border border-[#E8E4E6] bg-white text-sm focus:border-red-400 focus:ring-2 focus:ring-red-200 outline-none transition-all"
+                              style={{ fontFamily: "'DM Sans', sans-serif" }}
+                            />
+                          </div>
+
+                          {/* Actions */}
+                          <div className="flex gap-3">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => setShowDeleteDialog(false)}
+                              className="flex-1 h-11 rounded-xl border-[#8B7082]/30 text-[#8B7082] hover:bg-[#f9f7f5]"
+                              style={{ fontFamily: "'DM Sans', sans-serif" }}
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              type="button"
+                              onClick={handleDeleteAccount}
+                              disabled={deletingAccount || deleteEmailInput.trim().toLowerCase() !== email.trim().toLowerCase()}
+                              className="flex-1 h-11 rounded-xl text-white font-medium bg-red-500 hover:bg-red-600 disabled:opacity-40 disabled:cursor-not-allowed"
+                              style={{ fontFamily: "'DM Sans', sans-serif" }}
+                            >
+                              {deletingAccount ? 'Deleting...' : 'Yes, delete my account'}
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -1561,6 +1631,71 @@ const MyAccount = () => {
                         </div>
                         <ChevronRight className="w-4 h-4 text-[#8B7082]" />
                       </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* ========== HELP SECTION ========== */}
+                {activeSection === 'help' && (
+                  <div
+                    className="bg-white/80 rounded-[20px] p-6"
+                    style={{ boxShadow: '0 4px 24px rgba(45, 42, 38, 0.04)', border: '1px solid rgba(139, 115, 130, 0.06)' }}
+                  >
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(145deg, #8b6a7e 0%, #4a3442 100%)', boxShadow: '0 4px 12px rgba(107, 74, 94, 0.2)' }}>
+                        <HelpCircle className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <h2 className="text-lg text-[#2d2a26]" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>Frequently Asked Questions</h2>
+                        <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>Quick answers to common questions</p>
+                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      {faqs.map((faq, index) => (
+                        <div
+                          key={index}
+                          className={`rounded-xl border transition-all ${expandedFaq === index ? 'border-[#612a4f]/20 bg-[#612a4f]/5' : 'border-[#E8E4E6] hover:border-[#8B7082]/30'}`}
+                        >
+                          <button
+                            type="button"
+                            onClick={() => setExpandedFaq(expandedFaq === index ? null : index)}
+                            className="w-full flex items-center justify-between p-4 text-left"
+                          >
+                            <span className={`text-sm font-medium ${expandedFaq === index ? 'text-[#612a4f]' : 'text-[#2d2a26]'}`} style={{ fontFamily: "'DM Sans', sans-serif" }}>{faq.question}</span>
+                            <ChevronDown className={`w-4 h-4 transition-transform ${expandedFaq === index ? 'rotate-180 text-[#612a4f]' : 'text-[#8B7082]'}`} />
+                          </button>
+                          {expandedFaq === index && (
+                            <div className="px-4 pb-4">
+                              <p className="text-sm text-[#8B7082] leading-relaxed" style={{ fontFamily: "'DM Sans', sans-serif" }}>{faq.answer}</p>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* ========== CONTACT SECTION ========== */}
+                {activeSection === 'contact' && (
+                  <div
+                    className="bg-white/80 rounded-[20px] p-6"
+                    style={{ boxShadow: '0 4px 24px rgba(45, 42, 38, 0.04)', border: '1px solid rgba(139, 115, 130, 0.06)' }}
+                  >
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(145deg, #8b6a7e 0%, #4a3442 100%)', boxShadow: '0 4px 12px rgba(107, 74, 94, 0.2)' }}>
+                        <MessageCircle className="w-5 h-5 text-white" />
+                      </div>
+                      <h2 className="text-lg text-[#2d2a26]" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>Contact Us</h2>
+                    </div>
+                    <div className="text-center py-6 space-y-4">
+                      <div className="w-14 h-14 rounded-full bg-[#612a4f]/10 flex items-center justify-center mx-auto">
+                        <Mail className="w-6 h-6 text-[#612a4f]" />
+                      </div>
+                      <p className="text-sm text-[#8B7082] leading-relaxed" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                        Have a question, feedback, or just want to say hi?<br />
+                        Drop us an email and we'll get back to you as soon as possible.
+                      </p>
+                      <p className="text-[#612a4f] font-semibold text-base" style={{ fontFamily: "'DM Sans', sans-serif" }}>contact@heymeg.ai</p>
                     </div>
                   </div>
                 )}
