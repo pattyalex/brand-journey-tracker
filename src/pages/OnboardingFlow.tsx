@@ -638,43 +638,38 @@ const OnboardingFlow: React.FC = () => {
             onComplete={async (answers) => {
               console.log("User goals:", answers);
 
-              // Save answers to Supabase via API server
-              const responsePayload = JSON.stringify({
+              // Save onboarding answers into profiles.preferences (no RLS restrictions)
+              const onboardingResponses = {
                 post_frequency: answers.postFrequency,
                 ideation_method: answers.ideationMethod,
                 team_structure: answers.teamStructure,
                 creator_dream: answers.creatorDream,
                 platforms: answers.platforms,
                 stuck_areas: answers.stuckAreas,
-                other_stuck_area: answers.otherStuckArea || null
-              });
+                other_stuck_area: answers.otherStuckArea || null,
+                completed_at: new Date().toISOString()
+              };
 
-              // Always store in localStorage as backup
-              localStorage.setItem('pending_onboarding_responses', responsePayload);
+              // Store in localStorage as backup
+              localStorage.setItem('pending_onboarding_responses', JSON.stringify(onboardingResponses));
 
-              // Try to save now if we already have a session
-              try {
-                const { data: { session: freshSession } } = await supabase.auth.getSession();
-                if (freshSession?.access_token) {
-                  const response = await fetch('http://localhost:3001/api/save-onboarding-responses', {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      'Authorization': `Bearer ${freshSession.access_token}`
-                    },
-                    body: responsePayload
-                  });
-                  if (response.ok) {
-                    localStorage.removeItem('pending_onboarding_responses');
-                    console.log('✅ Onboarding responses saved to Supabase');
+              // Save directly to profiles.preferences
+              if (user?.id) {
+                try {
+                  const { error } = await supabase
+                    .from('profiles')
+                    .update({ preferences: { onboarding_responses: onboardingResponses } })
+                    .eq('id', user.id);
+
+                  if (error) {
+                    console.error('Error saving onboarding responses:', error);
                   } else {
-                    console.error('Save failed, will retry on next login:', await response.text());
+                    localStorage.removeItem('pending_onboarding_responses');
+                    console.log('✅ Onboarding responses saved to profiles.preferences');
                   }
-                } else {
-                  console.log('No session yet — responses saved to localStorage, will sync after email confirmation');
+                } catch (err) {
+                  console.error('Failed to save onboarding responses:', err);
                 }
-              } catch (err) {
-                console.error('Save attempt failed, responses are in localStorage for retry:', err);
               }
 
               setCurrentStep("welcome");

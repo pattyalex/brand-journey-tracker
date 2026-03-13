@@ -39,19 +39,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const getOnboardingKey = (userId: string) => `${StorageKeys.hasCompletedOnboarding}_${userId}`;
 
   // Sync any onboarding responses saved before session was available
-  const syncPendingOnboardingResponses = async (token: string | undefined) => {
-    if (!token) return;
+  const syncPendingOnboardingResponses = async (userId: string | undefined) => {
+    if (!userId) return;
     const pending = localStorage.getItem('pending_onboarding_responses');
     if (!pending) return;
     try {
-      const response = await fetch('http://localhost:3001/api/save-onboarding-responses', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: pending
-      });
-      if (response.ok) {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ preferences: { onboarding_responses: JSON.parse(pending) } })
+        .eq('id', userId);
+      if (!error) {
         localStorage.removeItem('pending_onboarding_responses');
-        console.log('✅ Pending onboarding responses synced to Supabase');
+        console.log('✅ Pending onboarding responses synced to profiles.preferences');
       }
     } catch (err) {
       console.error('Failed to sync pending onboarding responses:', err);
@@ -66,7 +65,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSession(session);
       setUser(session?.user ?? null);
       setIsAuthLoaded(true);
-      await syncPendingOnboardingResponses(session?.access_token);
+      await syncPendingOnboardingResponses(session?.user?.id);
     });
 
     // Listen for auth state changes
@@ -78,7 +77,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setIsAuthLoaded(true);
 
         // Sync any pending onboarding responses saved before session was available
-        await syncPendingOnboardingResponses(session?.access_token);
+        await syncPendingOnboardingResponses(session?.user?.id);
       }
     );
 
