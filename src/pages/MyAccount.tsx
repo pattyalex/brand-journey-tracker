@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from 'sonner';
-import { getCurrentUser, updateUserProfile, updateUserPassword } from '@/lib/supabase';
+import { getCurrentUser, updateUserProfile, updateUserPassword, supabase } from '@/lib/supabase';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { StorageKeys, getString, setString } from "@/lib/storage";
@@ -143,11 +143,8 @@ const MyAccount = () => {
   };
 
   const handleSignOut = async () => {
-    try {
-      await logout(); // This will redirect to landing.html
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
+    await supabase.auth.signOut();
+    window.location.replace('/landing.html');
   };
 
   // --- Data Export Handlers ---
