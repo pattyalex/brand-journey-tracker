@@ -310,24 +310,24 @@ CREATE TABLE IF NOT EXISTS public.settings (
 -- =====================================================
 -- Performance indexes for common queries
 
-CREATE INDEX idx_content_items_user_id ON public.content_items(user_id);
-CREATE INDEX idx_content_items_status ON public.content_items(status);
-CREATE INDEX idx_content_items_pillar_id ON public.content_items(pillar_id);
-CREATE INDEX idx_content_items_scheduled_date ON public.content_items(scheduled_date);
+CREATE INDEX IF NOT EXISTS idx_content_items_user_id ON public.content_items(user_id);
+CREATE INDEX IF NOT EXISTS idx_content_items_status ON public.content_items(status);
+CREATE INDEX IF NOT EXISTS idx_content_items_pillar_id ON public.content_items(pillar_id);
+CREATE INDEX IF NOT EXISTS idx_content_items_scheduled_date ON public.content_items(scheduled_date);
 
-CREATE INDEX idx_calendar_events_user_id ON public.calendar_events(user_id);
-CREATE INDEX idx_calendar_events_start_time ON public.calendar_events(start_time);
+CREATE INDEX IF NOT EXISTS idx_calendar_events_user_id ON public.calendar_events(user_id);
+CREATE INDEX IF NOT EXISTS idx_calendar_events_start_time ON public.calendar_events(start_time);
 
-CREATE INDEX idx_collaborations_user_id ON public.collaborations(user_id);
-CREATE INDEX idx_collaborations_status ON public.collaborations(status);
+CREATE INDEX IF NOT EXISTS idx_collaborations_user_id ON public.collaborations(user_id);
+CREATE INDEX IF NOT EXISTS idx_collaborations_status ON public.collaborations(status);
 
-CREATE INDEX idx_tasks_user_id ON public.tasks(user_id);
-CREATE INDEX idx_tasks_status ON public.tasks(status);
-CREATE INDEX idx_tasks_due_date ON public.tasks(due_date);
+CREATE INDEX IF NOT EXISTS idx_tasks_user_id ON public.tasks(user_id);
+CREATE INDEX IF NOT EXISTS idx_tasks_status ON public.tasks(status);
+CREATE INDEX IF NOT EXISTS idx_tasks_due_date ON public.tasks(due_date);
 
-CREATE INDEX idx_notes_user_id ON public.notes(user_id);
-CREATE INDEX idx_analytics_user_id ON public.analytics(user_id);
-CREATE INDEX idx_social_accounts_user_id ON public.social_accounts(user_id);
+CREATE INDEX IF NOT EXISTS idx_notes_user_id ON public.notes(user_id);
+CREATE INDEX IF NOT EXISTS idx_analytics_user_id ON public.analytics(user_id);
+CREATE INDEX IF NOT EXISTS idx_social_accounts_user_id ON public.social_accounts(user_id);
 
 -- =====================================================
 -- UPDATED_AT TRIGGERS

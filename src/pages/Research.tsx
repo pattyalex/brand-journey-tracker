@@ -8,7 +8,14 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { StorageKeys, getString, setString } from "@/lib/storage";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  getUserResearchItems,
+  createResearchItem,
+  updateResearchItem,
+  deleteResearchItem,
+  type ResearchItem as DBResearchItem
+} from "@/services/researchService";
 
 interface ResearchItem {
   id: string;
@@ -19,65 +26,115 @@ interface ResearchItem {
 }
 
 const Research = () => {
+  const { user } = useAuth();
   const [researchItems, setResearchItems] = useState<ResearchItem[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [newItemTitle, setNewItemTitle] = useState("");
   const [newItemContent, setNewItemContent] = useState("");
   const [newItemTags, setNewItemTags] = useState("");
   const [isCreating, setIsCreating] = useState(false);
-  
-  // Load research items from localStorage on component mount
-  useEffect(() => {
-    const savedItems = getString(StorageKeys.researchItems);
-    if (savedItems) {
-      try {
-        setResearchItems(JSON.parse(savedItems));
-      } catch (error) {
-        console.error("Error parsing saved research items:", error);
-      }
-    }
-  }, []);
-  
-  // Save research items to localStorage when they change
-  useEffect(() => {
-    setString(StorageKeys.researchItems, JSON.stringify(researchItems));
-  }, [researchItems]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleAddItem = () => {
+  useEffect(() => {
+    loadResearchItems();
+  }, [user]);
+
+  const loadResearchItems = async () => {
+    if (!user?.id) {
+      setResearchItems([]);
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const data = await getUserResearchItems(user.id);
+      const formattedItems = data.map(item => ({
+        id: item.id,
+        title: item.title,
+        content: item.content || "",
+        date: item.created_at,
+        tags: item.tags || []
+      }));
+      setResearchItems(formattedItems);
+    } catch (error) {
+      console.error("Error loading research items:", error);
+      toast.error("Failed to load research items");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAddItem = async () => {
     if (!newItemTitle.trim()) {
       toast.error("Please enter a title for your research");
       return;
     }
-    
-    const newItem: ResearchItem = {
-      id: Date.now().toString(),
-      title: newItemTitle,
-      content: newItemContent,
-      date: new Date().toISOString(),
-      tags: newItemTags.split(",").map(tag => tag.trim()).filter(tag => tag),
-    };
-    
-    setResearchItems([...researchItems, newItem]);
-    setNewItemTitle("");
-    setNewItemContent("");
-    setNewItemTags("");
-    setIsCreating(false);
-    toast.success("Research note added successfully");
+
+    if (!user?.id) {
+      toast.error("You must be logged in to add research");
+      return;
+    }
+
+    try {
+      const newItem = await createResearchItem(user.id, {
+        title: newItemTitle,
+        content: newItemContent,
+        tags: newItemTags.split(",").map(tag => tag.trim()).filter(tag => tag),
+      });
+
+      setResearchItems([{
+        id: newItem.id,
+        title: newItem.title,
+        content: newItem.content || "",
+        date: newItem.created_at,
+        tags: newItem.tags || []
+      }, ...researchItems]);
+
+      setNewItemTitle("");
+      setNewItemContent("");
+      setNewItemTags("");
+      setIsCreating(false);
+      toast.success("Research note added successfully");
+    } catch (error) {
+      console.error("Error adding research item:", error);
+      toast.error("Failed to add research note");
+    }
   };
 
-  const handleDeleteItem = (id: string) => {
-    setResearchItems(researchItems.filter(item => item.id !== id));
-    toast.success("Research note deleted");
+  const handleDeleteItem = async (id: string) => {
+    try {
+      await deleteResearchItem(id);
+      setResearchItems(researchItems.filter(item => item.id !== id));
+      toast.success("Research note deleted");
+    } catch (error) {
+      console.error("Error deleting research item:", error);
+      toast.error("Failed to delete research note");
+    }
   };
 
-  const handleUpdateItem = (id: string, updates: Partial<ResearchItem>) => {
-    setResearchItems(
-      researchItems.map(item => 
-        item.id === id ? { ...item, ...updates } : item
-      )
-    );
-    setEditingId(null);
-    toast.success("Research note updated");
+  const handleUpdateItem = async (id: string, updates: Partial<ResearchItem>) => {
+    try {
+      // Optimistically update UI
+      setResearchItems(
+        researchItems.map(item =>
+          item.id === id ? { ...item, ...updates } : item
+        )
+      );
+
+      // Update in database
+      await updateResearchItem(id, {
+        title: updates.title,
+        content: updates.content,
+        tags: updates.tags
+      });
+
+      toast.success("Research note updated");
+    } catch (error) {
+      console.error("Error updating research item:", error);
+      toast.error("Failed to update research note");
+      // Reload to revert optimistic update
+      loadResearchItems();
+    }
   };
 
   return (
@@ -90,8 +147,8 @@ const Research = () => {
               Organize your research, trends, and information
             </p>
           </div>
-          
-          <Button 
+
+          <Button
             onClick={() => setIsCreating(true)}
             className="bg-[#8B6B4E] hover:bg-[#6D5540]"
             disabled={isCreating}
@@ -147,7 +204,11 @@ const Research = () => {
           </Card>
         )}
 
-        {researchItems.length === 0 && !isCreating ? (
+        {isLoading ? (
+          <div className="flex h-[400px] items-center justify-center">
+            <p className="text-sm text-muted-foreground">Loading research...</p>
+          </div>
+        ) : researchItems.length === 0 && !isCreating ? (
           <Card className="border-dashed">
             <CardContent className="flex flex-col items-center justify-center py-12">
               <FileText className="h-12 w-12 text-muted-foreground mb-4" />
@@ -155,7 +216,7 @@ const Research = () => {
               <p className="text-muted-foreground text-center max-w-md mb-6">
                 Add research notes to keep track of trends, audience insights, and ideas for your content.
               </p>
-              <Button 
+              <Button
                 onClick={() => setIsCreating(true)}
                 className="bg-[#8B6B4E] hover:bg-[#6D5540]"
               >
@@ -172,7 +233,7 @@ const Research = () => {
                   {editingId === item.id ? (
                     <Input
                       value={item.title}
-                      onChange={(e) => 
+                      onChange={(e) =>
                         handleUpdateItem(item.id, { title: e.target.value })
                       }
                       className="font-bold text-lg"
@@ -181,15 +242,15 @@ const Research = () => {
                     <CardTitle className="flex justify-between items-center">
                       <span>{item.title}</span>
                       <div className="flex gap-2">
-                        <Button 
-                          variant="ghost" 
+                        <Button
+                          variant="ghost"
                           size="sm"
                           onClick={() => setEditingId(item.id)}
                         >
                           <Edit size={16} />
                         </Button>
-                        <Button 
-                          variant="ghost" 
+                        <Button
+                          variant="ghost"
                           size="sm"
                           onClick={() => handleDeleteItem(item.id)}
                         >
@@ -207,14 +268,14 @@ const Research = () => {
                     <div className="space-y-4">
                       <Textarea
                         value={item.content}
-                        onChange={(e) => 
+                        onChange={(e) =>
                           handleUpdateItem(item.id, { content: e.target.value })
                         }
                         className="min-h-[200px]"
                       />
                       <div>
                         <label className="block text-sm font-medium mb-1">Tags</label>
-                        <Input 
+                        <Input
                           value={item.tags.join(", ")}
                           onChange={(e) => {
                             const newTags = e.target.value
@@ -226,7 +287,7 @@ const Research = () => {
                         />
                       </div>
                       <div className="flex justify-end">
-                        <Button 
+                        <Button
                           onClick={() => setEditingId(null)}
                           className="bg-[#8B6B4E] hover:bg-[#6D5540]"
                         >
@@ -241,8 +302,8 @@ const Research = () => {
                       {item.tags.length > 0 && (
                         <div className="mt-4 flex flex-wrap gap-2">
                           {item.tags.map((tag, index) => (
-                            <span 
-                              key={index} 
+                            <span
+                              key={index}
                               className="inline-flex items-center rounded-md bg-muted px-2 py-1 text-xs font-medium"
                             >
                               {tag}

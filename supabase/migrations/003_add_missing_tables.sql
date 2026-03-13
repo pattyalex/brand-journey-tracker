@@ -3,14 +3,14 @@
 -- Quick Notes, Vision Board, Research, and Archive support
 -- =====================================================
 
--- Enable UUID extension if not already enabled
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- Enable pgcrypto for gen_random_uuid()
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- =====================================================
 -- QUICK NOTES
 -- =====================================================
 CREATE TABLE IF NOT EXISTS public.quick_notes (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
   content TEXT,
@@ -45,7 +45,7 @@ CREATE POLICY "Users can delete their own quick notes"
 -- VISION BOARD ITEMS
 -- =====================================================
 CREATE TABLE IF NOT EXISTS public.vision_board_items (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
   description TEXT,
@@ -82,7 +82,7 @@ CREATE POLICY "Users can delete their own vision board items"
 -- RESEARCH ITEMS
 -- =====================================================
 CREATE TABLE IF NOT EXISTS public.research_items (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
   content TEXT,
@@ -120,7 +120,10 @@ CREATE POLICY "Users can delete their own research items"
 -- =====================================================
 DO $$
 BEGIN
-  IF NOT EXISTS (
+  IF EXISTS (
+    SELECT 1 FROM information_schema.tables
+    WHERE table_name = 'production_cards'
+  ) AND NOT EXISTS (
     SELECT 1 FROM information_schema.columns
     WHERE table_name = 'production_cards' AND column_name = 'archived'
   ) THEN

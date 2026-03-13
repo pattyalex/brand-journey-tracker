@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useUser } from '@clerk/clerk-react';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   BrandDeal,
   Deliverable,
@@ -28,7 +28,7 @@ interface UseBrandDealsReturn {
 }
 
 export const useBrandDeals = (): UseBrandDealsReturn => {
-  const { user, isLoaded } = useUser();
+  const { user, isAuthLoaded } = useAuth();
   const [deals, setDeals] = useState<BrandDeal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -57,10 +57,10 @@ export const useBrandDeals = (): UseBrandDealsReturn => {
 
   // Load deals on mount and when user changes
   useEffect(() => {
-    if (isLoaded) {
+    if (isAuthLoaded) {
       loadDeals();
     }
-  }, [isLoaded, loadDeals]);
+  }, [isAuthLoaded, loadDeals]);
 
   // Add a new deal
   const addDeal = useCallback(async (dealData: Omit<BrandDeal, 'id' | 'createdAt'>) => {

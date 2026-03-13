@@ -6,7 +6,13 @@ import { Button } from "@/components/ui/button";
 import { PlusCircle, Image as ImageIcon } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
-import { StorageKeys, getString, setString } from "@/lib/storage";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  getUserVisionBoardItems,
+  createVisionBoardItem,
+  deleteVisionBoardItem,
+  type VisionBoardItem
+} from "@/services/visionBoardService";
 
 interface VisionItem {
   id: string;
@@ -16,35 +22,65 @@ interface VisionItem {
 }
 
 const VisionBoard = () => {
+  const { user } = useAuth();
   const [visionItems, setVisionItems] = useState<VisionItem[]>([]);
-  
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
-    const savedItems = getString(StorageKeys.visionBoardItems);
-    if (savedItems) {
-      try {
-        setVisionItems(JSON.parse(savedItems));
-      } catch (error) {
-        console.error("Error parsing saved vision items:", error);
-      }
+    loadVisionItems();
+  }, [user]);
+
+  const loadVisionItems = async () => {
+    if (!user?.id) {
+      setVisionItems([]);
+      setIsLoading(false);
+      return;
     }
-  }, []);
-  
-  useEffect(() => {
-    setString(StorageKeys.visionBoardItems, JSON.stringify(visionItems));
-  }, [visionItems]);
+
+    try {
+      const data = await getUserVisionBoardItems(user.id);
+      const formattedItems = data.map(item => ({
+        id: item.id,
+        title: item.title,
+        imageUrl: item.image_url || "https://placehold.co/600x400/e2e8f0/64748b?text=No+Image",
+        description: item.description || ""
+      }));
+      setVisionItems(formattedItems);
+    } catch (error) {
+      console.error("Error loading vision items:", error);
+      toast.error("Failed to load vision board");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Placeholder function for adding a new vision item
   // In a real implementation, this would open a dialog with form fields
-  const handleAddItem = () => {
-    const newItem: VisionItem = {
-      id: Date.now().toString(),
-      title: "New Vision",
-      imageUrl: "https://placehold.co/600x400/e2e8f0/64748b?text=Add+Image",
-      description: "Describe your vision here"
-    };
-    
-    setVisionItems([...visionItems, newItem]);
-    toast.success("New vision item added!");
+  const handleAddItem = async () => {
+    if (!user?.id) {
+      toast.error("You must be logged in to add vision items");
+      return;
+    }
+
+    try {
+      const newItem = await createVisionBoardItem(user.id, {
+        title: "New Vision",
+        image_url: "https://placehold.co/600x400/e2e8f0/64748b?text=Add+Image",
+        description: "Describe your vision here",
+        display_order: visionItems.length
+      });
+
+      setVisionItems([...visionItems, {
+        id: newItem.id,
+        title: newItem.title,
+        imageUrl: newItem.image_url || "",
+        description: newItem.description || ""
+      }]);
+      toast.success("New vision item added!");
+    } catch (error) {
+      console.error("Error adding vision item:", error);
+      toast.error("Failed to add vision item");
+    }
   };
 
   return (
@@ -57,8 +93,8 @@ const VisionBoard = () => {
               Visualize your goals and aspirations
             </p>
           </div>
-          
-          <Button 
+
+          <Button
             onClick={handleAddItem}
             className="bg-[#8B6B4E] hover:bg-[#6D5540]"
           >
@@ -67,7 +103,11 @@ const VisionBoard = () => {
           </Button>
         </div>
 
-        {visionItems.length === 0 ? (
+        {isLoading ? (
+          <div className="flex h-[400px] items-center justify-center">
+            <p className="text-sm text-muted-foreground">Loading vision board...</p>
+          </div>
+        ) : visionItems.length === 0 ? (
           <Card className="border-dashed">
             <CardContent className="flex flex-col items-center justify-center py-12">
               <ImageIcon className="h-12 w-12 text-muted-foreground mb-4" />
@@ -75,7 +115,7 @@ const VisionBoard = () => {
               <p className="text-muted-foreground text-center max-w-md mb-6">
                 Add images and notes that represent your goals, dreams, and aspirations.
               </p>
-              <Button 
+              <Button
                 onClick={handleAddItem}
                 className="bg-[#8B6B4E] hover:bg-[#6D5540]"
               >
@@ -89,8 +129,8 @@ const VisionBoard = () => {
             {visionItems.map((item) => (
               <Card key={item.id} className="overflow-hidden">
                 <div className="aspect-video relative">
-                  <img 
-                    src={item.imageUrl} 
+                  <img
+                    src={item.imageUrl}
                     alt={item.title}
                     className="object-cover w-full h-full"
                   />

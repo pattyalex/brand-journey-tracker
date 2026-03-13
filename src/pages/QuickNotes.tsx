@@ -8,7 +8,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
-import { StorageKeys, getString, setString } from "@/lib/storage";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  getUserQuickNotes,
+  createQuickNote,
+  deleteQuickNote,
+  type QuickNote
+} from "@/services/quickNotesService";
 
 type Note = {
   id: string;
@@ -18,57 +24,83 @@ type Note = {
 };
 
 const QuickNotes = () => {
+  const { user } = useAuth();
   const [notes, setNotes] = useState<Note[]>([]);
   const [newNoteTitle, setNewNoteTitle] = useState("");
   const [newNoteContent, setNewNoteContent] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const savedNotes = getString(StorageKeys.quickNotes);
-    if (savedNotes) {
-      try {
-        // Convert all existing notes to the new format (without type)
-        const parsedNotes = JSON.parse(savedNotes);
-        const convertedNotes = parsedNotes.map((note: any) => ({
-          id: note.id,
-          title: note.title,
-          content: note.content,
-          createdAt: note.createdAt
-        }));
-        setNotes(convertedNotes);
-      } catch (error) {
-        console.error("Error parsing saved notes:", error);
-        setNotes([]);
-      }
+    loadNotes();
+  }, [user]);
+
+  const loadNotes = async () => {
+    if (!user?.id) {
+      setNotes([]);
+      setIsLoading(false);
+      return;
     }
-  }, []);
 
-  useEffect(() => {
-    setString(StorageKeys.quickNotes, JSON.stringify(notes));
-  }, [notes]);
+    try {
+      const data = await getUserQuickNotes(user.id);
+      const formattedNotes = data.map(note => ({
+        id: note.id,
+        title: note.title,
+        content: note.content || "",
+        createdAt: note.created_at
+      }));
+      setNotes(formattedNotes);
+    } catch (error) {
+      console.error("Error loading notes:", error);
+      toast.error("Failed to load notes");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  const handleAddNote = () => {
+  const handleAddNote = async () => {
     if (!newNoteTitle.trim()) {
       toast.error("Please enter a title for your note");
       return;
     }
 
-    const newNote: Note = {
-      id: Date.now().toString(),
-      title: newNoteTitle,
-      content: newNoteContent,
-      createdAt: new Date().toISOString(),
-    };
+    if (!user?.id) {
+      toast.error("You must be logged in to create notes");
+      return;
+    }
 
-    setNotes([newNote, ...notes]);
-    setNewNoteTitle("");
-    setNewNoteContent("");
-    toast.success("Note created successfully");
+    try {
+      const newNote = await createQuickNote(user.id, {
+        title: newNoteTitle,
+        content: newNoteContent
+      });
+
+      setNotes([{
+        id: newNote.id,
+        title: newNote.title,
+        content: newNote.content || "",
+        createdAt: newNote.created_at
+      }, ...notes]);
+
+      setNewNoteTitle("");
+      setNewNoteContent("");
+      toast.success("Note created successfully");
+    } catch (error) {
+      console.error("Error creating note:", error);
+      toast.error("Failed to create note");
+    }
   };
 
-  const handleDeleteNote = (id: string) => {
-    setNotes(notes.filter((note) => note.id !== id));
-    toast.success("Note deleted successfully");
+  const handleDeleteNote = async (id: string) => {
+    try {
+      await deleteQuickNote(id);
+      setNotes(notes.filter((note) => note.id !== id));
+      toast.success("Note deleted successfully");
+    } catch (error) {
+      console.error("Error deleting note:", error);
+      toast.error("Failed to delete note");
+    }
   };
 
   const filteredNotes = notes.filter((note) => {
@@ -116,7 +148,11 @@ const QuickNotes = () => {
 
             <ScrollArea className="h-[700px] pr-4">
               <div className="space-y-4">
-                {filteredNotes.length === 0 ? (
+                {isLoading ? (
+                  <div className="flex h-[200px] items-center justify-center">
+                    <p className="text-sm text-muted-foreground">Loading notes...</p>
+                  </div>
+                ) : filteredNotes.length === 0 ? (
                   <div className="flex h-[200px] items-center justify-center rounded-md border border-dashed">
                     <div className="text-center">
                       <p className="text-sm text-muted-foreground">
