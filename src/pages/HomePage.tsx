@@ -2338,19 +2338,31 @@ const HomePage = () => {
                         );
                       })
                     ) : (
-                      <div className="py-6 text-center">
-                        <p
-                          className="text-sm text-gray-400 mb-2"
-                          style={{ fontFamily: "'DM Sans', sans-serif" }}
-                        >
-                          No content in progress
-                        </p>
+                      <div className="py-4 flex flex-col gap-2">
+                        {/* Placeholder cards to show what content looks like */}
+                        {[
+                          { label: 'Script', title: 'Your next video idea goes here' },
+                          { label: 'Film', title: 'Add content you\'re working on' },
+                        ].map((item, i) => (
+                          <div
+                            key={i}
+                            onClick={() => navigate('/production')}
+                            className="py-3 cursor-pointer border-b border-[#8B7082]/10 last:border-b-0 opacity-40 hover:opacity-60 transition-opacity"
+                          >
+                            <p className="text-sm font-semibold text-[#2d2a26] mb-1.5" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                              {item.title}
+                            </p>
+                            <span className="inline-block text-[10px] font-semibold text-white px-2 py-0.5 rounded" style={{ fontFamily: "'DM Sans', sans-serif", backgroundColor: '#8b6a7e' }}>
+                              {item.label}
+                            </span>
+                          </div>
+                        ))}
                         <button
                           onClick={() => navigate('/production')}
-                          className="text-sm font-medium text-[#6b4a5e] hover:text-[#4a3442] transition-colors"
+                          className="mt-1 text-xs font-medium text-[#612a4f] hover:text-[#4a3442] transition-colors"
                           style={{ fontFamily: "'DM Sans', sans-serif" }}
                         >
-                          Start creating →
+                          + Start your first piece of content
                         </button>
                       </div>
                     )}
@@ -2390,12 +2402,34 @@ const HomePage = () => {
                   {/* Upcoming Deadlines */}
                   <div className="mb-5">
                     {brandDealsData.deadlines.length === 0 ? (
-                      <p
-                        className="text-sm py-3"
-                        style={{ fontFamily: "'DM Sans', sans-serif", color: '#8b7a85' }}
-                      >
-                        No upcoming deadlines
-                      </p>
+                      <div className="space-y-1.5 mb-2">
+                        {/* Ghost placeholder rows */}
+                        {[
+                          { brand: 'Brand deal name', action: 'Submit content by Mar 20', type: 'Instagram Reel' },
+                          { brand: 'Sponsorship', action: 'Publish by Mar 25', type: 'TikTok' },
+                        ].map((item, i) => (
+                          <div
+                            key={i}
+                            onClick={() => navigate('/brands')}
+                            className="flex items-center justify-between pb-4 pt-2 border-b border-[#8B7082]/10 last:border-b-0 opacity-30 cursor-pointer hover:opacity-50 transition-opacity"
+                          >
+                            <div>
+                              <p className="text-sm font-semibold text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>{item.brand}</p>
+                              <p className="text-[11px] text-[#8b7a85]" style={{ fontFamily: "'DM Sans', sans-serif" }}>{item.action}</p>
+                            </div>
+                            <span className="text-[9px] font-medium px-1.5 py-0.5 rounded tracking-wide" style={{ fontFamily: "'DM Sans', sans-serif", color: '#8b7a85', background: 'rgba(139, 115, 130, 0.1)' }}>
+                              {item.type}
+                            </span>
+                          </div>
+                        ))}
+                        <button
+                          onClick={() => navigate('/brands')}
+                          className="text-xs font-medium text-[#612a4f] hover:text-[#4a3442] transition-colors pt-1"
+                          style={{ fontFamily: "'DM Sans', sans-serif" }}
+                        >
+                          + Add your first brand deal
+                        </button>
+                      </div>
                     ) : (
                       <div className="space-y-1.5">
                         {brandDealsData.deadlines.map((deadline, index) => (
