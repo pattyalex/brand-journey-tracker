@@ -55,6 +55,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSession(session);
         setUser(session?.user ?? null);
         setIsAuthLoaded(true);
+
+        // Sync any pending onboarding responses saved before session was available
+        if (session?.access_token) {
+          const pending = localStorage.getItem('pending_onboarding_responses');
+          if (pending) {
+            try {
+              const response = await fetch('http://localhost:3001/api/save-onboarding-responses', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${session.access_token}`
+                },
+                body: pending
+              });
+              if (response.ok) {
+                localStorage.removeItem('pending_onboarding_responses');
+                console.log('✅ Pending onboarding responses synced to Supabase');
+              }
+            } catch (err) {
+              console.error('Failed to sync pending onboarding responses:', err);
+            }
+          }
+        }
       }
     );
 

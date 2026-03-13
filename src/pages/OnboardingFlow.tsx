@@ -638,35 +638,18 @@ const OnboardingFlow: React.FC = () => {
             onComplete={async (answers) => {
               console.log("User goals:", answers);
 
-              // Save answers via API server (uses service role to bypass RLS)
-              if (session?.access_token) {
-                try {
-                  const response = await fetch('http://localhost:3001/api/save-onboarding-responses', {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      'Authorization': `Bearer ${session.access_token}`
-                    },
-                    body: JSON.stringify({
-                      post_frequency: answers.postFrequency,
-                      ideation_method: answers.ideationMethod,
-                      team_structure: answers.teamStructure,
-                      creator_dream: answers.creatorDream,
-                      platforms: answers.platforms,
-                      stuck_areas: answers.stuckAreas,
-                      other_stuck_area: answers.otherStuckArea || null
-                    })
-                  });
-
-                  if (!response.ok) {
-                    console.error('Error saving onboarding responses:', await response.text());
-                  } else {
-                    console.log('✅ Onboarding responses saved successfully');
-                  }
-                } catch (err) {
-                  console.error('Failed to save onboarding responses:', err);
-                }
-              }
+              // Save answers — store in localStorage now, sync to Supabase once session is available
+              const pendingResponses = {
+                post_frequency: answers.postFrequency,
+                ideation_method: answers.ideationMethod,
+                team_structure: answers.teamStructure,
+                creator_dream: answers.creatorDream,
+                platforms: answers.platforms,
+                stuck_areas: answers.stuckAreas,
+                other_stuck_area: answers.otherStuckArea || null
+              };
+              localStorage.setItem('pending_onboarding_responses', JSON.stringify(pendingResponses));
+              console.log('✅ Onboarding responses saved to localStorage, will sync when session is ready');
 
               setCurrentStep("welcome");
             }}

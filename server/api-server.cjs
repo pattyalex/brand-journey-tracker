@@ -1042,12 +1042,20 @@ app.post('/api/google-calendar/events', async (req, res) => {
 });
 
 // Health check endpoint
-// Save onboarding responses (uses service role to bypass RLS)
+// Save onboarding responses
 app.post('/api/save-onboarding-responses', verifySupabaseAuth, async (req, res) => {
   try {
     const { post_frequency, ideation_method, team_structure, creator_dream, platforms, stuck_areas, other_stuck_area } = req.body;
 
-    const { error } = await supabaseAdmin
+    // Use the user's token so RLS auth.uid() check passes
+    const token = req.headers.authorization.replace('Bearer ', '');
+    const userClient = createClient(
+      process.env.VITE_SUPABASE_URL,
+      process.env.VITE_SUPABASE_ANON_KEY,
+      { global: { headers: { Authorization: `Bearer ${token}` } } }
+    );
+
+    const { error } = await userClient
       .from('user_onboarding_responses')
       .insert({
         user_id: req.user.id,
