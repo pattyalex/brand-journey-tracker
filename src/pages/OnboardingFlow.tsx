@@ -163,7 +163,7 @@ const socialAccountsSchema = z.object({
 const OnboardingFlow: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { user, isAuthLoaded, hasCompletedOnboarding, isAuthenticated } = useAuth();
+  const { user, session, isAuthLoaded, hasCompletedOnboarding, isAuthenticated } = useAuth();
   const [currentStep, setCurrentStep] = useState<OnboardingStep>("account-creation");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<string>('');
@@ -638,13 +638,16 @@ const OnboardingFlow: React.FC = () => {
             onComplete={async (answers) => {
               console.log("User goals:", answers);
 
-              // Save answers to Supabase
-              if (user?.id) {
+              // Save answers via API server (uses service role to bypass RLS)
+              if (session?.access_token) {
                 try {
-                  const { error } = await supabase
-                    .from('user_onboarding_responses')
-                    .insert({
-                      user_id: user.id,
+                  const response = await fetch('http://localhost:3001/api/save-onboarding-responses', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${session.access_token}`
+                    },
+                    body: JSON.stringify({
                       post_frequency: answers.postFrequency,
                       ideation_method: answers.ideationMethod,
                       team_structure: answers.teamStructure,
@@ -652,10 +655,11 @@ const OnboardingFlow: React.FC = () => {
                       platforms: answers.platforms,
                       stuck_areas: answers.stuckAreas,
                       other_stuck_area: answers.otherStuckArea || null
-                    });
+                    })
+                  });
 
-                  if (error) {
-                    console.error('Error saving onboarding responses:', error);
+                  if (!response.ok) {
+                    console.error('Error saving onboarding responses:', await response.text());
                   } else {
                     console.log('✅ Onboarding responses saved successfully');
                   }

@@ -18,10 +18,16 @@ if (!process.env.STRIPE_SECRET_KEY) {
 }
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder');
 
-// Initialize Supabase
+// Initialize Supabase (anon client for auth verification)
 const supabase = createClient(
   process.env.VITE_SUPABASE_URL,
   process.env.VITE_SUPABASE_ANON_KEY
+);
+
+// Initialize Supabase admin client (service role - bypasses RLS)
+const supabaseAdmin = createClient(
+  process.env.VITE_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
 app.use(cors());
@@ -1036,6 +1042,37 @@ app.post('/api/google-calendar/events', async (req, res) => {
 });
 
 // Health check endpoint
+// Save onboarding responses (uses service role to bypass RLS)
+app.post('/api/save-onboarding-responses', verifySupabaseAuth, async (req, res) => {
+  try {
+    const { post_frequency, ideation_method, team_structure, creator_dream, platforms, stuck_areas, other_stuck_area } = req.body;
+
+    const { error } = await supabaseAdmin
+      .from('user_onboarding_responses')
+      .insert({
+        user_id: req.user.id,
+        post_frequency,
+        ideation_method,
+        team_structure,
+        creator_dream,
+        platforms,
+        stuck_areas,
+        other_stuck_area: other_stuck_area || null
+      });
+
+    if (error) {
+      console.error('Error saving onboarding responses:', error);
+      return res.status(500).json({ error: error.message });
+    }
+
+    console.log('✅ Onboarding responses saved for user:', req.user.id);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Failed to save onboarding responses:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
