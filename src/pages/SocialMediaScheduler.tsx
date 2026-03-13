@@ -4,52 +4,28 @@ import Layout from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Instagram, 
-  Facebook, 
-  Twitter, 
-  Linkedin, 
-  Youtube, 
-  ArrowRight, 
-  Plus, 
-  Calendar, 
-  Clock, 
+import {
+  Instagram,
+  Facebook,
+  Twitter,
+  Linkedin,
+  Youtube,
+  ArrowRight,
+  Plus,
+  Calendar,
+  Clock,
   ExternalLink,
   BellRing
 } from 'lucide-react';
+import EmptyState from "@/components/ui/EmptyState";
 import PlatformIcon from '@/components/content/weeklyFlow/PlatformIcon';
 import { Platform } from '@/types/content-flow';
 
 const SocialMediaScheduler = () => {
   const [connectedAccounts, setConnectedAccounts] = useState<string[]>([]);
 
-  // Sample scheduled posts data
-  const scheduledPosts = [
-    {
-      id: 1,
-      title: "New Product Launch",
-      platform: "instagram",
-      date: "2023-08-15",
-      time: "10:00 AM",
-      status: "scheduled",
-    },
-    {
-      id: 2,
-      title: "Weekly Tips & Tricks",
-      platform: "facebook",
-      date: "2023-08-16",
-      time: "3:30 PM",
-      status: "scheduled",
-    },
-    {
-      id: 3,
-      title: "Customer Testimonial",
-      platform: "linkedin",
-      date: "2023-08-17",
-      time: "9:00 AM",
-      status: "draft",
-    }
-  ];
+  // Scheduled posts data
+  const scheduledPosts: { id: number; title: string; platform: string; date: string; time: string; status: string }[] = [];
 
   const platforms = [
     { name: "Instagram", icon: <Instagram size={24} />, id: "instagram" },
@@ -142,45 +118,57 @@ const SocialMediaScheduler = () => {
             <CardDescription>Manage your upcoming social media posts</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {scheduledPosts.map((post) => (
-                <div 
-                  key={post.id} 
-                  className="p-4 border rounded-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:bg-gray-50"
-                >
-                  <div className="flex items-center gap-3">
-                    <PlatformIcon platform={getPlatformIcon(post.platform)} size={18} />
-                    <div>
-                      <h3 className="font-medium">{post.title}</h3>
-                      <div className="text-sm text-gray-500 flex gap-4 mt-1">
-                        <span className="flex items-center gap-1">
-                          <Calendar size={14} />
-                          {post.date}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Clock size={14} />
-                          {post.time}
-                        </span>
+            {scheduledPosts.length === 0 ? (
+              <EmptyState
+                icon={Calendar}
+                title="No posts scheduled"
+                description="Schedule your social media posts here to maintain a consistent posting schedule across all platforms."
+                actionLabel="Schedule a Post"
+                onAction={() => {}}
+              />
+            ) : (
+              <>
+                <div className="space-y-4">
+                  {scheduledPosts.map((post) => (
+                    <div
+                      key={post.id}
+                      className="p-4 border rounded-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:bg-gray-50"
+                    >
+                      <div className="flex items-center gap-3">
+                        <PlatformIcon platform={getPlatformIcon(post.platform)} size={18} />
+                        <div>
+                          <h3 className="font-medium">{post.title}</h3>
+                          <div className="text-sm text-gray-500 flex gap-4 mt-1">
+                            <span className="flex items-center gap-1">
+                              <Calendar size={14} />
+                              {post.date}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Clock size={14} />
+                              {post.time}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 self-end md:self-auto">
+                        {getStatusBadge(post.status)}
+                        <Button variant="ghost" size="sm">
+                          <ExternalLink size={14} className="mr-1" />
+                          View
+                        </Button>
                       </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2 self-end md:self-auto">
-                    {getStatusBadge(post.status)}
-                    <Button variant="ghost" size="sm">
-                      <ExternalLink size={14} className="mr-1" />
-                      View
-                    </Button>
-                  </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+                <div className="flex justify-center mt-4">
+                  <Button variant="outline">
+                    View All Scheduled Posts
+                    <ArrowRight className="ml-2" size={16} />
+                  </Button>
+                </div>
+              </>
+            )}
           </CardContent>
-          <CardFooter className="flex justify-center">
-            <Button variant="outline">
-              View All Scheduled Posts
-              <ArrowRight className="ml-2" size={16} />
-            </Button>
-          </CardFooter>
         </Card>
 
         {/* Quick Tips Section */}

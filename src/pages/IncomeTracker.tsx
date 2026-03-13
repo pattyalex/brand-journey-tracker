@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { DollarSign, TrendingUp, PieChart, CreditCard } from "lucide-react";
+import EmptyState from "@/components/ui/EmptyState";
 import {
   PieChart as RechartsPieChart,
   Pie,
@@ -183,6 +184,18 @@ const IncomeTracker = () => {
                 <CardTitle>Income History</CardTitle>
               </CardHeader>
               <CardContent>
+                {incomeData.length === 0 ? (
+                  <EmptyState
+                    icon={DollarSign}
+                    title="No income tracked yet"
+                    description="Log your brand deals, sponsorships, and other income sources to track your earnings over time."
+                    actionLabel="Add Income"
+                    onAction={() => {
+                      const addTab = document.querySelector<HTMLButtonElement>('[value="add"]');
+                      if (addTab) addTab.click();
+                    }}
+                  />
+                ) : (
                 <div className="rounded-md border">
                   <div className="px-4 py-3 font-medium grid grid-cols-3 bg-muted">
                     <div>Source</div>
@@ -199,6 +212,7 @@ const IncomeTracker = () => {
                     ))}
                   </div>
                 </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

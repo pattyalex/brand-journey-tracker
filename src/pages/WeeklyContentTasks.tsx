@@ -5,8 +5,9 @@ import AddPlatformDialog from "@/components/content/weeklyFlow/AddPlatformDialog
 import ContentSchedule from "@/components/content/weeklyFlow/ContentSchedule";
 import PlatformIcon from "@/components/content/weeklyFlow/PlatformIcon";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, CheckSquare } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import EmptyState from "@/components/ui/EmptyState";
 
 const WeeklyContentTasks = () => {
   const initialPlatforms: Platform[] = [
@@ -126,22 +127,32 @@ const WeeklyContentTasks = () => {
         <div className="pt-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-semibold">Weekly Schedule</h2>
-            <Button 
-              variant="outline" 
-              size="xs"
-              onClick={clearSchedule}
-              className="gap-1.5 text-gray-600 hover:text-gray-700"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-              Clear All
-            </Button>
+            {contentItems.length > 0 && (
+              <Button
+                variant="outline"
+                size="xs"
+                onClick={clearSchedule}
+                className="gap-1.5 text-gray-600 hover:text-gray-700"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                Clear All
+              </Button>
+            )}
           </div>
-          
-          <ContentSchedule 
-            platforms={platforms} 
+
+          {contentItems.length === 0 ? (
+            <EmptyState
+              icon={CheckSquare}
+              title="No tasks this week"
+              description="Break down your content creation into manageable weekly tasks to stay on track. Drag a task type from above into the day you want to work on it."
+            />
+          ) : (
+          <ContentSchedule
+            platforms={platforms}
             contentItems={contentItems}
             setContentItems={setContentItems}
           />
+          )}
         </div>
         
         <AddPlatformDialog 

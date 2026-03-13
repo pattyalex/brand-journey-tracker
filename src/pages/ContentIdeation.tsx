@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { StorageKeys, getJSON, setJSON } from "@/lib/storage";
+import EmptyState from "@/components/ui/EmptyState";
 
 type TabType = "brain-dump" | "content-ideas" | "vision-board";
 
@@ -316,6 +317,15 @@ const ContentIdeation = () => {
                   Organize your content ideas into categories and refine them for future content creation.
                 </p>
 
+                {contentIdeas.length === 0 ? (
+                  <EmptyState
+                    icon={Lightbulb}
+                    title="No content ideas yet"
+                    description="Start capturing your content ideas here. Add topics, formats, and inspiration for your next posts."
+                    actionLabel="Add Idea"
+                    onAction={handleAddNewIdea}
+                  />
+                ) : (
                 <div className="bg-white border border-gray-100 rounded-md overflow-hidden">
                   <div className="overflow-x-auto relative">
                     {/* Trash icons positioned outside the table on the left for rows */}
@@ -592,6 +602,7 @@ const ContentIdeation = () => {
                     </table>
                   </div>
                 </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

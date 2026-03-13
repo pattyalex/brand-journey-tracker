@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from "react";
-import { PlusCircle, Trash2, FileText, Search } from "lucide-react";
+import { PlusCircle, Trash2, FileText, Search, StickyNote } from "lucide-react";
+import EmptyState from "@/components/ui/EmptyState";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -153,16 +154,21 @@ const QuickNotes = () => {
                     <p className="text-sm text-muted-foreground">Loading notes...</p>
                   </div>
                 ) : filteredNotes.length === 0 ? (
-                  <div className="flex h-[200px] items-center justify-center rounded-md border border-dashed">
-                    <div className="text-center">
-                      <p className="text-sm text-muted-foreground">
-                        {searchQuery ? "No matching notes found" : "No notes yet"}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {searchQuery ? "Try a different search term" : "Create your first note"}
-                      </p>
+                  searchQuery ? (
+                    <div className="flex h-[200px] items-center justify-center rounded-md border border-dashed">
+                      <div className="text-center">
+                        <p className="text-sm text-muted-foreground">No matching notes found</p>
+                        <p className="text-xs text-muted-foreground mt-1">Try a different search term</p>
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    <EmptyState
+                      icon={StickyNote}
+                      title="No notes yet"
+                      description="Capture quick thoughts, ideas, and reminders here so nothing slips through the cracks."
+                      className="py-8"
+                    />
+                  )
                 ) : (
                   filteredNotes.map((note) => (
                     <Card key={note.id} className="group relative">

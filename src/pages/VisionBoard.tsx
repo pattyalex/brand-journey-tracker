@@ -3,7 +3,8 @@ import React, { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Image as ImageIcon } from "lucide-react";
+import { PlusCircle, Image as ImageIcon, Image } from "lucide-react";
+import EmptyState from "@/components/ui/EmptyState";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -108,22 +109,13 @@ const VisionBoard = () => {
             <p className="text-sm text-muted-foreground">Loading vision board...</p>
           </div>
         ) : visionItems.length === 0 ? (
-          <Card className="border-dashed">
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <ImageIcon className="h-12 w-12 text-muted-foreground mb-4" />
-              <h2 className="text-xl font-medium mb-2">Your Vision Board is Empty</h2>
-              <p className="text-muted-foreground text-center max-w-md mb-6">
-                Add images and notes that represent your goals, dreams, and aspirations.
-              </p>
-              <Button
-                onClick={handleAddItem}
-                className="bg-[#8B6B4E] hover:bg-[#6D5540]"
-              >
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Add Your First Vision
-              </Button>
-            </CardContent>
-          </Card>
+          <EmptyState
+            icon={Image}
+            title="Your vision board is empty"
+            description="Add images, quotes, and goals to your vision board to keep your dreams front and center."
+            actionLabel="Add Item"
+            onAction={handleAddItem}
+          />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {visionItems.map((item) => (

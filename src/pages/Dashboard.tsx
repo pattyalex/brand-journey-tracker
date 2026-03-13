@@ -3,10 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import Layout from "@/components/Layout";
-import { FolderOpen, Handshake, TrendingUp, CheckCircle, ArrowRight } from "lucide-react";
+import { FolderOpen, Handshake, TrendingUp, CheckCircle, ArrowRight, Activity } from "lucide-react";
 import { StorageKeys, getString } from "@/lib/storage";
 import { KanbanColumn } from "./production/types";
 import { cn } from "@/lib/utils";
+import EmptyState from "@/components/ui/EmptyState";
 
 type GoalStatus = 'not-started' | 'somewhat-done' | 'great-progress' | 'completed';
 
@@ -197,19 +198,27 @@ const Dashboard = () => {
         <section className="mb-8">
           <h2 className="text-2xl font-bold mb-4">Recent Activity</h2>
           <Card className="p-0 overflow-hidden">
-            <div className="divide-y">
-              {recentActivity.map((activity, index) => (
-                <div key={index} className="p-4 hover:bg-muted/50 transition-colors">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="font-medium">{activity.title}</p>
-                      <p className="text-sm text-muted-foreground">{activity.description}</p>
+            {recentActivity.length === 0 ? (
+              <EmptyState
+                icon={Activity}
+                title="No recent activity yet"
+                description="Your recent actions across the app will show up here as you start using HeyMeg."
+              />
+            ) : (
+              <div className="divide-y">
+                {recentActivity.map((activity, index) => (
+                  <div key={index} className="p-4 hover:bg-muted/50 transition-colors">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="font-medium">{activity.title}</p>
+                        <p className="text-sm text-muted-foreground">{activity.description}</p>
+                      </div>
+                      <span className="text-xs text-muted-foreground">{activity.time}</span>
                     </div>
-                    <span className="text-xs text-muted-foreground">{activity.time}</span>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </Card>
         </section>
 
@@ -235,28 +244,7 @@ const Dashboard = () => {
   );
 };
 
-const recentActivity = [
-  {
-    title: "Content Idea Added",
-    description: "You added 'Summer Travel Tips' to your content ideas",
-    time: "2 hours ago"
-  },
-  {
-    title: "Post Scheduled",
-    description: "Instagram post scheduled for May 20th at 9:00 AM",
-    time: "Yesterday"
-  },
-  {
-    title: "Brand Deal Updated",
-    description: "Contract approved for Skincare Brand collaboration",
-    time: "2 days ago"
-  },
-  {
-    title: "Analytics Updated",
-    description: "April performance report is now available",
-    time: "3 days ago"
-  }
-];
+const recentActivity: { title: string; description: string; time: string }[] = [];
 
 const quickActions = [
   {

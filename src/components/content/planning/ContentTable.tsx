@@ -1,21 +1,23 @@
 
 import { memo } from "react";
 import { ContentItem } from "@/types/content";
-import { 
-  Table, 
-  TableHeader, 
-  TableRow, 
-  TableHead, 
-  TableBody, 
-  TableCell 
+import {
+  Table,
+  TableHeader,
+  TableRow,
+  TableHead,
+  TableBody,
+  TableCell
 } from "@/components/ui/table";
-import { 
-  Calendar, 
-  FileText, 
-  PenLine, 
-  Trash2, 
-  ClipboardCheck 
+import {
+  Calendar,
+  FileText,
+  PenLine,
+  Trash2,
+  ClipboardCheck,
+  CalendarDays
 } from "lucide-react";
+import EmptyState from "@/components/ui/EmptyState";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
@@ -110,14 +112,12 @@ const ContentTable = memo(({
           <TableBody>
             {filteredIdeas.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center">
-                  <div className="flex flex-col items-center justify-center text-muted-foreground">
-                    <ClipboardCheck className="h-8 w-8 mb-2" />
-                    <p>No content ideas found</p>
-                    <p className="text-sm">
-                      Finalize ideas in the Idea Development section to see them here
-                    </p>
-                  </div>
+                <TableCell colSpan={7} className="p-0">
+                  <EmptyState
+                    icon={CalendarDays}
+                    title="Your content calendar is empty"
+                    description="Plan your content ahead of time. Schedule posts, track deadlines, and stay consistent."
+                  />
                 </TableCell>
               </TableRow>
             ) : (

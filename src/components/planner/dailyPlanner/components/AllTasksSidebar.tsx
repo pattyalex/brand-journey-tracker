@@ -1,9 +1,10 @@
 import { PlannerItem } from "@/types/planner";
 import { PlannerSection } from "@/components/planner/PlannerSection";
-import { ChevronLeft, ChevronRight, ListTodo } from "lucide-react";
+import { ChevronLeft, ChevronRight, ListTodo, ClipboardList } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSidebar } from "@/components/ui/sidebar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import EmptyState from "@/components/ui/EmptyState";
 
 interface AllTasksSidebarProps {
   isAllTasksCollapsed: boolean;
@@ -146,19 +147,43 @@ export const AllTasksSidebar = ({
 
           {/* Tasks List */}
           <div className="flex-1 overflow-y-auto">
-            <PlannerSection
-              title=""
-              items={allTasks}
-              section="morning"
-              onToggleItem={handleToggleAllTask}
-              onDeleteItem={handleDeleteAllTask}
-              onEditItem={handleEditAllTask}
-              onAddItem={handleAddAllTask}
-              onReorderItems={handleReorderAllTasks}
-              isAllTasksSection={true}
-              onDropTaskFromWeekly={handleDropTaskFromWeeklyToAllTasks}
-              onDropTaskFromCalendar={handleDropTaskFromCalendarToAllTasks}
-            />
+            {allTasks.length === 0 ? (
+              <>
+                <EmptyState
+                  icon={ClipboardList}
+                  title="No tasks yet"
+                  description="Add tasks to organize your work."
+                  className="py-8"
+                />
+                <PlannerSection
+                  title=""
+                  items={allTasks}
+                  section="morning"
+                  onToggleItem={handleToggleAllTask}
+                  onDeleteItem={handleDeleteAllTask}
+                  onEditItem={handleEditAllTask}
+                  onAddItem={handleAddAllTask}
+                  onReorderItems={handleReorderAllTasks}
+                  isAllTasksSection={true}
+                  onDropTaskFromWeekly={handleDropTaskFromWeeklyToAllTasks}
+                  onDropTaskFromCalendar={handleDropTaskFromCalendarToAllTasks}
+                />
+              </>
+            ) : (
+              <PlannerSection
+                title=""
+                items={allTasks}
+                section="morning"
+                onToggleItem={handleToggleAllTask}
+                onDeleteItem={handleDeleteAllTask}
+                onEditItem={handleEditAllTask}
+                onAddItem={handleAddAllTask}
+                onReorderItems={handleReorderAllTasks}
+                isAllTasksSection={true}
+                onDropTaskFromWeekly={handleDropTaskFromWeeklyToAllTasks}
+                onDropTaskFromCalendar={handleDropTaskFromCalendarToAllTasks}
+              />
+            )}
           </div>
         </div>
       </div>

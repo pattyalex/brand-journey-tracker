@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { Table, TableBody, TableCell, TableHeader, TableRow, TableHead } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2, Columns, X } from "lucide-react";
+import { Plus, Trash2, Columns, X, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
+import EmptyState from "@/components/ui/EmptyState";
 import EditableTableCell from "@/components/collab/EditableTableCell";
 import StatusBadge from "@/components/collab/StatusBadge";
 import DepositPaidCell from "@/components/collab/DepositPaidCell";
@@ -305,18 +306,14 @@ const ModernBrandsTable = ({}: ModernBrandsTableProps) => {
             ))}
             {brands.length === 0 && (
               <TableRow>
-                <TableCell colSpan={allColumns.length + 1} className="text-center py-16">
-                  <div className="flex flex-col items-center gap-3">
-                    <div className="text-gray-400">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                      </svg>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-gray-700 font-medium">No partnerships yet</p>
-                      <p className="text-sm text-gray-500">Click "Add Partnership" to get started</p>
-                    </div>
-                  </div>
+                <TableCell colSpan={allColumns.length + 1} className="p-0">
+                  <EmptyState
+                    icon={Users}
+                    title="No collaborations yet"
+                    description="Track your partnerships and collaborations with other creators and brands."
+                    actionLabel="Add Collaboration"
+                    onAction={handleAddPartnership}
+                  />
                 </TableCell>
               </TableRow>
             )}

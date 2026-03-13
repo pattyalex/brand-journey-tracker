@@ -67,6 +67,7 @@ import {
   GripVertical
 } from "lucide-react";
 import { toast } from "sonner";
+import EmptyState from "@/components/ui/EmptyState";
 
 // Progress status types and colors for monthly goals
 type GoalProgressStatus = 'not-started' | 'somewhat-done' | 'great-progress' | 'completed';
@@ -2054,17 +2055,14 @@ const StrategyGrowth = () => {
 
                 {/* Empty State */}
                 {shortTermGoals.length === 0 && (
-                  <div
-                    className="col-span-full text-center py-12 border border-dashed"
-                    style={{
-                      background: 'linear-gradient(145deg, rgba(122, 154, 122, 0.05) 0%, rgba(122, 154, 122, 0.1) 100%)',
-                      borderRadius: '16px',
-                      borderColor: 'rgba(122, 154, 122, 0.2)'
-                    }}
-                  >
-                    <Target className="w-10 h-10 mx-auto mb-3" style={{ color: 'rgba(122, 154, 122, 0.4)' }} />
-                    <p className="text-sm" style={{ color: '#7a9a7a' }}>No annual goals yet</p>
-                    <p className="text-xs mt-1" style={{ color: 'rgba(122, 154, 122, 0.6)' }}>Add your first 1-year goal above</p>
+                  <div className="col-span-full">
+                    <EmptyState
+                      icon={Target}
+                      title="No goals set yet"
+                      description="Define your monthly and quarterly goals to stay focused on what matters most for your growth."
+                      actionLabel="Add Goal"
+                      onAction={() => setIsAddingShortTermGoal(true)}
+                    />
                   </div>
                 )}
               </div>
@@ -2166,18 +2164,11 @@ const StrategyGrowth = () => {
                       </div>
 
                       {goals.length === 0 ? (
-                        <div
-                          className="text-center py-10 border border-dashed"
-                          style={{
-                            background: 'rgba(255, 255, 255, 0.5)',
-                            borderRadius: '14px',
-                            borderColor: 'rgba(139, 115, 130, 0.15)'
-                          }}
-                        >
-                          <Calendar className="w-8 h-8 mx-auto mb-2" style={{ color: 'rgba(139, 115, 130, 0.3)' }} />
-                          <p className="text-sm" style={{ color: '#8B7082' }}>No goals for {fullMonth}</p>
-                          <p className="text-xs mt-1" style={{ color: 'rgba(139, 115, 130, 0.6)' }}>Add a goal below to get started</p>
-                        </div>
+                        <EmptyState
+                          icon={Target}
+                          title="No goals set yet"
+                          description="Define your monthly and quarterly goals to stay focused on what matters most for your growth."
+                        />
                       ) : (
                         <SortableContext
                           items={goals.map(g => g.id)}

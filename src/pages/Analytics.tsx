@@ -1,11 +1,13 @@
 
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
 import { toast } from "sonner";
-import { Instagram, Facebook, Twitter, Youtube, Users, BarChart, Percent, Clock, MapPin, ChevronDown, Plus } from "lucide-react";
+import { Instagram, Facebook, Twitter, Youtube, Users, BarChart, BarChart2, Percent, Clock, MapPin, ChevronDown, Plus } from "lucide-react";
+import EmptyState from "@/components/ui/EmptyState";
 import { ChartContainer } from "@/components/ui/chart";
 import SocialMediaConnector from "@/components/analytics/SocialMediaConnector";
 import OverviewTab from "@/components/analytics/OverviewTab";
@@ -15,6 +17,7 @@ import PostPerformanceTab from "@/components/analytics/PostPerformanceTab";
 import StoryPerformanceTab from "@/components/analytics/StoryPerformanceTab";
 
 const Analytics = () => {
+  const navigate = useNavigate();
   const [selectedTab, setSelectedTab] = useState("overview");
   const [connectedPlatforms, setConnectedPlatforms] = useState<string[]>([]);
   
@@ -82,13 +85,13 @@ const Analytics = () => {
         ) : (
           <Card>
             <CardContent className="pt-6">
-              <div className="text-center space-y-4 py-8">
-                <BarChart className="mx-auto h-12 w-12 text-muted-foreground/60" />
-                <h3 className="text-xl font-medium">Connect Your Social Platforms</h3>
-                <p className="text-muted-foreground max-w-md mx-auto">
-                  Connect your social media accounts to see analytics data across all your platforms in one place.
-                </p>
-              </div>
+              <EmptyState
+                icon={BarChart2}
+                title="No analytics data yet"
+                description="Connect your social platforms and start tracking your performance metrics, growth, and engagement."
+                actionLabel="Connect Platforms"
+                onAction={() => navigate('/my-account')}
+              />
             </CardContent>
           </Card>
         )}

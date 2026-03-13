@@ -3,7 +3,8 @@ import React, { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Trash2, Edit, Save, FileText } from "lucide-react";
+import { PlusCircle, Trash2, Edit, Save, FileText, BookOpen } from "lucide-react";
+import EmptyState from "@/components/ui/EmptyState";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -209,22 +210,13 @@ const Research = () => {
             <p className="text-sm text-muted-foreground">Loading research...</p>
           </div>
         ) : researchItems.length === 0 && !isCreating ? (
-          <Card className="border-dashed">
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <FileText className="h-12 w-12 text-muted-foreground mb-4" />
-              <h2 className="text-xl font-medium mb-2">No Research Notes Yet</h2>
-              <p className="text-muted-foreground text-center max-w-md mb-6">
-                Add research notes to keep track of trends, audience insights, and ideas for your content.
-              </p>
-              <Button
-                onClick={() => setIsCreating(true)}
-                className="bg-[#8B6B4E] hover:bg-[#6D5540]"
-              >
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Add Your First Research Note
-              </Button>
-            </CardContent>
-          </Card>
+          <EmptyState
+            icon={BookOpen}
+            title="No research saved yet"
+            description="Save articles, insights, and research to stay informed and inspire your content strategy."
+            actionLabel="Add Research"
+            onAction={() => setIsCreating(true)}
+          />
         ) : (
           <div className="grid grid-cols-1 gap-6">
             {researchItems.map((item) => (

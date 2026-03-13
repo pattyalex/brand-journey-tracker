@@ -71,6 +71,7 @@ import { StorageKeys, getString, setString, setJSON, getJSON } from "@/lib/stora
 import { EVENTS, emit, on } from "@/lib/events";
 import { KanbanColumn } from "./production/types";
 import { Diamond } from "lucide-react";
+import EmptyState from "@/components/ui/EmptyState";
 
 // Brand Deals types (from Brands.tsx)
 interface BrandDealDeliverable {
@@ -2826,6 +2827,17 @@ const HomePage = () => {
                   </div>
 
                   {/* Goals List */}
+                  {getCurrentMonthGoals().length === 0 ? (
+                    <EmptyState
+                      icon={Target}
+                      title="No goals set yet"
+                      description="Define your goals to stay focused on what matters most for your growth."
+                      actionLabel="Add Goal"
+                      onAction={() => navigate('/strategy-growth?tab=growth-goals#monthly-goals')}
+                      className="py-8"
+                    />
+                  ) : (
+                  <>
                   <div ref={monthlyGoalsScrollRef} className={`${getCurrentMonthGoals().length >= 5 ? 'max-h-[160px] overflow-y-auto' : ''}`} style={{ scrollbarWidth: 'thin', scrollbarColor: '#d1d5db transparent' }}>
                     <div className={`pt-2 ${getCurrentMonthGoals().length <= 2 ? 'space-y-4' : getCurrentMonthGoals().length <= 4 ? 'space-y-1' : 'space-y-1'}`}>
                       {getCurrentMonthGoals().map((goal) => {
@@ -2907,6 +2919,8 @@ const HomePage = () => {
                         <ChevronDown className="w-4 h-4" />
                       </button>
                     </div>
+                  )}
+                  </>
                   )}
               </section>
               </div>

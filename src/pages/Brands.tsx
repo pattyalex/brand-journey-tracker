@@ -56,6 +56,8 @@ import {
 import { getString, setString } from "@/lib/storage";
 import { EVENTS, emit } from "@/lib/events";
 import { toast } from "sonner";
+import EmptyState from "@/components/ui/EmptyState";
+import { Handshake } from "lucide-react";
 
 // Types
 type ContentType = 'tiktok' | 'instagram-post' | 'instagram-reel' | 'instagram-story' | 'youtube-video' | 'youtube-short' | 'blog-post' | 'other';
@@ -751,6 +753,7 @@ const Brands = () => {
               onArchive={handleArchiveDeal}
               onUnarchive={handleUnarchiveDeal}
               onQuickUpdate={handleUpdateDeal}
+              onAddDeal={() => setIsAddDialogOpen(true)}
             />
 
             {/* Add/Edit Dialog */}
@@ -791,33 +794,33 @@ interface KanbanViewProps {
   onArchive: (id: string) => void;
   onUnarchive: (id: string) => void;
   onQuickUpdate: (id: string, updates: Partial<BrandDeal>) => void;
+  onAddDeal?: () => void;
 }
 
-const KanbanView = ({ dealsByStatus, selectedMonth, isYearView, showArchived, onDragStart, onDragOver, onDrop, onEdit, onDelete, onArchive, onUnarchive, onQuickUpdate }: KanbanViewProps) => {
+const KanbanView = ({ dealsByStatus, selectedMonth, isYearView, showArchived, onDragStart, onDragOver, onDrop, onEdit, onDelete, onArchive, onUnarchive, onQuickUpdate, onAddDeal }: KanbanViewProps) => {
   // Only show columns that have deals
   const activeStatuses = statusOrder.filter(status => dealsByStatus[status].length > 0);
 
   if (activeStatuses.length === 0) {
+    if (showArchived) {
+      return (
+        <div className="flex flex-col items-center justify-center py-20 bg-gradient-to-br from-white/80 via-white/60 to-[#F8F6F5]/80 backdrop-blur-sm rounded-2xl border border-[#8B7082]/10 shadow-[0_4px_24px_rgba(97,42,79,0.04)]">
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-[#8B7082]/10 to-[#8B7082]/5 mb-4">
+            <Archive className="w-10 h-10 text-[#8B7082]/40" />
+          </div>
+          <p className="text-[#612a4f] font-medium text-lg" style={{ fontFamily: "'Playfair Display', serif" }}>No archived deals</p>
+          <p className="text-sm text-[#8B7082]/70 mt-1">Archived deals will appear here</p>
+        </div>
+      );
+    }
     return (
-      <div className="flex flex-col items-center justify-center py-20 bg-gradient-to-br from-white/80 via-white/60 to-[#F8F6F5]/80 backdrop-blur-sm rounded-2xl border border-[#8B7082]/10 shadow-[0_4px_24px_rgba(97,42,79,0.04)]">
-        {showArchived ? (
-          <>
-            <div className="p-4 rounded-2xl bg-gradient-to-br from-[#8B7082]/10 to-[#8B7082]/5 mb-4">
-              <Archive className="w-10 h-10 text-[#8B7082]/40" />
-            </div>
-            <p className="text-[#612a4f] font-medium text-lg" style={{ fontFamily: "'Playfair Display', serif" }}>No archived deals</p>
-            <p className="text-sm text-[#8B7082]/70 mt-1">Archived deals will appear here</p>
-          </>
-        ) : (
-          <>
-            <div className="p-4 rounded-2xl bg-gradient-to-br from-[#8B7082]/10 to-[#8B7082]/5 mb-4">
-              <Building2 className="w-10 h-10 text-[#8B7082]/40" />
-            </div>
-            <p className="text-[#612a4f] font-medium text-lg" style={{ fontFamily: "'Playfair Display', serif" }}>No deliverables in {isYearView ? format(selectedMonth, "yyyy") : format(selectedMonth, "MMMM yyyy")}</p>
-            <p className="text-sm text-[#8B7082]/70 mt-1">Try navigating to another {isYearView ? "year" : "month"} or add a new deal</p>
-          </>
-        )}
-      </div>
+      <EmptyState
+        icon={Handshake}
+        title="No brand deals yet"
+        description="Add your first brand deal to start tracking partnerships, deliverables, and payments."
+        actionLabel="Add Brand Deal"
+        onAction={onAddDeal}
+      />
     );
   }
 
