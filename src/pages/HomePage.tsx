@@ -2358,8 +2358,12 @@ const HomePage = () => {
                           { label: 'Film', title: 'Add content you\'re working on' },
                         ].filter((_, i) => !dismissedPlaceholders[`cc-${i}`]);
                         return rows.length === 0 ? (
-                          <div className="py-4 text-center">
-                            <button onClick={() => navigate('/production')} className="text-xs font-semibold text-[#612a4f] hover:text-[#4a3442] transition-colors" style={{ fontFamily: "'DM Sans', sans-serif" }}>+ Start your first piece of content</button>
+                          <div className="py-6 flex flex-col items-center gap-3">
+                            <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'rgba(97,42,79,0.07)' }}>
+                              <Clapperboard className="w-4 h-4 text-[#612a4f]" />
+                            </div>
+                            <p className="text-xs text-[#8b7a85] text-center" style={{ fontFamily: "'DM Sans', sans-serif" }}>No content in progress yet</p>
+                            <button onClick={() => navigate('/production')} className="px-4 py-1.5 rounded-full text-xs font-semibold text-[#612a4f] border border-[#612a4f]/30 hover:bg-[#612a4f] hover:text-white transition-all" style={{ fontFamily: "'DM Sans', sans-serif" }}>Start creating</button>
                           </div>
                         ) : (
                           <div className="py-2 flex flex-col gap-2">
@@ -2425,8 +2429,12 @@ const HomePage = () => {
                         ];
                         const rows = allRows.filter((_, i) => !dismissedPlaceholders[`up-${i}`]);
                         return rows.length === 0 ? (
-                          <div className="py-3">
-                            <button onClick={() => navigate('/brands')} className="text-xs font-semibold text-[#612a4f] hover:text-[#4a3442] transition-colors" style={{ fontFamily: "'DM Sans', sans-serif" }}>+ Add your first brand deal</button>
+                          <div className="py-4 flex flex-col items-center gap-3">
+                            <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'rgba(97,42,79,0.07)' }}>
+                              <Handshake className="w-4 h-4 text-[#612a4f]" />
+                            </div>
+                            <p className="text-xs text-[#8b7a85] text-center" style={{ fontFamily: "'DM Sans', sans-serif" }}>No upcoming deadlines</p>
+                            <button onClick={() => navigate('/brands')} className="px-4 py-1.5 rounded-full text-xs font-semibold text-[#612a4f] border border-[#612a4f]/30 hover:bg-[#612a4f] hover:text-white transition-all" style={{ fontFamily: "'DM Sans', sans-serif" }}>Add a brand deal</button>
                           </div>
                         ) : (
                           <div className="space-y-1.5 mb-2">
@@ -2821,8 +2829,12 @@ const HomePage = () => {
                       ];
                       const visibleHabits = allHabits.filter((_, i) => !dismissedPlaceholders[`wh-${i}`]);
                       return visibleHabits.length === 0 ? (
-                        <div className="py-4 text-center">
-                          <button onClick={() => setIsAddingHabit(true)} className="text-xs font-semibold text-[#612a4f] hover:text-[#4a3442] transition-colors" style={{ fontFamily: "'DM Sans', sans-serif" }}>+ Add your first habit</button>
+                        <div className="py-6 flex flex-col items-center gap-3">
+                          <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'rgba(97,42,79,0.07)' }}>
+                            <svg width="16" height="16" viewBox="0 0 12 12" fill="none"><path d="M2.5 6L5 8.5L9.5 3.5" stroke="#612a4f" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                          </div>
+                          <p className="text-xs text-[#8b7a85] text-center" style={{ fontFamily: "'DM Sans', sans-serif" }}>Build routines that support your growth</p>
+                          <button onClick={() => setIsAddingHabit(true)} className="px-4 py-1.5 rounded-full text-xs font-semibold text-[#612a4f] border border-[#612a4f]/30 hover:bg-[#612a4f] hover:text-white transition-all" style={{ fontFamily: "'DM Sans', sans-serif" }}>Add a habit</button>
                         </div>
                       ) : (
                         <div className="py-2">
@@ -2894,8 +2906,12 @@ const HomePage = () => {
                       ];
                       const visibleGoals = allGoals.filter((_, i) => !dismissedPlaceholders[`mg-${i}`]);
                       return visibleGoals.length === 0 ? (
-                        <div className="py-4 text-center">
-                          <button onClick={() => navigate('/strategy-growth?tab=growth-goals#monthly-goals')} className="text-xs font-semibold text-[#612a4f] hover:text-[#4a3442] transition-colors" style={{ fontFamily: "'DM Sans', sans-serif" }}>+ Set your first goal</button>
+                        <div className="py-6 flex flex-col items-center gap-3">
+                          <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'rgba(97,42,79,0.07)' }}>
+                            <Target className="w-4 h-4 text-[#612a4f]" />
+                          </div>
+                          <p className="text-xs text-[#8b7a85] text-center" style={{ fontFamily: "'DM Sans', sans-serif" }}>Set intentions for this month</p>
+                          <button onClick={() => navigate('/strategy-growth?tab=growth-goals#monthly-goals')} className="px-4 py-1.5 rounded-full text-xs font-semibold text-[#612a4f] border border-[#612a4f]/30 hover:bg-[#612a4f] hover:text-white transition-all" style={{ fontFamily: "'DM Sans', sans-serif" }}>Add a goal</button>
                         </div>
                       ) : (
                         <div className="py-2 space-y-2">
