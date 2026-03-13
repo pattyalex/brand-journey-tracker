@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { CardNumberElement, CardExpiryElement, CardCvcElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2 } from 'lucide-react';
@@ -17,17 +17,18 @@ interface StripePaymentFormProps {
 const CARD_ELEMENT_OPTIONS = {
   style: {
     base: {
-      color: '#32325d',
-      fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+      color: '#1a1523',
+      fontFamily: "'DM Sans', sans-serif",
       fontSmoothing: 'antialiased',
-      fontSize: '16px',
+      fontSize: '15px',
       '::placeholder': {
-        color: '#aab7c4',
+        color: '#9ca3af',
       },
+      lineHeight: '24px',
     },
     invalid: {
-      color: '#fa755a',
-      iconColor: '#fa755a',
+      color: '#ef4444',
+      iconColor: '#ef4444',
     },
   },
 };
@@ -44,6 +45,7 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
   const elements = useElements();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [cardholderName, setCardholderName] = useState(userName || '');
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -57,8 +59,8 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
     setError(null);
 
     try {
-      const cardElement = elements.getElement(CardElement);
-      if (!cardElement) {
+      const cardNumberElement = elements.getElement(CardNumberElement);
+      if (!cardNumberElement) {
         throw new Error('Card element not found');
       }
 
@@ -95,9 +97,9 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
       console.log('Creating payment method...');
       const { error: pmError, paymentMethod } = await stripe.createPaymentMethod({
         type: 'card',
-        card: cardElement,
+        card: cardNumberElement,
         billing_details: {
-          name: userName,
+          name: cardholderName || userName,
           email: userEmail,
         },
       });
@@ -187,23 +189,94 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-5">
       {error && (
-        <Alert variant="destructive">
+        <Alert variant="destructive" className="mb-5">
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-          Card Information
+      {/* Cardholder Name */}
+      <div className="space-y-1.5">
+        <label
+          htmlFor="cardholder-name"
+          className="text-sm font-medium"
+          style={{ color: '#1a1523' }}
+        >
+          Cardholder Name
         </label>
-        <div className="border rounded-md p-3 bg-background">
-          <CardElement options={CARD_ELEMENT_OPTIONS} />
+        <input
+          id="cardholder-name"
+          type="text"
+          placeholder="Name on card"
+          value={cardholderName}
+          onChange={(e) => setCardholderName(e.target.value)}
+          required
+          className="w-full px-3.5 py-2.5 rounded-lg border transition-all outline-none text-sm"
+          style={{
+            borderColor: '#e5e5e5',
+            color: '#1a1523',
+          }}
+          onFocus={(e) => e.currentTarget.style.borderColor = '#8B7082'}
+          onBlur={(e) => e.currentTarget.style.borderColor = '#e5e5e5'}
+        />
+      </div>
+
+      {/* Card Number */}
+      <div className="space-y-1.5">
+        <label
+          className="text-sm font-medium"
+          style={{ color: '#1a1523' }}
+        >
+          Card Number
+        </label>
+        <div
+          className="w-full px-3.5 py-2.5 rounded-lg border transition-all"
+          style={{ borderColor: '#e5e5e5' }}
+        >
+          <CardNumberElement options={CARD_ELEMENT_OPTIONS} />
         </div>
-        <p className="text-sm text-muted-foreground">
-          Test card: 4242 4242 4242 4242 • Any future date • Any 3 digits
-        </p>
+      </div>
+
+      {/* Expiry and CVC Row */}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-1.5">
+          <label
+            className="text-sm font-medium"
+            style={{ color: '#1a1523' }}
+          >
+            Expiration Date
+          </label>
+          <div
+            className="w-full px-3.5 py-2.5 rounded-lg border transition-all"
+            style={{ borderColor: '#e5e5e5' }}
+          >
+            <CardExpiryElement options={CARD_ELEMENT_OPTIONS} />
+          </div>
+        </div>
+
+        <div className="space-y-1.5">
+          <label
+            className="text-sm font-medium"
+            style={{ color: '#1a1523' }}
+          >
+            CVC
+          </label>
+          <div
+            className="w-full px-3.5 py-2.5 rounded-lg border transition-all"
+            style={{ borderColor: '#e5e5e5' }}
+          >
+            <CardCvcElement options={CARD_ELEMENT_OPTIONS} />
+          </div>
+        </div>
+      </div>
+
+      {/* Test Card Info */}
+      <div
+        className="p-3 rounded-lg text-xs"
+        style={{ background: '#f8f4f7', color: '#6b6478' }}
+      >
+        <strong style={{ color: '#612a4f' }}>Test card:</strong> 4242 4242 4242 4242 • Any future date • Any 3 digits
       </div>
 
       <div className="flex items-center gap-3">

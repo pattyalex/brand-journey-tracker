@@ -20,6 +20,7 @@ import { StripePaymentForm } from "@/components/StripePaymentForm";
 import { PaymentSetupStep } from "@/components/PaymentSetupStep";
 import { UserGoalsStep } from "@/components/UserGoalsStep";
 import EmailVerificationStatus from "@/components/EmailVerificationStatus";
+import SignUpForm from "@/components/SignUpForm";
 
 // Define the steps in the onboarding flow
 type OnboardingStep =
@@ -599,99 +600,9 @@ const OnboardingFlow: React.FC = () => {
         }
 
         return (
-          <div className="w-full max-w-md mx-auto flex flex-col items-center">
-            <div className="mb-4 text-center">
-              <h2 className="text-2xl font-bold">Let's set up your account</h2>
-              <p className="text-muted-foreground mt-2">Create your account to get started</p>
-            </div>
-
-            {/* Consent checkbox */}
-            <div className="w-full mb-4 flex items-start gap-3 px-2">
-              <Checkbox
-                id="signup-consent"
-                checked={consentAccepted}
-                onCheckedChange={(checked) => setConsentAccepted(checked as boolean)}
-                className="mt-0.5"
-                style={{
-                  borderColor: consentAccepted ? '#7a3868' : undefined,
-                  backgroundColor: consentAccepted ? '#7a3868' : undefined,
-                }}
-              />
-              <label
-                htmlFor="signup-consent"
-                className="text-sm cursor-pointer leading-relaxed"
-                style={{ color: '#4d3e48', fontFamily: "'DM Sans', sans-serif" }}
-              >
-                By signing up, you agree to our{' '}
-                <a href="/terms" target="_blank" className="font-medium hover:underline" style={{ color: '#612a4f' }}>
-                  Terms of Service
-                </a>{' '}
-                and{' '}
-                <a href="/privacy" target="_blank" className="font-medium hover:underline" style={{ color: '#612a4f' }}>
-                  Privacy Policy
-                </a>
-              </label>
-            </div>
-
-            {/* Custom Signup Form - dimmed until consent is given */}
-            <div
-              className="w-full transition-all duration-300"
-              style={{
-                opacity: consentAccepted ? 1 : 0.4,
-                pointerEvents: consentAccepted ? 'auto' : 'none',
-              }}
-            >
-              <form onSubmit={accountForm.handleSubmit(onAccountSubmit)} className="space-y-4">
-                <Form {...accountForm}>
-                  <FormField
-                    control={accountForm.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Full Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Enter your full name" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={accountForm.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <Input type="email" placeholder="Enter your email" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={accountForm.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Password</FormLabel>
-                        <FormControl>
-                          <Input type="password" placeholder="At least 10 characters" {...field} />
-                        </FormControl>
-                        <FormDescription>
-                          Must include uppercase letter and special character
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <Button type="submit" className="w-full" disabled={isSubmitting}>
-                    {isSubmitting ? 'Creating Account...' : 'Create Account'}
-                  </Button>
-                </Form>
-              </form>
-            </div>
-          </div>
+          <SignUpForm
+            onSuccess={() => setCurrentStep("plan-selection")}
+          />
         );
 
       case "plan-selection":

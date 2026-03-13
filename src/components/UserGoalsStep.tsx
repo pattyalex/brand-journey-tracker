@@ -196,6 +196,21 @@ export const UserGoalsStep: React.FC<UserGoalsStepProps> = ({ onComplete }) => {
         </div>
 
         <div className="p-8">
+          {/* Intro header - only show on first question */}
+          {currentQuestionIndex === 0 && (
+            <div className="mb-8 pb-6 border-b" style={{ borderColor: '#f0eff0' }}>
+              <h1
+                className="text-2xl font-normal mb-2"
+                style={{ color: '#1a1523', fontFamily: "'Instrument Serif', serif" }}
+              >
+                Let's get to know you
+              </h1>
+              <p className="text-sm" style={{ color: '#6b6478' }}>
+                Answer a few quick questions so we can better support your creator journey and improve your experience with HeyMeg.
+              </p>
+            </div>
+          )}
+
           {/* Question counter */}
           <p className="text-xs font-medium mb-4" style={{ color: '#8a7a85' }}>
             QUESTION {currentQuestionIndex + 1} OF {totalQuestions}
