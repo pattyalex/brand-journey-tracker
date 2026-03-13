@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { User, Session } from '@supabase/supabase-js';
-import { StorageKeys, getString, remove, setString } from '@/lib/storage';
+import { StorageKeys, getString, remove, setString, setActiveUserId } from '@/lib/storage';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -42,6 +42,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      setActiveUserId(session?.user?.id ?? null);
       setSession(session);
       setUser(session?.user ?? null);
       setIsAuthLoaded(true);
@@ -50,6 +51,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
+        setActiveUserId(session?.user?.id ?? null);
         setSession(session);
         setUser(session?.user ?? null);
         setIsAuthLoaded(true);

@@ -67,11 +67,30 @@ export const sidebarExpanded = (title: string) => `sidebar-expanded-${title}`;
 
 const isBrowser = () => typeof window !== "undefined" && typeof window.localStorage !== "undefined";
 
+// Active user ID for namespacing all storage keys (prevents data bleed between users)
+let _activeUserId: string | null = null;
+
+export const setActiveUserId = (userId: string | null) => {
+  _activeUserId = userId;
+};
+
+// Keys that are NOT user-scoped (shared across users or used before login)
+const GLOBAL_KEYS = new Set<string>([
+  StorageKeys.sidebarState,
+  StorageKeys.selectedTimezone,
+  StorageKeys.firstDayOfWeek,
+]);
+
+const scopedKey = (key: string): string => {
+  if (!_activeUserId || GLOBAL_KEYS.has(key)) return key;
+  return `${_activeUserId}:${key}`;
+};
+
 export const getString = (key: string, defaultValue: string | null = null) => {
   if (!isBrowser()) {
     return defaultValue;
   }
-  const value = window.localStorage.getItem(key);
+  const value = window.localStorage.getItem(scopedKey(key));
   return value ?? defaultValue;
 };
 
@@ -79,7 +98,7 @@ export const setString = (key: string, value: string) => {
   if (!isBrowser()) {
     return;
   }
-  window.localStorage.setItem(key, value);
+  window.localStorage.setItem(scopedKey(key), value);
 };
 
 export const getBoolean = (key: string, defaultValue: boolean) => {
@@ -114,7 +133,7 @@ export const remove = (key: string) => {
   if (!isBrowser()) {
     return;
   }
-  window.localStorage.removeItem(key);
+  window.localStorage.removeItem(scopedKey(key));
 };
 
 // Helper to get weekStartsOn value for date-fns (0 = Sunday, 1 = Monday)

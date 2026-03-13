@@ -884,16 +884,25 @@ const HomePage = () => {
   useEffect(() => {
     const getCurrentGreeting = () => {
       const hour = new Date().getHours();
-      const userName = user?.firstName || "there";
+
+      // Extract first name from user metadata or use just the greeting
+      let userName = "";
+      if (user?.user_metadata?.full_name) {
+        // Get first name from full name
+        userName = user.user_metadata.full_name.split(' ')[0];
+      }
+
+      // Build greeting with or without name
+      const greetingText = userName ? `, ${userName}` : "";
 
       if (hour >= 5 && hour < 12) {
-        setGreeting(`Good morning, ${userName}!`);
+        setGreeting(`Good morning${greetingText}!`);
         setGreetingIcon(<Coffee className="h-7 w-7 text-amber-500" />);
       } else if (hour >= 12 && hour < 18) {
-        setGreeting(`Good afternoon, ${userName}!`);
+        setGreeting(`Good afternoon${greetingText}!`);
         setGreetingIcon(<Sun className="h-7 w-7 text-yellow-500" />);
       } else {
-        setGreeting(`Good evening, ${userName}!`);
+        setGreeting(`Good evening${greetingText}!`);
         setGreetingIcon(<Moon className="h-7 w-7 text-indigo-400" />);
       }
     };
