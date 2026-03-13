@@ -638,8 +638,8 @@ const OnboardingFlow: React.FC = () => {
             onComplete={async (answers) => {
               console.log("User goals:", answers);
 
-              // Save answers — store in localStorage now, sync to Supabase once session is available
-              const pendingResponses = {
+              // Save answers to Supabase via API server
+              const responsePayload = JSON.stringify({
                 post_frequency: answers.postFrequency,
                 ideation_method: answers.ideationMethod,
                 team_structure: answers.teamStructure,
@@ -647,9 +647,35 @@ const OnboardingFlow: React.FC = () => {
                 platforms: answers.platforms,
                 stuck_areas: answers.stuckAreas,
                 other_stuck_area: answers.otherStuckArea || null
-              };
-              localStorage.setItem('pending_onboarding_responses', JSON.stringify(pendingResponses));
-              console.log('✅ Onboarding responses saved to localStorage, will sync when session is ready');
+              });
+
+              // Always store in localStorage as backup
+              localStorage.setItem('pending_onboarding_responses', responsePayload);
+
+              // Try to save now if we already have a session
+              try {
+                const { data: { session: freshSession } } = await supabase.auth.getSession();
+                if (freshSession?.access_token) {
+                  const response = await fetch('http://localhost:3001/api/save-onboarding-responses', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${freshSession.access_token}`
+                    },
+                    body: responsePayload
+                  });
+                  if (response.ok) {
+                    localStorage.removeItem('pending_onboarding_responses');
+                    console.log('✅ Onboarding responses saved to Supabase');
+                  } else {
+                    console.error('Save failed, will retry on next login:', await response.text());
+                  }
+                } else {
+                  console.log('No session yet — responses saved to localStorage, will sync after email confirmation');
+                }
+              } catch (err) {
+                console.error('Save attempt failed, responses are in localStorage for retry:', err);
+              }
 
               setCurrentStep("welcome");
             }}

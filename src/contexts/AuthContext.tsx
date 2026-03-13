@@ -38,14 +38,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Get user-specific localStorage key
   const getOnboardingKey = (userId: string) => `${StorageKeys.hasCompletedOnboarding}_${userId}`;
 
+  // Sync any onboarding responses saved before session was available
+  const syncPendingOnboardingResponses = async (token: string | undefined) => {
+    if (!token) return;
+    const pending = localStorage.getItem('pending_onboarding_responses');
+    if (!pending) return;
+    try {
+      const response = await fetch('http://localhost:3001/api/save-onboarding-responses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: pending
+      });
+      if (response.ok) {
+        localStorage.removeItem('pending_onboarding_responses');
+        console.log('✅ Pending onboarding responses synced to Supabase');
+      }
+    } catch (err) {
+      console.error('Failed to sync pending onboarding responses:', err);
+    }
+  };
+
   // Initialize auth session
   useEffect(() => {
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setActiveUserId(session?.user?.id ?? null);
       setSession(session);
       setUser(session?.user ?? null);
       setIsAuthLoaded(true);
+      await syncPendingOnboardingResponses(session?.access_token);
     });
 
     // Listen for auth state changes
@@ -57,27 +78,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setIsAuthLoaded(true);
 
         // Sync any pending onboarding responses saved before session was available
-        if (session?.access_token) {
-          const pending = localStorage.getItem('pending_onboarding_responses');
-          if (pending) {
-            try {
-              const response = await fetch('http://localhost:3001/api/save-onboarding-responses', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${session.access_token}`
-                },
-                body: pending
-              });
-              if (response.ok) {
-                localStorage.removeItem('pending_onboarding_responses');
-                console.log('✅ Pending onboarding responses synced to Supabase');
-              }
-            } catch (err) {
-              console.error('Failed to sync pending onboarding responses:', err);
-            }
-          }
-        }
+        await syncPendingOnboardingResponses(session?.access_token);
       }
     );
 
