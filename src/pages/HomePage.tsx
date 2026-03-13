@@ -2151,7 +2151,7 @@ const HomePage = () => {
                                     ? 'line-through text-gray-400'
                                     : priority.text
                                       ? 'text-[#2d2a26] font-semibold'
-                                      : 'text-gray-400 italic'
+                                      : 'text-gray-400'
                                 }`}
                                 style={{ fontFamily: "'DM Sans', sans-serif" }}
                               >
