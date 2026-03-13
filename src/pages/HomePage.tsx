@@ -577,6 +577,19 @@ const HomePage = () => {
   }
   const [continueCreatingCards, setContinueCreatingCards] = useState<ContinueCreatingCard[]>([]);
 
+  // Dismissed placeholder state - persisted in localStorage
+  const [dismissedPlaceholders, setDismissedPlaceholders] = useState<Record<string, boolean>>(() => {
+    try { return JSON.parse(localStorage.getItem('dismissedDashboardPlaceholders') || '{}'); }
+    catch { return {}; }
+  });
+  const dismissPlaceholder = (key: string) => {
+    setDismissedPlaceholders(prev => {
+      const next = { ...prev, [key]: true };
+      localStorage.setItem('dismissedDashboardPlaceholders', JSON.stringify(next));
+      return next;
+    });
+  };
+
   // Celebration state for completing all priorities
   const [showCelebration, setShowCelebration] = useState(false);
 
@@ -2337,33 +2350,25 @@ const HomePage = () => {
                           </div>
                         );
                       })
+                    ) : dismissedPlaceholders['continueCreating'] ? (
+                      <div className="py-6 text-center">
+                        <button onClick={() => navigate('/production')} className="text-xs font-semibold text-[#612a4f] hover:text-[#4a3442] transition-colors" style={{ fontFamily: "'DM Sans', sans-serif" }}>+ Start your first piece of content</button>
+                      </div>
                     ) : (
-                      <div className="py-4 flex flex-col gap-2">
-                        {/* Placeholder cards to show what content looks like */}
+                      <div className="py-2 flex flex-col gap-2 relative">
+                        <button onClick={() => dismissPlaceholder('continueCreating')} className="absolute top-0 right-0 w-5 h-5 flex items-center justify-center rounded-full text-gray-300 hover:text-gray-500 hover:bg-gray-100 transition-all" title="Dismiss preview">
+                          <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1 1l6 6M7 1L1 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                        </button>
                         {[
                           { label: 'Script', title: 'Your next video idea goes here' },
                           { label: 'Film', title: 'Add content you\'re working on' },
                         ].map((item, i) => (
-                          <div
-                            key={i}
-                            onClick={() => navigate('/production')}
-                            className="py-3 cursor-pointer border-b border-[#8B7082]/10 last:border-b-0 opacity-40 hover:opacity-60 transition-opacity"
-                          >
-                            <p className="text-sm font-semibold text-[#2d2a26] mb-1.5" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                              {item.title}
-                            </p>
-                            <span className="inline-block text-[10px] font-semibold text-white px-2 py-0.5 rounded" style={{ fontFamily: "'DM Sans', sans-serif", backgroundColor: '#8b6a7e' }}>
-                              {item.label}
-                            </span>
+                          <div key={i} onClick={() => navigate('/production')} className="py-3 cursor-pointer border-b border-[#8B7082]/10 last:border-b-0 opacity-40 hover:opacity-60 transition-opacity">
+                            <p className="text-sm font-semibold text-[#2d2a26] mb-1.5" style={{ fontFamily: "'DM Sans', sans-serif" }}>{item.title}</p>
+                            <span className="inline-block text-[10px] font-semibold text-white px-2 py-0.5 rounded" style={{ fontFamily: "'DM Sans', sans-serif", backgroundColor: '#8b6a7e' }}>{item.label}</span>
                           </div>
                         ))}
-                        <button
-                          onClick={() => navigate('/production')}
-                          className="mt-1 text-xs font-medium text-[#612a4f] hover:text-[#4a3442] transition-colors"
-                          style={{ fontFamily: "'DM Sans', sans-serif" }}
-                        >
-                          + Start your first piece of content
-                        </button>
+                        <button onClick={() => navigate('/production')} className="mt-1 text-xs font-semibold text-[#612a4f] hover:text-[#4a3442] transition-colors" style={{ fontFamily: "'DM Sans', sans-serif" }}>+ Start your first piece of content</button>
                       </div>
                     )}
                   </div>
@@ -2402,34 +2407,30 @@ const HomePage = () => {
                   {/* Upcoming Deadlines */}
                   <div className="mb-5">
                     {brandDealsData.deadlines.length === 0 ? (
-                      <div className="space-y-1.5 mb-2">
-                        {/* Ghost placeholder rows */}
+                      dismissedPlaceholders['upcomingPartnerships'] ? (
+                        <div className="py-3">
+                          <button onClick={() => navigate('/brands')} className="text-xs font-semibold text-[#612a4f] hover:text-[#4a3442] transition-colors" style={{ fontFamily: "'DM Sans', sans-serif" }}>+ Add your first brand deal</button>
+                        </div>
+                      ) : (
+                      <div className="space-y-1.5 mb-2 relative">
+                        <button onClick={() => dismissPlaceholder('upcomingPartnerships')} className="absolute top-0 right-0 w-5 h-5 flex items-center justify-center rounded-full text-gray-300 hover:text-gray-500 hover:bg-gray-100 transition-all" title="Dismiss preview">
+                          <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1 1l6 6M7 1L1 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                        </button>
                         {[
                           { brand: 'Brand deal name', action: 'Submit content by Mar 20', type: 'Instagram Reel' },
                           { brand: 'Sponsorship', action: 'Publish by Mar 25', type: 'TikTok' },
                         ].map((item, i) => (
-                          <div
-                            key={i}
-                            onClick={() => navigate('/brands')}
-                            className="flex items-center justify-between pb-4 pt-2 border-b border-[#8B7082]/10 last:border-b-0 opacity-30 cursor-pointer hover:opacity-50 transition-opacity"
-                          >
+                          <div key={i} onClick={() => navigate('/brands')} className="flex items-center justify-between pb-4 pt-2 border-b border-[#8B7082]/10 last:border-b-0 opacity-30 cursor-pointer hover:opacity-50 transition-opacity">
                             <div>
                               <p className="text-sm font-semibold text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>{item.brand}</p>
                               <p className="text-[11px] text-[#8b7a85]" style={{ fontFamily: "'DM Sans', sans-serif" }}>{item.action}</p>
                             </div>
-                            <span className="text-[9px] font-medium px-1.5 py-0.5 rounded tracking-wide" style={{ fontFamily: "'DM Sans', sans-serif", color: '#8b7a85', background: 'rgba(139, 115, 130, 0.1)' }}>
-                              {item.type}
-                            </span>
+                            <span className="text-[9px] font-medium px-1.5 py-0.5 rounded tracking-wide" style={{ fontFamily: "'DM Sans', sans-serif", color: '#8b7a85', background: 'rgba(139, 115, 130, 0.1)' }}>{item.type}</span>
                           </div>
                         ))}
-                        <button
-                          onClick={() => navigate('/brands')}
-                          className="text-xs font-medium text-[#612a4f] hover:text-[#4a3442] transition-colors pt-1"
-                          style={{ fontFamily: "'DM Sans', sans-serif" }}
-                        >
-                          + Add your first brand deal
-                        </button>
+                        <button onClick={() => navigate('/brands')} className="text-xs font-semibold text-[#612a4f] hover:text-[#4a3442] transition-colors pt-1" style={{ fontFamily: "'DM Sans', sans-serif" }}>+ Add your first brand deal</button>
                       </div>
+                      )
                     ) : (
                       <div className="space-y-1.5">
                         {brandDealsData.deadlines.map((deadline, index) => (
@@ -2793,19 +2794,21 @@ const HomePage = () => {
                         </div>
                       )}
                     </div>
+                  ) : dismissedPlaceholders['workHabits'] ? (
+                    <div className="py-4 text-center">
+                      <button onClick={() => setIsAddingHabit(true)} className="text-xs font-semibold text-[#612a4f] hover:text-[#4a3442] transition-colors" style={{ fontFamily: "'DM Sans', sans-serif" }}>+ Add your first habit</button>
+                    </div>
                   ) : (
-                    <div className="py-2">
-                      {/* Ghost placeholder habit rows */}
+                    <div className="py-2 relative">
+                      <button onClick={() => dismissPlaceholder('workHabits')} className="absolute top-0 right-0 w-5 h-5 flex items-center justify-center rounded-full text-gray-300 hover:text-gray-500 hover:bg-gray-100 transition-all z-10" title="Dismiss preview">
+                        <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1 1l6 6M7 1L1 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                      </button>
                       {[
                         { name: 'Morning workout', days: [true, true, false, true, false, false, false] },
                         { name: 'Post on social media', days: [true, false, true, false, true, false, false] },
                         { name: 'Review analytics', days: [false, true, false, false, false, false, false] },
                       ].map((habit, i) => (
-                        <div
-                          key={i}
-                          onClick={() => setIsAddingHabit(true)}
-                          className="grid grid-cols-[1fr_repeat(7,28px)] sm:grid-cols-[1fr_repeat(7,36px)] gap-0.5 sm:gap-1 items-center py-2.5 border-b border-[#8B7082]/08 last:border-b-0 opacity-30 cursor-pointer hover:opacity-50 transition-opacity"
-                        >
+                        <div key={i} onClick={() => setIsAddingHabit(true)} className="grid grid-cols-[1fr_repeat(7,28px)] sm:grid-cols-[1fr_repeat(7,36px)] gap-0.5 sm:gap-1 items-center py-2.5 border-b border-[#8B7082]/08 last:border-b-0 opacity-30 cursor-pointer hover:opacity-50 transition-opacity">
                           <span className="text-sm font-semibold text-[#2d2a26] truncate pr-2" style={{ fontFamily: "'DM Sans', sans-serif" }}>{habit.name}</span>
                           {habit.days.map((checked, d) => (
                             <div key={d} className="w-[22px] h-[22px] sm:w-[28px] sm:h-[28px] rounded-md mx-auto flex items-center justify-center" style={{ background: checked ? 'linear-gradient(145deg, #8aae8a, #6a9a6a)' : 'rgba(139,115,130,0.08)', border: checked ? 'none' : '1.5px solid rgba(139,115,130,0.15)' }}>
@@ -2814,13 +2817,7 @@ const HomePage = () => {
                           ))}
                         </div>
                       ))}
-                      <button
-                        onClick={() => setIsAddingHabit(true)}
-                        className="mt-3 text-xs font-semibold text-[#612a4f] hover:text-[#4a3442] transition-colors"
-                        style={{ fontFamily: "'DM Sans', sans-serif" }}
-                      >
-                        + Add your first habit
-                      </button>
+                      <button onClick={() => setIsAddingHabit(true)} className="mt-3 text-xs font-semibold text-[#612a4f] hover:text-[#4a3442] transition-colors" style={{ fontFamily: "'DM Sans', sans-serif" }}>+ Add your first habit</button>
                     </div>
                   )}
               </section>
@@ -2862,30 +2859,28 @@ const HomePage = () => {
 
                   {/* Goals List */}
                   {getCurrentMonthGoals().length === 0 ? (
-                    <div className="py-2 space-y-2">
-                      {/* Ghost placeholder goal rows */}
+                    dismissedPlaceholders['monthlyGoals'] ? (
+                      <div className="py-4 text-center">
+                        <button onClick={() => navigate('/strategy-growth?tab=growth-goals#monthly-goals')} className="text-xs font-semibold text-[#612a4f] hover:text-[#4a3442] transition-colors" style={{ fontFamily: "'DM Sans', sans-serif" }}>+ Set your first goal</button>
+                      </div>
+                    ) : (
+                    <div className="py-2 space-y-2 relative">
+                      <button onClick={() => dismissPlaceholder('monthlyGoals')} className="absolute top-0 right-0 w-5 h-5 flex items-center justify-center rounded-full text-gray-300 hover:text-gray-500 hover:bg-gray-100 transition-all z-10" title="Dismiss preview">
+                        <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1 1l6 6M7 1L1 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                      </button>
                       {[
                         { text: 'Reach 10k followers on Instagram', status: 'On It' },
                         { text: 'Close 2 brand deals this month', status: 'Not Started' },
                         { text: 'Post 3x per week consistently', status: 'Almost There' },
                       ].map((goal, i) => (
-                        <div
-                          key={i}
-                          onClick={() => navigate('/strategy-growth?tab=growth-goals#monthly-goals')}
-                          className="flex items-center justify-between px-3 py-2.5 rounded-xl border border-gray-100 opacity-30 cursor-pointer hover:opacity-50 transition-opacity"
-                        >
+                        <div key={i} onClick={() => navigate('/strategy-growth?tab=growth-goals#monthly-goals')} className="flex items-center justify-between px-3 py-2.5 rounded-xl border border-gray-100 opacity-30 cursor-pointer hover:opacity-50 transition-opacity">
                           <span className="text-sm font-semibold text-[#2d2a26] flex-1 pr-3" style={{ fontFamily: "'DM Sans', sans-serif" }}>{goal.text}</span>
                           <span className="text-[11px] font-medium px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-500 whitespace-nowrap" style={{ fontFamily: "'DM Sans', sans-serif" }}>{goal.status}</span>
                         </div>
                       ))}
-                      <button
-                        onClick={() => navigate('/strategy-growth?tab=growth-goals#monthly-goals')}
-                        className="pt-1 text-xs font-semibold text-[#612a4f] hover:text-[#4a3442] transition-colors"
-                        style={{ fontFamily: "'DM Sans', sans-serif" }}
-                      >
-                        + Set your first goal
-                      </button>
+                      <button onClick={() => navigate('/strategy-growth?tab=growth-goals#monthly-goals')} className="pt-1 text-xs font-semibold text-[#612a4f] hover:text-[#4a3442] transition-colors" style={{ fontFamily: "'DM Sans', sans-serif" }}>+ Set your first goal</button>
                     </div>
+                    )
                   ) : (
                   <>
                   <div ref={monthlyGoalsScrollRef} className={`${getCurrentMonthGoals().length >= 5 ? 'max-h-[160px] overflow-y-auto' : ''}`} style={{ scrollbarWidth: 'thin', scrollbarColor: '#d1d5db transparent' }}>
