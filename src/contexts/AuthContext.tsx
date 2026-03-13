@@ -176,16 +176,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = async () => {
     try {
       await supabase.auth.signOut();
-      remove(StorageKeys.user);
-      setHasCompletedOnboarding(false);
-      window.location.href = '/landing.html';
-      return true;
     } catch (error) {
       console.error("Error signing out:", error);
+    } finally {
       remove(StorageKeys.user);
+      setActiveUserId(null);
       setHasCompletedOnboarding(false);
-      window.location.href = '/landing.html';
-      return false;
+      window.location.replace('/landing.html');
     }
   };
 
