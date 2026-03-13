@@ -179,6 +179,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error) {
       console.error("Error signing out:", error);
     } finally {
+      // Clear Supabase session tokens from localStorage as a safety net
+      Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('sb-')) localStorage.removeItem(key);
+      });
       remove(StorageKeys.user);
       setActiveUserId(null);
       setHasCompletedOnboarding(false);

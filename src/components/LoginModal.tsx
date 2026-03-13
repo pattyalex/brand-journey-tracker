@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogPortal, DialogOverlay } from "@/components/ui/dialog";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, X, Mail, Lock, ArrowRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -111,7 +112,21 @@ const LoginModal: React.FC = () => {
 
   return (
     <Dialog open={loginOpen} onOpenChange={handleClose}>
-      <DialogContent className="p-0 border-0 overflow-hidden max-w-[400px] bg-transparent shadow-none [&>button]:hidden">
+      <DialogPortal>
+        <DialogOverlay
+          className="bg-transparent"
+          style={{
+            background: `
+              radial-gradient(ellipse 90% 70% at 5% 50%, rgba(220,208,255,0.5) 0%, transparent 55%),
+              radial-gradient(ellipse 70% 80% at 95% 50%, rgba(241,211,255,0.45) 0%, transparent 50%),
+              radial-gradient(ellipse 80% 50% at 50% 10%, rgba(197,216,255,0.45) 0%, transparent 55%),
+              radial-gradient(ellipse 60% 40% at 50% 90%, rgba(201,201,255,0.35) 0%, transparent 50%),
+              radial-gradient(circle at 50% 50%, rgba(255,255,255,0.7) 0%, transparent 60%),
+              #fcf9fe
+            `
+          }}
+        />
+        <DialogPrimitive.Content className="fixed left-[50%] top-[50%] z-[201] w-full max-w-[400px] translate-x-[-50%] translate-y-[-50%] duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 p-0 border-0 overflow-hidden bg-transparent shadow-none outline-none">
         <div
           className="relative rounded-2xl overflow-hidden"
           style={{
@@ -342,7 +357,8 @@ const LoginModal: React.FC = () => {
             </div>
           )}
         </div>
-      </DialogContent>
+        </DialogPrimitive.Content>
+      </DialogPortal>
     </Dialog>
   );
 };

@@ -143,8 +143,11 @@ const MyAccount = () => {
   };
 
   const handleSignOut = () => {
-    supabase.auth.signOut(); // fire and forget
-    window.location.replace('/landing.html');
+    // Clear all Supabase session data immediately — don't wait for async
+    Object.keys(localStorage).forEach(k => { if (k.startsWith('sb-')) localStorage.removeItem(k); });
+    localStorage.removeItem('supabase.auth.token');
+    supabase.auth.signOut().catch(() => {}); // fire and forget, don't wait
+    window.location.href = '/landing.html';
   };
 
   // --- Data Export Handlers ---
@@ -540,6 +543,7 @@ const MyAccount = () => {
                   {/* Sign Out Button */}
                   <div className="pt-4 mt-4 border-t border-[#8B7082]/10">
                     <button
+                      type="button"
                       onClick={handleSignOut}
                       className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-[#8B7082] hover:bg-red-50 hover:text-red-500 transition-all"
                       style={{ fontFamily: "'DM Sans', sans-serif" }}
