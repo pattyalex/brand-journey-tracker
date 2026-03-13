@@ -635,8 +635,35 @@ const OnboardingFlow: React.FC = () => {
       case "user-goals":
         return (
           <UserGoalsStep
-            onComplete={(answers) => {
+            onComplete={async (answers) => {
               console.log("User goals:", answers);
+
+              // Save answers to Supabase
+              if (user?.id) {
+                try {
+                  const { error } = await supabase
+                    .from('user_onboarding_responses')
+                    .insert({
+                      user_id: user.id,
+                      post_frequency: answers.postFrequency,
+                      ideation_method: answers.ideationMethod,
+                      team_structure: answers.teamStructure,
+                      creator_dream: answers.creatorDream,
+                      platforms: answers.platforms,
+                      stuck_areas: answers.stuckAreas,
+                      other_stuck_area: answers.otherStuckArea || null
+                    });
+
+                  if (error) {
+                    console.error('Error saving onboarding responses:', error);
+                  } else {
+                    console.log('✅ Onboarding responses saved successfully');
+                  }
+                } catch (err) {
+                  console.error('Failed to save onboarding responses:', err);
+                }
+              }
+
               setCurrentStep("welcome");
             }}
           />
