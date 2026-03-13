@@ -101,9 +101,11 @@ export async function signUp(email: string, password: string, fullName: string):
     console.log('✅ Supabase Auth user created successfully:', userId);
     console.log('📧 Email confirmation status:', isEmailConfirmed ? 'CONFIRMED' : 'PENDING');
 
-    // If email is not confirmed, return early with verification needed
+    // Create profile immediately regardless of email confirmation status
+    await createUserRecords(userId, userEnteredEmail, fullName);
+
     if (!isEmailConfirmed) {
-      console.log('📧 Email verification required - returning early');
+      console.log('📧 Email verification required');
       return {
         success: true,
         needsVerification: true,
@@ -112,9 +114,6 @@ export async function signUp(email: string, password: string, fullName: string):
         userId: userId
       };
     }
-
-    // Only create database records if email is confirmed
-    await createUserRecords(userId, userEnteredEmail, fullName);
 
     return { 
       success: true, 
