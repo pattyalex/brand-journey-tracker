@@ -2794,32 +2794,32 @@ const HomePage = () => {
                       )}
                     </div>
                   ) : (
-                    <div className="py-8 text-center">
-                      <div
-                        className="w-12 h-12 rounded-xl mx-auto mb-4 flex items-center justify-center"
-                        style={{ background: 'rgba(139, 115, 130, 0.08)' }}
-                      >
-                        <svg width="20" height="20" viewBox="0 0 12 12" fill="none">
-                          <path d="M2.5 6L5 8.5L9.5 3.5" stroke="#8b7a85" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      </div>
-                      <p
-                        className="text-sm text-gray-400 mb-4"
-                        style={{ fontFamily: "'DM Sans', sans-serif" }}
-                      >
-                        No habits yet. Start tracking your work habits!
-                      </p>
+                    <div className="py-2">
+                      {/* Ghost placeholder habit rows */}
+                      {[
+                        { name: 'Morning workout', days: [true, true, false, true, false, false, false] },
+                        { name: 'Post on social media', days: [true, false, true, false, true, false, false] },
+                        { name: 'Review analytics', days: [false, true, false, false, false, false, false] },
+                      ].map((habit, i) => (
+                        <div
+                          key={i}
+                          onClick={() => setIsAddingHabit(true)}
+                          className="grid grid-cols-[1fr_repeat(7,28px)] sm:grid-cols-[1fr_repeat(7,36px)] gap-0.5 sm:gap-1 items-center py-2.5 border-b border-[#8B7082]/08 last:border-b-0 opacity-30 cursor-pointer hover:opacity-50 transition-opacity"
+                        >
+                          <span className="text-sm font-semibold text-[#2d2a26] truncate pr-2" style={{ fontFamily: "'DM Sans', sans-serif" }}>{habit.name}</span>
+                          {habit.days.map((checked, d) => (
+                            <div key={d} className="w-[22px] h-[22px] sm:w-[28px] sm:h-[28px] rounded-md mx-auto flex items-center justify-center" style={{ background: checked ? 'linear-gradient(145deg, #8aae8a, #6a9a6a)' : 'rgba(139,115,130,0.08)', border: checked ? 'none' : '1.5px solid rgba(139,115,130,0.15)' }}>
+                              {checked && <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                            </div>
+                          ))}
+                        </div>
+                      ))}
                       <button
                         onClick={() => setIsAddingHabit(true)}
-                        className="px-4 py-2 rounded-lg text-white text-sm font-semibold"
-                        style={{
-                          fontFamily: "'DM Sans', sans-serif",
-                          background: 'linear-gradient(145deg, #7a9a7a 0%, #5a8a5a 100%)',
-                          boxShadow: '0 2px 8px rgba(90, 138, 90, 0.2)',
-                        }}
+                        className="mt-3 text-xs font-semibold text-[#612a4f] hover:text-[#4a3442] transition-colors"
+                        style={{ fontFamily: "'DM Sans', sans-serif" }}
                       >
-                        <Plus className="w-4 h-4 inline mr-1" />
-                        Add Your First Habit
+                        + Add your first habit
                       </button>
                     </div>
                   )}
@@ -2862,14 +2862,30 @@ const HomePage = () => {
 
                   {/* Goals List */}
                   {getCurrentMonthGoals().length === 0 ? (
-                    <EmptyState
-                      icon={Target}
-                      title="No goals set yet"
-                      description="Define your goals to stay focused on what matters most for your growth."
-                      actionLabel="Add Goal"
-                      onAction={() => navigate('/strategy-growth?tab=growth-goals#monthly-goals')}
-                      className="py-8"
-                    />
+                    <div className="py-2 space-y-2">
+                      {/* Ghost placeholder goal rows */}
+                      {[
+                        { text: 'Reach 10k followers on Instagram', status: 'On It' },
+                        { text: 'Close 2 brand deals this month', status: 'Not Started' },
+                        { text: 'Post 3x per week consistently', status: 'Almost There' },
+                      ].map((goal, i) => (
+                        <div
+                          key={i}
+                          onClick={() => navigate('/strategy-growth?tab=growth-goals#monthly-goals')}
+                          className="flex items-center justify-between px-3 py-2.5 rounded-xl border border-gray-100 opacity-30 cursor-pointer hover:opacity-50 transition-opacity"
+                        >
+                          <span className="text-sm font-semibold text-[#2d2a26] flex-1 pr-3" style={{ fontFamily: "'DM Sans', sans-serif" }}>{goal.text}</span>
+                          <span className="text-[11px] font-medium px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-500 whitespace-nowrap" style={{ fontFamily: "'DM Sans', sans-serif" }}>{goal.status}</span>
+                        </div>
+                      ))}
+                      <button
+                        onClick={() => navigate('/strategy-growth?tab=growth-goals#monthly-goals')}
+                        className="pt-1 text-xs font-semibold text-[#612a4f] hover:text-[#4a3442] transition-colors"
+                        style={{ fontFamily: "'DM Sans', sans-serif" }}
+                      >
+                        + Set your first goal
+                      </button>
+                    </div>
                   ) : (
                   <>
                   <div ref={monthlyGoalsScrollRef} className={`${getCurrentMonthGoals().length >= 5 ? 'max-h-[160px] overflow-y-auto' : ''}`} style={{ scrollbarWidth: 'thin', scrollbarColor: '#d1d5db transparent' }}>
