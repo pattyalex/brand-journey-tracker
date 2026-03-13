@@ -142,8 +142,8 @@ const MyAccount = () => {
     toast.success(`Week now starts on ${day === 'monday' ? 'Monday' : 'Sunday'}`);
   };
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
+  const handleSignOut = () => {
+    supabase.auth.signOut(); // fire and forget
     window.location.replace('/landing.html');
   };
 
