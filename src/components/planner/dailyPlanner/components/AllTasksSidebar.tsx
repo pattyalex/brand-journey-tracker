@@ -194,7 +194,7 @@ export const AllTasksSidebar = ({
                     <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'rgba(97,42,79,0.07)' }}>
                       <ClipboardList className="w-4 h-4 text-[#612a4f]" />
                     </div>
-                    <p className="text-xs text-[#8b7a85] text-center" style={{ fontFamily: "'DM Sans', sans-serif" }}>Your task list is ready for you</p>
+                    <p className="text-xs text-[#8b7a85] text-center" style={{ fontFamily: "'DM Sans', sans-serif" }}>Add tasks to stay on top of your day</p>
                   </div>
                 )}
                 <PlannerSection
