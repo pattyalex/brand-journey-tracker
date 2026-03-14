@@ -2097,7 +2097,6 @@ const StrategyGrowth = () => {
                         {/* Text + CTA */}
                         <div className="flex flex-col gap-4 max-w-sm">
                           <div>
-                            <p className="text-xs font-semibold uppercase tracking-widest text-[#8B7082] mb-2" style={{ fontFamily: "'DM Sans', sans-serif" }}>One-Year Goals</p>
                             <h2 className="text-2xl font-bold text-[#2d2a26] leading-tight mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>No goals set yet</h2>
                             <p className="text-sm text-[#8B7082] leading-relaxed" style={{ fontFamily: "'DM Sans', sans-serif" }}>
                               Set ambitious goals for the year ahead. Track your progress and stay focused on what matters most for your growth.
@@ -2244,7 +2243,6 @@ const StrategyGrowth = () => {
 
                             {/* Text + CTA */}
                             <div className="flex flex-col gap-3 max-w-xs">
-                              <p className="text-xs font-semibold uppercase tracking-widest text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>Monthly Goals</p>
                               <h3 className="text-xl font-bold text-[#2d2a26]" style={{ fontFamily: "'Playfair Display', serif" }}>No goals set yet</h3>
                               <p className="text-sm text-[#8B7082] leading-relaxed" style={{ fontFamily: "'DM Sans', sans-serif" }}>
                                 Set your intentions for {fullMonth}. Break big goals into monthly wins.
