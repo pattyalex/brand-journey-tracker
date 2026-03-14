@@ -871,7 +871,8 @@ const KanbanView = ({ dealsByStatus, selectedMonth, isYearView, showArchived, on
             <p className="text-sm text-[#8B7082] max-w-xs" style={{ fontFamily: "'DM Sans', sans-serif" }}>
               Add your first brand deal to start tracking partnerships, deliverables, and payments — just like the example card.
             </p>
-            <button onClick={onAddDeal} className="mt-1 w-fit px-5 py-2 rounded-full text-sm font-semibold text-[#612a4f] border border-[#612a4f]/30 hover:bg-[#612a4f] hover:text-white transition-all" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+            <button onClick={onAddDeal} className="mt-1 w-fit h-10 px-6 rounded-xl bg-gradient-to-r from-[#612a4f] to-[#4d2140] hover:from-[#4d2140] hover:to-[#3a1830] text-white text-sm font-semibold shadow-[0_4px_16px_rgba(97,42,79,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] hover:shadow-[0_6px_24px_rgba(97,42,79,0.4)] hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+              <Plus className="w-4 h-4" />
               + Add your first deal
             </button>
           </div>
