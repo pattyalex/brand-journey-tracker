@@ -2248,7 +2248,11 @@ const StrategyGrowth = () => {
                                 Set your intentions for {fullMonth}. Break big goals into monthly wins.
                               </p>
                               <button
-                                onClick={() => handleAddMonthlyGoal(selectedYear, fullMonth)}
+                                onClick={() => {
+                                  const el = document.getElementById(`monthly-goal-input-${inputKey}`);
+                                  el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                  el?.focus();
+                                }}
                                 className="w-fit h-10 px-5 rounded-xl bg-gradient-to-r from-[#612a4f] to-[#4d2140] hover:from-[#4d2140] hover:to-[#3a1830] text-white text-sm font-semibold shadow-[0_4px_16px_rgba(97,42,79,0.3)] hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2"
                                 style={{ fontFamily: "'DM Sans', sans-serif" }}
                               >
@@ -2292,6 +2296,7 @@ const StrategyGrowth = () => {
                       {/* Add Goal Input */}
                       <div className="flex gap-3 mt-5">
                         <Input
+                          id={`monthly-goal-input-${inputKey}`}
                           placeholder={`Add a goal for ${fullMonth}...`}
                           value={newMonthlyGoalInputs[inputKey] || ''}
                           onChange={(e) => setNewMonthlyGoalInputs(prev => ({ ...prev, [inputKey]: e.target.value }))}
