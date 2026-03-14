@@ -2222,42 +2222,51 @@ const StrategyGrowth = () => {
                         )}
                       </div>
 
-                      {goals.length === 0 ? (() => {
-                        const monthKey = `mg-${fullMonth}`;
-                        const allMonthly = [
-                          { id: `${monthKey}-0`, text: 'Post 3x per week consistently' },
-                          { id: `${monthKey}-1`, text: 'Close 1 new brand deal' },
-                          { id: `${monthKey}-2`, text: 'Engage with 10 new accounts daily' },
-                        ];
-                        const visible = allMonthly.filter(p => !dismissedGoalPlaceholders[p.id]);
-                        if (visible.length === 0) return (
+                      {goals.length === 0 ? (
+                        !dismissedGoalPlaceholders[`mg-${fullMonth}`] ? (
+                          <div className="flex flex-col sm:flex-row items-center gap-8 py-2">
+                            {/* Single example row */}
+                            <div className="group relative w-full sm:w-72 flex-shrink-0 flex items-center gap-3 px-4 py-3.5 rounded-xl border-2 border-dashed border-[#D8C8D3] opacity-50 hover:opacity-70 transition-opacity">
+                              <div className="w-5 h-5 rounded-full border-2 border-[#D8C8D3] flex-shrink-0" />
+                              <span className="text-sm font-medium text-[#3d3a38] flex-1" style={{ fontFamily: "'DM Sans', sans-serif" }}>Post 3x per week consistently</span>
+                              <span className="text-[9px] font-semibold uppercase tracking-wide text-[#8B7082] bg-[#8B7082]/10 px-1.5 py-0.5 rounded flex-shrink-0">Example</span>
+                              <button
+                                onClick={(e) => dismissGoalPlaceholder(`mg-${fullMonth}`, e)}
+                                className="w-5 h-5 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-200 transition-all opacity-50 hover:opacity-100 flex-shrink-0"
+                                title="Dismiss"
+                              >
+                                <svg width="7" height="7" viewBox="0 0 8 8" fill="none"><path d="M1 1l6 6M7 1L1 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                              </button>
+                            </div>
+
+                            {/* Divider */}
+                            <div className="hidden sm:block w-px self-stretch bg-gradient-to-b from-transparent via-[#D8C8D3] to-transparent" />
+
+                            {/* Text + CTA */}
+                            <div className="flex flex-col gap-3 max-w-xs">
+                              <p className="text-xs font-semibold uppercase tracking-widest text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>Monthly Goals</p>
+                              <h3 className="text-xl font-bold text-[#2d2a26]" style={{ fontFamily: "'Playfair Display', serif" }}>No goals set yet</h3>
+                              <p className="text-sm text-[#8B7082] leading-relaxed" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                                Set your intentions for {fullMonth}. Break big goals into monthly wins.
+                              </p>
+                              <button
+                                onClick={() => handleAddMonthlyGoal(selectedYear, fullMonth)}
+                                className="w-fit h-10 px-5 rounded-xl bg-gradient-to-r from-[#612a4f] to-[#4d2140] hover:from-[#4d2140] hover:to-[#3a1830] text-white text-sm font-semibold shadow-[0_4px_16px_rgba(97,42,79,0.3)] hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2"
+                                style={{ fontFamily: "'DM Sans', sans-serif" }}
+                              >
+                                <Plus className="w-4 h-4" />
+                                Add your first goal
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
                           <EmptyState
                             icon={Target}
                             title="No goals set yet"
-                            description="Define your monthly and quarterly goals to stay focused on what matters most for your growth."
+                            description="Define your monthly goals to stay focused on what matters most for your growth."
                           />
-                        );
-                        return (
-                          <div className="space-y-2">
-                            {visible.map(p => (
-                              <div key={p.id} className="group flex items-center justify-between px-4 py-3 rounded-xl border border-dashed border-[#D8C8D3] opacity-40 hover:opacity-70 transition-opacity">
-                                <div className="flex items-center gap-3 flex-1">
-                                  <div className="w-5 h-5 rounded-full border-2 border-[#D8C8D3] flex-shrink-0" />
-                                  <span className="text-sm font-medium text-[#3d3a38]" style={{ fontFamily: "'DM Sans', sans-serif" }}>{p.text}</span>
-                                  <span className="text-[9px] font-semibold uppercase tracking-wide text-[#8B7082] bg-[#8B7082]/10 px-1.5 py-0.5 rounded ml-1">Example</span>
-                                </div>
-                                <button
-                                  onClick={(e) => dismissGoalPlaceholder(p.id, e)}
-                                  className="w-5 h-5 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-200 transition-all opacity-50 hover:opacity-100 flex-shrink-0 ml-2"
-                                  title="Dismiss"
-                                >
-                                  <svg width="7" height="7" viewBox="0 0 8 8" fill="none"><path d="M1 1l6 6M7 1L1 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        );
-                      })() : (
+                        )
+                      ) : (
                         <SortableContext
                           items={goals.map(g => g.id)}
                           strategy={verticalListSortingStrategy}
