@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import { PlannerItem } from "@/types/planner";
 import { PlannerSection } from "@/components/planner/PlannerSection";
 import { ChevronLeft, ChevronRight, ListTodo, ClipboardList } from "lucide-react";
@@ -35,13 +36,6 @@ const PLACEHOLDER_TASKS = [
   { id: 'p-2', text: 'Schedule Instagram posts for next week' },
 ];
 
-const DISMISSED_KEY = 'dismissedAllTasksPlaceholders';
-
-const getDismissed = (): Record<string, boolean> => {
-  try { return JSON.parse(localStorage.getItem(DISMISSED_KEY) || '{}'); }
-  catch { return {}; }
-};
-
 export const AllTasksSidebar = ({
   isAllTasksCollapsed,
   setIsAllTasksCollapsed,
@@ -58,14 +52,20 @@ export const AllTasksSidebar = ({
 }: AllTasksSidebarProps) => {
   const { state: sidebarState } = useSidebar();
   const isSidebarCollapsed = sidebarState === 'collapsed';
+  const { user } = useAuth();
 
-  const [dismissed, setDismissed] = useState<Record<string, boolean>>(getDismissed);
+  const [dismissed, setDismissed] = useState<Record<string, boolean>>({});
+  useEffect(() => {
+    if (!user?.id) return;
+    try { setDismissed(JSON.parse(localStorage.getItem(`dismissedAllTasksPlaceholders_${user.id}`) || '{}')); }
+    catch { setDismissed({}); }
+  }, [user?.id]);
 
   const dismissTask = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     setDismissed(prev => {
       const next = { ...prev, [id]: true };
-      localStorage.setItem(DISMISSED_KEY, JSON.stringify(next));
+      localStorage.setItem(`dismissedAllTasksPlaceholders_${user?.id}`, JSON.stringify(next));
       return next;
     });
   };

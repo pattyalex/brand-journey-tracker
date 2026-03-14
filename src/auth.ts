@@ -139,18 +139,7 @@ export async function signUp(email: string, password: string, fullName: string):
 async function createUserRecords(userId: string, email: string, fullName: string) {
   console.log('Creating user records in database...');
   
-  // Step 1: Insert into users table
-  const { data: userData, error: usersInsertError } = await supabase
-    .from('users')
-    .insert([{ id: userId, email: email }])
-    .select();
-
-  if (usersInsertError) {
-    console.error('❌ Users table insert failed:', usersInsertError);
-    throw new Error(`Failed to create user record: ${usersInsertError.message}`);
-  }
-
-  // Step 2: Insert into profiles table
+  // Insert into profiles table
   const trialEndDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
   const { data: profileData, error: profileInsertError } = await supabase
     .from('profiles')

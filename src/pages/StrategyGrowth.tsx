@@ -20,6 +20,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { useSearchParams, useLocation } from "react-router-dom";
 import Layout from "@/components/Layout";
+import { useAuth } from "@/contexts/AuthContext";
 import { useVisionBoard } from "@/hooks/useVisionBoard";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import GoalsOnboarding from "@/components/GoalsOnboarding";
@@ -333,6 +334,7 @@ const StrategyTabsList: React.FC<{ activeTab: string; handleTabChange: (value: s
 };
 
 const StrategyGrowth = () => {
+  const { user } = useAuth();
   // Brand Identity states
   const [brandKeywords, setBrandKeywords] = useState<string[]>([]);
   const [keywordInput, setKeywordInput] = useState("");
@@ -470,16 +472,18 @@ const StrategyGrowth = () => {
   const [selectedYear, setSelectedYear] = useState(2026);
   const [expandedMonths, setExpandedMonths] = useState<string[]>(["January"]);
 
-  // Dismissed placeholder state for goals sections
-  const [dismissedGoalPlaceholders, setDismissedGoalPlaceholders] = useState<Record<string, boolean>>(() => {
-    try { return JSON.parse(localStorage.getItem('dismissedGoalPlaceholders') || '{}'); }
-    catch { return {}; }
-  });
+  // Dismissed placeholder state for goals sections - keyed per user
+  const [dismissedGoalPlaceholders, setDismissedGoalPlaceholders] = useState<Record<string, boolean>>({});
+  useEffect(() => {
+    if (!user?.id) return;
+    try { setDismissedGoalPlaceholders(JSON.parse(localStorage.getItem(`dismissedGoalPlaceholders_${user.id}`) || '{}')); }
+    catch { setDismissedGoalPlaceholders({}); }
+  }, [user?.id]);
   const dismissGoalPlaceholder = (key: string, e: React.MouseEvent) => {
     e.stopPropagation();
     setDismissedGoalPlaceholders(prev => {
       const next = { ...prev, [key]: true };
-      localStorage.setItem('dismissedGoalPlaceholders', JSON.stringify(next));
+      localStorage.setItem(`dismissedGoalPlaceholders_${user?.id}`, JSON.stringify(next));
       return next;
     });
   };

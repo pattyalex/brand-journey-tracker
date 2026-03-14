@@ -577,16 +577,18 @@ const HomePage = () => {
   }
   const [continueCreatingCards, setContinueCreatingCards] = useState<ContinueCreatingCard[]>([]);
 
-  // Dismissed placeholder rows - keyed by "section-index", persisted in localStorage
-  const [dismissedPlaceholders, setDismissedPlaceholders] = useState<Record<string, boolean>>(() => {
-    try { return JSON.parse(localStorage.getItem('dismissedDashboardPlaceholders') || '{}'); }
-    catch { return {}; }
-  });
+  // Dismissed placeholder rows - keyed per user, persisted in localStorage
+  const [dismissedPlaceholders, setDismissedPlaceholders] = useState<Record<string, boolean>>({});
+  useEffect(() => {
+    if (!user?.id) return;
+    try { setDismissedPlaceholders(JSON.parse(localStorage.getItem(`dismissedDashboardPlaceholders_${user.id}`) || '{}')); }
+    catch { setDismissedPlaceholders({}); }
+  }, [user?.id]);
   const dismissPlaceholder = (key: string, e: React.MouseEvent) => {
     e.stopPropagation();
     setDismissedPlaceholders(prev => {
       const next = { ...prev, [key]: true };
-      localStorage.setItem('dismissedDashboardPlaceholders', JSON.stringify(next));
+      localStorage.setItem(`dismissedDashboardPlaceholders_${user?.id}`, JSON.stringify(next));
       return next;
     });
   };
@@ -3055,7 +3057,7 @@ const HomePage = () => {
 
                     {/* Mission Quote */}
                     <p
-                      className="text-xl sm:text-2xl md:text-3xl italic text-[#2d2a26] text-center max-w-2xl leading-relaxed px-2"
+                      className={`text-xl sm:text-2xl md:text-3xl italic text-center max-w-2xl leading-relaxed px-2 ${missionStatement ? 'text-[#2d2a26]' : 'text-gray-400'}`}
                       style={{ fontFamily: "'Playfair Display', serif", fontWeight: 400 }}
                     >
                       "{missionStatement || 'Set your mission statement...'}"

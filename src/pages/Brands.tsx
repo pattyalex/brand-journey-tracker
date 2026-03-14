@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import Layout from "@/components/Layout";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -831,15 +832,18 @@ const PlaceholderDealCard = ({ onDismiss }: { onDismiss: (e: React.MouseEvent) =
 );
 
 const KanbanView = ({ dealsByStatus, selectedMonth, isYearView, showArchived, onDragStart, onDragOver, onDrop, onEdit, onDelete, onArchive, onUnarchive, onQuickUpdate, onAddDeal }: KanbanViewProps) => {
-  const [dismissedPlaceholders, setDismissedPlaceholders] = useState<Record<string, boolean>>(() => {
-    try { return JSON.parse(localStorage.getItem('dismissedBrandDealPlaceholders') || '{}'); }
-    catch { return {}; }
-  });
+  const { user } = useAuth();
+  const [dismissedPlaceholders, setDismissedPlaceholders] = useState<Record<string, boolean>>({});
+  useEffect(() => {
+    if (!user?.id) return;
+    try { setDismissedPlaceholders(JSON.parse(localStorage.getItem(`dismissedBrandDealPlaceholders_${user.id}`) || '{}')); }
+    catch { setDismissedPlaceholders({}); }
+  }, [user?.id]);
   const dismissPlaceholder = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     setDismissedPlaceholders(prev => {
       const next = { ...prev, [id]: true };
-      localStorage.setItem('dismissedBrandDealPlaceholders', JSON.stringify(next));
+      localStorage.setItem(`dismissedBrandDealPlaceholders_${user?.id}`, JSON.stringify(next));
       return next;
     });
   };
