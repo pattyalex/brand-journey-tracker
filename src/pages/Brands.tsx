@@ -797,7 +797,61 @@ interface KanbanViewProps {
   onAddDeal?: () => void;
 }
 
+const PLACEHOLDER_DEALS = [
+  { id: 'pd-0', brand: 'Brand Name', campaign: 'Product Campaign', fee: '$2,500', status: 'In Progress', deliverable: 'Instagram Reel', submitDate: 'Apr 10', publishDate: 'Apr 15', progress: '0/1' },
+  { id: 'pd-1', brand: 'Sponsorship Co.', campaign: 'Spring Collection', fee: '$1,800', status: 'Negotiating', deliverable: 'TikTok', submitDate: 'Apr 20', publishDate: 'Apr 25', progress: '0/2' },
+  { id: 'pd-2', brand: 'Agency Partner', campaign: 'Brand Awareness', fee: '$3,200', status: 'Signed', deliverable: 'YouTube Video', submitDate: 'May 1', publishDate: 'May 5', progress: '1/3' },
+];
+
+const PlaceholderDealCard = ({ deal, onDismiss }: { deal: typeof PLACEHOLDER_DEALS[0]; onDismiss: (e: React.MouseEvent) => void }) => (
+  <div className="group relative bg-gradient-to-br from-white via-white to-[#FAF9F8] rounded-xl p-3 sm:p-4 border border-[#D8C8D3] min-h-[260px] sm:min-h-[300px] flex flex-col opacity-40 hover:opacity-60 transition-opacity" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+    <button
+      onClick={onDismiss}
+      className="absolute top-3 right-3 w-5 h-5 flex items-center justify-center rounded-full text-gray-300 hover:text-gray-500 hover:bg-gray-100 transition-all opacity-0 group-hover:opacity-100 z-10"
+      title="Remove"
+    >
+      <svg width="7" height="7" viewBox="0 0 8 8" fill="none"><path d="M1 1l6 6M7 1L1 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+    </button>
+    <div className="flex items-start justify-between mb-3 pr-5">
+      <div className="min-w-0 flex-1">
+        <h3 className="text-base sm:text-lg font-bold text-[#612a4f] tracking-[-0.02em] truncate" style={{ fontFamily: "'Playfair Display', serif" }}>{deal.brand}</h3>
+        <p className="text-xs text-[#8B7082] mt-0.5">{deal.campaign}</p>
+      </div>
+    </div>
+    <div className="flex items-center gap-2 mb-3">
+      <span className="text-lg sm:text-[22px] font-semibold text-[#612a4f] tracking-[-0.02em]" style={{ fontFamily: "'Playfair Display', serif" }}>{deal.fee}</span>
+      <span className="px-2 py-0.5 bg-[#F5F0F3] text-[#612a4f] text-[10px] font-medium rounded-full border border-[#612a4f]/15">{deal.status}</span>
+    </div>
+    <div className="mb-3">
+      <div className="flex items-center gap-2 text-xs text-[#8B7082] mb-2">
+        <span>{deal.progress} delivered</span>
+        <div className="flex-1 h-1.5 bg-[#F5F3F4] rounded-full overflow-hidden">
+          <div className="h-full bg-gradient-to-r from-[#5A8A5A] to-[#6B9B6B] rounded-full" style={{ width: deal.progress.startsWith('1') ? '33%' : '0%' }} />
+        </div>
+      </div>
+      <span className="px-1.5 py-0.5 text-[9px] font-semibold rounded bg-[#F5F0F3] text-[#612a4f] border border-[#612a4f]/20">{deal.deliverable}</span>
+    </div>
+    <div className="flex flex-col gap-1.5 pt-2.5 border-t border-[#F5F3F4] mt-auto text-xs text-[#8B7082]">
+      <div className="flex items-center gap-1.5"><CalendarIcon className="w-2.5 h-2.5" /><span>Submit: {deal.submitDate}</span></div>
+      <div className="flex items-center gap-1.5"><CalendarIcon className="w-2.5 h-2.5" /><span>Publish: {deal.publishDate}</span></div>
+    </div>
+  </div>
+);
+
 const KanbanView = ({ dealsByStatus, selectedMonth, isYearView, showArchived, onDragStart, onDragOver, onDrop, onEdit, onDelete, onArchive, onUnarchive, onQuickUpdate, onAddDeal }: KanbanViewProps) => {
+  const [dismissedPlaceholders, setDismissedPlaceholders] = useState<Record<string, boolean>>(() => {
+    try { return JSON.parse(localStorage.getItem('dismissedBrandDealPlaceholders') || '{}'); }
+    catch { return {}; }
+  });
+  const dismissPlaceholder = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setDismissedPlaceholders(prev => {
+      const next = { ...prev, [id]: true };
+      localStorage.setItem('dismissedBrandDealPlaceholders', JSON.stringify(next));
+      return next;
+    });
+  };
+
   // Only show columns that have deals
   const activeStatuses = statusOrder.filter(status => dealsByStatus[status].length > 0);
 
@@ -813,14 +867,31 @@ const KanbanView = ({ dealsByStatus, selectedMonth, isYearView, showArchived, on
         </div>
       );
     }
+
+    const visiblePlaceholders = PLACEHOLDER_DEALS.filter(p => !dismissedPlaceholders[p.id]);
+
+    if (visiblePlaceholders.length > 0) {
+      return (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {visiblePlaceholders.map(deal => (
+            <PlaceholderDealCard
+              key={deal.id}
+              deal={deal}
+              onDismiss={(e) => dismissPlaceholder(deal.id, e)}
+            />
+          ))}
+        </div>
+      );
+    }
+
     return (
-      <EmptyState
-        icon={Handshake}
-        title="No brand deals yet"
-        description="Add your first brand deal to start tracking partnerships, deliverables, and payments."
-        actionLabel="Add Brand Deal"
-        onAction={onAddDeal}
-      />
+      <div className="flex flex-col items-center justify-center py-20 gap-3">
+        <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: 'rgba(97,42,79,0.07)' }}>
+          <Handshake className="w-5 h-5 text-[#612a4f]" />
+        </div>
+        <p className="text-sm text-[#8B7082] text-center" style={{ fontFamily: "'DM Sans', sans-serif" }}>Your next brand deal is just around the corner</p>
+        <button onClick={onAddDeal} className="px-5 py-2 rounded-full text-sm font-semibold text-[#612a4f] border border-[#612a4f]/30 hover:bg-[#612a4f] hover:text-white transition-all" style={{ fontFamily: "'DM Sans', sans-serif" }}>Add a brand deal</button>
+      </div>
     );
   }
 
