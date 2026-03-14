@@ -862,19 +862,39 @@ const KanbanView = ({ dealsByStatus, selectedMonth, isYearView, showArchived, on
 
     if (!dismissedPlaceholders['pd-0']) {
       return (
-        <div className="flex flex-col sm:flex-row items-start gap-6">
-          <div className="w-full sm:w-64 flex-shrink-0">
+        <div className="flex flex-col sm:flex-row items-center gap-10 py-6 px-2">
+          {/* Example card */}
+          <div className="w-full sm:w-60 flex-shrink-0">
             <PlaceholderDealCard onDismiss={(e) => dismissPlaceholder('pd-0', e)} />
           </div>
-          <div className="flex flex-col justify-center py-4 sm:py-10 gap-3">
-            <p className="text-lg font-semibold text-[#2d2a26]" style={{ fontFamily: "'Playfair Display', serif" }}>No deals yet</p>
-            <p className="text-sm text-[#8B7082] max-w-xs" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-              Add your first brand deal to start tracking partnerships, deliverables, and payments — just like the example card.
+
+          {/* Divider */}
+          <div className="hidden sm:block w-px self-stretch bg-gradient-to-b from-transparent via-[#D8C8D3] to-transparent" />
+
+          {/* Text + CTA */}
+          <div className="flex flex-col gap-5 max-w-sm">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-widest text-[#8B7082] mb-2" style={{ fontFamily: "'DM Sans', sans-serif" }}>Partnerships</p>
+              <h2 className="text-3xl font-bold text-[#2d2a26] leading-tight mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>
+                Land your first<br />brand deal.
+              </h2>
+              <p className="text-sm text-[#8B7082] leading-relaxed" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                Track every partnership from first contact to final payment — deadlines, deliverables, and dollars all in one place.
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={onAddDeal}
+                className="h-10 px-5 rounded-xl bg-gradient-to-r from-[#612a4f] to-[#4d2140] hover:from-[#4d2140] hover:to-[#3a1830] text-white text-sm font-semibold shadow-[0_4px_16px_rgba(97,42,79,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] hover:shadow-[0_6px_24px_rgba(97,42,79,0.4)] hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2"
+                style={{ fontFamily: "'DM Sans', sans-serif" }}
+              >
+                <Plus className="w-4 h-4" />
+                Add your first deal
+              </button>
+            </div>
+            <p className="text-xs text-[#8B7082]/50 -mt-2" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+              ← The card on the left shows you what it'll look like.
             </p>
-            <button onClick={onAddDeal} className="mt-1 w-fit h-10 px-6 rounded-xl bg-gradient-to-r from-[#612a4f] to-[#4d2140] hover:from-[#4d2140] hover:to-[#3a1830] text-white text-sm font-semibold shadow-[0_4px_16px_rgba(97,42,79,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] hover:shadow-[0_6px_24px_rgba(97,42,79,0.4)] hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-              <Plus className="w-4 h-4" />
-              + Add your first deal
-            </button>
           </div>
         </div>
       );
