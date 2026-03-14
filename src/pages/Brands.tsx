@@ -874,8 +874,7 @@ const KanbanView = ({ dealsByStatus, selectedMonth, isYearView, showArchived, on
           {/* Text + CTA */}
           <div className="flex flex-col gap-5 max-w-sm">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-widest text-[#8B7082] mb-2" style={{ fontFamily: "'DM Sans', sans-serif" }}>Partnerships</p>
-              <h2 className="text-3xl font-bold text-[#2d2a26] leading-tight mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>
+<h2 className="text-3xl font-bold text-[#2d2a26] leading-tight mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>
                 No brand deals yet
               </h2>
               <p className="text-sm text-[#8B7082] leading-relaxed" style={{ fontFamily: "'DM Sans', sans-serif" }}>

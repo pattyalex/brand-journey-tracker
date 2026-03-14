@@ -2015,8 +2015,10 @@ const StrategyGrowth = () => {
                           </div>
                         </div>
 
-                        {/* Progress Status Tabs */}
-                        <div className="flex items-center gap-1 mt-4">
+                      </div>
+
+                      {/* Progress Status Tabs */}
+                      <div className="flex items-center gap-1 mt-4">
                           {progressStatuses.map((status) => {
                             const isActive = goal.status === status.value;
                             const button = (
@@ -2061,7 +2063,6 @@ const StrategyGrowth = () => {
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
-                        </div>
                       </div>
                     </div>
                   );
@@ -2071,9 +2072,9 @@ const StrategyGrowth = () => {
                 {shortTermGoals.length === 0 && (
                   <div className="col-span-full">
                     {!dismissedGoalPlaceholders['stg-0'] ? (
-                      <div className="flex flex-col sm:flex-row items-center gap-10 py-4 px-2">
+                      <div className="flex flex-col lg:flex-row items-center gap-10 py-4 px-2">
                         {/* Single example card */}
-                        <div className="group relative w-full sm:w-72 flex-shrink-0 rounded-2xl p-5 border-2 border-dashed border-[#D8C8D3] opacity-50 hover:opacity-70 transition-opacity" style={{ background: 'rgba(180,140,165,0.08)' }}>
+                        <div className="group relative w-full lg:w-72 flex-shrink-0 rounded-2xl p-5 border-2 border-dashed border-[#D8C8D3] opacity-50 hover:opacity-70 transition-opacity" style={{ background: 'rgba(180,140,165,0.08)' }}>
                           <button
                             onClick={(e) => dismissGoalPlaceholder('stg-0', e)}
                             className="absolute top-3 right-3 w-5 h-5 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-white/80 transition-all opacity-50 hover:opacity-100"
@@ -2092,7 +2093,7 @@ const StrategyGrowth = () => {
                         </div>
 
                         {/* Divider */}
-                        <div className="hidden sm:block w-px self-stretch bg-gradient-to-b from-transparent via-[#D8C8D3] to-transparent" />
+                        <div className="hidden lg:block w-px self-stretch bg-gradient-to-b from-transparent via-[#D8C8D3] to-transparent" />
 
                         {/* Text + CTA */}
                         <div className="flex flex-col gap-4 max-w-sm">
@@ -2223,9 +2224,9 @@ const StrategyGrowth = () => {
 
                       {goals.length === 0 ? (
                         !dismissedGoalPlaceholders[`mg-${fullMonth}`] ? (
-                          <div className="flex flex-col sm:flex-row items-center gap-8 py-2">
+                          <div className="flex flex-col lg:flex-row items-center gap-8 py-2">
                             {/* Single example row */}
-                            <div className="group relative w-full sm:w-72 flex-shrink-0 flex items-center gap-3 px-4 py-3.5 rounded-xl border-2 border-dashed border-[#D8C8D3] opacity-50 hover:opacity-70 transition-opacity">
+                            <div className="group relative w-full lg:w-72 flex-shrink-0 flex items-center gap-3 px-4 py-3.5 rounded-xl border-2 border-dashed border-[#D8C8D3] opacity-50 hover:opacity-70 transition-opacity">
                               <div className="w-5 h-5 rounded-full border-2 border-[#D8C8D3] flex-shrink-0" />
                               <span className="text-sm font-medium text-[#3d3a38] flex-1" style={{ fontFamily: "'DM Sans', sans-serif" }}>Post 3x per week consistently</span>
                               <span className="text-[9px] font-semibold uppercase tracking-wide text-[#8B7082] bg-[#8B7082]/10 px-1.5 py-0.5 rounded flex-shrink-0">Example</span>
@@ -2239,7 +2240,7 @@ const StrategyGrowth = () => {
                             </div>
 
                             {/* Divider */}
-                            <div className="hidden sm:block w-px self-stretch bg-gradient-to-b from-transparent via-[#D8C8D3] to-transparent" />
+                            <div className="hidden lg:block w-px self-stretch bg-gradient-to-b from-transparent via-[#D8C8D3] to-transparent" />
 
                             {/* Text + CTA */}
                             <div className="flex flex-col gap-3 max-w-xs">

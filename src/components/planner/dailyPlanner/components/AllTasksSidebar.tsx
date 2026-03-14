@@ -190,11 +190,23 @@ export const AllTasksSidebar = ({
                 {visiblePlaceholders.length > 0 ? (
                   placeholderList
                 ) : (
-                  <div className="py-10 flex flex-col items-center gap-3">
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'rgba(97,42,79,0.07)' }}>
-                      <ClipboardList className="w-4 h-4 text-[#612a4f]" />
+                  <div className="py-12 flex flex-col items-center gap-5 text-center px-4">
+                    <div
+                      className="flex items-center justify-center text-white"
+                      style={{
+                        width: '48px',
+                        height: '48px',
+                        borderRadius: '14px',
+                        background: 'linear-gradient(145deg, #612A4F 0%, #4d2140 100%)',
+                        boxShadow: '0 8px 24px rgba(97,42,79,0.2)'
+                      }}
+                    >
+                      <ClipboardList className="w-5 h-5" />
                     </div>
-                    <p className="text-xs text-[#8b7a85] text-center" style={{ fontFamily: "'DM Sans', sans-serif" }}>Your to-do list is waiting to be written.</p>
+                    <div>
+                      <p className="text-xl font-semibold text-[#2d2a26] mb-1.5" style={{ fontFamily: "'Playfair Display', serif" }}>No tasks yet</p>
+                      <p className="text-sm text-[#8b7a85]" style={{ fontFamily: "'DM Sans', sans-serif" }}>Start your to-do list</p>
+                    </div>
                   </div>
                 )}
                 <PlannerSection
