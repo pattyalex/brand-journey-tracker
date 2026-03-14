@@ -2090,7 +2090,7 @@ const StrategyGrowth = () => {
                     <div key={p.id} className="group relative rounded-2xl p-5 opacity-40 hover:opacity-60 transition-opacity" style={{ background: p.color }}>
                       <button
                         onClick={(e) => dismissGoalPlaceholder(p.id, e)}
-                        className="absolute top-3 right-3 w-5 h-5 flex items-center justify-center rounded-full text-gray-300 hover:text-gray-500 hover:bg-white/60 transition-all opacity-0 group-hover:opacity-100"
+                        className="absolute top-3 right-3 w-5 h-5 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-white/80 transition-all opacity-50 hover:opacity-100"
                         title="Dismiss"
                       >
                         <svg width="7" height="7" viewBox="0 0 8 8" fill="none"><path d="M1 1l6 6M7 1L1 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
@@ -2230,7 +2230,7 @@ const StrategyGrowth = () => {
                                 </div>
                                 <button
                                   onClick={(e) => dismissGoalPlaceholder(p.id, e)}
-                                  className="w-4 h-4 flex items-center justify-center rounded-full text-gray-300 hover:text-gray-500 hover:bg-gray-100 transition-all opacity-0 group-hover:opacity-100 flex-shrink-0 ml-2"
+                                  className="w-5 h-5 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-200 transition-all opacity-50 hover:opacity-100 flex-shrink-0 ml-2"
                                   title="Dismiss"
                                 >
                                   <svg width="7" height="7" viewBox="0 0 8 8" fill="none"><path d="M1 1l6 6M7 1L1 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>

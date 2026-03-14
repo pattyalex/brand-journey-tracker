@@ -803,7 +803,7 @@ const PlaceholderDealCard = ({ onDismiss }: { onDismiss: (e: React.MouseEvent) =
     <div className="absolute top-3 left-3 px-2 py-0.5 rounded-full bg-[#8B7082]/10 text-[#8B7082] text-[9px] font-semibold tracking-wide uppercase">Example</div>
     <button
       onClick={onDismiss}
-      className="absolute top-2.5 right-2.5 w-5 h-5 flex items-center justify-center rounded-full text-gray-300 hover:text-gray-500 hover:bg-gray-100 transition-all opacity-0 group-hover:opacity-100 z-10"
+      className="absolute top-2.5 right-2.5 w-5 h-5 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-200 transition-all opacity-50 hover:opacity-100 z-10"
       title="Dismiss"
     >
       <svg width="7" height="7" viewBox="0 0 8 8" fill="none"><path d="M1 1l6 6M7 1L1 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>

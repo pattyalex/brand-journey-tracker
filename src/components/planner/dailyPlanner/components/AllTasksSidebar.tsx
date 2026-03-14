@@ -86,7 +86,7 @@ export const AllTasksSidebar = ({
           </span>
           <button
             onClick={(e) => dismissTask(task.id, e)}
-            className="w-4 h-4 flex items-center justify-center rounded-full text-gray-300 hover:text-gray-500 hover:bg-gray-200 transition-all opacity-0 group-hover:opacity-100 flex-shrink-0"
+            className="w-5 h-5 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-200 transition-all opacity-50 hover:opacity-100 flex-shrink-0"
             title="Remove"
           >
             <svg width="7" height="7" viewBox="0 0 8 8" fill="none">
