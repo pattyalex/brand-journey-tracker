@@ -2068,44 +2068,62 @@ const StrategyGrowth = () => {
                 })}
 
                 {/* Empty State / Placeholders */}
-                {shortTermGoals.length === 0 && (() => {
-                  const allPlaceholders = [
-                    { id: 'stg-0', text: 'Grow to 50k followers across all platforms', status: 'Not Started', percent: 0, color: 'rgba(180,140,165,0.12)', accent: '#a07090' },
-                    { id: 'stg-1', text: 'Close 10 brand deals this year', status: 'On It', percent: 25, color: 'rgba(165,180,190,0.09)', accent: '#8a9ba5' },
-                    { id: 'stg-2', text: 'Launch a digital product or course', status: 'Not Started', percent: 0, color: 'rgba(200,175,155,0.12)', accent: '#b09080' },
-                  ];
-                  const visible = allPlaceholders.filter(p => !dismissedGoalPlaceholders[p.id]);
-                  if (visible.length === 0) return (
-                    <div className="col-span-full">
+                {shortTermGoals.length === 0 && (
+                  <div className="col-span-full">
+                    {!dismissedGoalPlaceholders['stg-0'] ? (
+                      <div className="flex flex-col sm:flex-row items-center gap-10 py-4 px-2">
+                        {/* Single example card */}
+                        <div className="group relative w-full sm:w-72 flex-shrink-0 rounded-2xl p-5 border-2 border-dashed border-[#D8C8D3] opacity-50 hover:opacity-70 transition-opacity" style={{ background: 'rgba(180,140,165,0.08)' }}>
+                          <button
+                            onClick={(e) => dismissGoalPlaceholder('stg-0', e)}
+                            className="absolute top-3 right-3 w-5 h-5 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-white/80 transition-all opacity-50 hover:opacity-100"
+                            title="Dismiss"
+                          >
+                            <svg width="7" height="7" viewBox="0 0 8 8" fill="none"><path d="M1 1l6 6M7 1L1 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                          </button>
+                          <div className="text-[10px] font-semibold uppercase tracking-widest mb-3 px-2 py-0.5 rounded w-fit" style={{ color: '#a07090', background: 'rgba(160,112,144,0.12)' }}>Example</div>
+                          <p className="text-base font-semibold mb-5 pr-4" style={{ color: '#3d3a38' }}>Grow to 50k followers across all platforms</p>
+                          <div className="space-y-2">
+                            <div className="overflow-hidden h-2 rounded-full" style={{ background: 'rgba(139,115,130,0.1)' }}>
+                              <div className="h-full rounded-full" style={{ width: '0%', background: '#a07090' }} />
+                            </div>
+                            <span className="text-[13px] font-bold" style={{ color: '#9ca3af' }}>Not Started</span>
+                          </div>
+                        </div>
+
+                        {/* Divider */}
+                        <div className="hidden sm:block w-px self-stretch bg-gradient-to-b from-transparent via-[#D8C8D3] to-transparent" />
+
+                        {/* Text + CTA */}
+                        <div className="flex flex-col gap-4 max-w-sm">
+                          <div>
+                            <p className="text-xs font-semibold uppercase tracking-widest text-[#8B7082] mb-2" style={{ fontFamily: "'DM Sans', sans-serif" }}>One-Year Goals</p>
+                            <h2 className="text-2xl font-bold text-[#2d2a26] leading-tight mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>No goals set yet</h2>
+                            <p className="text-sm text-[#8B7082] leading-relaxed" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                              Set ambitious goals for the year ahead. Track your progress and stay focused on what matters most for your growth.
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => setIsAddingShortTermGoal(true)}
+                            className="w-fit h-10 px-5 rounded-xl bg-gradient-to-r from-[#612a4f] to-[#4d2140] hover:from-[#4d2140] hover:to-[#3a1830] text-white text-sm font-semibold shadow-[0_4px_16px_rgba(97,42,79,0.3)] hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2"
+                            style={{ fontFamily: "'DM Sans', sans-serif" }}
+                          >
+                            <Plus className="w-4 h-4" />
+                            Add your first goal
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
                       <EmptyState
                         icon={Target}
                         title="No goals set yet"
-                        description="Define your monthly and quarterly goals to stay focused on what matters most for your growth."
+                        description="Define your yearly goals to stay focused on what matters most for your growth."
                         actionLabel="Add Goal"
                         onAction={() => setIsAddingShortTermGoal(true)}
                       />
-                    </div>
-                  );
-                  return visible.map(p => (
-                    <div key={p.id} className="group relative rounded-2xl p-5 opacity-40 hover:opacity-60 transition-opacity" style={{ background: p.color }}>
-                      <button
-                        onClick={(e) => dismissGoalPlaceholder(p.id, e)}
-                        className="absolute top-3 right-3 w-5 h-5 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-white/80 transition-all opacity-50 hover:opacity-100"
-                        title="Dismiss"
-                      >
-                        <svg width="7" height="7" viewBox="0 0 8 8" fill="none"><path d="M1 1l6 6M7 1L1 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
-                      </button>
-                      <div className="text-[10px] font-semibold uppercase tracking-widest mb-3 px-2 py-0.5 rounded w-fit" style={{ color: p.accent, background: `${p.accent}18` }}>Example</div>
-                      <p className="text-base font-semibold mb-5" style={{ color: '#3d3a38' }}>{p.text}</p>
-                      <div className="space-y-2">
-                        <div className="overflow-hidden h-2 rounded-full" style={{ background: 'rgba(139,115,130,0.1)' }}>
-                          <div className="h-full rounded-full transition-all" style={{ width: `${p.percent}%`, background: p.accent }} />
-                        </div>
-                        <span className="text-[13px] font-bold" style={{ color: p.accent }}>{p.status}</span>
-                      </div>
-                    </div>
-                  ));
-                })()}
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
