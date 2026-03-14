@@ -469,6 +469,20 @@ const StrategyGrowth = () => {
 
   const [selectedYear, setSelectedYear] = useState(2026);
   const [expandedMonths, setExpandedMonths] = useState<string[]>(["January"]);
+
+  // Dismissed placeholder state for goals sections
+  const [dismissedGoalPlaceholders, setDismissedGoalPlaceholders] = useState<Record<string, boolean>>(() => {
+    try { return JSON.parse(localStorage.getItem('dismissedGoalPlaceholders') || '{}'); }
+    catch { return {}; }
+  });
+  const dismissGoalPlaceholder = (key: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setDismissedGoalPlaceholders(prev => {
+      const next = { ...prev, [key]: true };
+      localStorage.setItem('dismissedGoalPlaceholders', JSON.stringify(next));
+      return next;
+    });
+  };
   const [showAllMonths, setShowAllMonths] = useState(false);
   const [focusedMonth, setFocusedMonth] = useState("January");
 
@@ -2053,18 +2067,45 @@ const StrategyGrowth = () => {
                   );
                 })}
 
-                {/* Empty State */}
-                {shortTermGoals.length === 0 && (
-                  <div className="col-span-full">
-                    <EmptyState
-                      icon={Target}
-                      title="No goals set yet"
-                      description="Define your monthly and quarterly goals to stay focused on what matters most for your growth."
-                      actionLabel="Add Goal"
-                      onAction={() => setIsAddingShortTermGoal(true)}
-                    />
-                  </div>
-                )}
+                {/* Empty State / Placeholders */}
+                {shortTermGoals.length === 0 && (() => {
+                  const allPlaceholders = [
+                    { id: 'stg-0', text: 'Grow to 50k followers across all platforms', status: 'Not Started', percent: 0, color: 'rgba(180,140,165,0.12)', accent: '#a07090' },
+                    { id: 'stg-1', text: 'Close 10 brand deals this year', status: 'On It', percent: 25, color: 'rgba(165,180,190,0.09)', accent: '#8a9ba5' },
+                    { id: 'stg-2', text: 'Launch a digital product or course', status: 'Not Started', percent: 0, color: 'rgba(200,175,155,0.12)', accent: '#b09080' },
+                  ];
+                  const visible = allPlaceholders.filter(p => !dismissedGoalPlaceholders[p.id]);
+                  if (visible.length === 0) return (
+                    <div className="col-span-full">
+                      <EmptyState
+                        icon={Target}
+                        title="No goals set yet"
+                        description="Define your monthly and quarterly goals to stay focused on what matters most for your growth."
+                        actionLabel="Add Goal"
+                        onAction={() => setIsAddingShortTermGoal(true)}
+                      />
+                    </div>
+                  );
+                  return visible.map(p => (
+                    <div key={p.id} className="group relative rounded-2xl p-5 opacity-40 hover:opacity-60 transition-opacity" style={{ background: p.color }}>
+                      <button
+                        onClick={(e) => dismissGoalPlaceholder(p.id, e)}
+                        className="absolute top-3 right-3 w-5 h-5 flex items-center justify-center rounded-full text-gray-300 hover:text-gray-500 hover:bg-white/60 transition-all opacity-0 group-hover:opacity-100"
+                        title="Dismiss"
+                      >
+                        <svg width="7" height="7" viewBox="0 0 8 8" fill="none"><path d="M1 1l6 6M7 1L1 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                      </button>
+                      <div className="text-[10px] font-semibold uppercase tracking-widest mb-3 px-2 py-0.5 rounded w-fit" style={{ color: p.accent, background: `${p.accent}18` }}>Example</div>
+                      <p className="text-base font-semibold mb-5" style={{ color: '#3d3a38' }}>{p.text}</p>
+                      <div className="space-y-2">
+                        <div className="overflow-hidden h-2 rounded-full" style={{ background: 'rgba(139,115,130,0.1)' }}>
+                          <div className="h-full rounded-full transition-all" style={{ width: `${p.percent}%`, background: p.accent }} />
+                        </div>
+                        <span className="text-[13px] font-bold" style={{ color: p.accent }}>{p.status}</span>
+                      </div>
+                    </div>
+                  ));
+                })()}
               </div>
             </div>
 
@@ -2163,13 +2204,42 @@ const StrategyGrowth = () => {
                         )}
                       </div>
 
-                      {goals.length === 0 ? (
-                        <EmptyState
-                          icon={Target}
-                          title="No goals set yet"
-                          description="Define your monthly and quarterly goals to stay focused on what matters most for your growth."
-                        />
-                      ) : (
+                      {goals.length === 0 ? (() => {
+                        const monthKey = `mg-${fullMonth}`;
+                        const allMonthly = [
+                          { id: `${monthKey}-0`, text: 'Post 3x per week consistently' },
+                          { id: `${monthKey}-1`, text: 'Close 1 new brand deal' },
+                          { id: `${monthKey}-2`, text: 'Engage with 10 new accounts daily' },
+                        ];
+                        const visible = allMonthly.filter(p => !dismissedGoalPlaceholders[p.id]);
+                        if (visible.length === 0) return (
+                          <EmptyState
+                            icon={Target}
+                            title="No goals set yet"
+                            description="Define your monthly and quarterly goals to stay focused on what matters most for your growth."
+                          />
+                        );
+                        return (
+                          <div className="space-y-2">
+                            {visible.map(p => (
+                              <div key={p.id} className="group flex items-center justify-between px-4 py-3 rounded-xl border border-dashed border-[#D8C8D3] opacity-40 hover:opacity-70 transition-opacity">
+                                <div className="flex items-center gap-3 flex-1">
+                                  <div className="w-5 h-5 rounded-full border-2 border-[#D8C8D3] flex-shrink-0" />
+                                  <span className="text-sm font-medium text-[#3d3a38]" style={{ fontFamily: "'DM Sans', sans-serif" }}>{p.text}</span>
+                                  <span className="text-[9px] font-semibold uppercase tracking-wide text-[#8B7082] bg-[#8B7082]/10 px-1.5 py-0.5 rounded ml-1">Example</span>
+                                </div>
+                                <button
+                                  onClick={(e) => dismissGoalPlaceholder(p.id, e)}
+                                  className="w-4 h-4 flex items-center justify-center rounded-full text-gray-300 hover:text-gray-500 hover:bg-gray-100 transition-all opacity-0 group-hover:opacity-100 flex-shrink-0 ml-2"
+                                  title="Dismiss"
+                                >
+                                  <svg width="7" height="7" viewBox="0 0 8 8" fill="none"><path d="M1 1l6 6M7 1L1 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })() : (
                         <SortableContext
                           items={goals.map(g => g.id)}
                           strategy={verticalListSortingStrategy}
