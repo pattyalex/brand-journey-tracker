@@ -892,9 +892,6 @@ const KanbanView = ({ dealsByStatus, selectedMonth, isYearView, showArchived, on
                 Add your first deal
               </button>
             </div>
-            <p className="text-xs text-[#8B7082]/50 -mt-2" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-              ← The card on the left shows you what it'll look like.
-            </p>
           </div>
         </div>
       );
