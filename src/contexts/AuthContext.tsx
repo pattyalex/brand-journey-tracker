@@ -2,7 +2,6 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { supabase } from '@/lib/supabase';
 import { User, Session } from '@supabase/supabase-js';
 import { StorageKeys, getString, remove, setString, setActiveUserId } from '@/lib/storage';
-import { completeOnboarding as completeOnboardingInDB } from '@/services/preferencesService';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -191,7 +190,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setHasCompletedOnboarding(true);
     if (user?.id) {
       setString(getOnboardingKey(user.id), 'true');
-      completeOnboardingInDB(user.id).catch(console.error);
+      supabase.from('profiles')
+        .update({ has_completed_onboarding: true })
+        .eq('id', user.id)
+        .then(({ error }) => { if (error) console.error('Failed to mark onboarding complete:', error); });
     }
   };
 
