@@ -28,19 +28,12 @@ export default function AuthCallback() {
 
         const { data: profile } = await supabase
           .from('profiles')
-          .select('id')
+          .select('id, has_completed_onboarding')
           .eq('id', user.id)
           .single();
 
-        if (!profile) {
-          await supabase.from('profiles').insert([{
-            id: user.id,
-            full_name: user.user_metadata?.full_name || '',
-            email: user.email,
-            is_on_trial: true,
-            trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-          }]);
-          navigate('/onboarding?step=plan-selection');
+        if (!profile || !profile.has_completed_onboarding) {
+          navigate('/onboarding');
         } else {
           navigate('/home-page');
         }
