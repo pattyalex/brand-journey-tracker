@@ -47,9 +47,16 @@ const PageLoader = () => null;
 import { useAuth } from "./contexts/AuthContext";
 import ErrorBoundary from "./components/ErrorBoundary";
 
-// Redirect component for landing page
+// Redirect component for landing page — but intercept auth tokens first
 const LandingRedirect = () => {
   React.useEffect(() => {
+    const hash = window.location.hash;
+    const search = window.location.search;
+    // If Supabase redirected here with auth tokens, forward to auth/callback
+    if (hash.includes('access_token') || hash.includes('error') || search.includes('code=')) {
+      window.location.href = '/auth/callback' + search + hash;
+      return;
+    }
     window.location.href = '/landing.html';
   }, []);
   return null;
