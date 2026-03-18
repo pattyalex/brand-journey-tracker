@@ -12,3 +12,5 @@ CREATE POLICY "Allow anonymous inserts"
   ON public.email_subscriptions
   FOR INSERT
   WITH CHECK (true);
+
+GRANT INSERT ON public.email_subscriptions TO anon;

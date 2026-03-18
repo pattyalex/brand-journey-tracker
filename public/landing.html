@@ -63,7 +63,7 @@
       color: white;
       border: none;
       border-top: 1px solid rgba(255,255,255,0.15);
-      border-radius: 16px;
+      border-radius: 12px;
       padding: 10px 34px;
       font-size: 15px;
       font-family: 'DM Sans', sans-serif;
@@ -116,7 +116,7 @@
     .nav-logo {
       width: 36px;
       height: 36px;
-      border-radius: 8px;
+      border-radius: 12px;
       background: linear-gradient(135deg, #c9a3bb, #8B7082);
       display: flex;
       align-items: center;
@@ -178,7 +178,7 @@
       color: white;
       border: none;
       border-top: 1px solid rgba(255,255,255,0.12);
-      border-radius: 16px;
+      border-radius: 12px;
       padding: 8px 20px;
       font-size: 14px;
       font-weight: 500;
@@ -5506,7 +5506,7 @@
     .footer-brand .f-logo {
       width: 44px;
       height: 44px;
-      border-radius: 10px;
+      border-radius: 12px;
       background: linear-gradient(135deg, #c9a3bb, #8B7082);
       display: flex;
       align-items: center;
@@ -5624,6 +5624,16 @@
       }
     }
   </style>
+<script>
+  if (window.location.hash === '#footer') {
+    document.documentElement.style.scrollBehavior = 'auto';
+    window.addEventListener('load', function() {
+      var el = document.getElementById('footer');
+      if (el) el.scrollIntoView();
+      document.documentElement.style.scrollBehavior = '';
+    });
+  }
+</script>
 </head>
 <body>
   <!-- Navigation -->
@@ -5635,7 +5645,7 @@
       <a href="#pricing">Pricing</a>
     </div>
     <a href="/login" class="nav-login">Log In</a>
-    <a href="/login?mode=signup" class="nav-cta">Start your 14-day free trial</a>
+    <a href="/login?mode=signup" class="nav-cta">Get HeyMeg Free</a>
   </nav>
 
   <!-- Hero Section -->
@@ -5645,7 +5655,7 @@
       A workspace designed to simplify your content creation process. AI-Assisted.
     </p>
     <div class="hero-cta">
-      <a href="/login?mode=signup" class="btn-primary">Start your 14-day free trial</a>
+      <a href="/login?mode=signup" class="btn-primary">Get HeyMeg Free</a>
     </div>
 
     <!-- Hero Visual - Dashboard Preview -->
@@ -6478,7 +6488,7 @@
   </section>
 
   <!-- Footer -->
-  <footer>
+  <footer id="footer">
     <div class="footer-inner">
       <div class="footer-brand">
         <div class="f-logo">M</div>
