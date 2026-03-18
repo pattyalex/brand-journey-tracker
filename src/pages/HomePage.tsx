@@ -1855,6 +1855,20 @@ const HomePage = () => {
     setHabits(prev => prev.filter(h => h.id !== habitId));
   };
 
+  const keepPlaceholderHabit = (name: string, key: string) => {
+    const newHabit: Habit = {
+      id: `habit_${Date.now()}`,
+      name,
+      completedDates: [],
+    };
+    setHabits(prev => [...prev, newHabit]);
+    setDismissedPlaceholders(prev => {
+      const next = { ...prev, [key]: true };
+      localStorage.setItem(`dismissedDashboardPlaceholders_${user?.id}`, JSON.stringify(next));
+      return next;
+    });
+  };
+
   const startEditingHabit = (habitId: string, currentName: string) => {
     setEditingHabitId(habitId);
     setEditingHabitName(currentName);
@@ -2843,20 +2857,25 @@ const HomePage = () => {
                           {visibleHabits.map((habit) => {
                             const origIdx = allHabits.findIndex(h => h.name === habit.name);
                             return (
-                              <div key={origIdx} className="group grid grid-cols-[1fr_repeat(7,28px)_20px] sm:grid-cols-[1fr_repeat(7,32px)_20px] gap-0.5 sm:gap-1 items-center py-2.5 border-b border-[#8B7082]/08 last:border-b-0 opacity-30 hover:opacity-50 transition-opacity">
-                                <span className="text-sm font-semibold text-[#2d2a26] truncate pr-2 cursor-pointer" onClick={() => setIsAddingHabit(true)} style={{ fontFamily: "'DM Sans', sans-serif" }}>{habit.name}</span>
+                              <div key={origIdx} className="group grid grid-cols-[1fr_repeat(7,28px)_44px] sm:grid-cols-[1fr_repeat(7,32px)_44px] gap-0.5 sm:gap-1 items-center py-2.5 border-b border-[#8B7082]/08 last:border-b-0 opacity-30 hover:opacity-60 transition-opacity">
+                                <span className="text-sm font-semibold text-[#2d2a26] truncate pr-2" style={{ fontFamily: "'DM Sans', sans-serif" }}>{habit.name}</span>
                                 {habit.days.map((checked, d) => (
-                                  <div key={d} className="w-[20px] h-[20px] sm:w-[26px] sm:h-[26px] rounded-md mx-auto flex items-center justify-center cursor-pointer" onClick={() => setIsAddingHabit(true)} style={{ background: checked ? 'linear-gradient(145deg, #8aae8a, #6a9a6a)' : 'rgba(139,115,130,0.08)', border: checked ? 'none' : '1.5px solid rgba(139,115,130,0.15)' }}>
+                                  <div key={d} className="w-[20px] h-[20px] sm:w-[26px] sm:h-[26px] rounded-md mx-auto flex items-center justify-center" style={{ background: checked ? 'linear-gradient(145deg, #8aae8a, #6a9a6a)' : 'rgba(139,115,130,0.08)', border: checked ? 'none' : '1.5px solid rgba(139,115,130,0.15)' }}>
                                     {checked && <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                                   </div>
                                 ))}
-                                <button onClick={(e) => dismissPlaceholder(`wh-${origIdx}`, e)} className="w-4 h-4 flex items-center justify-center rounded-full text-gray-300 hover:text-gray-500 hover:bg-gray-100 transition-all opacity-0 group-hover:opacity-100 mx-auto flex-shrink-0" title="Remove">
-                                  <svg width="7" height="7" viewBox="0 0 8 8" fill="none"><path d="M1 1l6 6M7 1L1 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
-                                </button>
+                                <div className="flex items-center justify-end gap-0.5 opacity-0 group-hover:opacity-100 transition-all">
+                                  <button onClick={() => keepPlaceholderHabit(habit.name, `wh-${origIdx}`)} className="w-5 h-5 flex items-center justify-center rounded-full text-[#612a4f] hover:bg-[#612a4f] hover:text-white transition-all flex-shrink-0" title="Keep this habit">
+                                    <svg width="9" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                                  </button>
+                                  <button onClick={(e) => dismissPlaceholder(`wh-${origIdx}`, e)} className="w-5 h-5 flex items-center justify-center rounded-full text-gray-300 hover:text-gray-500 hover:bg-gray-100 transition-all flex-shrink-0" title="Remove">
+                                    <svg width="7" height="7" viewBox="0 0 8 8" fill="none"><path d="M1 1l6 6M7 1L1 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                                  </button>
+                                </div>
                               </div>
                             );
                           })}
-                          <button onClick={() => setIsAddingHabit(true)} className="mt-3 text-xs font-semibold text-[#612a4f] hover:text-[#4a3442] transition-colors" style={{ fontFamily: "'DM Sans', sans-serif" }}>+ Add your first habit</button>
+                          <button onClick={() => setIsAddingHabit(true)} className="mt-3 text-xs font-semibold text-[#612a4f] hover:text-[#4a3442] transition-colors" style={{ fontFamily: "'DM Sans', sans-serif" }}>+ Add a habit</button>
                         </div>
                       );
                     })()
