@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About — HeyMeg</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;1,400;1,500&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #faf8f9;
+      color: #2d2a26;
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background-image:
+        radial-gradient(circle at -5% 10%, rgba(97,42,79,0.06) 0%, transparent 40%),
+        radial-gradient(circle at 105% 60%, rgba(139,80,120,0.05) 0%, transparent 45%);
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(97,42,79,0.1);
+      border-radius: 20px;
+      padding: 8px 16px;
+      box-shadow: 0 4px 24px rgba(97,42,79,0.08);
+    }
+
+    .nav-logo {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #c9a3bb, #8B7082);
+      display: flex; align-items: center; justify-content: center;
+      color: white;
+      font-family: 'Instrument Serif', serif;
+      font-size: 16px;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+
+    .nav-links { display: flex; gap: 4px; }
+    .nav-links a {
+      padding: 6px 14px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #6b5060;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .nav-links a:hover { background: rgba(97,42,79,0.06); color: #612a4f; }
+
+    .nav-cta {
+      background: linear-gradient(135deg, #612a4f, #9B5080);
+      color: white;
+      border: none;
+      border-top: 1px solid rgba(255,255,255,0.15);
+      border-radius: 14px;
+      padding: 8px 20px;
+      font-size: 13px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    /* ── HERO ── */
+    .about-hero {
+      width: 100%;
+      background: #612a4f;
+      padding: 160px 24px 80px;
+    }
+
+    .about-hero-inner {
+      max-width: 760px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .about-hero .page-label {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 20px;
+      display: block;
+    }
+
+    .about-hero h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(36px, 4.5vw, 58px);
+      font-weight: 500;
+      line-height: 1.1;
+      letter-spacing: -0.01em;
+      margin-bottom: 20px;
+      color: #ffffff;
+    }
+
+    .about-hero h1 em {
+      font-style: italic;
+      color: rgba(255,255,255,0.65);
+    }
+
+    .about-hero p {
+      font-size: 17px;
+      color: rgba(255,255,255,0.7);
+      max-width: 520px;
+      line-height: 1.75;
+      margin: 0 auto;
+    }
+
+    .about-hero-divider {
+      width: 48px;
+      height: 2px;
+      background: rgba(255,255,255,0.2);
+      margin: 32px auto;
+    }
+
+    /* ── STAT BAR ── */
+    .stat-bar {
+      background: #f3edf0;
+      border-top: 1px solid rgba(97,42,79,0.08);
+      border-bottom: 1px solid rgba(97,42,79,0.08);
+      padding: 48px 24px;
+      display: flex;
+      justify-content: center;
+      gap: 80px;
+      flex-wrap: wrap;
+    }
+
+    .stat-item { text-align: center; }
+
+    .stat-number {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(40px, 5vw, 64px);
+      font-weight: 500;
+      line-height: 1;
+      color: #612a4f;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #9a8490;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* ── STORY SECTION ── */
+    .story-section {
+      padding: 120px 24px;
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+
+    @media (max-width: 768px) {
+      .story-section { grid-template-columns: 1fr; gap: 48px; }
+      .stat-bar { gap: 48px; }
+      .personas { grid-template-columns: repeat(2, 1fr) !important; }
+    }
+    @media (max-width: 500px) {
+      .personas { grid-template-columns: 1fr !important; }
+    }
+
+    .story-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #8B7082;
+      margin-bottom: 20px;
+    }
+
+    .story-left h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(34px, 4vw, 52px);
+      font-weight: 500;
+      line-height: 1.1;
+      letter-spacing: -0.01em;
+      color: #2d2a26;
+    }
+
+    .story-left h2 em { font-style: italic; color: #8B7082; }
+
+    .story-pull-quote {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: rgba(97,42,79,0.04);
+      border-left: 2px solid #8B7082;
+      border-radius: 0 12px 12px 0;
+    }
+
+    .story-pull-quote p {
+      font-family: 'Instrument Serif', serif;
+      font-size: 19px;
+      font-style: italic;
+      color: #4a3540;
+      line-height: 1.6;
+    }
+
+    .story-right p {
+      font-size: 16px;
+      color: #6b5a62;
+      line-height: 1.85;
+      margin-bottom: 20px;
+    }
+    .story-right p:last-child { margin-bottom: 0; }
+
+    /* ── DIVIDER ── */
+    .section-divider {
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(97,42,79,0.12), transparent);
+    }
+
+    /* ── FOR WHO ── */
+    .for-who-section {
+      padding: 120px 24px;
+      text-align: center;
+      background: #ffffff;
+    }
+
+    .for-who-section h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(34px, 4.5vw, 56px);
+      font-weight: 500;
+      line-height: 1.1;
+      max-width: 700px;
+      margin: 0 auto 16px;
+      color: #2d2a26;
+    }
+    .for-who-section h2 em { font-style: italic; color: #8B7082; }
+
+    .for-who-section > p {
+      font-size: 17px;
+      color: #9a8490;
+      max-width: 500px;
+      margin: 0 auto 72px;
+    }
+
+    .personas {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .persona-card {
+      background: #faf8f9;
+      border: 1px solid rgba(97,42,79,0.1);
+      border-radius: 20px;
+      padding: 32px 24px;
+      text-align: left;
+      transition: all 0.3s ease;
+    }
+    .persona-card:hover {
+      background: #fff;
+      border-color: rgba(97,42,79,0.2);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(97,42,79,0.08);
+    }
+
+    .persona-icon {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(201,163,187,0.4), rgba(139,112,130,0.3));
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 20px;
+      font-size: 20px;
+    }
+
+    .persona-card h3 {
+      font-family: 'Instrument Serif', serif;
+      font-size: 20px;
+      font-weight: 400;
+      margin-bottom: 10px;
+      color: #2d2a26;
+    }
+
+    .persona-card p {
+      font-size: 13px;
+      color: #9a8490;
+      line-height: 1.7;
+    }
+
+    /* ── MISSION ── */
+    .mission-section {
+      padding: 100px 24px 120px;
+      background: #f3edf0;
+      position: relative;
+      text-align: center;
+    }
+
+    .mission-inner {
+      position: relative;
+      z-index: 1;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .mission-section h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(36px, 5vw, 60px);
+      font-weight: 500;
+      line-height: 1.1;
+      margin-bottom: 24px;
+      color: #2d2a26;
+    }
+    .mission-section h2 em { font-style: italic; color: #8B7082; }
+
+    .mission-section p {
+      font-size: 17px;
+      color: #7a6870;
+      line-height: 1.8;
+      margin-bottom: 48px;
+    }
+
+    .mission-cta {
+      display: inline-block;
+      background: linear-gradient(135deg, #612a4f, #9B5080);
+      color: white;
+      border: none;
+      border-top: 1px solid rgba(255,255,255,0.15);
+      border-radius: 16px;
+      padding: 14px 36px;
+      font-size: 15px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      box-shadow: 0 8px 24px rgba(97,42,79,0.25);
+      transition: all 0.3s ease;
+    }
+    .mission-cta:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(97,42,79,0.35); }
+
+    /* ── FOOTER ── */
+    footer {
+      background: #ede5e9;
+      border-top: 1px solid rgba(97,42,79,0.1);
+      padding: 40px 24px;
+      text-align: center;
+    }
+    footer p { font-size: 13px; color: #9a8490; }
+    footer a { color: #7a6870; text-decoration: none; }
+    footer a:hover { color: #612a4f; }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="/landing.html" class="nav-logo">M</a>
+    <div class="nav-links">
+      <a href="/landing.html#why-heymeg">Why HeyMeg</a>
+      <a href="/landing.html#features">Features</a>
+      <a href="/landing.html#pricing">Pricing</a>
+    </div>
+    <a href="/login?mode=signup" class="nav-cta">Start free trial</a>
+  </nav>
+
+  <a href="/landing.html" style="position:fixed;top:90px;left:32px;z-index:999;display:inline-flex;align-items:center;gap:6px;color:rgba(255,255,255,0.7);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;text-decoration:none;transition:color 0.2s;background:rgba(255,255,255,0.12);backdrop-filter:blur(10px);padding:6px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.2);" onmouseover="this.style.color='rgba(255,255,255,1)'" onmouseout="this.style.color='rgba(255,255,255,0.7)'">← Back</a>
+
+  <section class="about-hero">
+    <div class="about-hero-inner">
+      <span class="page-label">About HeyMeg</span>
+      <h1>Built by a creator.<br><em>For every creator.</em></h1>
+      <div class="about-hero-divider"></div>
+      <p>HeyMeg wasn't born in a boardroom. It was built from firsthand experience — the late nights, the scattered notes, the missed opportunities, and the relentless pressure to show up consistently online.</p>
+    </div>
+  </section>
+
+
+  <section class="story-section">
+    <div class="story-left">
+      <p class="story-label">The Origin</p>
+      <h2>It started with<br><em>a very real problem.</em></h2>
+      <div class="story-pull-quote">
+        <p>"I had the audience. I had the ideas. What I didn't have was a system that could hold all of it together."</p>
+      </div>
+    </div>
+    <div class="story-right">
+      <p>Our founder built a community of over 2 million people across platforms — not by accident, but through years of showing up, creating, iterating, and figuring things out in real time.</p>
+      <p>But behind the scenes? The workflow was a mess. Brand deals tracked in email threads. Content ideas scattered across different apps. Goals written on sticky notes that eventually disappeared.</p>
+      <p>Every tool out there was built to be everything for everyone — flexible by design, but never quite right for this specific job. Nothing was built around the actual workflow of a creator: the content planning, the brand deals, the goals, the day-to-day. Just generic platforms asking you to bend yourself around them. So instead of settling, they built something new.</p>
+      <p>HeyMeg is the platform our founder wished had existed from the beginning.</p>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <section class="for-who-section">
+    <p class="story-label" style="margin-bottom:16px;">Who It's For</p>
+    <h2>For anyone who creates,<br><em>builds, and shows up online.</em></h2>
+    <p>Whether you're just starting out or already have an audience, HeyMeg is built to grow with you.</p>
+    <div class="personas">
+      <div class="persona-card">
+        <div class="persona-icon">🎬</div>
+        <h3>Content Creators</h3>
+        <p>Manage your content calendar, track ideas, and stay consistent across every platform — without the chaos.</p>
+      </div>
+      <div class="persona-card">
+        <div class="persona-icon">🧠</div>
+        <h3>Experts & Educators</h3>
+        <p>Turn your knowledge into structured content. Plan, batch, and publish without losing momentum.</p>
+      </div>
+      <div class="persona-card">
+        <div class="persona-icon">💼</div>
+        <h3>Coaches</h3>
+        <p>Build authority online while managing brand partnerships and client visibility — all in one place.</p>
+      </div>
+      <div class="persona-card">
+        <div class="persona-icon">🚀</div>
+        <h3>Entrepreneurs</h3>
+        <p>Grow your personal brand alongside your business. Content is your highest-leverage marketing channel.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <section class="mission-section">
+    <div class="mission-orb mission-orb-1"></div>
+    <div class="mission-orb mission-orb-2"></div>
+    <div class="mission-inner">
+      <p class="story-label" style="margin-bottom:20px;">Our Mission</p>
+      <h2>Your content is a business.<br><em>We built the operating system for it.</em></h2>
+      <p>We believe the most creative, valuable voices online shouldn't be held back by logistics. HeyMeg exists to remove the friction — so you can spend less time managing and more time creating.</p>
+      <a href="/login?mode=signup" class="mission-cta">Start your 14-day free trial →</a>
+    </div>
+  </section>
+
+  <footer>
+    <p>© 2026 HeyMeg · <a href="/landing.html">Home</a> · <a href="/login">Log In</a></p>
+  </footer>
+
+</body>
+</html>

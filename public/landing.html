@@ -1098,11 +1098,11 @@
     .social-proof {
       position: relative;
       z-index: 1000;
-      padding: 24px 24px 40px;
+      padding: 24px 24px 80px;
       text-align: center;
       margin-top: -180px;
       margin-bottom: 0;
-      background: transparent;
+      background: linear-gradient(to bottom, transparent 40%, #ffffff 100%);
       min-height: 180px;
     }
 
@@ -5506,7 +5506,7 @@
     .footer-brand .f-logo {
       width: 44px;
       height: 44px;
-      border-radius: 50%;
+      border-radius: 10px;
       background: linear-gradient(135deg, #c9a3bb, #8B7082);
       display: flex;
       align-items: center;
@@ -5535,7 +5535,7 @@
       display: flex;
       margin-top: 20px;
       background: rgba(255,255,255,0.08);
-      border-radius: 50px;
+      border-radius: 16px;
       overflow: hidden;
       border: 1px solid rgba(255,255,255,0.1);
     }
@@ -5562,7 +5562,7 @@
       padding: 12px 24px;
       font-size: 13px;
       font-weight: 600;
-      border-radius: 50px;
+      border-radius: 12px;
       margin: 4px;
       font-family: 'DM Sans', sans-serif;
       cursor: pointer;
@@ -6267,7 +6267,7 @@
   </section>
 
   <!-- AI Section -->
-  <section class="ai-section reveal">
+  <section class="ai-section reveal" id="how-it-works">
     <div class="ai-section-inner">
       <div class="ai-text">
         <h2>Built-In AI that keeps you moving</h2>
@@ -6482,19 +6482,18 @@
     <div class="footer-inner">
       <div class="footer-brand">
         <div class="f-logo">M</div>
-        <h4>Stay in the Loop with HeyMeg</h4>
-        <p>Subscribe for creator tips, product updates, and workflow strategies—delivered fresh to your inbox.</p>
-        <form class="newsletter-form">
-          <input type="email" placeholder="Enter email">
-          <button type="submit">Subscribe <span>→</span></button>
+        <h4>Stay in the Loop</h4>
+        <p>Be the first to know about new features, product updates, and what's coming next for HeyMeg.</p>
+        <form class="newsletter-form" id="subscribe-form">
+          <input type="email" id="subscribe-email" placeholder="Enter your email" required>
+          <button type="submit" id="subscribe-btn">Notify me <span>→</span></button>
         </form>
       </div>
 
       <div class="footer-col">
         <h5>Sections</h5>
-        <a href="#how-it-works">How It Works</a>
         <a href="#features">Features</a>
-        <a href="#why-heymeg">Why HeyMeg</a>
+        <a href="#pricing">Pricing</a>
       </div>
 
       <div class="footer-col">
@@ -6504,7 +6503,8 @@
       </div>
 
       <div class="footer-col">
-        <h5>Pages</h5>
+        <h5>Company</h5>
+        <a href="/about">About</a>
         <a href="/contact">Contact Us</a>
         <a href="/privacy">Privacy Policy</a>
         <a href="/terms">Terms of Service</a>
@@ -7135,6 +7135,55 @@
     }
 
     window.addEventListener('resize', setupCursorMove);
+  </script>
+
+  <script>
+    // Subscribe form → Supabase
+    (function() {
+      const SUPABASE_URL = 'https://cedxvrosmnsvfnnvkprr.supabase.co';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNlZHh2cm9zbW5zdmZubnZrcHJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA3MTg1NDksImV4cCI6MjA3NjI5NDU0OX0.hxCf912qlV_84PtLTUHnNLGAeZRhBl5pLReW99q5WtY';
+
+      const form = document.getElementById('subscribe-form');
+      const emailInput = document.getElementById('subscribe-email');
+      const btn = document.getElementById('subscribe-btn');
+
+      if (!form) return;
+
+      form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const email = emailInput.value.trim();
+        if (!email) return;
+
+        btn.disabled = true;
+        btn.innerHTML = 'Saving...';
+
+        try {
+          const res = await fetch(SUPABASE_URL + '/rest/v1/email_subscriptions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'apikey': SUPABASE_ANON_KEY,
+              'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+              'Prefer': 'return=minimal'
+            },
+            body: JSON.stringify({ email: email })
+          });
+
+          if (res.ok || res.status === 409) {
+            // 409 = already subscribed (unique constraint), still a success
+            emailInput.value = '';
+            btn.innerHTML = "You're in ✓";
+            btn.style.opacity = '0.7';
+          } else {
+            btn.innerHTML = 'Try again <span>→</span>';
+            btn.disabled = false;
+          }
+        } catch (err) {
+          btn.innerHTML = 'Try again <span>→</span>';
+          btn.disabled = false;
+        }
+      });
+    })();
   </script>
 </body>
 </html>

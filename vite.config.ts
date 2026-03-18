@@ -14,9 +14,20 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '')
       }
-    }
+    },
   },
-  plugins: [react()],
+  plugins: [
+    react(),
+    {
+      name: 'static-page-rewrites',
+      configureServer(server) {
+        server.middlewares.use((req, _res, next) => {
+          if (req.url === '/about') req.url = '/about.html';
+          next();
+        });
+      },
+    },
+  ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
