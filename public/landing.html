@@ -5499,7 +5499,7 @@
       max-width: 1100px;
       margin: 0 auto;
       display: grid;
-      grid-template-columns: 1.5fr 1fr 1fr 1fr;
+      grid-template-columns: 1fr auto auto;
       gap: 40px;
     }
 
@@ -5534,6 +5534,7 @@
     .newsletter-form {
       display: flex;
       margin-top: 20px;
+      max-width: 420px;
       background: rgba(255,255,255,0.08);
       border-radius: 16px;
       overflow: hidden;
@@ -5574,6 +5575,10 @@
 
     .newsletter-form button:hover {
       background: linear-gradient(135deg, #8a4278, #6e3058, #562548);
+    }
+
+    .footer-col:first-of-type {
+      margin-left: auto;
     }
 
     .footer-col h5 {
@@ -6504,12 +6509,6 @@
         <h5>Sections</h5>
         <a href="#features">Features</a>
         <a href="#pricing">Pricing</a>
-      </div>
-
-      <div class="footer-col">
-        <h5>Social</h5>
-        <a href="#">Instagram</a>
-        <a href="#">TikTok</a>
       </div>
 
       <div class="footer-col">
