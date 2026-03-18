@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { supabase } from '@/lib/supabase';
 import { User, Session } from '@supabase/supabase-js';
 import { StorageKeys, getString, remove, setString, setActiveUserId } from '@/lib/storage';
+import { completeOnboarding as completeOnboardingInDB } from '@/services/preferencesService';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -112,7 +113,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (user) {
         const userOnboardingKey = getOnboardingKey(user.id);
 
-        // Check localStorage first
+        // Check localStorage first (only trust it if set after onboarding truly completed)
         const storedOnboarding = getString(userOnboardingKey);
         if (storedOnboarding === 'true') {
           console.log('✅ Onboarding already completed (from localStorage) for user:', user.id);
@@ -120,31 +121,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setCheckingOnboarding(false);
           return;
         }
+        // Clear any stale localStorage value so we re-check DB
+        localStorage.removeItem(userOnboardingKey);
 
         console.log('🔍 Checking onboarding status for user:', user.id);
 
-        // Check if profile exists in Supabase
+        // Check if profile exists and onboarding is complete
         const { data: profile, error } = await supabase
           .from('profiles')
-          .select('id, stripe_subscription_id')
+          .select('id, has_completed_onboarding')
           .eq('id', user.id)
           .single();
 
         console.log('📊 Profile data from Supabase:', profile);
 
-        if (profile) {
-          // Profile exists - user has completed onboarding
-          console.log('✅ User profile exists, marking onboarding complete');
+        if (profile?.has_completed_onboarding) {
+          console.log('✅ Onboarding complete');
           setHasCompletedOnboarding(true);
           setString(userOnboardingKey, 'true');
-        } else if (error?.code === 'PGRST116') {
-          // No profile found - new user needs onboarding
-          console.log('❌ No profile found, new user needs onboarding');
-          setHasCompletedOnboarding(false);
         } else {
-          // Error checking - let them through
-          console.log('⚠️ Profile check returned unexpected result, allowing access');
-          setHasCompletedOnboarding(true);
+          console.log('❌ Onboarding not yet complete');
+          setHasCompletedOnboarding(false);
         }
       } else {
         // Not signed in
@@ -194,6 +191,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setHasCompletedOnboarding(true);
     if (user?.id) {
       setString(getOnboardingKey(user.id), 'true');
+      completeOnboardingInDB(user.id).catch(console.error);
     }
   };
 
