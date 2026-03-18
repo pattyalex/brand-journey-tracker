@@ -61,14 +61,6 @@ export const PaymentSetupStep: React.FC<PaymentSetupStepProps> = ({
               Your card won't be charged until your 14-day free trial ends.
             </p>
 
-            {/* Temporary skip button for development */}
-            <Button
-              onClick={onSuccess}
-              variant="outline"
-              className="w-full mb-4"
-            >
-              Skip Payment (Development)
-            </Button>
 
             <Elements stripe={stripePromise}>
               <StripePaymentForm
