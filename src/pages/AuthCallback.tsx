@@ -6,11 +6,26 @@ export default function AuthCallback() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    const handleCallback = async () => {
+      // Handle PKCE code flow (email confirmation)
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get('code');
+
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (error) {
+          console.error('Code exchange failed:', error);
+          navigate('/login');
+          return;
+        }
+      }
+
+      // Now get the session (works for both hash and code flows)
+      const { data: { session } } = await supabase.auth.getSession();
+
       if (session) {
         const user = session.user;
 
-        // Check if profile exists, create it if not
         const { data: profile } = await supabase
           .from('profiles')
           .select('id')
@@ -32,12 +47,19 @@ export default function AuthCallback() {
       } else {
         navigate('/login');
       }
-    });
+    };
+
+    handleCallback();
   }, [navigate]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="animate-pulse">Completing sign in...</div>
+    <div className="min-h-screen flex items-center justify-center" style={{ background: '#fcf9fe' }}>
+      <div
+        className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-serif text-xl animate-pulse"
+        style={{ background: 'linear-gradient(135deg, #7a3868 0%, #612a4f 50%, #4e2040 100%)' }}
+      >
+        M
+      </div>
     </div>
   );
 }
