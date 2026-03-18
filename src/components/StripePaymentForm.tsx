@@ -47,6 +47,17 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [cardholderName, setCardholderName] = useState(userName || '');
 
+  const fetchWithTimeout = async (url: string, options: RequestInit, ms = 15000) => {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), ms);
+    try {
+      const res = await fetch(url, { ...options, signal: controller.signal });
+      return res;
+    } finally {
+      clearTimeout(id);
+    }
+  };
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
@@ -72,7 +83,7 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
 
       console.log('Creating Stripe customer...');
       // Step 1: Create Stripe customer
-      const customerResponse = await fetch('/api/create-customer', {
+      const customerResponse = await fetchWithTimeout('/api/create-customer', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -112,7 +123,7 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
 
       // Step 3: Attach payment method to customer
       console.log('Attaching payment method to customer...');
-      const attachResponse = await fetch('/api/attach-payment-method', {
+      const attachResponse = await fetchWithTimeout('/api/attach-payment-method', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -137,7 +148,7 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
         : import.meta.env.VITE_STRIPE_PRICE_MONTHLY;
 
       console.log('Creating subscription with price:', priceId);
-      const subscriptionResponse = await fetch('/api/create-subscription', {
+      const subscriptionResponse = await fetchWithTimeout('/api/create-subscription', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -180,9 +191,13 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
 
       console.log('✅ Payment setup completed successfully!');
       onSuccess();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Payment error:', err);
-      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+      if (err?.name === 'AbortError') {
+        setError('Request timed out. Please check your connection and try again.');
+      } else {
+        setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+      }
       setLoading(false);
     }
   };
