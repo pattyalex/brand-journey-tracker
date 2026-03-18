@@ -69,16 +69,31 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
     setLoading(true);
     setError(null);
 
+    let succeeded = false;
+
     try {
       const cardNumberElement = elements.getElement(CardNumberElement);
       if (!cardNumberElement) {
         throw new Error('Card element not found');
       }
 
+      // Check price IDs are configured
+      const priceId = billingPlan === 'annual'
+        ? import.meta.env.VITE_STRIPE_PRICE_ANNUAL
+        : import.meta.env.VITE_STRIPE_PRICE_MONTHLY;
+
+      if (!priceId) {
+        throw new Error('Payment configuration error: price ID not set. Please contact support.');
+      }
+
       // Get auth token for API requests
-      const { data: { session } } = await supabase.auth.getSession();
+      const sessionResult = await Promise.race([
+        supabase.auth.getSession(),
+        new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Session timeout')), 10000))
+      ]);
+      const { data: { session } } = sessionResult as Awaited<ReturnType<typeof supabase.auth.getSession>>;
       if (!session) {
-        throw new Error('Not authenticated');
+        throw new Error('Not authenticated. Please log in and try again.');
       }
 
       console.log('Creating Stripe customer...');
@@ -106,20 +121,24 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
 
       // Step 2: Create payment method
       console.log('Creating payment method...');
-      const { error: pmError, paymentMethod } = await stripe.createPaymentMethod({
-        type: 'card',
-        card: cardNumberElement,
-        billing_details: {
-          name: cardholderName || userName,
-          email: userEmail,
-        },
-      });
+      const pmResult = await Promise.race([
+        stripe.createPaymentMethod({
+          type: 'card',
+          card: cardNumberElement,
+          billing_details: {
+            name: cardholderName || userName,
+            email: userEmail,
+          },
+        }),
+        new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Payment method creation timed out')), 15000))
+      ]);
+      const { error: pmError, paymentMethod } = pmResult as Awaited<ReturnType<typeof stripe.createPaymentMethod>>;
 
       if (pmError) {
         throw new Error(pmError.message || 'Failed to create payment method');
       }
 
-      console.log('Payment method created:', paymentMethod.id);
+      console.log('Payment method created:', paymentMethod!.id);
 
       // Step 3: Attach payment method to customer
       console.log('Attaching payment method to customer...');
@@ -130,7 +149,7 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
           'Authorization': `Bearer ${session.access_token}`
         },
         body: JSON.stringify({
-          paymentMethodId: paymentMethod.id,
+          paymentMethodId: paymentMethod!.id,
           customerId: customerId,
         }),
       });
@@ -143,10 +162,6 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
       console.log('Payment method attached successfully');
 
       // Step 4: Create subscription with trial
-      const priceId = billingPlan === 'annual'
-        ? import.meta.env.VITE_STRIPE_PRICE_ANNUAL
-        : import.meta.env.VITE_STRIPE_PRICE_MONTHLY;
-
       console.log('Creating subscription with price:', priceId);
       const subscriptionResponse = await fetchWithTimeout('/api/create-subscription', {
         method: 'POST',
@@ -157,7 +172,7 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
         body: JSON.stringify({
           customerId: customerId,
           priceId: priceId,
-          paymentMethodId: paymentMethod.id,
+          paymentMethodId: paymentMethod!.id,
         }),
       });
 
@@ -190,15 +205,19 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
       }
 
       console.log('✅ Payment setup completed successfully!');
+      succeeded = true;
       onSuccess();
     } catch (err: any) {
       console.error('Payment error:', err);
-      if (err?.name === 'AbortError') {
+      if (err?.name === 'AbortError' || err?.message?.includes('timed out') || err?.message?.includes('timeout')) {
         setError('Request timed out. Please check your connection and try again.');
       } else {
-        setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+        setError(err instanceof Error ? err.message : 'An unexpected error occurred. Please try again.');
       }
-      setLoading(false);
+    } finally {
+      if (!succeeded) {
+        setLoading(false);
+      }
     }
   };
 
