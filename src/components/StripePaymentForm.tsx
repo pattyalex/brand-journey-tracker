@@ -72,7 +72,7 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
 
       console.log('Creating Stripe customer...');
       // Step 1: Create Stripe customer
-      const customerResponse = await fetch('http://localhost:3001/api/create-customer', {
+      const customerResponse = await fetch('/api/create-customer', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -112,7 +112,7 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
 
       // Step 3: Attach payment method to customer
       console.log('Attaching payment method to customer...');
-      const attachResponse = await fetch('http://localhost:3001/api/attach-payment-method', {
+      const attachResponse = await fetch('/api/attach-payment-method', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -137,7 +137,7 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
         : import.meta.env.VITE_STRIPE_PRICE_MONTHLY;
 
       console.log('Creating subscription with price:', priceId);
-      const subscriptionResponse = await fetch('http://localhost:3001/api/create-subscription', {
+      const subscriptionResponse = await fetch('/api/create-subscription', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -159,7 +159,6 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
       console.log('Subscription created:', subscription.id);
 
       // Step 5: Update user profile in Supabase
-      const { supabase } = await import('@/lib/supabase');
       const { error: updateError } = await supabase
         .from('profiles')
         .update({
