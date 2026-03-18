@@ -272,12 +272,6 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
       </div>
 
       {/* Test Card Info */}
-      <div
-        className="p-3 rounded-lg text-xs"
-        style={{ background: '#f8f4f7', color: '#6b6478' }}
-      >
-        <strong style={{ color: '#612a4f' }}>Test card:</strong> 4242 4242 4242 4242 • Any future date • Any 3 digits
-      </div>
 
       <div className="flex items-center gap-3">
         <button
