@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface StripePaymentFormProps {
   billingPlan: 'monthly' | 'annual';
@@ -43,6 +44,7 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
 }) => {
   const stripe = useStripe();
   const elements = useElements();
+  const { session } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cardholderName, setCardholderName] = useState(userName || '');
@@ -86,12 +88,7 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
         throw new Error('Payment configuration error: price ID not set. Please contact support.');
       }
 
-      // Get auth token for API requests
-      const sessionResult = await Promise.race([
-        supabase.auth.getSession(),
-        new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Session timeout')), 10000))
-      ]);
-      const { data: { session } } = sessionResult as Awaited<ReturnType<typeof supabase.auth.getSession>>;
+      // Use session from auth context (already loaded, no network call needed)
       if (!session) {
         throw new Error('Not authenticated. Please log in and try again.');
       }
