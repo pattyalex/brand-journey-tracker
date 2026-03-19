@@ -1,3 +1,33 @@
+const https = require('https');
+
+function stripeRequest(path, method, params, key) {
+  return new Promise((resolve, reject) => {
+    const body = new URLSearchParams(params).toString();
+    const options = {
+      hostname: 'api.stripe.com',
+      port: 443,
+      path,
+      method,
+      headers: {
+        'Authorization': `Bearer ${key}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Length': Buffer.byteLength(body),
+      },
+    };
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', (chunk) => { data += chunk; });
+      res.on('end', () => {
+        try { resolve({ status: res.statusCode, body: JSON.parse(data) }); }
+        catch (e) { reject(new Error('Invalid JSON from Stripe')); }
+      });
+    });
+    req.on('error', reject);
+    req.write(body);
+    req.end();
+  });
+}
+
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -11,28 +41,18 @@ module.exports = async function handler(req, res) {
 
   try {
     const { email, name, userId } = req.body;
+    const params = {};
+    if (email) params['email'] = email;
+    if (name) params['name'] = name;
+    if (userId) params['metadata[userId]'] = userId;
 
-    const params = new URLSearchParams();
-    if (email) params.append('email', email);
-    if (name) params.append('name', name);
-    if (userId) params.append('metadata[userId]', userId);
+    const result = await stripeRequest('/v1/customers', 'POST', params, key);
 
-    const response = await fetch('https://api.stripe.com/v1/customers', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${key}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: params.toString(),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      return res.status(500).json({ error: data.error?.message || 'Failed to create customer' });
+    if (result.status !== 200) {
+      return res.status(500).json({ error: result.body.error?.message || 'Failed to create customer' });
     }
 
-    res.json({ customerId: data.id });
+    res.json({ customerId: result.body.id });
   } catch (error) {
     console.error('Error creating customer:', error);
     res.status(500).json({ error: error.message });
