@@ -112,7 +112,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (user) {
         const userOnboardingKey = getOnboardingKey(user.id);
 
-        // Check localStorage first (only trust it if set after onboarding truly completed)
+        // Check localStorage first — trust it, don't clear it
         const storedOnboarding = getString(userOnboardingKey);
         if (storedOnboarding === 'true') {
           console.log('✅ Onboarding already completed (from localStorage) for user:', user.id);
@@ -120,8 +120,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setCheckingOnboarding(false);
           return;
         }
-        // Clear any stale localStorage value so we re-check DB
-        localStorage.removeItem(userOnboardingKey);
 
         console.log('🔍 Checking onboarding status for user:', user.id);
 
