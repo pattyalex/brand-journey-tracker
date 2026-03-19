@@ -1,5 +1,3 @@
-const Stripe = require('stripe');
-
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -12,12 +10,25 @@ module.exports = async function handler(req, res) {
   if (!key) return res.status(500).json({ error: 'Stripe secret key not configured' });
 
   try {
-    const stripe = new Stripe(key, { apiVersion: '2023-10-16' });
     const { paymentMethodId, customerId } = req.body;
 
-    await stripe.paymentMethods.attach(paymentMethodId, {
-      customer: customerId,
+    const params = new URLSearchParams();
+    params.append('customer', customerId);
+
+    const response = await fetch(`https://api.stripe.com/v1/payment_methods/${paymentMethodId}/attach`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${key}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: params.toString(),
     });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return res.status(500).json({ error: data.error?.message || 'Failed to attach payment method' });
+    }
 
     res.json({ success: true });
   } catch (error) {

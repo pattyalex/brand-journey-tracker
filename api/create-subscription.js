@@ -1,5 +1,3 @@
-const Stripe = require('stripe');
-
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -12,22 +10,45 @@ module.exports = async function handler(req, res) {
   if (!key) return res.status(500).json({ error: 'Stripe secret key not configured' });
 
   try {
-    const stripe = new Stripe(key, { apiVersion: '2023-10-16' });
     const { customerId, priceId, paymentMethodId, trialPeriodDays = 14 } = req.body;
 
-    await stripe.customers.update(customerId, {
-      invoice_settings: { default_payment_method: paymentMethodId },
+    // Set default payment method on customer
+    const updateParams = new URLSearchParams();
+    updateParams.append('invoice_settings[default_payment_method]', paymentMethodId);
+
+    await fetch(`https://api.stripe.com/v1/customers/${customerId}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${key}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: updateParams.toString(),
     });
 
-    const subscription = await stripe.subscriptions.create({
-      customer: customerId,
-      items: [{ price: priceId }],
-      default_payment_method: paymentMethodId,
-      trial_period_days: trialPeriodDays,
-      expand: ['latest_invoice.payment_intent'],
+    // Create subscription
+    const subParams = new URLSearchParams();
+    subParams.append('customer', customerId);
+    subParams.append('items[0][price]', priceId);
+    subParams.append('default_payment_method', paymentMethodId);
+    subParams.append('trial_period_days', String(trialPeriodDays));
+    subParams.append('expand[]', 'latest_invoice.payment_intent');
+
+    const response = await fetch('https://api.stripe.com/v1/subscriptions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${key}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: subParams.toString(),
     });
 
-    res.json({ subscription });
+    const data = await response.json();
+
+    if (!response.ok) {
+      return res.status(500).json({ error: data.error?.message || 'Failed to create subscription' });
+    }
+
+    res.json({ subscription: data });
   } catch (error) {
     console.error('Error creating subscription:', error);
     res.status(500).json({ error: error.message });

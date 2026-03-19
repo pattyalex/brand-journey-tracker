@@ -1,5 +1,3 @@
-const Stripe = require('stripe');
-
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -12,16 +10,29 @@ module.exports = async function handler(req, res) {
   if (!key) return res.status(500).json({ error: 'Stripe secret key not configured' });
 
   try {
-    const stripe = new Stripe(key, { apiVersion: '2023-10-16' });
     const { email, name, userId } = req.body;
 
-    const customer = await stripe.customers.create({
-      email,
-      name,
-      metadata: { userId: userId || '' },
+    const params = new URLSearchParams();
+    if (email) params.append('email', email);
+    if (name) params.append('name', name);
+    if (userId) params.append('metadata[userId]', userId);
+
+    const response = await fetch('https://api.stripe.com/v1/customers', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${key}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: params.toString(),
     });
 
-    res.json({ customerId: customer.id });
+    const data = await response.json();
+
+    if (!response.ok) {
+      return res.status(500).json({ error: data.error?.message || 'Failed to create customer' });
+    }
+
+    res.json({ customerId: data.id });
   } catch (error) {
     console.error('Error creating customer:', error);
     res.status(500).json({ error: error.message });
