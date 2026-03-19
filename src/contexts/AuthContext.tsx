@@ -154,13 +154,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       checkOnboardingStatus();
     }
 
-    // Timeout fallback
+    // Timeout fallback — if DB is slow, let authenticated users through
     const timeout = setTimeout(() => {
       if (checkingOnboarding) {
-        console.warn('⚠️ Onboarding check timed out, proceeding anyway');
+        console.warn('⚠️ Onboarding check timed out, assuming complete for authenticated user');
+        if (user) setHasCompletedOnboarding(true);
         setCheckingOnboarding(false);
       }
-    }, 3000);
+    }, 5000);
 
     return () => clearTimeout(timeout);
   }, [user, isAuthLoaded]);
