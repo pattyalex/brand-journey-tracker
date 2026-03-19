@@ -1,4 +1,4 @@
-const https = require('https');
+import https from 'https';
 
 function stripeRequest(path, method, params, key) {
   return new Promise((resolve, reject) => {
@@ -28,7 +28,7 @@ function stripeRequest(path, method, params, key) {
   });
 }
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -58,4 +58,4 @@ module.exports = async function handler(req, res) {
     console.error('Error attaching payment method:', error);
     res.status(500).json({ error: error.message });
   }
-};
+}

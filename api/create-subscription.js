@@ -1,4 +1,4 @@
-const https = require('https');
+import https from 'https';
 
 function stripeRequest(path, method, params, key) {
   return new Promise((resolve, reject) => {
@@ -28,7 +28,7 @@ function stripeRequest(path, method, params, key) {
   });
 }
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -42,7 +42,6 @@ module.exports = async function handler(req, res) {
   try {
     const { customerId, priceId, paymentMethodId, trialPeriodDays = 14 } = req.body;
 
-    // Set default payment method on customer
     await stripeRequest(
       `/v1/customers/${customerId}`,
       'POST',
@@ -50,7 +49,6 @@ module.exports = async function handler(req, res) {
       key
     );
 
-    // Create subscription
     const result = await stripeRequest('/v1/subscriptions', 'POST', {
       'customer': customerId,
       'items[0][price]': priceId,
@@ -68,4 +66,4 @@ module.exports = async function handler(req, res) {
     console.error('Error creating subscription:', error);
     res.status(500).json({ error: error.message });
   }
-};
+}
