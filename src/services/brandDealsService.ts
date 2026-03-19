@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { fetchAll, fetchOne, createOne, updateOne, deleteOne } from './baseService';
 
 /**
  * Brand Deals Service
@@ -202,6 +203,36 @@ const dbToDeliverable = (dbDel: DbDeliverable): Deliverable => {
 };
 
 // =====================================================
+// Helper: fetch deliverables for an array of deal IDs
+// =====================================================
+const fetchDeliverablesForDeals = async (
+  dealIds: string[]
+): Promise<Record<string, Deliverable[]>> => {
+  if (dealIds.length === 0) return {};
+
+  const { data: deliverables, error } = await supabase
+    .from('brand_deal_deliverables')
+    .select('*')
+    .in('brand_deal_id', dealIds)
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching deliverables:', error);
+    throw error;
+  }
+
+  const deliverablesByDeal: Record<string, Deliverable[]> = {};
+  (deliverables || []).forEach(del => {
+    if (!deliverablesByDeal[del.brand_deal_id]) {
+      deliverablesByDeal[del.brand_deal_id] = [];
+    }
+    deliverablesByDeal[del.brand_deal_id].push(dbToDeliverable(del as DbDeliverable));
+  });
+
+  return deliverablesByDeal;
+};
+
+// =====================================================
 // Brand Deals CRUD Operations
 // =====================================================
 
@@ -214,16 +245,7 @@ export const createBrandDeal = async (
   const dbDeal = brandDealToDb(userId, dealWithoutDeliverables);
 
   // Insert the deal
-  const { data: insertedDeal, error: dealError } = await supabase
-    .from('brand_deals')
-    .insert([dbDeal])
-    .select()
-    .single();
-
-  if (dealError) {
-    console.error('Error creating brand deal:', dealError);
-    throw dealError;
-  }
+  const insertedDeal = await createOne<DbBrandDeal>('brand_deals', dbDeal);
 
   // Insert deliverables if any
   let insertedDeliverables: Deliverable[] = [];
@@ -243,85 +265,37 @@ export const createBrandDeal = async (
     insertedDeliverables = (delData || []).map(dbToDeliverable);
   }
 
-  return dbToBrandDeal(insertedDeal as DbBrandDeal, insertedDeliverables);
+  return dbToBrandDeal(insertedDeal, insertedDeliverables);
 };
 
 // Get all brand deals for a user with their deliverables
 export const getUserBrandDeals = async (userId: string): Promise<BrandDeal[]> => {
-  // Fetch deals
-  const { data: deals, error: dealsError } = await supabase
-    .from('brand_deals')
-    .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false });
-
-  if (dealsError) {
-    console.error('Error fetching brand deals:', dealsError);
-    throw dealsError;
-  }
-
-  if (!deals || deals.length === 0) {
-    return [];
-  }
-
-  // Fetch all deliverables for these deals
-  const dealIds = deals.map(d => d.id);
-  const { data: deliverables, error: delError } = await supabase
-    .from('brand_deal_deliverables')
-    .select('*')
-    .in('brand_deal_id', dealIds)
-    .order('created_at', { ascending: true });
-
-  if (delError) {
-    console.error('Error fetching deliverables:', delError);
-    throw delError;
-  }
-
-  // Group deliverables by deal
-  const deliverablesByDeal: Record<string, Deliverable[]> = {};
-  (deliverables || []).forEach(del => {
-    if (!deliverablesByDeal[del.brand_deal_id]) {
-      deliverablesByDeal[del.brand_deal_id] = [];
-    }
-    deliverablesByDeal[del.brand_deal_id].push(dbToDeliverable(del as DbDeliverable));
+  const deals = await fetchAll<DbBrandDeal>('brand_deals', {
+    userId,
+    orderBy: 'created_at',
+    ascending: false,
   });
 
-  // Combine deals with their deliverables
-  return deals.map(deal => dbToBrandDeal(deal as DbBrandDeal, deliverablesByDeal[deal.id] || []));
+  if (deals.length === 0) return [];
+
+  const deliverablesByDeal = await fetchDeliverablesForDeals(deals.map(d => d.id));
+  return deals.map(deal => dbToBrandDeal(deal, deliverablesByDeal[deal.id] || []));
 };
 
 // Get a single brand deal by ID
 export const getBrandDealById = async (dealId: string): Promise<BrandDeal | null> => {
-  const { data: deal, error: dealError } = await supabase
-    .from('brand_deals')
-    .select('*')
-    .eq('id', dealId)
-    .single();
+  const deal = await fetchOne<DbBrandDeal>('brand_deals', dealId);
 
-  if (dealError) {
-    if (dealError.code === 'PGRST116') {
-      return null; // Not found
-    }
-    console.error('Error fetching brand deal:', dealError);
-    throw dealError;
-  }
+  if (!deal) return null;
 
   // Fetch deliverables
-  const { data: deliverables, error: delError } = await supabase
-    .from('brand_deal_deliverables')
-    .select('*')
-    .eq('brand_deal_id', dealId)
-    .order('created_at', { ascending: true });
+  const deliverables = await fetchAll<DbDeliverable>('brand_deal_deliverables', {
+    orderBy: 'created_at',
+    ascending: true,
+    filters: { brand_deal_id: dealId },
+  });
 
-  if (delError) {
-    console.error('Error fetching deliverables:', delError);
-    throw delError;
-  }
-
-  return dbToBrandDeal(
-    deal as DbBrandDeal,
-    (deliverables || []).map(del => dbToDeliverable(del as DbDeliverable))
-  );
+  return dbToBrandDeal(deal, deliverables.map(dbToDeliverable));
 };
 
 // Update a brand deal (without deliverables - those are updated separately)
@@ -353,29 +327,16 @@ export const updateBrandDeal = async (
   if (updates.isArchived !== undefined) dbUpdates.is_archived = updates.isArchived;
   if (updates.archivedAt !== undefined) dbUpdates.archived_at = updates.archivedAt;
 
-  const { data: updatedDeal, error } = await supabase
-    .from('brand_deals')
-    .update(dbUpdates)
-    .eq('id', dealId)
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error updating brand deal:', error);
-    throw error;
-  }
+  const updatedDeal = await updateOne<DbBrandDeal>('brand_deals', dealId, dbUpdates);
 
   // Fetch current deliverables
-  const { data: deliverables } = await supabase
-    .from('brand_deal_deliverables')
-    .select('*')
-    .eq('brand_deal_id', dealId)
-    .order('created_at', { ascending: true });
+  const deliverables = await fetchAll<DbDeliverable>('brand_deal_deliverables', {
+    orderBy: 'created_at',
+    ascending: true,
+    filters: { brand_deal_id: dealId },
+  });
 
-  return dbToBrandDeal(
-    updatedDeal as DbBrandDeal,
-    (deliverables || []).map(del => dbToDeliverable(del as DbDeliverable))
-  );
+  return dbToBrandDeal(updatedDeal, deliverables.map(dbToDeliverable));
 };
 
 // Update a brand deal with its deliverables (full update)
@@ -429,15 +390,7 @@ export const updateBrandDealWithDeliverables = async (
 
 // Delete a brand deal (deliverables are cascade deleted)
 export const deleteBrandDeal = async (dealId: string): Promise<void> => {
-  const { error } = await supabase
-    .from('brand_deals')
-    .delete()
-    .eq('id', dealId);
-
-  if (error) {
-    console.error('Error deleting brand deal:', error);
-    throw error;
-  }
+  await deleteOne('brand_deals', dealId);
 };
 
 // Archive a brand deal
@@ -466,19 +419,8 @@ export const addDeliverable = async (
   deliverable: Omit<Deliverable, 'id'>
 ): Promise<Deliverable> => {
   const dbDeliverable = deliverableToDb(brandDealId, deliverable);
-
-  const { data, error } = await supabase
-    .from('brand_deal_deliverables')
-    .insert([dbDeliverable])
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error adding deliverable:', error);
-    throw error;
-  }
-
-  return dbToDeliverable(data as DbDeliverable);
+  const data = await createOne<DbDeliverable>('brand_deal_deliverables', dbDeliverable);
+  return dbToDeliverable(data);
 };
 
 // Update a deliverable
@@ -501,39 +443,20 @@ export const updateDeliverable = async (
   if (updates.paymentAmount !== undefined) dbUpdates.payment_amount = updates.paymentAmount;
   if (updates.paidDate !== undefined) dbUpdates.paid_date = updates.paidDate;
 
-  const { data, error } = await supabase
-    .from('brand_deal_deliverables')
-    .update(dbUpdates)
-    .eq('id', deliverableId)
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error updating deliverable:', error);
-    throw error;
-  }
-
-  return dbToDeliverable(data as DbDeliverable);
+  const data = await updateOne<DbDeliverable>('brand_deal_deliverables', deliverableId, dbUpdates);
+  return dbToDeliverable(data);
 };
 
 // Delete a deliverable
 export const deleteDeliverable = async (deliverableId: string): Promise<void> => {
-  const { error } = await supabase
-    .from('brand_deal_deliverables')
-    .delete()
-    .eq('id', deliverableId);
-
-  if (error) {
-    console.error('Error deleting deliverable:', error);
-    throw error;
-  }
+  await deleteOne('brand_deal_deliverables', deliverableId);
 };
 
 // =====================================================
 // Query Helpers
 // =====================================================
 
-// Get active deals (not archived, status is signed or in-progress)
+// Get active deals (not archived, status is signed or in-progress) - uses .in(), keep raw
 export const getActiveBrandDeals = async (userId: string): Promise<BrandDeal[]> => {
   const { data: deals, error } = await supabase
     .from('brand_deals')
@@ -548,97 +471,40 @@ export const getActiveBrandDeals = async (userId: string): Promise<BrandDeal[]> 
     throw error;
   }
 
-  if (!deals || deals.length === 0) {
-    return [];
-  }
+  if (!deals || deals.length === 0) return [];
 
-  // Fetch deliverables
-  const dealIds = deals.map(d => d.id);
-  const { data: deliverables } = await supabase
-    .from('brand_deal_deliverables')
-    .select('*')
-    .in('brand_deal_id', dealIds);
-
-  const deliverablesByDeal: Record<string, Deliverable[]> = {};
-  (deliverables || []).forEach(del => {
-    if (!deliverablesByDeal[del.brand_deal_id]) {
-      deliverablesByDeal[del.brand_deal_id] = [];
-    }
-    deliverablesByDeal[del.brand_deal_id].push(dbToDeliverable(del as DbDeliverable));
-  });
-
+  const deliverablesByDeal = await fetchDeliverablesForDeals(deals.map(d => d.id));
   return deals.map(deal => dbToBrandDeal(deal as DbBrandDeal, deliverablesByDeal[deal.id] || []));
 };
 
 // Get archived deals
 export const getArchivedBrandDeals = async (userId: string): Promise<BrandDeal[]> => {
-  const { data: deals, error } = await supabase
-    .from('brand_deals')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('is_archived', true)
-    .order('archived_at', { ascending: false });
-
-  if (error) {
-    console.error('Error fetching archived deals:', error);
-    throw error;
-  }
-
-  if (!deals || deals.length === 0) {
-    return [];
-  }
-
-  const dealIds = deals.map(d => d.id);
-  const { data: deliverables } = await supabase
-    .from('brand_deal_deliverables')
-    .select('*')
-    .in('brand_deal_id', dealIds);
-
-  const deliverablesByDeal: Record<string, Deliverable[]> = {};
-  (deliverables || []).forEach(del => {
-    if (!deliverablesByDeal[del.brand_deal_id]) {
-      deliverablesByDeal[del.brand_deal_id] = [];
-    }
-    deliverablesByDeal[del.brand_deal_id].push(dbToDeliverable(del as DbDeliverable));
+  const deals = await fetchAll<DbBrandDeal>('brand_deals', {
+    userId,
+    orderBy: 'archived_at',
+    ascending: false,
+    filters: { is_archived: true },
   });
 
-  return deals.map(deal => dbToBrandDeal(deal as DbBrandDeal, deliverablesByDeal[deal.id] || []));
+  if (deals.length === 0) return [];
+
+  const deliverablesByDeal = await fetchDeliverablesForDeals(deals.map(d => d.id));
+  return deals.map(deal => dbToBrandDeal(deal, deliverablesByDeal[deal.id] || []));
 };
 
 // Get deals by status
 export const getBrandDealsByStatus = async (userId: string, status: DealStatus): Promise<BrandDeal[]> => {
-  const { data: deals, error } = await supabase
-    .from('brand_deals')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('status', status)
-    .eq('is_archived', false)
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    console.error('Error fetching deals by status:', error);
-    throw error;
-  }
-
-  if (!deals || deals.length === 0) {
-    return [];
-  }
-
-  const dealIds = deals.map(d => d.id);
-  const { data: deliverables } = await supabase
-    .from('brand_deal_deliverables')
-    .select('*')
-    .in('brand_deal_id', dealIds);
-
-  const deliverablesByDeal: Record<string, Deliverable[]> = {};
-  (deliverables || []).forEach(del => {
-    if (!deliverablesByDeal[del.brand_deal_id]) {
-      deliverablesByDeal[del.brand_deal_id] = [];
-    }
-    deliverablesByDeal[del.brand_deal_id].push(dbToDeliverable(del as DbDeliverable));
+  const deals = await fetchAll<DbBrandDeal>('brand_deals', {
+    userId,
+    orderBy: 'created_at',
+    ascending: false,
+    filters: { status, is_archived: false },
   });
 
-  return deals.map(deal => dbToBrandDeal(deal as DbBrandDeal, deliverablesByDeal[deal.id] || []));
+  if (deals.length === 0) return [];
+
+  const deliverablesByDeal = await fetchDeliverablesForDeals(deals.map(d => d.id));
+  return deals.map(deal => dbToBrandDeal(deal, deliverablesByDeal[deal.id] || []));
 };
 
 // =====================================================

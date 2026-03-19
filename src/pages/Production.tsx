@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import { callClaudeForJSON } from "@/services/claudeService";
 import Layout from "@/components/Layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,7 +11,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { StorageKeys, getString, setString, remove } from "@/lib/storage";
-import { EVENTS, emit, on } from "@/lib/events";
+import { EVENTS, on } from "@/lib/events";
+import { useAuth } from "@/contexts/AuthContext";
+import { useProductionBoard } from "./production/hooks/useProductionBoard";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -57,29 +60,13 @@ import ArchiveDialog from "./production/components/ArchiveDialog";
 import MobileContentView from "./production/components/MobileContentView";
 import MobileCardEditor from "./production/components/MobileCardEditor";
 import MobileStoryboardView from "./production/components/MobileStoryboardView";
-import { columnColors, cardColors, defaultColumns, columnAccentColors, columnIcons, emptyStateIcons } from "./production/utils/productionConstants";
+import { columnColors, cardColors, columnAccentColors, columnIcons, emptyStateIcons } from "./production/utils/productionConstants";
 import { getFormatColors, getPlatformColors } from "./production/utils/productionHelpers";
 import { useSidebar } from "@/components/ui/sidebar";
+import { ProductionProvider } from "@/contexts/ProductionContext";
+import KanbanColumnComponent from "./production/components/KanbanColumn";
 
-// Icon component mapping for column headers
-const columnHeaderIcons: Record<string, React.FC<{ className?: string; style?: React.CSSProperties }>> = {
-  ideate: Lightbulb,
-  "shape-ideas": PenLine,
-  "to-film": Clapperboard,
-  "to-edit": Scissors,
-  "to-schedule": CalendarDays,
-  posted: Archive,
-};
-
-// Icon component mapping for empty states (can differ from headers)
-const emptyStateIconComponents: Record<string, React.FC<{ className?: string; style?: React.CSSProperties }>> = {
-  ideate: Lightbulb,
-  "shape-ideas": PenLine,
-  "to-film": Video,
-  "to-edit": Scissors,
-  "to-schedule": CalendarDays,
-  posted: Archive,
-};
+// columnHeaderIcons and emptyStateIconComponents moved to KanbanColumn.tsx
 
 // Wrapper component to access sidebar state inside Layout context
 const KanbanContainer: React.FC<{
@@ -105,93 +92,14 @@ const KanbanContainer: React.FC<{
   );
 };
 
-// Platform icon helper - returns icon component for each platform
-const getPlatformIcon = (platform: string): React.ReactNode => {
-  const lowercased = platform.toLowerCase();
-  const iconClass = "w-3.5 h-3.5 text-[#8B7082]";
+// getPlatformIcon moved to ProductionCardItem.tsx
 
-  if (lowercased.includes("youtube")) {
-    return <SiYoutube className={iconClass} />;
-  }
-  if (lowercased.includes("tiktok") || lowercased === "tt") {
-    return <SiTiktok className={iconClass} />;
-  }
-  if (lowercased.includes("instagram") || lowercased === "ig") {
-    return <SiInstagram className={iconClass} />;
-  }
-  if (lowercased.includes("facebook")) {
-    return <SiFacebook className={iconClass} />;
-  }
-  if (lowercased.includes("linkedin")) {
-    return <SiLinkedin className={iconClass} />;
-  }
-  if (lowercased === "x" || lowercased.includes("twitter") || lowercased.includes("x.com") || lowercased.includes("x /")) {
-    return <RiTwitterXLine className={iconClass} />;
-  }
-  if (lowercased.includes("threads")) {
-    return <RiThreadsLine className={iconClass} />;
-  }
-  return null;
-};
-
-const InlineCardInput: React.FC<{
-  onSave: (title: string) => void;
-  onCancel: () => void;
-}> = ({ onSave, onCancel }) => {
-  const [value, setValue] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      onSave(value);
-    } else if (e.key === "Escape") {
-      onCancel();
-    }
-  };
-
-  return (
-    <div className="bg-white/80 backdrop-blur-sm p-2 rounded-lg border border-[#8B7082] shadow-md">
-      <input
-        ref={inputRef}
-        type="text"
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        onKeyDown={handleKeyDown}
-        onBlur={() => onSave(value)}
-        placeholder="Enter a title"
-        className="w-full bg-transparent border-none outline-none text-sm text-gray-900 placeholder:text-gray-400"
-      />
-    </div>
-  );
-};
-
-// Initialize columns from localStorage to prevent flash
-const getInitialColumns = (): KanbanColumn[] => {
-  const savedData = getString(StorageKeys.productionKanban);
-  if (savedData) {
-    try {
-      const savedColumns = JSON.parse(savedData);
-      return defaultColumns.map(defaultCol => {
-        const savedCol = savedColumns.find((sc: KanbanColumn) => sc.id === defaultCol.id);
-        return {
-          ...defaultCol,
-          cards: savedCol?.cards || [],
-        };
-      });
-    } catch (error) {
-      console.error("Failed to load production data:", error);
-    }
-  }
-  return defaultColumns;
-};
+// InlineCardInput moved to production/components/InlineCardInput.tsx
 
 const Production = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   // Mobile detection
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -201,13 +109,79 @@ const Production = () => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+  // Helper to scroll to and highlight a column
   const columnRefs = useRef<Map<string, HTMLDivElement>>(new Map());
-  const [columns, setColumns] = useState<KanbanColumn[]>(getInitialColumns);
-  const [draggedCard, setDraggedCard] = useState<ProductionCard | null>(null);
-  const [dropIndicator, setDropIndicator] = useState<{ columnId: string; index: number } | null>(null);
-  const [draggedOverColumn, setDraggedOverColumn] = useState<string | null>(null);
-  const [draggedOverCardId, setDraggedOverCardId] = useState<string | null>(null);
-  const [dropPosition, setDropPosition] = useState<{ columnId: string; index: number } | null>(null);
+  const [highlightedColumn, setHighlightedColumn] = useState<string | null>(null);
+  const [recentlyRepurposedCardId, setRecentlyRepurposedCardId] = useState<string | null>(null);
+  const [planningCardId, setPlanningCardId] = useState<string | null>(null);
+
+  const scrollToAndHighlightColumn = (columnId: string) => {
+    const columnElement = columnRefs.current.get(columnId);
+    if (columnElement) {
+      columnElement.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      setHighlightedColumn(columnId);
+      setTimeout(() => setHighlightedColumn(null), 2000);
+    }
+  };
+
+  // Schedule expanded view state
+  const [isScheduleColumnExpanded, setIsScheduleColumnExpanded] = useState(false);
+  const [schedulingCard, setSchedulingCard] = useState<ProductionCard | null>(null);
+
+  // ── Production Board Hook ─────────────────────────────────────────────
+  const board = useProductionBoard(
+    { userId: user?.id },
+    {
+      onRepurposedCardHighlight: (cardId) => {
+        setRecentlyRepurposedCardId(cardId);
+        setTimeout(() => setRecentlyRepurposedCardId(null), 5000);
+      },
+      scrollToAndHighlightColumn,
+      onPlanningCardClear: () => {
+        setPlanningCardId(null);
+      },
+      navigate,
+      onScheduleColumnExpandedChange: (expanded) => setIsScheduleColumnExpanded(expanded),
+      onSchedulingCardClear: () => setSchedulingCard(null),
+    }
+  );
+
+  // Destructure for local use (preserves existing references throughout the file)
+  const {
+    columns, setColumns,
+    archivedCards, setArchivedCards,
+    lastArchivedCard, setLastArchivedCard,
+    isArchiveDialogOpen, setIsArchiveDialogOpen,
+    draggedCard, setDraggedCard,
+    dropIndicator, setDropIndicator,
+    draggedOverColumn, setDraggedOverColumn,
+    draggedOverCardId, setDraggedOverCardId,
+    dropPosition, setDropPosition,
+    isDraggingRef,
+    showPlannedToScheduledDialog, setShowPlannedToScheduledDialog,
+    pendingScheduleMove, setPendingScheduleMove,
+    deletedCardRef,
+    handleAddCard: handleAddCardFromHook,
+    handleUpdateCard: handleUpdateCardFromHook,
+    handleDeleteCard,
+    handleToggleComplete,
+    handleTogglePin,
+    handleSetPlannedDate,
+    handleScheduleContent,
+    handleUnscheduleContent,
+    handleUpdateScheduledColor,
+    handleDeleteArchivedContent,
+    handleRepurposeContent,
+    handleRestoreContent,
+    handleDragStart,
+    handleDragEnd,
+    handleCardDragOver,
+    handleDragOver,
+    handleDragLeave,
+    handleDrop,
+    handlePlannedToScheduledChoice,
+  } = board;
+
   const [isAddCardDialogOpen, setIsAddCardDialogOpen] = useState(false);
   const [selectedColumnId, setSelectedColumnId] = useState<string>("");
   const [newCardTitle, setNewCardTitle] = useState("");
@@ -217,10 +191,8 @@ const Production = () => {
   const [editingCardId, setEditingCardId] = useState<string | null>(null);
   const [editTrigger, setEditTrigger] = useState<'click' | 'doubleclick' | null>(null);
   const [clickPosition, setClickPosition] = useState<number | null>(null);
-  const [highlightedColumn, setHighlightedColumn] = useState<string | null>(null);
   const editInputRef = useRef<HTMLInputElement>(null);
   const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const isDraggingRef = useRef<boolean>(false);
   const textRefs = useRef<Map<string, HTMLElement>>(new Map());
   const horizontalScrollRef = useRef<HTMLDivElement>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -268,10 +240,6 @@ const Production = () => {
   const [isEditChecklistDialogOpen, setIsEditChecklistDialogOpen] = useState(false);
   const [editingEditCard, setEditingEditCard] = useState<ProductionCard | null>(null);
 
-  // Schedule expanded view state
-  const [isScheduleColumnExpanded, setIsScheduleColumnExpanded] = useState(false);
-  const [schedulingCard, setSchedulingCard] = useState<ProductionCard | null>(null);
-
   // Unified Content Flow Dialog state (for seamless transitions between steps)
   const [activeContentFlowStep, setActiveContentFlowStep] = useState<number | null>(null);
   const [contentFlowCard, setContentFlowCard] = useState<ProductionCard | null>(null);
@@ -286,42 +254,14 @@ const Production = () => {
   const [slides, setSlides] = useState<ImageSlide[]>([]);
   const [imageMode, setImageMode] = useState<'image' | 'carousel'>('image');
 
-  // Archive state - load from localStorage
-  const [archivedCards, setArchivedCards] = useState<ProductionCard[]>(() => {
-    const saved = getString(StorageKeys.archivedContent);
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch {
-        return [];
-      }
-    }
-    return [];
-  });
-  const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false);
-  const [lastArchivedCard, setLastArchivedCard] = useState<{ card: ProductionCard; sourceColumnId: string } | null>(null);
   const [brainDumpSuggestion, setBrainDumpSuggestion] = useState<string>("");
-
 
   // Highlighted unscheduled card state
   const [highlightedUnscheduledCardId, setHighlightedUnscheduledCardId] = useState<string | null>(null);
 
-  // Recently repurposed card highlight
-  const [recentlyRepurposedCardId, setRecentlyRepurposedCardId] = useState<string | null>(null);
-
-  // Planned to scheduled conversion dialog state
-  const [showPlannedToScheduledDialog, setShowPlannedToScheduledDialog] = useState(false);
-  const [pendingScheduleMove, setPendingScheduleMove] = useState<{
-    card: ProductionCard;
-    dropPosition: { columnId: string; index: number };
-    sourceColumnId: string;
-  } | null>(null);
-
-    const [showBrainDumpSuggestion, setShowBrainDumpSuggestion] = useState(false);
+  const [showBrainDumpSuggestion, setShowBrainDumpSuggestion] = useState(false);
   const [cardTitle, setCardTitle] = useState("");
 
-  // Planning state for Ideate cards
-  const [planningCardId, setPlanningCardId] = useState<string | null>(null);
   const [cardHook, setCardHook] = useState("");
   const [scriptContent, setScriptContent] = useState("");
   const [platformTags, setPlatformTags] = useState<string[]>([]);
@@ -349,7 +289,6 @@ const Production = () => {
   const outfitInputRef = useRef<HTMLTextAreaElement>(null);
   const propsInputRef = useRef<HTMLTextAreaElement>(null);
   const notesInputRef = useRef<HTMLTextAreaElement>(null);
-  const deletedCardRef = useRef<{ card: ProductionCard; columnId: string; index: number } | null>(null);
   const [addedAngleText, setAddedAngleText] = useState<string | null>(null);
   const [bankIdeas, setBankIdeas] = useState<Array<{ id: string; text: string; isPlaceholder?: boolean }>>([]);
   const [newBankIdeaText, setNewBankIdeaText] = useState("");
@@ -406,26 +345,8 @@ const Production = () => {
 
   // Helper function to generate sub-categories using Claude API
   const generateSubCategoriesWithAI = async (pillarName: string): Promise<string[]> => {
-    const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
-
-    if (!apiKey) {
-      console.warn("AI service unavailable");
-      return [];
-    }
-
-    try {
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": apiKey,
-          "anthropic-version": "2023-06-01",
-          "anthropic-dangerous-direct-browser-access": "true"
-        },
-        body: JSON.stringify({
-          model: "claude-3-5-haiku-20241022",
-          max_tokens: 300,
-          system: `Generate sub-categories for content pillars.
+    const result = await callClaudeForJSON<string[]>({
+      system: `Generate sub-categories for content pillars.
 
 STRICT RULES:
 - Each sub-category MUST be 1-2 words ONLY
@@ -440,67 +361,26 @@ WRONG FORMAT (DO NOT DO THIS):
 ["How I raised money", "My leadership journey", "Hiring mistakes I made"]
 
 Return ONLY a JSON array.`,
-          messages: [{
-            role: "user",
-            content: `Content pillar: "${pillarName}"
+      messages: [{
+        role: "user",
+        content: `Content pillar: "${pillarName}"
 
 Generate 5-7 sub-categories. Each must be 1-2 words only (like folder names).
 
 Example: For "Fitness" → ["Workouts", "Nutrition", "Recovery", "Mindset", "Equipment"]
 
 Return JSON array only.`
-          }]
-        })
-      });
+      }],
+      maxTokens: 300,
+    }, "array");
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        console.error("Claude API error:", data);
-        return [];
-      }
-
-      // Parse the response - Claude should return a JSON array
-      const responseText = data.content[0].text.trim();
-      try {
-        // Try to extract JSON array from the response
-        const jsonMatch = responseText.match(/\[[\s\S]*\]/);
-        if (jsonMatch) {
-          return JSON.parse(jsonMatch[0]);
-        }
-        return [];
-      } catch (parseError) {
-        console.error("Error parsing sub-categories:", parseError);
-        return [];
-      }
-    } catch (error) {
-      console.error("Error calling Claude API for sub-categories:", error);
-      return [];
-    }
+    return result.ok && result.data ? result.data : [];
   };
 
   // Helper function to generate content ideas using Claude API
   const generateContentIdeasWithAI = async (pillarName: string, subCategory: string): Promise<string[]> => {
-    const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
-
-    if (!apiKey) {
-      console.warn("AI service unavailable");
-      return [];
-    }
-
-    try {
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": apiKey,
-          "anthropic-version": "2023-06-01",
-          "anthropic-dangerous-direct-browser-access": "true"
-        },
-        body: JSON.stringify({
-          model: "claude-3-5-haiku-20241022",
-          max_tokens: 600,
-          system: `You are a content strategist helping creators generate scroll-stopping content ideas.
+    const result = await callClaudeForJSON<string[]>({
+      system: `You are a content strategist helping creators generate scroll-stopping content ideas.
 
 BEFORE generating, think:
 - What personal story could a creator tell about this topic?
@@ -519,53 +399,23 @@ RULES:
 - Keep titles concise (under 15 words)
 
 Return ONLY a JSON array of 10 strings, nothing else.`,
-          messages: [{
-            role: "user",
-            content: `Generate 10 content ideas for a creator focused on "${pillarName}", specifically about "${subCategory}".
+      messages: [{
+        role: "user",
+        content: `Generate 10 content ideas for a creator focused on "${pillarName}", specifically about "${subCategory}".
 
 Create ideas that feel personal and specific - like real stories a creator would tell, not generic advice anyone could give. Think: vulnerable moments, specific realizations, relatable struggles, surprising perspectives.
 
 Return only a JSON array of strings.`
-          }]
-        })
-      });
+      }],
+      maxTokens: 600,
+    }, "array");
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        console.error("Claude API error:", data);
-        return [];
-      }
-
-      const responseText = data.content[0].text.trim();
-      try {
-        const jsonMatch = responseText.match(/\[[\s\S]*\]/);
-        if (jsonMatch) {
-          return JSON.parse(jsonMatch[0]);
-        }
-        return [];
-      } catch (parseError) {
-        console.error("Error parsing content ideas:", parseError);
-        return [];
-      }
-    } catch (error) {
-      console.error("Error calling Claude API for content ideas:", error);
-      return [];
-    }
+    return result.ok && result.data ? result.data : [];
   };
 
   // Helper function to generate content angles using Claude API
   const generateAnglesWithAI = async (ideaText: string, count: number = 10, options?: { direction?: string; alreadyGenerated?: string[] }): Promise<string[]> => {
-    const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
-
-    if (!apiKey) {
-      console.warn("AI service unavailable");
-      return [];
-    }
-
-    try {
-      // Build system prompt with direction if provided
-      let systemPrompt = `You are a creative content strategist helping creators find unique, SPECIFIC angles for their content.
+    const systemPrompt = `You are a creative content strategist helping creators find unique, SPECIFIC angles for their content.
 
 BEFORE generating hooks, first analyze what the user wrote:
 1. What specific emotions are they expressing? (not just "lonely" but WHY they felt lonely)
@@ -588,62 +438,27 @@ RULES:
 
 Return ONLY a JSON array of strings, nothing else.`;
 
-      // Build user message
-      let userMessage = `The creator shared this idea: "${ideaText}"
+    let userMessage = `The creator shared this idea: "${ideaText}"
 
 Generate ${count} highly specific content angles. Each hook should feel like it could ONLY come from this person's unique experience. Don't create generic hooks - create ones that reference the specific emotions, situations, or insights they mentioned.`;
 
-      if (options?.direction) {
-        userMessage += `\n\n⚠️ CRITICAL INSTRUCTION FROM THE CREATOR — YOU MUST FOLLOW THIS:\n${options.direction}\n\nThis is the creator's feedback on the previous batch of ideas. You MUST adapt your output to match exactly what they're asking for. If they say shorter, make them SHORT. If they say funnier, make them FUNNY. Their direction overrides the default rules above.`;
-      }
-
-      if (options?.alreadyGenerated && options.alreadyGenerated.length > 0) {
-        userMessage += `\n\nAlready generated (do NOT repeat these, create completely different ones): ${options.alreadyGenerated.join(" | ")}`;
-      }
-
-      userMessage += `\n\nReturn only a JSON array of ${count} strings.`;
-
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": apiKey,
-          "anthropic-version": "2023-06-01",
-          "anthropic-dangerous-direct-browser-access": "true"
-        },
-        body: JSON.stringify({
-          model: "claude-3-5-haiku-20241022",
-          max_tokens: 800,
-          system: systemPrompt,
-          messages: [{
-            role: "user",
-            content: userMessage
-          }]
-        })
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        console.error("Claude API error:", data);
-        return [];
-      }
-
-      const responseText = data.content[0].text.trim();
-      try {
-        const jsonMatch = responseText.match(/\[[\s\S]*\]/);
-        if (jsonMatch) {
-          return JSON.parse(jsonMatch[0]);
-        }
-        return [];
-      } catch (parseError) {
-        console.error("Error parsing angles:", parseError);
-        return [];
-      }
-    } catch (error) {
-      console.error("Error calling Claude API for angles:", error);
-      return [];
+    if (options?.direction) {
+      userMessage += `\n\n⚠️ CRITICAL INSTRUCTION FROM THE CREATOR — YOU MUST FOLLOW THIS:\n${options.direction}\n\nThis is the creator's feedback on the previous batch of ideas. You MUST adapt your output to match exactly what they're asking for. If they say shorter, make them SHORT. If they say funnier, make them FUNNY. Their direction overrides the default rules above.`;
     }
+
+    if (options?.alreadyGenerated && options.alreadyGenerated.length > 0) {
+      userMessage += `\n\nAlready generated (do NOT repeat these, create completely different ones): ${options.alreadyGenerated.join(" | ")}`;
+    }
+
+    userMessage += `\n\nReturn only a JSON array of ${count} strings.`;
+
+    const result = await callClaudeForJSON<string[]>({
+      system: systemPrompt,
+      messages: [{ role: "user", content: userMessage }],
+      maxTokens: 800,
+    }, "array");
+
+    return result.ok && result.data ? result.data : [];
   };
 
   // Re-process embeds when content changes
@@ -681,13 +496,6 @@ Generate ${count} highly specific content angles. Each hook should feel like it 
     { title: "Question-Based", example: "Why does no one talk about…?", why: "engagement" },
   ];
 
-  // Initialize drag states to null
-  useEffect(() => {
-    setDraggedCard(null);
-    setDropPosition(null);
-    setDraggedOverColumn(null);
-  }, []);
-
   // Check for highlighted unscheduled card and show it
   useEffect(() => {
     const highlightedCardId = getString(StorageKeys.highlightedUnscheduledCard);
@@ -703,35 +511,6 @@ Generate ${count} highly specific content angles. Each hook should feel like it 
     }
   }, []);
 
-  // Auto-hide undo archive button after 8 seconds
-  useEffect(() => {
-    if (lastArchivedCard) {
-      const timer = setTimeout(() => {
-        setLastArchivedCard(null);
-      }, 8000);
-      return () => clearTimeout(timer);
-    }
-  }, [lastArchivedCard]);
-
-  // Listen for openArchiveDialog event from toast notifications
-  useEffect(() => {
-    const cleanup = on(window, EVENTS.openArchiveDialog, () => {
-      setIsArchiveDialogOpen(true);
-    });
-    return cleanup;
-  }, []);
-
-  // Listen for contentArchived event from calendar views
-  useEffect(() => {
-    const cleanup = on(window, EVENTS.contentArchived, (event) => {
-      const { card } = event.detail || {};
-      if (card) {
-        setArchivedCards((prev) => [card, ...prev]);
-      }
-    });
-    return cleanup;
-  }, []);
-
   // Listen for openBatchSchedule event from schedule dialog
   useEffect(() => {
     const cleanup = on(window, EVENTS.OPEN_BATCH_SCHEDULE, () => {
@@ -741,52 +520,6 @@ Generate ${count} highly specific content angles. Each hook should feel like it 
     });
     return cleanup;
   }, []);
-
-  // Save archived cards to localStorage when they change
-  useEffect(() => {
-    setString(StorageKeys.archivedContent, JSON.stringify(archivedCards));
-  }, [archivedCards]);
-
-  // Clear drop indicators when drag ends
-  useEffect(() => {
-    if (!draggedCard) {
-      setDropPosition(null);
-      setDraggedOverColumn(null);
-      isDraggingRef.current = false;
-    }
-  }, [draggedCard]);
-
-  // Global dragend and mouseup listeners as safety net
-  useEffect(() => {
-    const clearDragState = () => {
-      if (isDraggingRef.current) {
-        isDraggingRef.current = false;
-        setDraggedCard(null);
-        setDropPosition(null);
-        setDraggedOverColumn(null);
-      }
-    };
-
-    document.addEventListener('dragend', clearDragState);
-    document.addEventListener('mouseup', clearDragState);
-    document.addEventListener('drop', clearDragState);
-
-    return () => {
-      document.removeEventListener('dragend', clearDragState);
-      document.removeEventListener('mouseup', clearDragState);
-      document.removeEventListener('drop', clearDragState);
-    };
-  }, []);
-
-  // Helper to scroll to and highlight a column
-  const scrollToAndHighlightColumn = (columnId: string) => {
-    const columnElement = columnRefs.current.get(columnId);
-    if (columnElement) {
-      columnElement.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-      setHighlightedColumn(columnId);
-      setTimeout(() => setHighlightedColumn(null), 2000);
-    }
-  };
 
   // Handle scrolling to specific column from URL parameter
   useEffect(() => {
@@ -823,64 +556,6 @@ Generate ${count} highly specific content angles. Each hook should feel like it 
       setString(StorageKeys.bankOfIdeas, JSON.stringify(bankIdeas));
     }
   }, [bankIdeas]);
-
-  // Data is now loaded in getInitialColumns() to prevent flash
-
-  // Save data to localStorage whenever columns change
-  useEffect(() => {
-    setString(StorageKeys.productionKanban, JSON.stringify(columns));
-    // Emit event so other pages (like Dashboard) can update
-    emit(window, EVENTS.productionKanbanUpdated, columns);
-  }, [columns]);
-
-  // Listen for column updates from other components (like ExpandedScheduleView calendar)
-  useEffect(() => {
-    const cleanup = on(window, EVENTS.productionKanbanUpdated, (event) => {
-      // Only reload if the event came from a different source (like calendar)
-      if (event.detail?.source === 'calendar') {
-        const savedData = getString(StorageKeys.productionKanban);
-        if (savedData) {
-          try {
-            const savedColumns = JSON.parse(savedData);
-            setColumns(defaultColumns.map(defaultCol => {
-              const savedCol = savedColumns.find((sc: KanbanColumn) => sc.id === defaultCol.id);
-              return {
-                ...defaultCol,
-                cards: savedCol?.cards || [],
-              };
-            }));
-          } catch (error) {
-            console.error("Failed to reload production data:", error);
-          }
-        }
-      }
-    });
-    return cleanup;
-  }, []);
-
-  // Clean up any cards with empty titles or missing IDs
-  useEffect(() => {
-    const hasInvalidCards = columns.some(col =>
-      col.cards.some(card => !card.id || !card.title || !card.title.trim())
-    );
-
-    if (hasInvalidCards) {
-      setColumns(prev =>
-        prev.map(col => ({
-          ...col,
-          cards: col.cards.filter(card => card.id && card.title && card.title.trim()),
-        }))
-      );
-    }
-  }, []);
-
-  // Clear drop position when drag ends (safety net)
-  useEffect(() => {
-    if (!draggedCard && dropPosition) {
-      setDropPosition(null);
-      setDraggedOverColumn(null);
-    }
-  }, [draggedCard, dropPosition]);
 
   // Remove isNew flag after closing content ideation dialogs and viewing cards
   useEffect(() => {
@@ -992,253 +667,12 @@ Generate ${count} highly specific content angles. Each hook should feel like it 
     }
   };
 
-  const handleDragStart = (e: React.DragEvent, card: ProductionCard) => {
-    isDraggingRef.current = true;
-    setDraggedCard(card);
-    e.dataTransfer.effectAllowed = "move";
-  };
+  // Drag-drop, card CRUD, archive, and scheduling handlers are in useProductionBoard hook
 
-  const handleDragEnd = () => {
-    isDraggingRef.current = false;
-    setDraggedCard(null);
-    setDraggedOverColumn(null);
-    setDropPosition(null);
-    setDropIndicator(null);
-  };
 
-  const handleCardDragOver = (e: React.DragEvent, columnId: string, cardIndex: number) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    // Check ref first (synchronous) to prevent late events after drop
-    if (!isDraggingRef.current || !draggedCard) return;
-
-    const rect = e.currentTarget.getBoundingClientRect();
-    const midpoint = rect.top + rect.height / 2;
-    const insertIndex = e.clientY < midpoint ? cardIndex : cardIndex + 1;
-
-    // Only update state if position actually changed
-    if (dropPosition?.columnId !== columnId || dropPosition?.index !== insertIndex) {
-      setDropPosition({ columnId, index: insertIndex });
-      setDraggedOverColumn(columnId);
-    }
-  };
-
-  const handleDragOver = (e: React.DragEvent, columnId: string) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
-
-    // Check ref first (synchronous) to prevent late events after drop
-    if (!isDraggingRef.current || !draggedCard) return;
-
-    setDraggedOverColumn(columnId);
-
-    // Handle archive zone specially (not a real column)
-    if (columnId === "posted") {
-      setDropPosition({ columnId: "posted", index: 0 });
-      return;
-    }
-
-    // If dragging over empty space in column, set position to end
-    const column = columns.find(col => col.id === columnId);
-    if (column) {
-      const validCards = column.cards.filter(c => c.title && c.title.trim());
-      setDropPosition({ columnId, index: validCards.length });
-    }
-  };
-
-  const handleDragLeave = () => {
-    setDraggedOverColumn(null);
-    setDropPosition(null);
-  };
-
-  const handleDrop = (e: React.DragEvent, targetColumnId: string) => {
-    e.preventDefault();
-
-    // Immediately mark drag as ended (synchronous)
-    isDraggingRef.current = false;
-
-    // Always clear drop indicators immediately
-    setDropPosition(null);
-    setDraggedOverColumn(null);
-
-    if (!draggedCard || !dropPosition) {
-      setDraggedCard(null);
-      return;
-    }
-
-    // Save the drop position before clearing state
-    const savedDropPosition = { ...dropPosition };
-    const actualTargetColumnId = savedDropPosition.columnId;
-
-    const sourceColumn = columns.find((col) =>
-      col.cards.some((card) => card.id === draggedCard.id)
-    );
-    const sourceColumnId = sourceColumn?.id;
-
-    if (!sourceColumn) {
-      setDraggedCard(null);
-      return;
-    }
-
-    // Prevent moving cards back to Ideate from other columns
-    if (actualTargetColumnId === "ideate" && sourceColumnId !== "ideate") {
-      toast.error("Content cannot be moved back to Ideation", {
-        description: "Once content moves forward in your workflow, it stays on that path. Start fresh with a new idea instead.",
-      });
-      setDraggedCard(null);
-      return;
-    }
-
-    // Check if moving a card with planned date to "to-schedule" column
-    if (actualTargetColumnId === "to-schedule" && draggedCard.plannedDate && sourceColumnId !== "to-schedule") {
-      // Store the pending move and show the dialog
-      setPendingScheduleMove({
-        card: draggedCard,
-        dropPosition: savedDropPosition,
-        sourceColumnId: sourceColumnId,
-      });
-      setShowPlannedToScheduledDialog(true);
-      setDraggedCard(null);
-      return;
-    }
-
-    // Handle archiving when dropped on Posted column
-    if (actualTargetColumnId === "posted") {
-      const cardToArchive = {
-        ...draggedCard,
-        columnId: "posted",
-        isPinned: false,
-        archivedAt: new Date().toISOString()
-      };
-
-      // Store for undo
-      const undoInfo = { card: draggedCard, sourceColumnId: sourceColumnId };
-      setLastArchivedCard(undoInfo);
-
-      // Remove from source column
-      setColumns((prev) =>
-        prev.map((col) => ({
-          ...col,
-          cards: col.cards.filter((c) => c.id !== draggedCard.id),
-        }))
-      );
-
-      // Add to archived cards
-      setArchivedCards((prev) => [cardToArchive, ...prev]);
-      setDraggedCard(null);
-      return;
-    }
-
-    const isSameColumn = sourceColumnId === actualTargetColumnId;
-
-    // Create updated columns
-    const updatedColumns = columns.map((column) => {
-      // Get filtered cards for this column
-      const filterCard = (c: ProductionCard) =>
-        c.title && c.title.trim() && !c.title.toLowerCase().includes('add quick idea');
-
-      if (column.id === sourceColumnId && isSameColumn) {
-        // Moving within the same column
-        const filtered = column.cards.filter(filterCard);
-        const draggedIndex = filtered.findIndex((c) => c.id === draggedCard.id);
-
-        if (draggedIndex === -1) return column;
-
-        // Remove dragged card from filtered array
-        const withoutDragged = filtered.filter((c) => c.id !== draggedCard.id);
-
-        // Calculate actual drop index (accounting for removed card)
-        let actualDropIndex = savedDropPosition.index;
-        if (actualDropIndex > draggedIndex) {
-          actualDropIndex--;
-        }
-
-        // Insert at new position
-        withoutDragged.splice(actualDropIndex, 0, { ...draggedCard, columnId: column.id, lastUpdated: new Date().toISOString() });
-
-        return { ...column, cards: withoutDragged };
-      } else if (column.id === sourceColumnId) {
-        // Removing from source column (moving to different column)
-        return {
-          ...column,
-          cards: column.cards.filter((c) => c.id !== draggedCard.id),
-        };
-      } else if (column.id === actualTargetColumnId) {
-        // Adding to target column (from different column)
-        const filtered = column.cards.filter(filterCard);
-        // Auto-set status when moving between columns
-        // Auto-unpin if moving to 'posted' column (finished work shouldn't be on dashboard)
-        let cardToAdd = { ...draggedCard, columnId: column.id, lastUpdated: new Date().toISOString() };
-
-        // Set status to 'to-start' if moving to shape-ideas column and card doesn't already have a status
-        if (column.id === 'shape-ideas' && !draggedCard.status) {
-          cardToAdd = { ...cardToAdd, status: 'to-start' as const };
-        }
-
-        // Auto-set filming status to 'to-start' when moving to 'to-film' column
-        if (column.id === 'to-film') {
-          cardToAdd = { ...cardToAdd, status: 'to-start' as const };
-        }
-
-        if (column.id === 'posted' && draggedCard.isPinned) {
-          cardToAdd = { ...cardToAdd, isPinned: false };
-          toast.info("Auto-unpinned", {
-            description: "Posted content is removed from your dashboard"
-          });
-        }
-
-        // Auto-set editing status to 'to-start-editing' when moving to 'to-edit' column
-        if (column.id === 'to-edit') {
-          cardToAdd = {
-            ...cardToAdd,
-            editingChecklist: {
-              ...cardToAdd.editingChecklist,
-              items: cardToAdd.editingChecklist?.items || [],
-              notes: cardToAdd.editingChecklist?.notes || '',
-              externalLinks: cardToAdd.editingChecklist?.externalLinks || [],
-              status: 'to-start-editing' as const
-            }
-          };
-        }
-
-        // Auto-set scheduling status to 'to-schedule' when moving to 'to-schedule' column
-        if (column.id === 'to-schedule') {
-          cardToAdd = {
-            ...cardToAdd,
-            schedulingStatus: 'to-schedule' as const
-          };
-        }
-        filtered.splice(savedDropPosition.index, 0, cardToAdd);
-        return { ...column, cards: filtered };
-      }
-
-      return column;
-    });
-
-    setColumns(updatedColumns);
-    setDraggedCard(null);
-  };
-
+  // Wrapper: handleAddCard calls hook's handleAddCard and resets local form state
   const handleAddCard = () => {
-    if (!newCardTitle.trim() || !selectedColumnId) return;
-
-    const newCard: ProductionCard = {
-      id: `card-${Date.now()}`,
-      title: newCardTitle,
-      description: newCardDescription,
-      columnId: selectedColumnId,
-    };
-
-    setColumns((prev) =>
-      prev.map((col) =>
-        col.id === selectedColumnId
-          ? { ...col, cards: [...col.cards, newCard] }
-          : col
-      )
-    );
-
-    // Reset form
+    handleAddCardFromHook(newCardTitle, newCardDescription, selectedColumnId);
     setNewCardTitle("");
     setNewCardDescription("");
     setIsAddCardDialogOpen(false);
@@ -1252,210 +686,14 @@ Generate ${count} highly specific content angles. Each hook should feel like it 
     setIsAddCardDialogOpen(true);
   };
 
+  // Wrapper: handleUpdateCard calls hook's handleUpdateCard and resets local form state
   const handleUpdateCard = () => {
-    if (!editingCard || !newCardTitle.trim()) return;
-
-    setColumns((prev) =>
-      prev.map((col) => ({
-        ...col,
-        cards: col.cards.map((card) =>
-          card.id === editingCard.id
-            ? { ...card, title: newCardTitle, description: newCardDescription }
-            : card
-        ),
-      }))
-    );
-
-    // Reset form
+    if (!editingCard) return;
+    handleUpdateCardFromHook(editingCard, newCardTitle, newCardDescription);
     setEditingCard(null);
     setNewCardTitle("");
     setNewCardDescription("");
     setIsAddCardDialogOpen(false);
-  };
-
-  const handleDeleteCard = (cardId: string) => {
-    // Find the card and its position before deleting
-    let deletedCard: ProductionCard | null = null;
-    let deletedColumnId: string | null = null;
-    let deletedIndex: number = -1;
-
-    columns.forEach((col) => {
-      const index = col.cards.findIndex((card) => card.id === cardId);
-      if (index !== -1) {
-        deletedCard = col.cards[index];
-        deletedColumnId = col.id;
-        deletedIndex = index;
-      }
-    });
-
-    if (deletedCard && deletedColumnId !== null) {
-      // Store the deleted card info for potential undo
-      deletedCardRef.current = {
-        card: deletedCard,
-        columnId: deletedColumnId,
-        index: deletedIndex,
-      };
-
-      // Remove the card
-      setColumns((prev) =>
-        prev.map((col) => ({
-          ...col,
-          cards: col.cards.filter((card) => card.id !== cardId),
-        }))
-      );
-
-    }
-  };
-
-  const handleToggleComplete = (cardId: string) => {
-    setColumns((prev) =>
-      prev.map((col) => ({
-        ...col,
-        cards: col.cards.map((card) =>
-          card.id === cardId ? { ...card, isCompleted: !card.isCompleted } : card
-        ),
-      }))
-    );
-  };
-
-  const handleTogglePin = (cardId: string) => {
-    setColumns((prev) => {
-      const newColumns = prev.map((col) => ({
-        ...col,
-        cards: col.cards.map((card) => {
-          if (card.id === cardId) {
-            const newPinnedState = !card.isPinned;
-
-            // Check if trying to pin and already at max
-            if (newPinnedState) {
-              const currentPinnedCount = prev.reduce((count, c) =>
-                count + c.cards.filter(card => card.isPinned).length, 0
-              );
-
-              if (currentPinnedCount >= 5) {
-                toast.error("Maximum reached", {
-                  description: "You can only pin up to 5 content cards"
-                });
-                return card;
-              }
-
-              toast.success("Pinned to dashboard", {
-                description: "This content will appear in 'Next to Work On'",
-                action: {
-                  label: "Go to Dashboard",
-                  onClick: () => navigate("/")
-                }
-              });
-            } else {
-              toast.success("Unpinned", {
-                description: "Content removed from dashboard"
-              });
-            }
-
-            return { ...card, isPinned: newPinnedState };
-          }
-          return card;
-        }),
-      }));
-
-      return newColumns;
-    });
-  };
-
-  // Handler to set planned date for Ideate cards
-  const handleSetPlannedDate = (cardId: string, date: Date | undefined) => {
-    if (!date) {
-      // Clear the planned date
-      setColumns((prev) =>
-        prev.map((col) => ({
-          ...col,
-          cards: col.cards.map((card) =>
-            card.id === cardId
-              ? { ...card, plannedDate: undefined, plannedColor: undefined }
-              : card
-          ),
-        }))
-      );
-      toast.success("Planning removed");
-    } else {
-      // Set the planned date
-      setColumns((prev) =>
-        prev.map((col) => ({
-          ...col,
-          cards: col.cards.map((card) =>
-            card.id === cardId
-              ? { ...card, plannedDate: date.toISOString(), plannedColor: 'violet' as const }
-              : card
-          ),
-        }))
-      );
-      toast.success("Idea planned", {
-        description: `Planned for ${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
-      });
-    }
-    setPlanningCardId(null);
-    setPlanningDate(undefined);
-  };
-
-  // Handle the planned-to-scheduled conversion dialog choice
-  const handlePlannedToScheduledChoice = (useAsScheduled: boolean) => {
-    if (!pendingScheduleMove) return;
-
-    const { card, dropPosition, sourceColumnId } = pendingScheduleMove;
-
-    setColumns((prev) => {
-      return prev.map((column) => {
-        if (column.id === sourceColumnId) {
-          // Remove from source column
-          return {
-            ...column,
-            cards: column.cards.filter((c) => c.id !== card.id),
-          };
-        } else if (column.id === "to-schedule") {
-          // Add to target column with appropriate scheduling
-          const filtered = column.cards.filter(
-            (c) => c.title && c.title.trim() && !c.title.toLowerCase().includes('add quick idea')
-          );
-
-          let cardToAdd: ProductionCard = {
-            ...card,
-            columnId: "to-schedule",
-            schedulingStatus: 'to-schedule' as const,
-          };
-
-          if (useAsScheduled && card.plannedDate) {
-            // Use the planned date as the scheduled date
-            cardToAdd = {
-              ...cardToAdd,
-              scheduledDate: card.plannedDate,
-              schedulingStatus: 'scheduled' as const,
-              plannedDate: undefined,
-              plannedColor: undefined,
-            };
-          } else {
-            // Clear the planned date, let them schedule manually
-            cardToAdd = {
-              ...cardToAdd,
-              plannedDate: undefined,
-              plannedColor: undefined,
-            };
-          }
-
-          filtered.splice(dropPosition.index, 0, cardToAdd);
-          return { ...column, cards: filtered };
-        }
-        return column;
-      });
-    });
-
-    if (useAsScheduled && card.plannedDate) {
-      toast.success("Scheduled!", {
-        description: `Scheduled for ${new Date(card.plannedDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
-      });
-    }
-
-    setShowPlannedToScheduledDialog(false);
-    setPendingScheduleMove(null);
   };
 
   const handleOpenScriptEditor = (card: ProductionCard) => {
@@ -1619,166 +857,6 @@ Generate ${count} highly specific content angles. Each hook should feel like it 
         ),
       }))
     );
-  };
-
-  const handleScheduleContent = (cardId: string, date: Date) => {
-    const dateString = date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
-
-    // Extract time from the date object
-    const hours = date.getHours();
-    const minutes = date.getMinutes();
-    const startTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-
-    // Calculate end time (1 hour later)
-    const endDate = new Date(date);
-    endDate.setHours(endDate.getHours() + 1);
-    const endHours = endDate.getHours();
-    const endMinutes = endDate.getMinutes();
-    const endTime = `${endHours.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}`;
-
-    setColumns((prev) =>
-      prev.map((col) => ({
-        ...col,
-        cards: col.cards.map((card) =>
-          card.id === cardId
-            ? {
-                ...card,
-                schedulingStatus: 'scheduled' as const,
-                scheduledDate: dateString,
-                scheduledStartTime: startTime,
-                scheduledEndTime: endTime,
-              }
-            : card
-        ),
-      }))
-    );
-  };
-
-  const handleUnscheduleContent = (cardId: string) => {
-    setColumns((prev) =>
-      prev.map((col) => ({
-        ...col,
-        cards: col.cards.map((card) =>
-          card.id === cardId
-            ? {
-                ...card,
-                schedulingStatus: 'to-schedule' as const,
-                scheduledDate: undefined,
-                scheduledStartTime: undefined,
-                scheduledEndTime: undefined,
-              }
-            : card
-        ),
-      }))
-    );
-  };
-
-  const handleUpdateScheduledColor = (cardId: string, color: 'indigo' | 'rose' | 'amber' | 'emerald' | 'sky' | 'violet' | 'orange' | 'cyan' | 'sage') => {
-    setColumns((prev) =>
-      prev.map((col) => ({
-        ...col,
-        cards: col.cards.map((card) =>
-          card.id === cardId
-            ? { ...card, scheduledColor: color }
-            : card
-        ),
-      }))
-    );
-  };
-
-  // Repurpose archived content - creates a copy in Ideate
-  const handleRepurposeContent = (card: ProductionCard) => {
-    const newCardId = `card-${Date.now()}`;
-    const repurposedCard: ProductionCard = {
-      id: newCardId,
-      title: card.title,
-      hook: card.hook,
-      script: card.script,
-      platforms: card.platforms,
-      formats: card.formats,
-      customVideoFormats: card.customVideoFormats,
-      customPhotoFormats: card.customPhotoFormats,
-      columnId: 'ideate',
-      status: 'to-start' as const,
-      isCompleted: false,
-    };
-
-    setColumns((prev) =>
-      prev.map((col) =>
-        col.id === 'ideate'
-          ? { ...col, cards: [repurposedCard, ...col.cards] }
-          : col
-      )
-    );
-
-    // Highlight the newly repurposed card
-    setRecentlyRepurposedCardId(newCardId);
-    setTimeout(() => {
-      setRecentlyRepurposedCardId(null);
-    }, 5000); // Clear highlight after 5 seconds
-
-    toast.success("Content repurposed!", {
-      description: (
-        <span>
-          A copy has been added to{" "}
-          <button
-            onClick={() => scrollToAndHighlightColumn('ideate')}
-            className="text-[#8B7082] hover:text-[#6B5062] font-medium underline underline-offset-2"
-          >
-            Bank of Ideas
-          </button>
-        </span>
-      )
-    });
-  };
-
-  const handleRestoreContent = (card: ProductionCard) => {
-    // Remove from archived cards
-    setArchivedCards((prev) => prev.filter((c) => c.id !== card.id));
-
-    // Create restored card for to-schedule column
-    // Clear scheduling properties so it shows as unscheduled in the column
-    const restoredCard: ProductionCard = {
-      ...card,
-      columnId: 'to-schedule',
-      archivedAt: undefined,
-      scheduledDate: undefined,
-      schedulingStatus: 'to-schedule',
-    };
-
-    // Add to to-schedule column
-    setColumns((prev) =>
-      prev.map((col) =>
-        col.id === 'to-schedule'
-          ? { ...col, cards: [restoredCard, ...col.cards] }
-          : col
-      )
-    );
-
-    // Clear the last archived card state if it matches
-    if (lastArchivedCard?.card.id === card.id) {
-      setLastArchivedCard(null);
-    }
-
-    toast.success("Content restored!", {
-      description: (
-        <span>
-          Moved back to{" "}
-          <button
-            onClick={() => scrollToAndHighlightColumn('to-schedule')}
-            className="text-[#8B7082] hover:text-[#6B5062] font-medium underline underline-offset-2"
-          >
-            To Schedule
-          </button>
-        </span>
-      )
-    });
-  };
-
-  // Delete archived content
-  const handleDeleteArchivedContent = (card: ProductionCard) => {
-    // Remove from archived cards
-    setArchivedCards((prev) => prev.filter((c) => c.id !== card.id));
   };
 
   const handleScriptEditorOpenChange = (open: boolean) => {
@@ -2987,850 +2065,44 @@ Generate ${count} highly specific content angles. Each hook should feel like it 
   return (
     <Layout>
       <div className="w-full h-screen flex flex-col pl-5 pr-3 pt-4" style={{ background: 'linear-gradient(180deg, #FAF7F5 0%, #F0EBE8 100%)' }}>
+        <ProductionProvider value={board}>
         <KanbanContainer
           horizontalScrollRef={horizontalScrollRef}
           setScrollProgress={setScrollProgress}
         >
-          {columns.map((column, index) => {
-            const colors = columnColors[column.id];
-            return (
-              <div
-                key={column.id}
-                className="flex-shrink-0 w-[340px]"
-                onDragOver={(e) => handleDragOver(e, column.id)}
-                onDragLeave={handleDragLeave}
-                onDrop={(e) => handleDrop(e, column.id)}
-              >
-                <div
-                  ref={(el) => {
-                    if (el) columnRefs.current.set(column.id, el);
-                  }}
-                  className={cn(
-                    "flex flex-col transition-all duration-300 max-h-[calc(100vh-48px)] rounded-[20px]",
-                    draggedOverColumn === column.id && draggedCard
-                      ? column.id === "ideate" && columns.find(col => col.cards.some(c => c.id === draggedCard.id))?.id !== "ideate"
-                        ? "opacity-60"
-                        : ""
-                      : "",
-                    highlightedColumn === column.id ? "shadow-xl scale-[1.02]" : ""
-                  )}
-                  style={{
-                    ...(draggedOverColumn === column.id && draggedCard && !(column.id === "ideate" && columns.find(col => col.cards.some(c => c.id === draggedCard.id))?.id !== "ideate") ? {
-                      background: 'rgba(139, 112, 130, 0.08)',
-                      boxShadow: '0 0 40px rgba(139, 112, 130, 0.2), inset 0 0 0 1px rgba(139, 112, 130, 0.15)',
-                    } : {}),
-                  }}
-                >
-                  {/* Column Header */}
-                  <div className="flex-shrink-0 px-3 py-2 mb-2">
-                    <div className="flex items-center gap-2">
-                      {/* Column Icon - same color as header text */}
-                      {column.id === 'ideate' && <Lightbulb className="w-5 h-5 text-[#612A4F]" style={{ strokeWidth: 1.5 }} />}
-                      {column.id === 'shape-ideas' && <PenLine className="w-5 h-5 text-[#612A4F]" style={{ strokeWidth: 1.5 }} />}
-                      {column.id === 'to-film' && <Video className="w-5 h-5 text-[#612A4F]" style={{ strokeWidth: 1.5 }} />}
-                      {column.id === 'to-edit' && <Scissors className="w-5 h-5 text-[#612A4F]" style={{ strokeWidth: 1.5 }} />}
-                      {column.id === 'to-schedule' && <CalendarDays className="w-5 h-5 text-[#612A4F]" style={{ strokeWidth: 1.5 }} />}
-                      <h2 className="text-[18px] tracking-[0.02em] text-[#612A4F]" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>
-                        {column.title}
-                      </h2>
-                    </div>
-                  </div>
-
-                      {/* Scrollable Cards Area - beige background */}
-                      {(() => {
-                        const hasCards = column.cards.filter(c => c.title && c.title.trim() && !c.title.toLowerCase().includes('add quick idea')).length > 0;
-                        return (
-                      <div className="flex-1 overflow-y-auto px-3 pt-3 pb-3 space-y-3 hide-scrollbar hover:hide-scrollbar relative rounded-[16px]" style={{ minHeight: 'calc(100vh - 120px)', border: hasCards ? '1.5px solid rgba(180, 168, 175, 0.2)' : '1.5px dashed rgba(180, 168, 175, 0.25)', backgroundColor: hasCards ? 'rgba(255, 252, 250, 0.7)' : 'rgba(255, 255, 255, 0.1)' }}>
-                        {/* Not Allowed Overlay for Ideate Column */}
-                        {column.id === "ideate" && draggedCard && draggedOverColumn === column.id &&
-                         columns.find(col => col.cards.some(c => c.id === draggedCard.id))?.id !== "ideate" && (
-                          <div className="absolute inset-0 bg-red-50/90 backdrop-blur-sm rounded-lg z-20 flex items-center justify-center pointer-events-none">
-                            <div className="text-center px-6">
-                              <div className="text-4xl mb-3">🚫</div>
-                              <p className="text-sm font-semibold text-red-700 mb-1">Cannot Move Back</p>
-                              <p className="text-xs text-red-600">Content flows forward only</p>
-                            </div>
-                          </div>
-                        )}
-                        <AnimatePresence>
-                          {(() => {
-                            // Compute filtered and sorted cards
-                            const filteredSortedCards = column.cards.filter(card => {
-                              // Basic filter: has id, has title, not empty, not add quick idea
-                              const basicFilter = card.id && card.title && card.title.trim() && !card.title.toLowerCase().includes('add quick idea');
-                              // For Ideate column, also filter out calendar-only content (Stories, quick posts)
-                              if (column.id === 'ideate' && card.calendarOnly) {
-                                return false;
-                              }
-                              return basicFilter;
-                            }).sort((a, b) => {
-                              // Sort: pinned first, then unscheduled before scheduled
-                              if (a.isPinned !== b.isPinned) return (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0);
-                              // Then sort scheduled cards to the bottom
-                              if (column.id === 'to-schedule') {
-                                const aScheduled = !!a.scheduledDate;
-                                const bScheduled = !!b.scheduledDate;
-                                if (aScheduled !== bScheduled) return aScheduled ? 1 : -1;
-                              }
-                              return 0;
-                            });
-
-                            // Show empty state if no cards
-                            if (filteredSortedCards.length === 0 && !draggedCard) {
-                              const IconComponent = emptyStateIconComponents[column.id] || Lightbulb;
-
-                              return (
-                                <div className="flex flex-col items-center justify-start pt-3 px-4 h-full min-h-[380px]">
-                                  {/* Icon and text - hidden for ideate when input is showing */}
-                                  {!(column.id === 'ideate' && addingToColumn === 'ideate') && (
-                                    <>
-                                      {/* Icon in rounded square - uses column accent color */}
-                                      <div
-                                        className="w-[56px] h-[56px] rounded-[14px] flex items-center justify-center mb-4"
-                                        style={{ backgroundColor: columnAccentColors[column.id]?.accentBg || 'rgba(139, 112, 130, 0.08)' }}
-                                      >
-                                        <IconComponent
-                                          className="w-5 h-5"
-                                          style={{ color: columnAccentColors[column.id]?.accent || '#8B7082', strokeWidth: 1.5 }}
-                                        />
-                                      </div>
-
-                                      {/* Text content - muted colors, smaller size */}
-                                      <p className="text-[13px] font-medium mb-0.5" style={{ color: '#9B8A8F' }}>
-                                        No items yet
-                                      </p>
-                                      <p className="text-[11px] text-center mb-6" style={{ color: '#B8ACB0' }}>
-                                        {column.id === 'ideate' ? 'Click below to start creating' : 'Drag ideas here or click below'}
-                                      </p>
-                                    </>
-                                  )}
-
-                                  {/* Add new button - dashed border (for non-ideate columns) */}
-                                  {column.id !== 'ideate' && (
-                                  <button
-                                    onClick={() => {
-                                      if (column.id === 'shape-ideas') {
-                                        const newCard: ProductionCard = {
-                                          id: `card-${Date.now()}`,
-                                          title: '',
-                                          columnId: 'shape-ideas',
-                                          isCompleted: false,
-                                        };
-                                        setColumns((prev) =>
-                                          prev.map((col) =>
-                                            col.id === 'shape-ideas' ? { ...col, cards: [...col.cards, newCard] } : col
-                                          )
-                                        );
-                                        handleOpenScriptEditor(newCard);
-                                      } else if (column.id === 'to-film') {
-                                        const newCard: ProductionCard = {
-                                          id: `card-${Date.now()}`,
-                                          title: '',
-                                          columnId: 'to-film',
-                                          isCompleted: false,
-                                        };
-                                        setColumns((prev) =>
-                                          prev.map((col) =>
-                                            col.id === 'to-film' ? { ...col, cards: [...col.cards, newCard] } : col
-                                          )
-                                        );
-                                        handleOpenStoryboard(newCard);
-                                      } else if (column.id === 'to-edit') {
-                                        const newCard: ProductionCard = {
-                                          id: `card-${Date.now()}`,
-                                          title: '',
-                                          columnId: 'to-edit',
-                                          isCompleted: false,
-                                        };
-                                        setColumns((prev) =>
-                                          prev.map((col) =>
-                                            col.id === 'to-edit' ? { ...col, cards: [...col.cards, newCard] } : col
-                                          )
-                                        );
-                                        handleOpenEditChecklist(newCard);
-                                      } else {
-                                        setAddingToColumn(column.id);
-                                      }
-                                    }}
-                                    className="w-full flex items-center justify-center gap-2 py-3 rounded-[12px] text-[13px] font-medium transition-all duration-200"
-                                    style={{
-                                      border: '1.5px dashed rgba(180, 168, 175, 0.5)',
-                                      color: '#9B8A8F',
-                                      backgroundColor: 'transparent',
-                                    }}
-                                    onMouseEnter={(e) => {
-                                      e.currentTarget.style.backgroundColor = 'rgba(139, 122, 130, 0.05)';
-                                    }}
-                                    onMouseLeave={(e) => {
-                                      e.currentTarget.style.backgroundColor = 'transparent';
-                                    }}
-                                  >
-                                    <Plus className="w-3.5 h-3.5" style={{ strokeWidth: 2 }} />
-                                    Add new
-                                  </button>
-                                  )}
-
-                                  {/* Ideate buttons - Add new and Generate with AI */}
-                                  {column.id === 'ideate' && (
-                                    <>
-                                      {/* Inline input when adding - above buttons */}
-                                      {addingToColumn === 'ideate' && (
-                                        <div className="w-full mb-2">
-                                          <InlineCardInput
-                                            onSave={(title) => handleCreateInlineCard('ideate', title)}
-                                            onCancel={handleCancelAddingCard}
-                                          />
-                                        </div>
-                                      )}
-                                      <button
-                                        onClick={() => setAddingToColumn('ideate')}
-                                        className="w-full flex items-center justify-center gap-2 py-3 rounded-[12px] text-[13px] font-medium transition-all duration-200"
-                                        style={{
-                                          border: '1.5px dashed rgba(180, 168, 175, 0.5)',
-                                          color: '#9B8A8F',
-                                          backgroundColor: 'transparent',
-                                        }}
-                                        onMouseEnter={(e) => {
-                                          e.currentTarget.style.backgroundColor = 'rgba(139, 122, 130, 0.05)';
-                                        }}
-                                        onMouseLeave={(e) => {
-                                          e.currentTarget.style.backgroundColor = 'transparent';
-                                        }}
-                                      >
-                                        <Plus className="w-3.5 h-3.5" style={{ strokeWidth: 2 }} />
-                                        Add new
-                                      </button>
-                                      <button
-                                        onClick={() => {
-                                          setSelectedIdeateCard(null);
-                                          setIsIdeateDialogOpen(true);
-                                        }}
-                                        className="w-full flex items-center justify-center gap-2 py-3 rounded-[12px] text-[13px] font-medium transition-all duration-200 mt-2"
-                                        style={{
-                                          backgroundColor: '#8B7082',
-                                          color: 'white',
-                                        }}
-                                        onMouseEnter={(e) => {
-                                          e.currentTarget.style.backgroundColor = '#7A6272';
-                                        }}
-                                        onMouseLeave={(e) => {
-                                          e.currentTarget.style.backgroundColor = '#8B7082';
-                                        }}
-                                      >
-                                        <Zap className="w-3.5 h-3.5" style={{ strokeWidth: 2 }} />
-                                        Generate with AI
-                                      </button>
-                                    </>
-                                  )}
-
-                                  {/* Batch Schedule button - only for to-schedule column */}
-                                  {column.id === 'to-schedule' && (
-                                    <button
-                                      onClick={() => setIsScheduleColumnExpanded(true)}
-                                      className="w-full flex items-center justify-center gap-2 py-3 rounded-[12px] text-[13px] font-medium transition-all duration-200 mt-3"
-                                      style={{
-                                        backgroundColor: '#8B7082',
-                                        color: 'white',
-                                      }}
-                                      onMouseEnter={(e) => {
-                                        e.currentTarget.style.backgroundColor = '#7A6272';
-                                      }}
-                                      onMouseLeave={(e) => {
-                                        e.currentTarget.style.backgroundColor = '#8B7082';
-                                      }}
-                                    >
-                                      <CalendarDays className="w-3.5 h-3.5" style={{ strokeWidth: 2 }} />
-                                      Batch Schedule
-                                    </button>
-                                  )}
-                                </div>
-                              );
-                            }
-
-                            // Render cards
-                            return filteredSortedCards.map((card, cardIndex) => {
-                            const isEditing = editingCardId === card.id;
-
-                            // Find dragged card's current index in this column
-                            const filteredCards = column.cards.filter(c => c.title && c.title.trim() && !c.title.toLowerCase().includes('add quick idea'));
-                            const draggedCardIndex = draggedCard ? filteredCards.findIndex(c => c.id === draggedCard.id) : -1;
-
-                            // Don't show indicator at or adjacent to the dragged card's original position in the same column
-                            const isNearOriginalPosition = draggedCardIndex !== -1 &&
-                                                           dropPosition?.columnId === column.id &&
-                                                           (dropPosition?.index === draggedCardIndex ||
-                                                            dropPosition?.index === draggedCardIndex + 1);
-
-                            const showDropIndicatorBefore = dropPosition?.columnId === column.id &&
-                                                             dropPosition?.index === cardIndex &&
-                                                             !isNearOriginalPosition;
-
-                            const isDragging = draggedCard !== null;
-                            const isThisCardDragged = draggedCard?.id === card.id;
-
-                            return (
-                              <React.Fragment key={card.id || `fallback-${cardIndex}`}>
-                            {/* Drop indicator - only render during active drag */}
-                            {showDropIndicatorBefore && draggedCard && isDraggingRef.current && (
-                              <div className="relative h-0">
-                                <div
-                                  className="absolute inset-x-0 -top-1 h-0.5 rounded-full bg-[#A890B8]"
-                                />
-                              </div>
-                            )}
-
-                            <motion.div
-                              layout={false}
-                              initial={{ opacity: 1 }}
-                              animate={{
-                                opacity: 1,
-                              }}
-                              exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.1 } }}
-                              transition={{
-                                opacity: { duration: 0.05 },
-                              }}
-                              draggable={!isEditing}
-                              onDragStart={(e) => !isEditing && handleDragStart(e, card)}
-                              onDragEnd={handleDragEnd}
-                              onDragOver={(e) => handleCardDragOver(e, column.id, cardIndex)}
-                              onClick={(e) => {
-                                // Open edit modal for Shape Ideas, Ideate, To Film, To Edit, and To Schedule cards on single click (with delay to detect double-click)
-                                if ((column.id === "shape-ideas" || column.id === "ideate" || column.id === "to-film" || column.id === "to-edit" || column.id === "to-schedule") && !isEditing) {
-                                  e.stopPropagation();
-                                  // Clear any existing timeout
-                                  if (clickTimeoutRef.current) {
-                                    clearTimeout(clickTimeoutRef.current);
-                                  }
-                                  // Set timeout to open modal after 250ms (if no double-click happens)
-                                  clickTimeoutRef.current = setTimeout(() => {
-                                    if (column.id === "shape-ideas") {
-                                      handleOpenScriptEditor(card);
-                                    } else if (column.id === "to-film") {
-                                      handleOpenStoryboard(card);
-                                    } else if (column.id === "ideate") {
-                                      handleOpenIdeateCardEditor(card);
-                                    } else if (column.id === "to-edit") {
-                                      handleOpenEditChecklist(card);
-                                    } else if (column.id === "to-schedule") {
-                                      setSchedulingCard(card);
-                                      setIsScheduleColumnExpanded(true);
-                                    }
-                                  }, 250);
-                                }
-                              }}
-                              className={cn(
-                                "group relative",
-                                "rounded-[14px] bg-white",
-                                "shadow-[0_2px_8px_rgba(93,63,90,0.05)]",
-                                "hover:shadow-[0_4px_12px_rgba(93,63,90,0.08)]",
-                                "border border-[rgba(93,63,90,0.06)]",
-                                "hover:-translate-y-[3px]",
-                                "transition-all duration-200",
-                                column.id === "ideate" ? "py-4 px-3" : "p-3",
-                                (column.id === "shape-ideas" || column.id === "ideate" || column.id === "to-film" || column.id === "to-edit" || column.id === "to-schedule") && !isEditing ? "cursor-pointer" : (!isEditing && "cursor-grab active:cursor-grabbing"),
-                                isThisCardDragged ? "opacity-40 scale-[0.98]" : "",
-                                card.isCompleted && "opacity-60",
-                                recentlyRepurposedCardId === card.id && "ring-2 ring-emerald-500 ring-offset-2",
-                                highlightedUnscheduledCardId === card.id && "ring-2 ring-indigo-500 ring-offset-2",
-                                card.isNew && "ring-1 ring-[#8B7082]"
-                              )}
-                            >
-                            {highlightedUnscheduledCardId === card.id && (
-                              <div className="absolute -top-1 -right-1 bg-indigo-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md z-10">
-                                UNSCHEDULED
-                              </div>
-                            )}
-                            {recentlyRepurposedCardId === card.id && (
-                              <div className="absolute -top-1 -right-1 bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md z-10">
-                                REPURPOSED
-                              </div>
-                            )}
-                            {/* Scheduled date indicator for to-schedule column */}
-                            {column.id === 'to-schedule' && card.scheduledDate && (
-                              <div className="flex items-center gap-1 mb-2">
-                                <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg" style={{ backgroundColor: 'rgba(139, 112, 130, 0.08)', border: '1px solid rgba(139, 112, 130, 0.12)' }}>
-                                  <CalendarDays className="w-3 h-3" style={{ color: '#8B7082', strokeWidth: 1.5 }} />
-                                  <span className="text-[11px] font-medium" style={{ color: '#6B5A63' }}>
-                                    Scheduled: {new Date(card.scheduledDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                                  </span>
-                                </div>
-                              </div>
-                            )}
-                            {/* Calendar origin indicator */}
-                            {card.fromCalendar && !card.scheduledDate && (
-                              <div className="flex items-center gap-1 mb-2">
-                                <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg" style={{ backgroundColor: 'rgba(155, 107, 158, 0.08)', border: '1px solid rgba(155, 107, 158, 0.12)' }}>
-                                  <CalendarDays className="w-3 h-3" style={{ color: '#9B6B9E', strokeWidth: 1.5 }} />
-                                  <span className="text-[11px] font-normal" style={{ color: '#7A5A7D' }}>
-                                    {card.plannedDate ? `Planned: ${new Date(card.plannedDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : 'From Calendar'}
-                                  </span>
-                                </div>
-                              </div>
-                            )}
-                            {/* Planned date indicator - clickable to edit */}
-                            {column.id !== "posted" && column.id !== "to-schedule" && !card.fromCalendar && card.plannedDate && (
-                              <div className="flex items-center gap-1 mb-2">
-                                <Popover
-                                  open={planningCardId === card.id}
-                                  onOpenChange={(open) => {
-                                    if (open) {
-                                      setPlanningCardId(card.id);
-                                    } else {
-                                      setPlanningCardId(null);
-                                    }
-                                  }}
-                                >
-                                  <PopoverTrigger asChild>
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                      }}
-                                      className="flex items-center gap-1.5 px-2 py-1 rounded-lg transition-colors cursor-pointer"
-                                      style={{
-                                        backgroundColor: 'rgba(155, 107, 158, 0.08)',
-                                        border: '1px solid rgba(155, 107, 158, 0.12)',
-                                      }}
-                                      onMouseEnter={(e) => {
-                                        e.currentTarget.style.backgroundColor = 'rgba(155, 107, 158, 0.14)';
-                                      }}
-                                      onMouseLeave={(e) => {
-                                        e.currentTarget.style.backgroundColor = 'rgba(155, 107, 158, 0.08)';
-                                      }}
-                                    >
-                                      <CalendarDays className="w-3 h-3" style={{ color: '#9B6B9E', strokeWidth: 1.5 }} />
-                                      <span className="text-[11px] font-normal" style={{ color: '#7A5A7D' }}>
-                                        Planned: {new Date(card.plannedDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                                      </span>
-                                    </button>
-                                  </PopoverTrigger>
-                                  <PopoverContent
-                                    className="w-auto p-0 border-0 shadow-2xl"
-                                    align="center"
-                                    side="right"
-                                    sideOffset={8}
-                                    collisionPadding={16}
-                                    onClick={(e) => e.stopPropagation()}
-                                  >
-                                    <ExpandedScheduleView
-                                      planningMode={true}
-                                      planningCard={card}
-                                      onPlanDate={(cardId, date) => {
-                                        handleSetPlannedDate(cardId, date);
-                                      }}
-                                      onClose={() => setPlanningCardId(null)}
-                                    />
-                                  </PopoverContent>
-                                </Popover>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleSetPlannedDate(card.id, undefined);
-                                  }}
-                                  className="hover:bg-violet-100 rounded p-0.5"
-                                  title="Remove from calendar"
-                                >
-                                  <X className="w-2.5 h-2.5 text-[#A99BA3] hover:text-[#8B7082]" />
-                                </button>
-                              </div>
-                            )}
-                            <div className="flex items-center justify-between gap-2">
-                                {isEditing ? (
-                                  <input
-                                    ref={editInputRef}
-                                    type="text"
-                                    defaultValue={card.hook || card.title}
-                                    autoFocus
-                                    onBlur={(e) => handleSaveCardEdit(card.id, e.target.value)}
-                                    onKeyDown={(e) => {
-                                      if (e.key === "Enter") {
-                                        handleSaveCardEdit(card.id, e.currentTarget.value);
-                                      } else if (e.key === "Escape") {
-                                        setEditingCardId(null);
-                                      }
-                                    }}
-                                    className="flex-1 bg-transparent border-none outline-none text-sm text-gray-900 font-medium"
-                                    onClick={(e) => e.stopPropagation()}
-                                  />
-                                ) : (
-                                  <h3
-                                    ref={(el) => {
-                                      if (el) textRefs.current.set(card.id, el);
-                                    }}
-                                    className="font-medium text-[15px] text-gray-800 break-words leading-[1.4] tracking-[-0.01em] flex-1 cursor-pointer"
-                                    onDoubleClick={(e) => {
-                                      e.stopPropagation();
-                                      // Clear the single-click timeout to prevent modal from opening
-                                      if (clickTimeoutRef.current) {
-                                        clearTimeout(clickTimeoutRef.current);
-                                        clickTimeoutRef.current = null;
-                                      }
-                                      handleStartEditingCard(card.id, column.id, 'doubleclick');
-                                    }}
-                                  >
-                                    {card.hook || card.title}
-                                  </h3>
-                                )}
-                                <div className="flex flex-row gap-2 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-                                  {/* Plan button */}
-                                  {column.id !== "posted" && column.id !== "to-schedule" && !card.plannedDate && (
-                                    <Popover
-                                      open={planningCardId === card.id}
-                                      onOpenChange={(open) => {
-                                        if (open) {
-                                          setPlanningCardId(card.id);
-                                        } else {
-                                          setPlanningCardId(null);
-                                        }
-                                      }}
-                                    >
-                                      <PopoverTrigger asChild>
-                                        <Button
-                                          size="sm"
-                                          variant="ghost"
-                                          className="h-3.5 w-3.5 p-0 rounded hover:bg-violet-50"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                          }}
-                                          title="Plan on calendar"
-                                        >
-                                          <CalendarDays className="h-2.5 w-2.5 text-gray-400 hover:text-violet-600" />
-                                        </Button>
-                                      </PopoverTrigger>
-                                      <PopoverContent
-                                        className="w-auto p-0 border-0 shadow-2xl"
-                                        align="center"
-                                        side="right"
-                                        sideOffset={8}
-                                        collisionPadding={16}
-                                        onClick={(e) => e.stopPropagation()}
-                                      >
-                                        <ExpandedScheduleView
-                                          planningMode={true}
-                                          planningCard={card}
-                                          onPlanDate={(cardId, date) => {
-                                            handleSetPlannedDate(cardId, date);
-                                          }}
-                                          onClose={() => setPlanningCardId(null)}
-                                        />
-                                      </PopoverContent>
-                                    </Popover>
-                                  )}
-                                  {column.id === "shape-ideas" && (
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      className="h-3.5 w-3.5 p-0 rounded hover:bg-blue-50"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleOpenScriptEditor(card);
-                                      }}
-                                    >
-                                      <PenLine className="h-2.5 w-2.5 text-gray-400 hover:text-blue-600" />
-                                    </Button>
-                                  )}
-                                  {column.id === "to-film" && (
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      className="h-3.5 w-3.5 p-0 rounded hover:bg-amber-50"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleOpenStoryboard(card);
-                                      }}
-                                    >
-                                      <Clapperboard className="h-2.5 w-2.5 text-gray-400 hover:text-amber-600" />
-                                    </Button>
-                                  )}
-                                  {column.id === "to-edit" && (
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      className="h-3.5 w-3.5 p-0 rounded hover:bg-rose-50"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleOpenEditChecklist(card);
-                                      }}
-                                    >
-                                      <Scissors className="h-2.5 w-2.5 text-gray-400 hover:text-rose-600" />
-                                    </Button>
-                                  )}
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    className="h-3.5 w-3.5 p-0 rounded hover:bg-red-50"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleDeleteCard(card.id);
-                                    }}
-                                  >
-                                    <Trash2 className="h-2.5 w-2.5 text-gray-400 hover:text-red-600" />
-                                  </Button>
-                                </div>
-                            </div>
-                            {/* Tags for cards with metadata */}
-                            {column.id !== "ideate" && ((card.formats && card.formats.length > 0) || card.contentType === 'image' || card.schedulingStatus || (card.platforms && card.platforms.length > 0)) && (() => {
-                              const formats = card.formats || [];
-                              const hasStatus = false; // Status now shown via badge at top of card
-                              const schedulingStatus = card.schedulingStatus;
-                              const platforms = card.platforms || [];
-                              const hasPlatforms = platforms.length > 0;
-
-                              // Determine which is the last tag row
-                              const lastFormatIndex = hasStatus ? -1 : formats.length - 1;
-
-                              const staticFormats = [
-                                'single photo post',
-                                'curated photo carousel',
-                                'casual photo dump',
-                                'text-only post',
-                                'carousel with text slides',
-                                'notes-app style screenshot',
-                                'tweet-style slide'
-                              ];
-
-                              const renderPlatformIcons = () => (
-                                <div className="flex gap-1.5 items-center flex-wrap flex-shrink-0">
-                                  {platforms.map((platform, idx) => {
-                                    const icon = getPlatformIcon(platform);
-                                    return icon ? (
-                                      <span key={`platform-${idx}`} title={platform}>
-                                        {icon}
-                                      </span>
-                                    ) : null;
-                                  })}
-                                </div>
-                              );
-
-                              return (
-                                <div className="flex flex-col gap-1 mt-2">
-                                  {/* Format tags - all except last if no status */}
-                                  {formats.map((format, idx) => {
-                                    const isStatic = staticFormats.some(sf => format.toLowerCase().includes(sf) || sf.includes(format.toLowerCase()));
-                                    const isLastRow = !hasStatus && idx === formats.length - 1;
-
-                                    if (isLastRow && hasPlatforms) {
-                                      return (
-                                        <div key={`format-${idx}`} className="flex items-center justify-between">
-                                          <span className="inline-flex items-center gap-1 text-[12px] px-2 py-0.5 rounded-full text-gray-500/80 font-normal">
-                                            {isStatic ? <Camera className="w-3 h-3" /> : <Video className="w-3 h-3" />}
-                                            {format}
-                                          </span>
-                                          {renderPlatformIcons()}
-                                        </div>
-                                      );
-                                    }
-
-                                    return (
-                                      <span key={`format-${idx}`} className="inline-flex items-center gap-1 text-[12px] px-2 py-0.5 rounded-full text-gray-500/80 font-normal">
-                                        {isStatic ? <Camera className="w-3 h-3" /> : <Video className="w-3 h-3" />}
-                                        {format}
-                                      </span>
-                                    );
-                                  })}
-                                  {/* Image/Carousel content type label when no format tags */}
-                                  {card.contentType === 'image' && formats.length === 0 && (() => {
-                                    const isCardCarousel = card.imageMode === 'carousel';
-                                    const label = isCardCarousel ? 'Carousel' : 'Image';
-                                    const icon = isCardCarousel ? <Layers className="w-3 h-3" /> : <ImageIcon className="w-3 h-3" />;
-                                    return hasPlatforms ? (
-                                      <div className="flex items-center justify-between">
-                                        <span className="inline-flex items-center gap-1 text-[12px] px-2 py-0.5 rounded-full text-gray-500/80 font-normal">
-                                          {icon}
-                                          {label}
-                                        </span>
-                                        {renderPlatformIcons()}
-                                      </div>
-                                    ) : (
-                                      <span className="inline-flex items-center gap-1 text-[12px] px-2 py-0.5 rounded-full text-gray-500/80 font-normal">
-                                        {icon}
-                                        {label}
-                                      </span>
-                                    );
-                                  })()}
-                                  {/* Status tag - only for scheduling column */}
-                                  {hasStatus && (
-                                    <div className={hasPlatforms ? "flex items-center justify-between" : ""}>
-                                      <span className="inline-flex items-center gap-1 text-[12px] px-2 py-0.5 rounded-full text-gray-500/80 font-normal">
-                                        {(() => {
-                                          const isPublished = schedulingStatus === 'scheduled' && card.scheduledDate && new Date(card.scheduledDate) < new Date(new Date().toDateString());
-                                          return (
-                                            <>
-                                              {schedulingStatus === 'to-schedule' && <CalendarDays className="w-2.5 h-2.5" />}
-                                              {schedulingStatus === 'scheduled' && !isPublished && <Check className="w-2.5 h-2.5" />}
-                                              {isPublished && <PartyPopper className="w-2.5 h-2.5" />}
-                                              {schedulingStatus === 'to-schedule' ? 'To schedule' :
-                                               isPublished ? 'Published' :
-                                               schedulingStatus === 'scheduled' ? 'Scheduled' : ''}
-                                            </>
-                                          );
-                                        })()}
-                                      </span>
-                                      {hasPlatforms && renderPlatformIcons()}
-                                    </div>
-                                  )}
-                                  {/* If only platforms, no formats or status (and not image type, which is handled above) */}
-                                  {!hasStatus && formats.length === 0 && card.contentType !== 'image' && hasPlatforms && (
-                                    <div className="flex items-center justify-end">
-                                      {renderPlatformIcons()}
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            })()}
-                            {/* Just added message at bottom */}
-                            {card.isNew && (
-                              <motion.div
-                                initial={{ opacity: 0, y: 5 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="flex items-center gap-1.5 mt-2 pt-2 border-t border-[#E8E2E5]"
-                              >
-                                <span className="text-[11px] text-[#9B8AB8] font-medium flex items-center gap-1">
-                                  <Sparkles className="w-3 h-3" />
-                                  Just added{card.addedFrom === 'calendar' ? ' from Content Calendar' :
-                                    card.addedFrom === 'quick-idea' ? '' :
-                                    card.addedFrom === 'ai-generated' ? ' via MegAI' :
-                                    card.addedFrom === 'bank-of-ideas' ? ' from Hook Library' :
-                                    card.addedFrom === 'idea-expander' ? ' via Idea Expander' :
-                                    card.addedFrom === 'repurposed' ? ' (repurposed)' : ''}
-                                </span>
-                              </motion.div>
-                            )}
-                          </motion.div>
-                          </React.Fragment>
-                        );
-                      });
-                          })()}
-
-                      {/* Drop indicator at the end of the column - only show during active drag */}
-                      {column.id !== "ideate" && draggedCard && isDraggingRef.current && (() => {
-                        const filteredCards = column.cards.filter(card => card.title && card.title.trim() && !card.title.toLowerCase().includes('add quick idea'));
-                        const draggedCardIndex = filteredCards.findIndex(c => c.id === draggedCard.id);
-                        const isLastCard = draggedCardIndex !== -1 && draggedCardIndex === filteredCards.length - 1;
-                        const shouldShow = dropPosition?.columnId === column.id &&
-                                         dropPosition?.index === filteredCards.length &&
-                                         !isLastCard;
-
-                        if (!shouldShow) return null;
-
-                        return (
-                          <div className="relative h-0">
-                            <div className="absolute inset-x-0 top-0 h-0.5 rounded-full bg-[#A890B8]" />
-                          </div>
-                        );
-                      })()}
-                        </AnimatePresence>
-
-                        {/* Buttons Area - right below cards */}
-                        {column.cards.filter(c => c.title && c.title.trim() && !c.title.toLowerCase().includes('add quick idea')).length > 0 && (
-                          <div className="px-1 pt-2 space-y-2">
-                            {addingToColumn === column.id ? (
-                              <div key={`inline-input-${column.id}`}>
-                                <InlineCardInput
-                                  onSave={(title) => handleCreateInlineCard(column.id, title)}
-                                  onCancel={handleCancelAddingCard}
-                                />
-                              </div>
-                            ) : column.id !== 'to-schedule' ? (
-                              <div
-                                key={`add-button-${column.id}`}
-                                className={cn(
-                                  "group/btn px-4 py-2.5 transition-all duration-200 cursor-pointer active:scale-[0.98]",
-                                  "w-full rounded-xl bg-transparent hover:bg-white/50 hover:-translate-y-0.5"
-                                )}
-                                style={{ border: '1.5px dashed rgba(180, 168, 175, 0.5)' }}
-                                onClick={() => {
-                                  if (column.id === 'shape-ideas') {
-                                    const newCard: ProductionCard = {
-                                      id: `card-${Date.now()}`,
-                                      title: '',
-                                      columnId: 'shape-ideas',
-                                      isCompleted: false,
-                                    };
-                                    setColumns((prev) =>
-                                      prev.map((col) =>
-                                        col.id === 'shape-ideas' ? { ...col, cards: [...col.cards, newCard] } : col
-                                      )
-                                    );
-                                    handleOpenScriptEditor(newCard);
-                                  } else if (column.id === 'to-film') {
-                                    const newCard: ProductionCard = {
-                                      id: `card-${Date.now()}`,
-                                      title: '',
-                                      columnId: 'to-film',
-                                      isCompleted: false,
-                                    };
-                                    setColumns((prev) =>
-                                      prev.map((col) =>
-                                        col.id === 'to-film' ? { ...col, cards: [...col.cards, newCard] } : col
-                                      )
-                                    );
-                                    handleOpenStoryboard(newCard);
-                                  } else if (column.id === 'to-edit') {
-                                    const newCard: ProductionCard = {
-                                      id: `card-${Date.now()}`,
-                                      title: '',
-                                      columnId: 'to-edit',
-                                      isCompleted: false,
-                                    };
-                                    setColumns((prev) =>
-                                      prev.map((col) =>
-                                        col.id === 'to-edit' ? { ...col, cards: [...col.cards, newCard] } : col
-                                      )
-                                    );
-                                    handleOpenEditChecklist(newCard);
-                                  } else {
-                                    handleStartAddingCard(column.id);
-                                  }
-                                }}
-                              >
-                                <div className="flex items-center justify-center gap-2 text-[#8B7082]">
-                                  <Plus className="h-4 w-4 group-hover/btn:rotate-90 transition-transform duration-200" />
-                                  <span className="text-sm font-medium">
-                                    {column.id === 'ideate' ? 'Add quick idea' : 'Add new'}
-                                  </span>
-                                </div>
-                              </div>
-                            ) : null}
-
-                            {/* Batch Schedule button - only for to-schedule column */}
-                            {column.id === 'to-schedule' && (
-                              <div
-                                className="group/btn px-4 py-2.5 rounded-xl transition-all duration-200 cursor-pointer w-full hover:-translate-y-0.5 active:scale-[0.98] bg-[#8B7082] hover:bg-[#7A6272] shadow-sm hover:shadow-md"
-                                onClick={() => setIsScheduleColumnExpanded(true)}
-                              >
-                                <div className="flex items-center justify-center gap-2 text-white">
-                                  <CalendarDays className="h-4 w-4" />
-                                  <span className="text-sm font-semibold">Batch Schedule</span>
-                                </div>
-                              </div>
-                            )}
-
-                            {/* Help me generate ideas button - only for ideate column */}
-                            {column.id === 'ideate' && (
-                              <div className="group/btn px-4 py-2.5 rounded-xl transition-all duration-200 cursor-pointer w-full hover:-translate-y-0.5 active:scale-[0.98] bg-[#8B7082] hover:bg-[#7A6272] shadow-sm hover:shadow-md"
-                                onClick={() => {
-                                  setSelectedIdeateCard(null);
-                                  setIsIdeateDialogOpen(true);
-                                }}
-                              >
-                                <div className="flex items-center justify-center gap-2 text-white">
-                                  <Zap className="h-4 w-4 group-hover/btn:animate-pulse" />
-                                  <div className="flex flex-col">
-                                    <span className="text-xs font-semibold leading-tight">Need inspiration?</span>
-                                    <span className="text-[10px] opacity-80 leading-tight">Brainstorm with MegAI</span>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                        );
-                      })()}
-                </div>
-              </div>
-            );
-          })}
+          {columns.map((column, index) => (
+            <KanbanColumnComponent
+              key={column.id}
+              column={column}
+              index={index}
+              highlightedColumn={highlightedColumn}
+              recentlyRepurposedCardId={recentlyRepurposedCardId}
+              highlightedUnscheduledCardId={highlightedUnscheduledCardId}
+              planningCardId={planningCardId}
+              editingCardId={editingCardId}
+              addingToColumn={addingToColumn}
+              columnRefs={columnRefs}
+              editInputRef={editInputRef}
+              clickTimeoutRef={clickTimeoutRef}
+              textRefs={textRefs}
+              handleOpenScriptEditor={handleOpenScriptEditor}
+              handleOpenStoryboard={handleOpenStoryboard}
+              handleOpenIdeateCardEditor={handleOpenIdeateCardEditor}
+              handleOpenEditChecklist={handleOpenEditChecklist}
+              handleStartEditingCard={handleStartEditingCard}
+              handleSaveCardEdit={handleSaveCardEdit}
+              handleCreateInlineCard={handleCreateInlineCard}
+              handleStartAddingCard={handleStartAddingCard}
+              handleCancelAddingCard={handleCancelAddingCard}
+              setEditingCardId={setEditingCardId}
+              setPlanningCardId={setPlanningCardId}
+              setSchedulingCard={setSchedulingCard}
+              setIsScheduleColumnExpanded={setIsScheduleColumnExpanded}
+              setSelectedIdeateCard={setSelectedIdeateCard}
+              setIsIdeateDialogOpen={setIsIdeateDialogOpen}
+              setAddingToColumn={setAddingToColumn}
+            />
+          ))}
 
           {/* Collapsible Archive Side Panel - inside KanbanContainer */}
           <div
@@ -3922,6 +2194,7 @@ Generate ${count} highly specific content angles. Each hook should feel like it 
             </div>
           </div>
         </KanbanContainer>
+        </ProductionProvider>
 
         {/* Invisible scroll area at bottom - enables horizontal scroll when cursor is here */}
         <div

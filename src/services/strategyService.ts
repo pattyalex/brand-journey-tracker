@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { fetchAll, createOne, updateOne, deleteOne, createMany, fetchOneBy, updateOneBy } from './baseService';
 
 /**
  * Strategy Service
@@ -7,10 +7,11 @@ import { supabase } from '@/lib/supabase';
 
 // TypeScript Interfaces
 export type GoalType = 'monthly' | 'short-term' | 'long-term';
-export type GoalStatus = 'not-started' | 'in-progress' | 'completed';
+export type GoalStatus = 'not-started' | 'somewhat-done' | 'great-progress' | 'in-progress' | 'completed';
 
 export interface Goal {
   id: string;
+  goalType: GoalType;
   text: string;
   status: GoalStatus;
   progressNote?: string;
@@ -35,6 +36,7 @@ export interface UserStrategy {
   visionBoardData: {
     images: VisionBoardImage[];
     pinterestUrl: string;
+    threeYearVision?: string;
   };
   strategyNotes: string;
   strategyNoteLinks: { url: string; title: string }[];
@@ -55,6 +57,7 @@ interface DbUserStrategy {
   vision_board_data: {
     images: VisionBoardImage[];
     pinterestUrl: string;
+    threeYearVision?: string;
   } | null;
   strategy_notes: string | null;
   strategy_note_links: { url: string; title: string }[] | null;
@@ -95,6 +98,7 @@ const dbToUserStrategy = (db: DbUserStrategy): UserStrategy => ({
 
 const dbToGoal = (db: DbUserGoal): Goal => ({
   id: db.id,
+  goalType: db.goal_type as GoalType,
   text: db.text,
   status: (db.status || 'not-started') as GoalStatus,
   progressNote: db.progress_note || undefined,
@@ -109,47 +113,28 @@ const dbToGoal = (db: DbUserGoal): Goal => ({
 
 // Get or create user strategy
 export const getUserStrategy = async (userId: string): Promise<UserStrategy> => {
-  const { data, error } = await supabase
-    .from('user_strategy')
-    .select('*')
-    .eq('user_id', userId)
-    .single();
+  const data = await fetchOneBy<DbUserStrategy>('user_strategy', 'user_id', userId);
 
-  if (error) {
-    if (error.code === 'PGRST116') {
-      // Not found, create default
-      return createUserStrategy(userId);
-    }
-    console.error('Error fetching user strategy:', error);
-    throw error;
+  if (!data) {
+    return createUserStrategy(userId);
   }
 
-  return dbToUserStrategy(data as DbUserStrategy);
+  return dbToUserStrategy(data);
 };
 
 // Create user strategy
 export const createUserStrategy = async (userId: string): Promise<UserStrategy> => {
-  const { data, error } = await supabase
-    .from('user_strategy')
-    .insert([{
-      user_id: userId,
-      brand_values: [],
-      mission_statement: '',
-      content_values: '',
-      vision_board_data: { images: [], pinterestUrl: '' },
-      strategy_notes: '',
-      strategy_note_links: [],
-      strategy_note_files: [],
-    }])
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error creating user strategy:', error);
-    throw error;
-  }
-
-  return dbToUserStrategy(data as DbUserStrategy);
+  const data = await createOne<DbUserStrategy>('user_strategy', {
+    user_id: userId,
+    brand_values: [],
+    mission_statement: '',
+    content_values: '',
+    vision_board_data: { images: [], pinterestUrl: '' },
+    strategy_notes: '',
+    strategy_note_links: [],
+    strategy_note_files: [],
+  });
+  return dbToUserStrategy(data);
 };
 
 // Update user strategy
@@ -167,19 +152,8 @@ export const updateUserStrategy = async (
   if (updates.strategyNoteLinks !== undefined) dbUpdates.strategy_note_links = updates.strategyNoteLinks;
   if (updates.strategyNoteFiles !== undefined) dbUpdates.strategy_note_files = updates.strategyNoteFiles;
 
-  const { data, error } = await supabase
-    .from('user_strategy')
-    .update(dbUpdates)
-    .eq('user_id', userId)
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error updating user strategy:', error);
-    throw error;
-  }
-
-  return dbToUserStrategy(data as DbUserStrategy);
+  const data = await updateOneBy<DbUserStrategy>('user_strategy', 'user_id', userId, dbUpdates);
+  return dbToUserStrategy(data);
 };
 
 // =====================================================
@@ -188,35 +162,23 @@ export const updateUserStrategy = async (
 
 // Get all goals for a user
 export const getUserGoals = async (userId: string): Promise<Goal[]> => {
-  const { data, error } = await supabase
-    .from('user_goals')
-    .select('*')
-    .eq('user_id', userId)
-    .order('display_order', { ascending: true });
-
-  if (error) {
-    console.error('Error fetching user goals:', error);
-    throw error;
-  }
-
-  return (data || []).map(g => dbToGoal(g as DbUserGoal));
+  const data = await fetchAll<DbUserGoal>('user_goals', {
+    userId,
+    orderBy: 'display_order',
+    ascending: true,
+  });
+  return data.map(dbToGoal);
 };
 
 // Get goals by type
 export const getGoalsByType = async (userId: string, goalType: GoalType): Promise<Goal[]> => {
-  const { data, error } = await supabase
-    .from('user_goals')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('goal_type', goalType)
-    .order('display_order', { ascending: true });
-
-  if (error) {
-    console.error('Error fetching goals by type:', error);
-    throw error;
-  }
-
-  return (data || []).map(g => dbToGoal(g as DbUserGoal));
+  const data = await fetchAll<DbUserGoal>('user_goals', {
+    userId,
+    orderBy: 'display_order',
+    ascending: true,
+    filters: { goal_type: goalType },
+  });
+  return data.map(dbToGoal);
 };
 
 // Get monthly goals for a specific year/month
@@ -225,21 +187,13 @@ export const getMonthlyGoals = async (
   year: number,
   month: number
 ): Promise<Goal[]> => {
-  const { data, error } = await supabase
-    .from('user_goals')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('goal_type', 'monthly')
-    .eq('year', year)
-    .eq('month', month)
-    .order('display_order', { ascending: true });
-
-  if (error) {
-    console.error('Error fetching monthly goals:', error);
-    throw error;
-  }
-
-  return (data || []).map(g => dbToGoal(g as DbUserGoal));
+  const data = await fetchAll<DbUserGoal>('user_goals', {
+    userId,
+    orderBy: 'display_order',
+    ascending: true,
+    filters: { goal_type: 'monthly', year, month },
+  });
+  return data.map(dbToGoal);
 };
 
 // Create a goal
@@ -253,26 +207,16 @@ export const createGoal = async (
     displayOrder?: number;
   }
 ): Promise<Goal> => {
-  const { data, error } = await supabase
-    .from('user_goals')
-    .insert([{
-      user_id: userId,
-      goal_type: goalData.goalType,
-      text: goalData.text,
-      year: goalData.year || null,
-      month: goalData.month || null,
-      status: 'not-started',
-      display_order: goalData.displayOrder || 0,
-    }])
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error creating goal:', error);
-    throw error;
-  }
-
-  return dbToGoal(data as DbUserGoal);
+  const data = await createOne<DbUserGoal>('user_goals', {
+    user_id: userId,
+    goal_type: goalData.goalType,
+    text: goalData.text,
+    year: goalData.year || null,
+    month: goalData.month || null,
+    status: 'not-started',
+    display_order: goalData.displayOrder || 0,
+  });
+  return dbToGoal(data);
 };
 
 // Update a goal
@@ -289,32 +233,13 @@ export const updateGoal = async (
   if (updates.year !== undefined) dbUpdates.year = updates.year;
   if (updates.month !== undefined) dbUpdates.month = updates.month;
 
-  const { data, error } = await supabase
-    .from('user_goals')
-    .update(dbUpdates)
-    .eq('id', goalId)
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error updating goal:', error);
-    throw error;
-  }
-
-  return dbToGoal(data as DbUserGoal);
+  const data = await updateOne<DbUserGoal>('user_goals', goalId, dbUpdates);
+  return dbToGoal(data);
 };
 
 // Delete a goal
 export const deleteGoal = async (goalId: string): Promise<void> => {
-  const { error } = await supabase
-    .from('user_goals')
-    .delete()
-    .eq('id', goalId);
-
-  if (error) {
-    console.error('Error deleting goal:', error);
-    throw error;
-  }
+  await deleteOne('user_goals', goalId);
 };
 
 // =====================================================
@@ -347,15 +272,6 @@ export const batchCreateGoals = async (
     display_order: g.displayOrder || 0,
   }));
 
-  const { data, error } = await supabase
-    .from('user_goals')
-    .insert(dbGoals)
-    .select();
-
-  if (error) {
-    console.error('Error batch creating goals:', error);
-    throw error;
-  }
-
-  return (data || []).map(g => dbToGoal(g as DbUserGoal));
+  const data = await createMany<DbUserGoal>('user_goals', dbGoals);
+  return data.map(dbToGoal);
 };

@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { fetchAll, createOne, updateOne, deleteOne, createMany } from './baseService';
 
 /**
  * Collab Service
@@ -145,18 +145,12 @@ const dbToCollabColumn = (db: DbCollabColumn): CollabColumn => ({
 
 // Get all collab brands for a user
 export const getUserCollabBrands = async (userId: string): Promise<CollabBrand[]> => {
-  const { data, error } = await supabase
-    .from('collab_brands')
-    .select('*')
-    .eq('user_id', userId)
-    .order('display_order', { ascending: true });
-
-  if (error) {
-    console.error('Error fetching collab brands:', error);
-    throw error;
-  }
-
-  return (data || []).map(b => dbToCollabBrand(b as DbCollabBrand));
+  const data = await fetchAll<DbCollabBrand>('collab_brands', {
+    userId,
+    orderBy: 'display_order',
+    ascending: true,
+  });
+  return data.map(dbToCollabBrand);
 };
 
 // Create a collab brand
@@ -165,19 +159,8 @@ export const createCollabBrand = async (
   brand: Omit<CollabBrand, 'id'>
 ): Promise<CollabBrand> => {
   const dbBrand = collabBrandToDb(userId, brand);
-
-  const { data, error } = await supabase
-    .from('collab_brands')
-    .insert([dbBrand])
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error creating collab brand:', error);
-    throw error;
-  }
-
-  return dbToCollabBrand(data as DbCollabBrand);
+  const data = await createOne<DbCollabBrand>('collab_brands', dbBrand);
+  return dbToCollabBrand(data);
 };
 
 // Update a collab brand
@@ -203,32 +186,13 @@ export const updateCollabBrand = async (
   if (updates.customData !== undefined) dbUpdates.custom_data = updates.customData;
   if (updates.displayOrder !== undefined) dbUpdates.display_order = updates.displayOrder;
 
-  const { data, error } = await supabase
-    .from('collab_brands')
-    .update(dbUpdates)
-    .eq('id', brandId)
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error updating collab brand:', error);
-    throw error;
-  }
-
-  return dbToCollabBrand(data as DbCollabBrand);
+  const data = await updateOne<DbCollabBrand>('collab_brands', brandId, dbUpdates);
+  return dbToCollabBrand(data);
 };
 
 // Delete a collab brand
 export const deleteCollabBrand = async (brandId: string): Promise<void> => {
-  const { error } = await supabase
-    .from('collab_brands')
-    .delete()
-    .eq('id', brandId);
-
-  if (error) {
-    console.error('Error deleting collab brand:', error);
-    throw error;
-  }
+  await deleteOne('collab_brands', brandId);
 };
 
 // =====================================================
@@ -237,23 +201,18 @@ export const deleteCollabBrand = async (brandId: string): Promise<void> => {
 
 // Get columns for a user (or create defaults)
 export const getUserCollabColumns = async (userId: string): Promise<CollabColumn[]> => {
-  const { data, error } = await supabase
-    .from('collab_columns')
-    .select('*')
-    .eq('user_id', userId)
-    .order('display_order', { ascending: true });
-
-  if (error) {
-    console.error('Error fetching collab columns:', error);
-    throw error;
-  }
+  const data = await fetchAll<DbCollabColumn>('collab_columns', {
+    userId,
+    orderBy: 'display_order',
+    ascending: true,
+  });
 
   // If no columns exist, create defaults
-  if (!data || data.length === 0) {
+  if (data.length === 0) {
     return initializeDefaultColumns(userId);
   }
 
-  return data.map(c => dbToCollabColumn(c as DbCollabColumn));
+  return data.map(dbToCollabColumn);
 };
 
 // Initialize default columns for a user
@@ -266,17 +225,8 @@ export const initializeDefaultColumns = async (userId: string): Promise<CollabCo
     display_order: col.displayOrder,
   }));
 
-  const { data, error } = await supabase
-    .from('collab_columns')
-    .insert(columnsToInsert)
-    .select();
-
-  if (error) {
-    console.error('Error initializing default columns:', error);
-    throw error;
-  }
-
-  return (data || []).map(c => dbToCollabColumn(c as DbCollabColumn));
+  const data = await createMany<DbCollabColumn>('collab_columns', columnsToInsert);
+  return data.map(dbToCollabColumn);
 };
 
 // Add a custom column
@@ -284,24 +234,14 @@ export const addCollabColumn = async (
   userId: string,
   column: { columnKey: string; title: string; displayOrder?: number }
 ): Promise<CollabColumn> => {
-  const { data, error } = await supabase
-    .from('collab_columns')
-    .insert([{
-      user_id: userId,
-      column_key: column.columnKey,
-      title: column.title,
-      editable: true,
-      display_order: column.displayOrder || 0,
-    }])
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error adding collab column:', error);
-    throw error;
-  }
-
-  return dbToCollabColumn(data as DbCollabColumn);
+  const data = await createOne<DbCollabColumn>('collab_columns', {
+    user_id: userId,
+    column_key: column.columnKey,
+    title: column.title,
+    editable: true,
+    display_order: column.displayOrder || 0,
+  });
+  return dbToCollabColumn(data);
 };
 
 // Update a column
@@ -314,19 +254,8 @@ export const updateCollabColumn = async (
   if (updates.title !== undefined) dbUpdates.title = updates.title;
   if (updates.displayOrder !== undefined) dbUpdates.display_order = updates.displayOrder;
 
-  const { data, error } = await supabase
-    .from('collab_columns')
-    .update(dbUpdates)
-    .eq('id', columnId)
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error updating collab column:', error);
-    throw error;
-  }
-
-  return dbToCollabColumn(data as DbCollabColumn);
+  const data = await updateOne<DbCollabColumn>('collab_columns', columnId, dbUpdates);
+  return dbToCollabColumn(data);
 };
 
 // Delete a column (only if not protected)
@@ -335,15 +264,7 @@ export const deleteCollabColumn = async (columnId: string, columnKey: string): P
     throw new Error('Cannot delete protected column');
   }
 
-  const { error } = await supabase
-    .from('collab_columns')
-    .delete()
-    .eq('id', columnId);
-
-  if (error) {
-    console.error('Error deleting collab column:', error);
-    throw error;
-  }
+  await deleteOne('collab_columns', columnId);
 };
 
 // =====================================================
@@ -356,18 +277,7 @@ export const batchCreateCollabBrands = async (
   brands: Array<Omit<CollabBrand, 'id'>>
 ): Promise<CollabBrand[]> => {
   if (brands.length === 0) return [];
-
   const dbBrands = brands.map(brand => collabBrandToDb(userId, brand));
-
-  const { data, error } = await supabase
-    .from('collab_brands')
-    .insert(dbBrands)
-    .select();
-
-  if (error) {
-    console.error('Error batch creating collab brands:', error);
-    throw error;
-  }
-
-  return (data || []).map(b => dbToCollabBrand(b as DbCollabBrand));
+  const data = await createMany<DbCollabBrand>('collab_brands', dbBrands);
+  return data.map(dbToCollabBrand);
 };

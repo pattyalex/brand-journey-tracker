@@ -1,4 +1,5 @@
 import { shotTemplates, getAllTemplateIds } from "./shotTemplates";
+import { callClaudeForJSON } from "@/services/claudeService";
 
 export interface ShotSuggestion {
   template_id: string;
@@ -18,16 +19,6 @@ export const suggestShotsForScene = async (
   platform?: string
 ): Promise<ShotSuggestionResponse> => {
   try {
-    // Get API key from environment variable
-    const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
-
-    if (!apiKey) {
-      return {
-        suggestions: [],
-        error: "AI service is temporarily unavailable. Please try again later."
-      };
-    }
-
     // Build template reference for the prompt
     const templateReference = shotTemplates.map(t =>
       `- ID: "${t.id}" | Name: "${t.user_facing_name}" | Tags: [${t.internal_tags.join(', ')}]`
@@ -67,50 +58,21 @@ ${platform ? `Platform: ${platform}` : ''}
 
 Remember: Only use template IDs from the provided list.`;
 
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
-        "anthropic-dangerous-direct-browser-access": "true"
-      },
-      body: JSON.stringify({
-        model: "claude-3-5-haiku-20241022",
-        max_tokens: 300,
-        system: systemPrompt,
-        messages: [
-          { role: "user", content: userPrompt }
-        ]
-      })
-    });
+    const result = await callClaudeForJSON<{ suggestions: ShotSuggestion[] }>({
+      system: systemPrompt,
+      messages: [{ role: "user", content: userPrompt }],
+      maxTokens: 300,
+    }, "object");
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      console.error("Claude API error:", data);
-      const errorMessage = data.error?.message || "Unknown error";
+    if (!result.ok) {
+      const errorMessage = result.error || "Unknown error";
       if (errorMessage.includes("invalid") && errorMessage.includes("key")) {
         return { suggestions: [], error: "AI service is temporarily unavailable. Please try again later." };
       }
       return { suggestions: [], error: `Claude API error: ${errorMessage}` };
     }
 
-    const content = data.content[0].text;
-
-    // Parse the JSON response
-    let parsed;
-    try {
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        parsed = JSON.parse(jsonMatch[0]);
-      } else {
-        throw new Error('No JSON found in response');
-      }
-    } catch (parseError) {
-      console.error('Failed to parse AI response:', content);
-      return { suggestions: [], error: 'Failed to parse AI response' };
-    }
+    const parsed = result.data;
 
     // Validate that all template IDs are valid
     const validatedSuggestions: ShotSuggestion[] = [];

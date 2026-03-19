@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,8 +9,20 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { StorageKeys, getJSON, setJSON } from "@/lib/storage";
 import EmptyState from "@/components/ui/EmptyState";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  getUserContentIdeas,
+  createContentIdea,
+  updateContentIdea,
+  deleteContentIdea,
+  batchCreateContentIdeas,
+} from "@/services/contentIdeasService";
+import type { ContentIdea as ServiceContentIdea } from "@/services/contentIdeasService";
 
 type TabType = "brain-dump" | "content-ideas" | "vision-board";
+
+// Default example IDs — never migrate these to Supabase
+const DEFAULT_IDEA_IDS = ['1', '2'];
 
 interface CustomColumn {
   id: string;
@@ -29,8 +41,40 @@ interface ContentIdea {
   customValues: Record<string, string>;
 }
 
+// Convert Supabase row → local UI type
+const serviceToLocal = (si: ServiceContentIdea): ContentIdea => ({
+  id: si.id,
+  idea: si.title,
+  pillar: (si.metadata?.pillar as string) || '',
+  format: (si.metadata?.format as string) || '',
+  goal: (si.metadata?.goal as string) || '',
+  hook: (si.metadata?.hook as string) || '',
+  script: (si.metadata?.script as string) || '',
+  caption: (si.metadata?.caption as string) || '',
+  customValues: (si.metadata?.customValues as Record<string, string>) || {},
+});
+
+// Build Supabase update payload from local UI type
+const localToServicePayload = (idea: ContentIdea) => ({
+  title: idea.idea,
+  metadata: {
+    pillar: idea.pillar,
+    format: idea.format,
+    goal: idea.goal,
+    hook: idea.hook,
+    script: idea.script,
+    caption: idea.caption,
+    customValues: idea.customValues,
+  },
+});
+
 const ContentIdeation = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
+  const migrationRanRef = useRef(false);
+  // Debounce timers per idea ID, to batch rapid cell edits into one Supabase call
+  const updateTimerRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+
   const [activeTab, setActiveTab] = useState<TabType>("brain-dump");
   const [customColumns, setCustomColumns] = useState<CustomColumn[]>([]);
   const [isAddingColumn, setIsAddingColumn] = useState(false);
@@ -80,34 +124,87 @@ const ContentIdeation = () => {
   // Track visible/hidden columns
   const [hiddenStandardColumns, setHiddenStandardColumns] = useState<string[]>([]);
 
-  // Track pinned content ideas (max 5)
-  const [pinnedIds, setPinnedIds] = useState<string[]>([]);
+  // Track pinned content ideas (max 5) — initialise from localStorage cache
+  const [pinnedIds, setPinnedIds] = useState<string[]>(() =>
+    getJSON<string[]>(StorageKeys.pinnedContentIdeas, [])
+  );
 
-  // Load pinned items from localStorage on mount
-  useEffect(() => {
-    const saved = getJSON<string[]>(StorageKeys.pinnedContentIdeas, []);
-    setPinnedIds(saved);
-  }, []);
-
-  // Save content ideas to localStorage whenever they change
+  // Save content ideas to localStorage whenever they change (offline cache)
   useEffect(() => {
     setJSON(StorageKeys.contentIdeas, contentIdeas);
   }, [contentIdeas]);
+
+  // Load from Supabase on mount; one-time migration if Supabase is empty
+  useEffect(() => {
+    if (!user?.id) return;
+
+    getUserContentIdeas(user.id)
+      .then(serviceIdeas => {
+        if (serviceIdeas.length === 0) {
+          // Check if there are real (non-example) ideas to migrate
+          if (!migrationRanRef.current) {
+            migrationRanRef.current = true;
+            const localIdeas = getJSON<ContentIdea[]>(StorageKeys.contentIdeas, []);
+            const localPinnedIds = getJSON<string[]>(StorageKeys.pinnedContentIdeas, []);
+            const realLocalIdeas = localIdeas.filter(
+              i => !DEFAULT_IDEA_IDS.includes(i.id) && i.idea.trim()
+            );
+            if (realLocalIdeas.length > 0) {
+              batchCreateContentIdeas(
+                user.id,
+                realLocalIdeas.map(idea => ({
+                  title: idea.idea,
+                  isPinned: localPinnedIds.includes(idea.id),
+                  isArchived: false,
+                  source: 'bank-of-ideas' as const,
+                  metadata: {
+                    pillar: idea.pillar,
+                    format: idea.format,
+                    goal: idea.goal,
+                    hook: idea.hook,
+                    script: idea.script,
+                    caption: idea.caption,
+                    customValues: idea.customValues,
+                  },
+                }))
+              )
+                .then(created => {
+                  setContentIdeas(created.map(serviceToLocal));
+                  setPinnedIds(created.filter(i => i.isPinned).map(i => i.id));
+                })
+                .catch(console.error);
+            }
+          }
+          return; // nothing in Supabase — keep showing localStorage data
+        }
+
+        migrationRanRef.current = true;
+        setContentIdeas(serviceIdeas.map(serviceToLocal));
+        setPinnedIds(serviceIdeas.filter(i => i.isPinned).map(i => i.id));
+      })
+      .catch(console.error);
+  }, [user?.id]);
+
+  // Debounced Supabase update — fires 1 s after the last cell edit for a given idea
+  const scheduleSupabaseUpdate = (ideaId: string, idea: ContentIdea) => {
+    if (!user?.id || ideaId.startsWith('temp_')) return;
+    if (updateTimerRef.current[ideaId]) clearTimeout(updateTimerRef.current[ideaId]);
+    updateTimerRef.current[ideaId] = setTimeout(() => {
+      updateContentIdea(ideaId, localToServicePayload(idea)).catch(console.error);
+      delete updateTimerRef.current[ideaId];
+    }, 1000);
+  };
 
   // Handle pin/unpin content idea
   const handleTogglePin = (ideaId: string) => {
     setPinnedIds((prev) => {
       let updated: string[];
+      const isCurrentlyPinned = prev.includes(ideaId);
 
-      if (prev.includes(ideaId)) {
-        // Unpin
+      if (isCurrentlyPinned) {
         updated = prev.filter(id => id !== ideaId);
-        toast({
-          title: "Unpinned",
-          description: "Content idea removed from dashboard"
-        });
+        toast({ title: "Unpinned", description: "Content idea removed from dashboard" });
       } else {
-        // Pin - check limit
         if (prev.length >= 5) {
           toast({
             title: "Maximum reached",
@@ -123,8 +220,14 @@ const ContentIdeation = () => {
         });
       }
 
-      // Save to localStorage
+      // Save to localStorage cache
       setJSON(StorageKeys.pinnedContentIdeas, updated);
+
+      // Persist to Supabase
+      if (!ideaId.startsWith('temp_') && user?.id) {
+        updateContentIdea(ideaId, { isPinned: !isCurrentlyPinned }).catch(console.error);
+      }
+
       return updated;
     });
   };
@@ -168,39 +271,35 @@ const ContentIdeation = () => {
     setCustomColumns(customColumns.filter(col => col.id !== columnId));
 
     // Remove the column data from all content ideas
-    setContentIdeas(contentIdeas.map(idea => {
+    const updatedIdeas = contentIdeas.map(idea => {
       const updatedCustomValues = { ...idea.customValues };
       delete updatedCustomValues[columnId];
-      return {
-        ...idea,
-        customValues: updatedCustomValues
-      };
-    }));
-
-    toast({
-      title: "Column removed",
-      description: "The custom column has been removed"
+      return { ...idea, customValues: updatedCustomValues };
     });
+    setContentIdeas(updatedIdeas);
+
+    // Schedule Supabase updates for all affected ideas
+    updatedIdeas.forEach(idea => scheduleSupabaseUpdate(idea.id, idea));
+
+    toast({ title: "Column removed", description: "The custom column has been removed" });
   };
 
   const handleUpdateCustomValue = (ideaId: string, columnId: string, value: string) => {
+    let updatedIdea: ContentIdea | undefined;
     setContentIdeas(contentIdeas.map(idea => {
       if (idea.id === ideaId) {
-        return {
-          ...idea,
-          customValues: {
-            ...idea.customValues,
-            [columnId]: value
-          }
-        };
+        updatedIdea = { ...idea, customValues: { ...idea.customValues, [columnId]: value } };
+        return updatedIdea;
       }
       return idea;
     }));
+    if (updatedIdea) scheduleSupabaseUpdate(ideaId, updatedIdea);
   };
 
-  const handleAddNewIdea = () => {
+  const handleAddNewIdea = async () => {
+    const tempId = `temp_${Date.now()}`;
     const newIdea: ContentIdea = {
-      id: Date.now().toString(),
+      id: tempId,
       idea: "",
       pillar: "",
       format: "",
@@ -211,12 +310,23 @@ const ContentIdeation = () => {
       customValues: {}
     };
 
-    setContentIdeas([...contentIdeas, newIdea]);
+    setContentIdeas(prev => [...prev, newIdea]);
+    toast({ title: "New idea added", description: "Start filling in the details" });
 
-    toast({
-      title: "New idea added",
-      description: "Start filling in the details"
-    });
+    if (!user?.id) return;
+    try {
+      const created = await createContentIdea(user.id, {
+        title: "",
+        isPinned: false,
+        isArchived: false,
+        source: 'bank-of-ideas',
+        metadata: { pillar: "", format: "", goal: "", hook: "", script: "", caption: "", customValues: {} },
+      });
+      // Replace temp ID with the real Supabase ID
+      setContentIdeas(prev => prev.map(i => i.id === tempId ? { ...i, id: created.id } : i));
+    } catch {
+      console.error('Failed to persist new content idea to Supabase');
+    }
   };
 
   const handleDeleteIdea = (ideaId: string) => {
@@ -231,20 +341,24 @@ const ContentIdeation = () => {
     }
 
     setContentIdeas(contentIdeas.filter(idea => idea.id !== ideaId));
+    toast({ title: "Idea deleted", description: "The content idea has been removed" });
 
-    toast({
-      title: "Idea deleted",
-      description: "The content idea has been removed",
-    });
+    // Persist deletion to Supabase
+    if (!ideaId.startsWith('temp_') && user?.id) {
+      deleteContentIdea(ideaId).catch(console.error);
+    }
   };
 
   const handleCellChange = (ideaId: string, field: keyof Omit<ContentIdea, 'id' | 'customValues'>, value: string) => {
+    let updatedIdea: ContentIdea | undefined;
     setContentIdeas(contentIdeas.map(idea => {
       if (idea.id === ideaId) {
-        return { ...idea, [field]: value };
+        updatedIdea = { ...idea, [field]: value };
+        return updatedIdea;
       }
       return idea;
     }));
+    if (updatedIdea) scheduleSupabaseUpdate(ideaId, updatedIdea);
   };
 
   // New function to handle deletion of standard columns

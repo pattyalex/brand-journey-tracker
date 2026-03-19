@@ -1,141 +1,42 @@
-import React, { useState } from "react";
+import React from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { 
-  ChevronUp, 
-  ChevronDown, 
-  Eye, 
-  ArrowRight, 
-  Calendar,
-  BarChart,
-  Instagram,
-  Link,
-  Copy,
-  Repeat,
-  Music,
-  Share2,
-  Save,
-  BookmarkIcon,
-  ExternalLink,
-  RefreshCw
+import {
+  Eye, BarChart, Instagram, Link, Calendar, Music, Share2, BookmarkIcon, ExternalLink,
 } from "lucide-react";
-import { 
-  BarChart as RechartsBarChart,
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer 
+import {
+  BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid,
+  Tooltip, ResponsiveContainer,
 } from "recharts";
 import { ChartContainer } from "@/components/ui/chart";
-import CreateSimilarContentDialog from "./CreateSimilarContentDialog";
-import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import TimeFilterSelect from "./TimeFilterSelect";
+import PerformanceTab, { ContentCellLayout, ContentCellHelpers } from "./PerformanceTab";
 
 interface StoryPerformanceTabProps {
   platforms: string[];
 }
 
-const stories = [
-  {
-    id: "1",
-    title: "Morning routine",
-    platform: "Instagram",
-    thumbnail: "https://placehold.co/90x160/E1306C/white?text=Story",
-    views: 12543,
-    completionRate: 75,
-    linkClicks: 234,
-    shares: 132,
-    saved: 341,
-    date: "2023-11-22",
-    hasLink: true,
-    url: "https://instagram.com/stories/user/example1"
-  },
-  {
-    id: "2",
-    title: "New product sneak peek",
-    platform: "Instagram",
-    thumbnail: "https://placehold.co/90x160/E1306C/white?text=Story",
-    views: 10876,
-    completionRate: 68,
-    linkClicks: 312,
-    shares: 87,
-    saved: 265,
-    date: "2023-11-20",
-    hasLink: true,
-    url: "https://instagram.com/stories/user/example2"
-  },
-  {
-    id: "3",
-    title: "Q&A session",
-    platform: "TikTok",
-    thumbnail: "https://placehold.co/90x160/000000/white?text=Story",
-    views: 8432,
-    completionRate: 82,
-    linkClicks: 189,
-    shares: 178,
-    saved: 219,
-    date: "2023-11-18",
-    hasLink: true,
-    url: "https://tiktok.com/@user/video/example3"
-  },
-  {
-    id: "4",
-    title: "Behind the scenes",
-    platform: "Instagram",
-    thumbnail: "https://placehold.co/90x160/E1306C/white?text=Story",
-    views: 9543,
-    completionRate: 71,
-    linkClicks: 0,
-    shares: 56,
-    saved: 187,
-    date: "2023-11-15",
-    hasLink: false,
-    url: "https://instagram.com/stories/user/example4"
-  },
-  {
-    id: "5",
-    title: "Promotion announcement",
-    platform: "TikTok",
-    thumbnail: "https://placehold.co/90x160/000000/white?text=Story",
-    views: 7654,
-    completionRate: 64,
-    linkClicks: 276,
-    shares: 145,
-    saved: 232,
-    date: "2023-11-12",
-    hasLink: true,
-    url: "https://tiktok.com/@user/video/example5"
-  },
-  {
-    id: "6",
-    title: "Daily vlog highlight",
-    platform: "Instagram",
-    thumbnail: "https://placehold.co/90x160/E1306C/white?text=Story",
-    views: 6432,
-    completionRate: 55,
-    linkClicks: null,
-    shares: 42,
-    saved: 125,
-    date: "2023-11-10",
-    hasLink: false,
-    url: "https://instagram.com/stories/user/example6"
-  },
-];
+interface Story {
+  id: string;
+  title: string;
+  platform: string;
+  thumbnail: string;
+  views: number;
+  completionRate: number;
+  linkClicks: number | null;
+  shares: number;
+  saved: number;
+  date: string;
+  hasLink: boolean;
+  url: string;
+}
 
-const getPlatformIcon = (platform: string) => {
-  switch (platform) {
-    case "Instagram":
-      return <Instagram className="h-4 w-4 text-pink-500" />;
-    case "TikTok":
-      return <Music className="h-4 w-4 text-black" />;
-    default:
-      return null;
-  }
-};
+const stories: Story[] = [
+  { id: "1", title: "Morning routine", platform: "Instagram", thumbnail: "https://placehold.co/90x160/E1306C/white?text=Story", views: 12543, completionRate: 75, linkClicks: 234, shares: 132, saved: 341, date: "2023-11-22", hasLink: true, url: "https://instagram.com/stories/user/example1" },
+  { id: "2", title: "New product sneak peek", platform: "Instagram", thumbnail: "https://placehold.co/90x160/E1306C/white?text=Story", views: 10876, completionRate: 68, linkClicks: 312, shares: 87, saved: 265, date: "2023-11-20", hasLink: true, url: "https://instagram.com/stories/user/example2" },
+  { id: "3", title: "Q&A session", platform: "TikTok", thumbnail: "https://placehold.co/90x160/000000/white?text=Story", views: 8432, completionRate: 82, linkClicks: 189, shares: 178, saved: 219, date: "2023-11-18", hasLink: true, url: "https://tiktok.com/@user/video/example3" },
+  { id: "4", title: "Behind the scenes", platform: "Instagram", thumbnail: "https://placehold.co/90x160/E1306C/white?text=Story", views: 9543, completionRate: 71, linkClicks: 0, shares: 56, saved: 187, date: "2023-11-15", hasLink: false, url: "https://instagram.com/stories/user/example4" },
+  { id: "5", title: "Promotion announcement", platform: "TikTok", thumbnail: "https://placehold.co/90x160/000000/white?text=Story", views: 7654, completionRate: 64, linkClicks: 276, shares: 145, saved: 232, date: "2023-11-12", hasLink: true, url: "https://tiktok.com/@user/video/example5" },
+  { id: "6", title: "Daily vlog highlight", platform: "Instagram", thumbnail: "https://placehold.co/90x160/E1306C/white?text=Story", views: 6432, completionRate: 55, linkClicks: null, shares: 42, saved: 125, date: "2023-11-10", hasLink: false, url: "https://instagram.com/stories/user/example6" },
+];
 
 const weeklyStoryData = [
   { day: "Mon", views: 15253, completionRate: 72 },
@@ -147,348 +48,92 @@ const weeklyStoryData = [
   { day: "Sun", views: 17654, completionRate: 65 },
 ];
 
-const StoryPerformanceTab: React.FC<StoryPerformanceTabProps> = ({ platforms }) => {
-  const [selectedPlatform, setSelectedPlatform] = useState("All");
-  const [sortBy, setSortBy] = useState("views");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [selectedContent, setSelectedContent] = useState<{title: string, platform: string} | null>(null);
-  const [timeRange, setTimeRange] = useState("last30days");
-
-  const hasStoryPlatforms = platforms.some(p => p === "Instagram" || p === "TikTok");
-
-  const filteredStories = selectedPlatform === "All"
-    ? stories.filter(story => platforms.includes(story.platform))
-    : stories.filter(story => story.platform === selectedPlatform);
-
-  const sortedStories = [...filteredStories].sort((a, b) => {
-    const multiplier = sortOrder === "desc" ? -1 : 1;
-    return multiplier * (a[sortBy as keyof typeof a] > b[sortBy as keyof typeof b] ? 1 : -1);
-  });
-
-  const handleSort = (column: string) => {
-    if (sortBy === column) {
-      setSortOrder(sortOrder === "desc" ? "asc" : "desc");
-    } else {
-      setSortBy(column);
-      setSortOrder("desc");
-    }
-  };
-
-  const handleCreateSimilar = (story: typeof stories[0]) => {
-    setSelectedContent({
-      title: story.title,
-      platform: story.platform
-    });
-    setIsCreateDialogOpen(true);
-  };
-
-  const handleTimeRangeChange = (range: string) => {
-    setTimeRange(range);
-    console.log(`Fetching story data for time range: ${range}`);
-  };
-
-  const handleCustomDateChange = (startDate: Date | undefined, endDate: Date | undefined) => {
-    if (startDate && endDate) {
-      console.log(`Fetching story data from ${startDate.toISOString()} to ${endDate.toISOString()}`);
-    }
-  };
-
-  const handleViewContent = (url: string) => {
-    if (url) {
-      window.open(url, '_blank');
-    }
-  };
-
-  if (!hasStoryPlatforms) {
-    return (
-      <Card>
-        <CardContent className="pt-6">
-          <div className="text-center space-y-4 py-8">
-            <BarChart className="mx-auto h-12 w-12 text-muted-foreground/60" />
-            <h3 className="text-xl font-medium">No Story Data Available</h3>
-            <p className="text-muted-foreground max-w-md mx-auto">
-              Connect Instagram or TikTok to see Story performance analytics.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    );
+const getPlatformIcon = (platform: string) => {
+  switch (platform) {
+    case "Instagram": return <Instagram className="h-4 w-4 text-pink-500" />;
+    case "TikTok": return <Music className="h-4 w-4 text-black" />;
+    default: return null;
   }
-
-  return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center flex-wrap gap-4">
-        <h2 className="text-2xl font-bold">Story Performance</h2>
-        <div className="flex flex-wrap gap-4 items-center">
-          <TimeFilterSelect 
-            selectedRange={timeRange} 
-            onDateRangeChange={handleTimeRangeChange} 
-            onCustomDateChange={handleCustomDateChange}
-          />
-          <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Select platform" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="All">All Platforms</SelectItem>
-              {platforms
-                .filter(p => p === "Instagram" || p === "TikTok")
-                .map(platform => (
-                  <SelectItem key={platform} value={platform}>{platform}</SelectItem>
-                ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Weekly Story Performance</CardTitle>
-            <CardDescription>Story views and completion rates for the past week</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-80 w-full">
-              <ChartContainer config={{}}>
-                <RechartsBarChart
-                  data={weeklyStoryData}
-                  margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="day" />
-                  <YAxis yAxisId="left" />
-                  <YAxis yAxisId="right" orientation="right" />
-                  <Tooltip />
-                  <Bar yAxisId="left" dataKey="views" fill="#8884d8" name="Views" />
-                  <Bar yAxisId="right" dataKey="completionRate" fill="#82ca9d" name="Completion Rate (%)" />
-                </RechartsBarChart>
-              </ChartContainer>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>Recent Stories</CardTitle>
-              <CardDescription>
-                Sorted by {
-                  sortBy === "views" ? "views" : 
-                  sortBy === "completionRate" ? "completion rate" : 
-                  sortBy === "linkClicks" ? "link clicks" : 
-                  sortBy === "shares" ? "shares" : 
-                  sortBy === "saved" ? "saves" : 
-                  "date"
-                }
-                {sortOrder === "desc" ? " (highest first)" : " (lowest first)"}
-              </CardDescription>
-            </div>
-            <Button variant="outline" size="sm" className="flex items-center gap-1">
-              <Copy className="h-4 w-4" />
-              Export Data
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Story</TableHead>
-                  <TableHead>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleSort("views")}
-                      className="flex items-center gap-1 -ml-3"
-                    >
-                      Views
-                      {sortBy === "views" && (
-                        sortOrder === "desc" ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </TableHead>
-                  <TableHead>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleSort("completionRate")}
-                      className="flex items-center gap-1 -ml-3"
-                    >
-                      Completion
-                      {sortBy === "completionRate" && (
-                        sortOrder === "desc" ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </TableHead>
-                  <TableHead>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleSort("shares")}
-                      className="flex items-center gap-1 -ml-3"
-                    >
-                      Shares
-                      {sortBy === "shares" && (
-                        sortOrder === "desc" ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </TableHead>
-                  <TableHead>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleSort("saved")}
-                      className="flex items-center gap-1 -ml-3"
-                    >
-                      Saved
-                      {sortBy === "saved" && (
-                        sortOrder === "desc" ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </TableHead>
-                  <TableHead>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleSort("linkClicks")}
-                      className="flex items-center gap-1 -ml-3"
-                    >
-                      Link Clicks
-                      {sortBy === "linkClicks" && (
-                        sortOrder === "desc" ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </TableHead>
-                  <TableHead>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleSort("date")}
-                      className="flex items-center gap-1 -ml-3"
-                    >
-                      Date
-                      {sortBy === "date" && (
-                        sortOrder === "desc" ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {sortedStories.map((story) => (
-                  <TableRow key={story.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <TooltipProvider>
-                          <UITooltip>
-                            <TooltipTrigger asChild>
-                              <Button 
-                                variant="ghost" 
-                                size="icon"
-                                onClick={() => handleCreateSimilar(story)}
-                                className="h-8 w-8 rounded-full"
-                              >
-                                <RefreshCw 
-                                  className="h-4 w-4 text-purple-500 stroke-[2.5]" 
-                                  strokeWidth={2.5} 
-                                />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Recreate content</p>
-                            </TooltipContent>
-                          </UITooltip>
-                        </TooltipProvider>
-                        <div className="relative w-10 h-16 rounded overflow-hidden">
-                          <img 
-                            src={story.thumbnail} 
-                            alt={story.title} 
-                            className="object-cover w-full h-full"
-                          />
-                        </div>
-                        <div>
-                          <div className="font-medium">{story.title}</div>
-                          <div className="flex items-center gap-2 text-muted-foreground text-xs mt-1">
-                            <div className="flex items-center gap-1">
-                              {getPlatformIcon(story.platform)}
-                              <span>{story.platform}</span>
-                            </div>
-                            <Button 
-                              variant="outline" 
-                              size="xs" 
-                              className="ml-2 flex items-center gap-1"
-                              onClick={() => handleViewContent(story.url)}
-                            >
-                              <ExternalLink className="h-3.5 w-3.5" />
-                              View
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        <Eye className="h-4 w-4 text-muted-foreground" />
-                        {story.views.toLocaleString()}
-                      </div>
-                    </TableCell>
-                    <TableCell>{story.completionRate}%</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        <Share2 className="h-4 w-4 text-muted-foreground" />
-                        {story.shares?.toLocaleString() || "0"}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        <BookmarkIcon className="h-4 w-4 text-muted-foreground" />
-                        {story.saved?.toLocaleString() || "0"}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {story.hasLink ? (
-                        <div className="flex items-center gap-1">
-                          <Link className="h-4 w-4 text-muted-foreground" />
-                          {story.linkClicks ? story.linkClicks.toLocaleString() : '0'}
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground">N/A</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        {new Date(story.date).toLocaleDateString()}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                    </TableCell>
-                  </TableRow>
-                ))}
-                {sortedStories.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8">
-                      <BarChart className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                      <p>No story data available for the selected platform.</p>
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      </div>
-
-      <CreateSimilarContentDialog 
-        open={isCreateDialogOpen}
-        onOpenChange={setIsCreateDialogOpen}
-        contentDetails={selectedContent}
-        onSave={() => setIsCreateDialogOpen(false)}
-        onCancel={() => setIsCreateDialogOpen(false)}
-      />
-    </div>
-  );
 };
+
+const WeeklyChart = () => (
+  <Card>
+    <CardHeader>
+      <CardTitle>Weekly Story Performance</CardTitle>
+      <CardDescription>Story views and completion rates for the past week</CardDescription>
+    </CardHeader>
+    <CardContent>
+      <div className="h-80 w-full">
+        <ChartContainer config={{}}>
+          <RechartsBarChart data={weeklyStoryData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="day" />
+            <YAxis yAxisId="left" />
+            <YAxis yAxisId="right" orientation="right" />
+            <Tooltip />
+            <Bar yAxisId="left" dataKey="views" fill="#8884d8" name="Views" />
+            <Bar yAxisId="right" dataKey="completionRate" fill="#82ca9d" name="Completion Rate (%)" />
+          </RechartsBarChart>
+        </ChartContainer>
+      </div>
+    </CardContent>
+  </Card>
+);
+
+const StoryPerformanceTab: React.FC<StoryPerformanceTabProps> = ({ platforms }) => (
+  <PerformanceTab<Story>
+    platforms={platforms}
+    config={{
+      title: "Story Performance",
+      cardTitle: "Recent Stories",
+      emptyMessage: "No story data available for the selected platform.",
+      items: stories,
+      defaultSortKey: "views",
+      dataTypeLabel: "story",
+      getItemTitle: (s) => s.title,
+      getItemPlatform: (s) => s.platform,
+      getItemUrl: (s) => s.url,
+      getItemKey: (s) => s.id,
+      hasPlatformCheck: (ps) => ps.some(p => p === "Instagram" || p === "TikTok"),
+      noPlatformMessage: (
+        <>
+          <h3 className="text-xl font-medium">No Story Data Available</h3>
+          <p className="text-muted-foreground max-w-md mx-auto">
+            Connect Instagram or TikTok to see Story performance analytics.
+          </p>
+        </>
+      ),
+      filterPlatforms: (ps) => ps.filter(p => p === "Instagram" || p === "TikTok"),
+      renderAboveTable: () => (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <WeeklyChart />
+        </div>
+      ),
+      renderContentCell: (story: Story, helpers: ContentCellHelpers) => (
+        <ContentCellLayout
+          thumbnailSrc={story.thumbnail}
+          thumbnailAlt={story.title}
+          thumbnailClassName="w-10 h-16"
+          title={story.title}
+          subtitle={
+            <div className="flex items-center gap-1">
+              {getPlatformIcon(story.platform)}
+              <span>{story.platform}</span>
+            </div>
+          }
+          helpers={helpers}
+        />
+      ),
+      columns: [
+        { key: "views", label: "Views", render: (s) => <div className="flex items-center gap-1"><Eye className="h-4 w-4 text-muted-foreground" />{s.views.toLocaleString()}</div> },
+        { key: "completionRate", label: "Completion", sortDescriptionLabel: "completion rate", render: (s) => <>{s.completionRate}%</> },
+        { key: "shares", label: "Shares", render: (s) => <div className="flex items-center gap-1"><Share2 className="h-4 w-4 text-muted-foreground" />{s.shares?.toLocaleString() || "0"}</div> },
+        { key: "saved", label: "Saved", sortDescriptionLabel: "saves", render: (s) => <div className="flex items-center gap-1"><BookmarkIcon className="h-4 w-4 text-muted-foreground" />{s.saved?.toLocaleString() || "0"}</div> },
+        { key: "linkClicks", label: "Link Clicks", sortDescriptionLabel: "link clicks", render: (s) => s.hasLink ? <div className="flex items-center gap-1"><Link className="h-4 w-4 text-muted-foreground" />{s.linkClicks ? s.linkClicks.toLocaleString() : "0"}</div> : <span className="text-muted-foreground">N/A</span> },
+        { key: "date", label: "Date", sortDescriptionLabel: "date", render: (s) => <div className="flex items-center gap-1"><Calendar className="h-4 w-4 text-muted-foreground" />{new Date(s.date).toLocaleDateString()}</div> },
+      ],
+    }}
+  />
+);
 
 export default StoryPerformanceTab;

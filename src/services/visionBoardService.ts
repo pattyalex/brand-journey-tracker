@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { fetchAll, createOne, updateOne, deleteOne } from './baseService';
 
 export interface VisionBoardItem {
   id: string;
@@ -12,75 +13,38 @@ export interface VisionBoardItem {
 }
 
 export async function getUserVisionBoardItems(userId: string): Promise<VisionBoardItem[]> {
-  const { data, error } = await supabase
-    .from('vision_board_items')
-    .select('*')
-    .eq('user_id', userId)
-    .order('display_order', { ascending: true });
-
-  if (error) {
-    console.error('Error fetching vision board items:', error);
-    throw error;
-  }
-
-  return data || [];
+  return fetchAll<VisionBoardItem>('vision_board_items', {
+    userId,
+    orderBy: 'display_order',
+    ascending: true,
+  });
 }
 
 export async function createVisionBoardItem(
   userId: string,
   item: Pick<VisionBoardItem, 'title' | 'description' | 'image_url' | 'display_order'>
 ): Promise<VisionBoardItem> {
-  const { data, error } = await supabase
-    .from('vision_board_items')
-    .insert({
-      user_id: userId,
-      title: item.title,
-      description: item.description,
-      image_url: item.image_url,
-      display_order: item.display_order,
-    })
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error creating vision board item:', error);
-    throw error;
-  }
-
-  return data;
+  return createOne<VisionBoardItem>('vision_board_items', {
+    user_id: userId,
+    title: item.title,
+    description: item.description,
+    image_url: item.image_url,
+    display_order: item.display_order,
+  });
 }
 
 export async function updateVisionBoardItem(
   id: string,
   updates: Partial<Pick<VisionBoardItem, 'title' | 'description' | 'image_url' | 'display_order'>>
 ): Promise<VisionBoardItem> {
-  const { data, error } = await supabase
-    .from('vision_board_items')
-    .update(updates)
-    .eq('id', id)
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error updating vision board item:', error);
-    throw error;
-  }
-
-  return data;
+  return updateOne<VisionBoardItem>('vision_board_items', id, updates);
 }
 
 export async function deleteVisionBoardItem(id: string): Promise<void> {
-  const { error } = await supabase
-    .from('vision_board_items')
-    .delete()
-    .eq('id', id);
-
-  if (error) {
-    console.error('Error deleting vision board item:', error);
-    throw error;
-  }
+  await deleteOne('vision_board_items', id);
 }
 
+// Uses parallel updates per item - non-standard, keep raw Supabase
 export async function reorderVisionBoardItems(
   items: { id: string; display_order: number }[]
 ): Promise<void> {

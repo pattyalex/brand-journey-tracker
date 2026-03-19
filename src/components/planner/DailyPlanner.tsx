@@ -46,6 +46,7 @@ import {
 import { usePlannerState } from "./dailyPlanner/hooks/usePlannerState";
 import { getPlannerInitialSettings, usePlannerPersistence } from "./dailyPlanner/hooks/usePlannerPersistence";
 import { usePlannerActions } from "./dailyPlanner/hooks/usePlannerActions";
+import { PlannerProvider } from "@/contexts/PlannerContext";
 
 export const DailyPlanner = () => {
   const initialSettings = getPlannerInitialSettings();
@@ -390,9 +391,23 @@ export const DailyPlanner = () => {
     handleOpenTaskDialog,
   } = actions;
 
+  // Shared context value for planner navigation state
+  const plannerContextValue = {
+    selectedDate,
+    setSelectedDate,
+    currentView,
+    setCurrentView,
+    handlePreviousDay,
+    handleNextDay,
+    handleDateSelect,
+    contentDisplayMode,
+    setContentDisplayMode,
+  };
+
   // Content Calendar view has its own layout
   if (currentView === 'content-calendar-new') {
     return (
+      <PlannerProvider {...plannerContextValue}>
       <div className="h-full flex flex-col">
         <ExpandedScheduleView
           embedded={true}
@@ -418,10 +433,12 @@ export const DailyPlanner = () => {
           }
         />
       </div>
+      </PlannerProvider>
     );
   }
 
   return (
+    <PlannerProvider {...plannerContextValue}>
     <div className="h-full">
       <div className="flex h-full">
         {/* Sidebar - Left Side - Visible in Today, This Week, and Calendar views - Hidden on mobile */}
@@ -1161,5 +1178,6 @@ export const DailyPlanner = () => {
         </button>
       )}
     </div>
+    </PlannerProvider>
   );
 };

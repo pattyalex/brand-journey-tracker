@@ -6,24 +6,22 @@ import { AuthProvider } from "./contexts/AuthContext";
 import LoginModal from "./components/LoginModal";
 import { MobileInterstitialWrapper } from "./components/MobileInterstitial";
 
-// Eagerly load main pages for instant navigation
-import Dashboard from './pages/Dashboard';
-import NotFound from './pages/NotFound';
-import GetStarted from './pages/GetStarted';
-import CollabManagement from './pages/CollabManagement';
-import StrategyDemo from './pages/StrategyDemo';
-import HomePage from './pages/HomePage';
-import OnboardingFlow from './pages/OnboardingFlow';
-import LoginPage from './pages/LoginPage';
-import ForgotPasswordPage from './pages/ForgotPasswordPage';
-import Production from './pages/Production';
-import AuthCallback from './pages/AuthCallback';
-import StrategyGrowth from './pages/StrategyGrowth';
-import TaskBoard from './pages/TaskBoard';
-import Brands from './pages/Brands';
-import { MembershipPage } from './components/MembershipPage';
-
-// Lazy load less frequently used pages
+// Lazy load all pages for optimal code splitting
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const NotFound = lazy(() => import('./pages/NotFound'));
+const GetStarted = lazy(() => import('./pages/GetStarted'));
+const CollabManagement = lazy(() => import('./pages/CollabManagement'));
+const StrategyDemo = lazy(() => import('./pages/StrategyDemo'));
+const HomePage = lazy(() => import('./pages/HomePage'));
+const OnboardingFlow = lazy(() => import('./pages/OnboardingFlow'));
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
+const Production = lazy(() => import('./pages/Production'));
+const AuthCallback = lazy(() => import('./pages/AuthCallback'));
+const StrategyGrowth = lazy(() => import('./pages/StrategyGrowth'));
+const TaskBoard = lazy(() => import('./pages/TaskBoard'));
+const Brands = lazy(() => import('./pages/Brands'));
+const MembershipPage = lazy(() => import('./components/MembershipPage').then(m => ({ default: m.MembershipPage })));
 const ContentIdeation = lazy(() => import('./pages/ContentIdeation'));
 const ContentPlanning = lazy(() => import('./pages/ContentPlanning'));
 const TermsAndConditions = lazy(() => import("./pages/TermsAndConditions"));
@@ -38,7 +36,6 @@ const Help = lazy(() => import('./pages/Help'));
 const WeeklyContentTasks = lazy(() => import('./pages/WeeklyContentTasks'));
 const SocialMediaScheduler = lazy(() => import('./pages/SocialMediaScheduler'));
 const Index = lazy(() => import('./pages/Index'));
-// EmailVerificationCallback replaced by AuthCallback
 
 // Loading component - invisible to prevent flash during lazy load
 const PageLoader = () => null;

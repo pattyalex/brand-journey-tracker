@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { callClaudeAPI } from "@/services/claudeService";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -217,53 +218,19 @@ Guidelines:
 - Never use filler phrases - be direct and get to the point`;
 
   const callAI = async (userMessage: string): Promise<string> => {
-    const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
+    const conversationHistory = megAIMessages.map(msg => ({
+      role: msg.role as "user" | "assistant",
+      content: msg.content
+    }));
+    conversationHistory.push({ role: "user", content: userMessage });
 
-    if (!apiKey) {
-      return "AI service is temporarily unavailable. Please try again later.";
-    }
+    const result = await callClaudeAPI({
+      system: getSystemPrompt(),
+      messages: conversationHistory,
+    });
 
-    const systemPrompt = getSystemPrompt();
-
-    try {
-      const conversationHistory = megAIMessages.map(msg => ({
-        role: msg.role,
-        content: msg.content
-      }));
-
-      conversationHistory.push({
-        role: "user" as const,
-        content: userMessage
-      });
-
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": apiKey,
-          "anthropic-version": "2023-06-01",
-          "anthropic-dangerous-direct-browser-access": "true"
-        },
-        body: JSON.stringify({
-          model: "claude-3-5-haiku-20241022",
-          max_tokens: 800,
-          system: systemPrompt,
-          messages: conversationHistory
-        })
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        console.error("Claude API error:", data);
-        return "AI service is temporarily unavailable. Please try again.";
-      }
-
-      return data.content[0].text;
-    } catch (error) {
-      console.error("Error calling AI:", error);
-      return "AI service is temporarily unavailable. Please try again.";
-    }
+    if (!result.ok) return "AI service is temporarily unavailable. Please try again.";
+    return result.text;
   };
 
   const handleMegAISend = async (directMessage?: string) => {

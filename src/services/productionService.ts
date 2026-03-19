@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { fetchAll, createOne, updateOne, deleteOne, createMany } from './baseService';
 
 /**
  * Production Service
@@ -212,18 +213,12 @@ const productionCardToDb = (userId: string, card: Omit<ProductionCard, 'id'>) =>
 
 // Get all production cards for a user
 export const getUserProductionCards = async (userId: string): Promise<ProductionCard[]> => {
-  const { data, error } = await supabase
-    .from('production_cards')
-    .select('*')
-    .eq('user_id', userId)
-    .order('display_order', { ascending: true });
-
-  if (error) {
-    console.error('Error fetching production cards:', error);
-    throw error;
-  }
-
-  return (data || []).map(c => dbToProductionCard(c as DbProductionCard));
+  const data = await fetchAll<DbProductionCard>('production_cards', {
+    userId,
+    orderBy: 'display_order',
+    ascending: true,
+  });
+  return data.map(dbToProductionCard);
 };
 
 // Get cards by column
@@ -231,19 +226,13 @@ export const getCardsByColumn = async (
   userId: string,
   columnId: string
 ): Promise<ProductionCard[]> => {
-  const { data, error } = await supabase
-    .from('production_cards')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('column_id', columnId)
-    .order('display_order', { ascending: true });
-
-  if (error) {
-    console.error('Error fetching cards by column:', error);
-    throw error;
-  }
-
-  return (data || []).map(c => dbToProductionCard(c as DbProductionCard));
+  const data = await fetchAll<DbProductionCard>('production_cards', {
+    userId,
+    orderBy: 'display_order',
+    ascending: true,
+    filters: { column_id: columnId },
+  });
+  return data.map(dbToProductionCard);
 };
 
 // Create a production card
@@ -252,19 +241,8 @@ export const createProductionCard = async (
   card: Omit<ProductionCard, 'id'>
 ): Promise<ProductionCard> => {
   const dbCard = productionCardToDb(userId, card);
-
-  const { data, error } = await supabase
-    .from('production_cards')
-    .insert([dbCard])
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error creating production card:', error);
-    throw error;
-  }
-
-  return dbToProductionCard(data as DbProductionCard);
+  const data = await createOne<DbProductionCard>('production_cards', dbCard);
+  return dbToProductionCard(data);
 };
 
 // Update a production card
@@ -311,22 +289,11 @@ export const updateProductionCard = async (
   if (updates.calendarOnly !== undefined) dbUpdates.calendar_only = updates.calendarOnly;
   if (updates.displayOrder !== undefined) dbUpdates.display_order = updates.displayOrder;
 
-  const { data, error } = await supabase
-    .from('production_cards')
-    .update(dbUpdates)
-    .eq('id', cardId)
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error updating production card:', error);
-    throw error;
-  }
-
-  return dbToProductionCard(data as DbProductionCard);
+  const data = await updateOne<DbProductionCard>('production_cards', cardId, dbUpdates);
+  return dbToProductionCard(data);
 };
 
-// Move card to different column
+// Move card to different column - uses raw db field names directly, keep raw Supabase
 export const moveCardToColumn = async (
   cardId: string,
   newColumnId: string,
@@ -337,35 +304,16 @@ export const moveCardToColumn = async (
     updates.display_order = newOrder;
   }
 
-  const { data, error } = await supabase
-    .from('production_cards')
-    .update(updates)
-    .eq('id', cardId)
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error moving production card:', error);
-    throw error;
-  }
-
-  return dbToProductionCard(data as DbProductionCard);
+  const data = await updateOne<DbProductionCard>('production_cards', cardId, updates);
+  return dbToProductionCard(data);
 };
 
 // Delete a production card
 export const deleteProductionCard = async (cardId: string): Promise<void> => {
-  const { error } = await supabase
-    .from('production_cards')
-    .delete()
-    .eq('id', cardId);
-
-  if (error) {
-    console.error('Error deleting production card:', error);
-    throw error;
-  }
+  await deleteOne('production_cards', cardId);
 };
 
-// Get scheduled cards (for calendar view)
+// Get scheduled cards (for calendar view) - uses .not(), keep raw Supabase
 export const getScheduledCards = async (userId: string): Promise<ProductionCard[]> => {
   const { data, error } = await supabase
     .from('production_cards')
@@ -382,7 +330,7 @@ export const getScheduledCards = async (userId: string): Promise<ProductionCard[
   return (data || []).map(c => dbToProductionCard(c as DbProductionCard));
 };
 
-// Get planned cards (for calendar view)
+// Get planned cards (for calendar view) - uses .not(), keep raw Supabase
 export const getPlannedCards = async (userId: string): Promise<ProductionCard[]> => {
   const { data, error } = await supabase
     .from('production_cards')
@@ -403,24 +351,34 @@ export const getPlannedCards = async (userId: string): Promise<ProductionCard[]>
 // Migration Helpers
 // =====================================================
 
+// Upsert a production card (insert with local id, or update if it already exists)
+export const upsertProductionCard = async (
+  userId: string,
+  card: ProductionCard
+): Promise<void> => {
+  const { id, ...rest } = card;
+  const dbCard = {
+    id,
+    ...productionCardToDb(userId, rest),
+  };
+
+  const { error } = await supabase
+    .from('production_cards')
+    .upsert([dbCard]);
+
+  if (error) {
+    console.error('Error upserting production card:', error);
+    throw error;
+  }
+};
+
 // Batch create production cards
 export const batchCreateProductionCards = async (
   userId: string,
   cards: Array<Omit<ProductionCard, 'id'>>
 ): Promise<ProductionCard[]> => {
   if (cards.length === 0) return [];
-
   const dbCards = cards.map(card => productionCardToDb(userId, card));
-
-  const { data, error } = await supabase
-    .from('production_cards')
-    .insert(dbCards)
-    .select();
-
-  if (error) {
-    console.error('Error batch creating production cards:', error);
-    throw error;
-  }
-
-  return (data || []).map(c => dbToProductionCard(c as DbProductionCard));
+  const data = await createMany<DbProductionCard>('production_cards', dbCards);
+  return data.map(dbToProductionCard);
 };

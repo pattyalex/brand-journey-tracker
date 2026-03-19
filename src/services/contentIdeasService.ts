@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { fetchAll, createOne, updateOne, deleteOne, createMany } from './baseService';
 
 /**
  * Content Ideas Service
@@ -70,54 +70,35 @@ const contentIdeaToDb = (userId: string, idea: Omit<ContentIdea, 'id' | 'userId'
 
 // Get all content ideas for a user
 export const getUserContentIdeas = async (userId: string): Promise<ContentIdea[]> => {
-  const { data, error } = await supabase
-    .from('content_ideas')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('is_archived', false)
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    console.error('Error fetching content ideas:', error);
-    throw error;
-  }
-
-  return (data || []).map(i => dbToContentIdea(i as DbContentIdea));
+  const data = await fetchAll<DbContentIdea>('content_ideas', {
+    userId,
+    orderBy: 'created_at',
+    ascending: false,
+    filters: { is_archived: false },
+  });
+  return data.map(dbToContentIdea);
 };
 
 // Get archived content ideas
 export const getArchivedContentIdeas = async (userId: string): Promise<ContentIdea[]> => {
-  const { data, error } = await supabase
-    .from('content_ideas')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('is_archived', true)
-    .order('updated_at', { ascending: false });
-
-  if (error) {
-    console.error('Error fetching archived content ideas:', error);
-    throw error;
-  }
-
-  return (data || []).map(i => dbToContentIdea(i as DbContentIdea));
+  const data = await fetchAll<DbContentIdea>('content_ideas', {
+    userId,
+    orderBy: 'updated_at',
+    ascending: false,
+    filters: { is_archived: true },
+  });
+  return data.map(dbToContentIdea);
 };
 
 // Get pinned content ideas
 export const getPinnedContentIdeas = async (userId: string): Promise<ContentIdea[]> => {
-  const { data, error } = await supabase
-    .from('content_ideas')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('is_pinned', true)
-    .eq('is_archived', false)
-    .order('updated_at', { ascending: false });
-
-  if (error) {
-    console.error('Error fetching pinned content ideas:', error);
-    throw error;
-  }
-
-  return (data || []).map(i => dbToContentIdea(i as DbContentIdea));
+  const data = await fetchAll<DbContentIdea>('content_ideas', {
+    userId,
+    orderBy: 'updated_at',
+    ascending: false,
+    filters: { is_pinned: true, is_archived: false },
+  });
+  return data.map(dbToContentIdea);
 };
 
 // Get content ideas by pillar
@@ -125,20 +106,13 @@ export const getContentIdeasByPillar = async (
   userId: string,
   pillarId: string
 ): Promise<ContentIdea[]> => {
-  const { data, error } = await supabase
-    .from('content_ideas')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('pillar_id', pillarId)
-    .eq('is_archived', false)
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    console.error('Error fetching content ideas by pillar:', error);
-    throw error;
-  }
-
-  return (data || []).map(i => dbToContentIdea(i as DbContentIdea));
+  const data = await fetchAll<DbContentIdea>('content_ideas', {
+    userId,
+    orderBy: 'created_at',
+    ascending: false,
+    filters: { pillar_id: pillarId, is_archived: false },
+  });
+  return data.map(dbToContentIdea);
 };
 
 // Get content ideas by source
@@ -146,20 +120,13 @@ export const getContentIdeasBySource = async (
   userId: string,
   source: ContentIdea['source']
 ): Promise<ContentIdea[]> => {
-  const { data, error } = await supabase
-    .from('content_ideas')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('source', source)
-    .eq('is_archived', false)
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    console.error('Error fetching content ideas by source:', error);
-    throw error;
-  }
-
-  return (data || []).map(i => dbToContentIdea(i as DbContentIdea));
+  const data = await fetchAll<DbContentIdea>('content_ideas', {
+    userId,
+    orderBy: 'created_at',
+    ascending: false,
+    filters: { source, is_archived: false },
+  });
+  return data.map(dbToContentIdea);
 };
 
 // Create a content idea
@@ -168,19 +135,8 @@ export const createContentIdea = async (
   idea: Omit<ContentIdea, 'id' | 'userId' | 'createdAt' | 'updatedAt'>
 ): Promise<ContentIdea> => {
   const dbIdea = contentIdeaToDb(userId, idea);
-
-  const { data, error } = await supabase
-    .from('content_ideas')
-    .insert([dbIdea])
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error creating content idea:', error);
-    throw error;
-  }
-
-  return dbToContentIdea(data as DbContentIdea);
+  const data = await createOne<DbContentIdea>('content_ideas', dbIdea);
+  return dbToContentIdea(data);
 };
 
 // Update a content idea
@@ -198,32 +154,13 @@ export const updateContentIdea = async (
   if (updates.isArchived !== undefined) dbUpdates.is_archived = updates.isArchived;
   if (updates.metadata !== undefined) dbUpdates.metadata = updates.metadata;
 
-  const { data, error } = await supabase
-    .from('content_ideas')
-    .update(dbUpdates)
-    .eq('id', ideaId)
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error updating content idea:', error);
-    throw error;
-  }
-
-  return dbToContentIdea(data as DbContentIdea);
+  const data = await updateOne<DbContentIdea>('content_ideas', ideaId, dbUpdates);
+  return dbToContentIdea(data);
 };
 
 // Delete a content idea
 export const deleteContentIdea = async (ideaId: string): Promise<void> => {
-  const { error } = await supabase
-    .from('content_ideas')
-    .delete()
-    .eq('id', ideaId);
-
-  if (error) {
-    console.error('Error deleting content idea:', error);
-    throw error;
-  }
+  await deleteOne('content_ideas', ideaId);
 };
 
 // Toggle pinned status
@@ -259,18 +196,7 @@ export const batchCreateContentIdeas = async (
   ideas: Array<Omit<ContentIdea, 'id' | 'userId' | 'createdAt' | 'updatedAt'>>
 ): Promise<ContentIdea[]> => {
   if (ideas.length === 0) return [];
-
   const dbIdeas = ideas.map(idea => contentIdeaToDb(userId, idea));
-
-  const { data, error } = await supabase
-    .from('content_ideas')
-    .insert(dbIdeas)
-    .select();
-
-  if (error) {
-    console.error('Error batch creating content ideas:', error);
-    throw error;
-  }
-
-  return (data || []).map(i => dbToContentIdea(i as DbContentIdea));
+  const data = await createMany<DbContentIdea>('content_ideas', dbIdeas);
+  return data.map(dbToContentIdea);
 };

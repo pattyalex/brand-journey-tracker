@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { fetchAll, createOne, updateOne, deleteOne } from './baseService';
 
 export interface QuickNote {
   id: string;
@@ -10,69 +10,31 @@ export interface QuickNote {
 }
 
 export async function getUserQuickNotes(userId: string): Promise<QuickNote[]> {
-  const { data, error } = await supabase
-    .from('quick_notes')
-    .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    console.error('Error fetching quick notes:', error);
-    throw error;
-  }
-
-  return data || [];
+  return fetchAll<QuickNote>('quick_notes', {
+    userId,
+    orderBy: 'created_at',
+    ascending: false,
+  });
 }
 
 export async function createQuickNote(
   userId: string,
   note: Pick<QuickNote, 'title' | 'content'>
 ): Promise<QuickNote> {
-  const { data, error } = await supabase
-    .from('quick_notes')
-    .insert({
-      user_id: userId,
-      title: note.title,
-      content: note.content,
-    })
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error creating quick note:', error);
-    throw error;
-  }
-
-  return data;
+  return createOne<QuickNote>('quick_notes', {
+    user_id: userId,
+    title: note.title,
+    content: note.content,
+  });
 }
 
 export async function updateQuickNote(
   id: string,
   updates: Partial<Pick<QuickNote, 'title' | 'content'>>
 ): Promise<QuickNote> {
-  const { data, error } = await supabase
-    .from('quick_notes')
-    .update(updates)
-    .eq('id', id)
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error updating quick note:', error);
-    throw error;
-  }
-
-  return data;
+  return updateOne<QuickNote>('quick_notes', id, updates);
 }
 
 export async function deleteQuickNote(id: string): Promise<void> {
-  const { error } = await supabase
-    .from('quick_notes')
-    .delete()
-    .eq('id', id);
-
-  if (error) {
-    console.error('Error deleting quick note:', error);
-    throw error;
-  }
+  await deleteOne('quick_notes', id);
 }

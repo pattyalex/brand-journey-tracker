@@ -1,5 +1,6 @@
 import { shotTemplates } from "./shotTemplates";
 import { StoryboardScene } from "../types";
+import { callClaudeAPI } from "@/services/claudeService";
 
 export interface GeneratedScene {
   scriptLine: string;
@@ -23,16 +24,6 @@ export const generateStoryboardFromScript = async (
       return {
         scenes: [],
         error: "Script is too short. Please add more content to generate a storyboard."
-      };
-    }
-
-    // Get API key from environment variable
-    const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
-
-    if (!apiKey) {
-      return {
-        scenes: [],
-        error: "AI service is temporarily unavailable. Please try again later."
       };
     }
 
@@ -69,29 +60,14 @@ RESPOND WITH ONLY a JSON array in this exact format (no other text):
   }
 ]`;
 
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
-        "anthropic-dangerous-direct-browser-access": "true"
-      },
-      body: JSON.stringify({
-        model: "claude-3-5-haiku-20241022",
-        max_tokens: 2000,
-        system: systemPrompt,
-        messages: [
-          { role: "user", content: `Here is the script to break into filmable scenes:\n\n${script}` }
-        ]
-      })
+    const result = await callClaudeAPI({
+      system: systemPrompt,
+      messages: [{ role: "user", content: `Here is the script to break into filmable scenes:\n\n${script}` }],
+      maxTokens: 2000,
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      console.error("Claude API error:", data);
-      const errorMessage = data.error?.message || "Unknown error";
+    if (!result.ok) {
+      const errorMessage = result.error || "Unknown error";
       if (errorMessage.includes("invalid") && errorMessage.includes("key")) {
         return { scenes: [], error: "AI service is temporarily unavailable. Please try again later." };
       }
@@ -101,18 +77,15 @@ RESPOND WITH ONLY a JSON array in this exact format (no other text):
       return { scenes: [], error: `Claude API error: ${errorMessage}` };
     }
 
-    const content = data.content[0].text;
-
     // Parse the JSON response
     let scenes: GeneratedScene[] = [];
     try {
-      const jsonMatch = content.match(/\[[\s\S]*\]/);
+      const jsonMatch = result.text.match(/\[[\s\S]*\]/);
       if (jsonMatch) {
         const parsed = JSON.parse(jsonMatch[0]);
         if (Array.isArray(parsed)) {
           for (const item of parsed) {
             if (item.scriptLine && item.shotTemplateId && item.filmingDescription) {
-              // Validate shot ID - default to medium-shot if invalid
               const shotId = validTemplateIds.includes(item.shotTemplateId)
                 ? item.shotTemplateId
                 : 'medium-shot';
@@ -130,7 +103,7 @@ RESPOND WITH ONLY a JSON array in this exact format (no other text):
         }
       }
     } catch (parseError) {
-      console.error("Failed to parse AI response:", content);
+      console.error("Failed to parse AI response:", result.text);
       return { scenes: [], error: "Failed to parse AI response. Please try again." };
     }
 

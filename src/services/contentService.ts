@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { ContentItem } from '@/types/content';
+import { fetchAll, createOne, updateOne, deleteOne, createMany } from './baseService';
 
 /**
  * Content Pillars Service
@@ -28,39 +29,19 @@ export const createContentPillar = async (
     position?: number;
   }
 ) => {
-  const { data, error } = await supabase
-    .from('content_pillars')
-    .insert([
-      {
-        user_id: userId,
-        ...pillarData,
-      },
-    ])
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error creating content pillar:', error);
-    throw error;
-  }
-
-  return data as ContentPillar;
+  return createOne<ContentPillar>('content_pillars', {
+    user_id: userId,
+    ...pillarData,
+  });
 };
 
 // Get all content pillars for a user
 export const getUserContentPillars = async (userId: string) => {
-  const { data, error } = await supabase
-    .from('content_pillars')
-    .select('*')
-    .eq('user_id', userId)
-    .order('position', { ascending: true });
-
-  if (error) {
-    console.error('Error fetching content pillars:', error);
-    throw error;
-  }
-
-  return data as ContentPillar[];
+  return fetchAll<ContentPillar>('content_pillars', {
+    userId,
+    orderBy: 'position',
+    ascending: true,
+  });
 };
 
 // Update a content pillar
@@ -68,32 +49,12 @@ export const updateContentPillar = async (
   pillarId: string,
   updates: Partial<ContentPillar>
 ) => {
-  const { data, error } = await supabase
-    .from('content_pillars')
-    .update(updates)
-    .eq('id', pillarId)
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error updating content pillar:', error);
-    throw error;
-  }
-
-  return data as ContentPillar;
+  return updateOne<ContentPillar>('content_pillars', pillarId, updates as Record<string, unknown>);
 };
 
 // Delete a content pillar
 export const deleteContentPillar = async (pillarId: string) => {
-  const { error } = await supabase
-    .from('content_pillars')
-    .delete()
-    .eq('id', pillarId);
-
-  if (error) {
-    console.error('Error deleting content pillar:', error);
-    throw error;
-  }
+  await deleteOne('content_pillars', pillarId);
 };
 
 /**
@@ -151,51 +112,28 @@ export const createContentItem = async (
   contentItem: Omit<ContentItem, 'id'>
 ) => {
   const dbItem = contentItemToDb(userId, pillarId, contentItem);
-
-  const { data, error } = await supabase
-    .from('content_items')
-    .insert([dbItem])
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error creating content item:', error);
-    throw error;
-  }
-
+  const data = await createOne<any>('content_items', dbItem);
   return dbToContentItem(data);
 };
 
 // Get all content items for a specific pillar
 export const getPillarContentItems = async (userId: string, pillarId: string) => {
-  const { data, error } = await supabase
-    .from('content_items')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('pillar_id', pillarId)
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    console.error('Error fetching pillar content items:', error);
-    throw error;
-  }
-
+  const data = await fetchAll<any>('content_items', {
+    userId,
+    orderBy: 'created_at',
+    ascending: false,
+    filters: { pillar_id: pillarId },
+  });
   return data.map(dbToContentItem);
 };
 
 // Get all content items for a user
 export const getUserContentItems = async (userId: string) => {
-  const { data, error } = await supabase
-    .from('content_items')
-    .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    console.error('Error fetching user content items:', error);
-    throw error;
-  }
-
+  const data = await fetchAll<any>('content_items', {
+    userId,
+    orderBy: 'created_at',
+    ascending: false,
+  });
   return data.map(dbToContentItem);
 };
 
@@ -221,69 +159,33 @@ export const updateContentItem = async (
   if (updates.originalPillarId !== undefined) dbUpdates.original_pillar_id = updates.originalPillarId;
   if (updates.isRestored !== undefined) dbUpdates.is_restored = updates.isRestored;
 
-  const { data, error } = await supabase
-    .from('content_items')
-    .update(dbUpdates)
-    .eq('id', contentId)
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error updating content item:', error);
-    throw error;
-  }
-
+  const data = await updateOne<any>('content_items', contentId, dbUpdates);
   return dbToContentItem(data);
 };
 
 // Move content item to different pillar
 export const moveContentItem = async (contentId: string, newPillarId: string) => {
-  const { data, error } = await supabase
-    .from('content_items')
-    .update({ pillar_id: newPillarId })
-    .eq('id', contentId)
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error moving content item:', error);
-    throw error;
-  }
-
+  const data = await updateOne<any>('content_items', contentId, { pillar_id: newPillarId });
   return dbToContentItem(data);
 };
 
 // Delete a content item
 export const deleteContentItem = async (contentId: string) => {
-  const { error } = await supabase
-    .from('content_items')
-    .delete()
-    .eq('id', contentId);
-
-  if (error) {
-    console.error('Error deleting content item:', error);
-    throw error;
-  }
+  await deleteOne('content_items', contentId);
 };
 
 // Get content items by status (e.g., 'scheduled', 'published', 'idea')
 export const getContentItemsByStatus = async (userId: string, status: string) => {
-  const { data, error } = await supabase
-    .from('content_items')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('status', status)
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    console.error('Error fetching content items by status:', error);
-    throw error;
-  }
-
+  const data = await fetchAll<any>('content_items', {
+    userId,
+    orderBy: 'created_at',
+    ascending: false,
+    filters: { status },
+  });
   return data.map(dbToContentItem);
 };
 
-// Get scheduled content for calendar view
+// Get scheduled content for calendar view - uses .not() and dynamic date filters, keep raw
 export const getScheduledContent = async (userId: string, startDate?: Date, endDate?: Date) => {
   let query = supabase
     .from('content_items')
@@ -317,16 +219,6 @@ export const batchCreateContentItems = async (
   contentItems: Omit<ContentItem, 'id'>[]
 ) => {
   const dbItems = contentItems.map(item => contentItemToDb(userId, pillarId, item));
-
-  const { data, error } = await supabase
-    .from('content_items')
-    .insert(dbItems)
-    .select();
-
-  if (error) {
-    console.error('Error batch creating content items:', error);
-    throw error;
-  }
-
+  const data = await createMany<any>('content_items', dbItems);
   return data.map(dbToContentItem);
 };

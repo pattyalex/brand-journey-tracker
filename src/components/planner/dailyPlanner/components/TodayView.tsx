@@ -1,30 +1,24 @@
-import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import { addDays, format } from "date-fns";
-import { Trash2, Video, Lightbulb, X, Clock, FileText, ArrowRight, ListTodo, Check, GripHorizontal, Calendar, ExternalLink } from "lucide-react";
+import { Lightbulb, X, Clock, FileText, GripHorizontal, ListTodo, Check, Calendar, ExternalLink } from "lucide-react";
 import { SiInstagram, SiTiktok, SiYoutube, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
-import { Input } from "@/components/ui/input";
-import { autoFormatTime } from "../utils/timeUtils";
-import { toast } from "sonner";
-import { PlannerItem } from "@/types/planner";
 import { CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getDateString } from "../utils/plannerUtils";
-import { parseTimeTo24 } from "../utils/timeUtils";
-import { scheduleColors, defaultScheduledColor, getTaskColorByHex, defaultTaskColor, isColorDark } from "../utils/colorConstants";
+import { scheduleColors, defaultScheduledColor } from "../utils/colorConstants";
 import { TaskColorPicker } from "./TaskColorPicker";
 import { TimePicker } from "./TimePicker";
 import { PlannerDerived, PlannerHelpers, PlannerRefs, PlannerSetters, PlannerState } from "../hooks/usePlannerState";
 import { usePlannerActions } from "../hooks/usePlannerActions";
-import { useColorPalette } from "../hooks/useColorPalette";
-import { ProductionCard, KanbanColumn } from "@/pages/production/types";
-import { defaultColumns } from "@/pages/production/utils/productionConstants";
-import { StorageKeys, getString, setString } from "@/lib/storage";
-import { EVENTS, emit } from "@/lib/events";
+import { ProductionCard } from "@/pages/production/types";
 import { cn } from "@/lib/utils";
 import { useGoogleCalendar } from "@/hooks/useGoogleCalendar";
+import { useTodayViewState } from "../hooks/useTodayViewState";
+import { TodayHeader } from "./TodayHeader";
+import { TimeGrid } from "./TimeGrid";
+import { TimeSlotTask, calculateTaskLayout } from "./TimeSlotTask";
 
 interface TodayViewProps {
   state: PlannerState;
@@ -48,8 +42,6 @@ interface TodayViewProps {
 }
 
 export const TodayView = ({ state, derived, refs, helpers, setters, actions, todayAddDialogState, setTodayAddDialogState, onOpenContentDialog, onOpenContentFlow }: TodayViewProps) => {
-  const navigate = useNavigate();
-
   // Google Calendar integration
   const {
     connection: googleConnection,
@@ -59,7 +51,6 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
 
   const {
     selectedDate,
-    selectedTimezone,
     todayZoomLevel,
     isDraggingCreate,
     dragCreateStart,
@@ -75,395 +66,38 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
     productionContent,
   } = state;
 
-  // Dialog state from external prop or local
-  const addDialogOpen = todayAddDialogState?.open ?? false;
-  const addDialogStartTime = todayAddDialogState?.startTime ?? "";
-  const addDialogEndTime = todayAddDialogState?.endTime ?? "";
+  const { dateString, currentDay, colors, getTimezoneDisplay } = derived;
+  const { todayScrollRef, isResizingRef } = refs;
+  const { convert24To12Hour, loadProductionContent } = helpers;
+  const {
+    handleOpenTaskDialog,
+    handleTimezoneChange,
+    handleToggleItem,
+    handleDeleteItem,
+    handleEditItem,
+    savePlannerData,
+    saveAllTasks,
+  } = actions;
+  const {
+    setPlannerData,
+    setAllTasks,
+    setIsDraggingCreate,
+    setDragCreateStart,
+    setDragCreateEnd,
+    setProductionContent,
+  } = setters;
 
-  // Local dialog state
-  const [addDialogTab, setAddDialogTab] = useState<'task' | 'content'>('task');
-
-  // Task form state
-  const [taskTitle, setTaskTitle] = useState("");
-  const [taskStartTime, setTaskStartTime] = useState(addDialogStartTime);
-  const [taskEndTime, setTaskEndTime] = useState(addDialogEndTime);
-  const [taskDescription, setTaskDescription] = useState("");
-  const [taskColor, setTaskColor] = useState("");
-  const [taskIncludeInContentCalendar, setTaskIncludeInContentCalendar] = useState(false);
-
-  // Content form state
-  const [contentHook, setContentHook] = useState("");
-  const [contentNotes, setContentNotes] = useState("");
-  const [contentStartTime, setContentStartTime] = useState(addDialogStartTime);
-  const [contentEndTime, setContentEndTime] = useState(addDialogEndTime);
-  const [addToContentHub, setAddToContentHub] = useState(true);
-
-  // Color palette management (shared hook)
-  const contentColorPalette = useColorPalette();
-  const contentColor = contentColorPalette.selectedColor;
-  const setContentColor = contentColorPalette.setSelectedColor;
-
-  // Content hover tooltip state
-  const [contentTooltip, setContentTooltip] = useState<{
-    text: string;
-    timeStr: string;
-    isPlanned: boolean;
-    platforms?: string[];
-    formats?: string[];
-    x: number;
-    y: number;
-  } | null>(null);
-
-  // Dialog drag state
-  const [dialogDragOffset, setDialogDragOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
-  const dialogDragStartRef = useRef<{ x: number; y: number; offsetX: number; offsetY: number } | null>(null);
-
-  // Handle dialog drag
-  const handleDialogDragStart = (e: React.MouseEvent) => {
-    e.preventDefault();
-    dialogDragStartRef.current = {
-      x: e.clientX,
-      y: e.clientY,
-      offsetX: dialogDragOffset.x,
-      offsetY: dialogDragOffset.y,
-    };
-
-    const handleMouseMove = (moveEvent: MouseEvent) => {
-      if (dialogDragStartRef.current) {
-        const deltaX = moveEvent.clientX - dialogDragStartRef.current.x;
-        const deltaY = moveEvent.clientY - dialogDragStartRef.current.y;
-        setDialogDragOffset({
-          x: dialogDragStartRef.current.offsetX + deltaX,
-          y: dialogDragStartRef.current.offsetY + deltaY,
-        });
-      }
-    };
-
-    const handleMouseUp = () => {
-      dialogDragStartRef.current = null;
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
-
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-  };
-
-  // Scroll to first task or 6am on mount
-  useEffect(() => {
-    // Small delay to ensure ScrollArea viewport is rendered
-    const timer = setTimeout(() => {
-      const viewport = refs.todayScrollRef.current?.querySelector('[data-radix-scroll-area-viewport]') as HTMLElement;
-      if (viewport) {
-        // Find earliest task time for today
-        let earliestHour = 24; // Start with max so we find the minimum
-
-        const todayItems = derived.currentDay?.items || [];
-        todayItems.forEach(task => {
-          if (task.startTime) {
-            // Handle both 24-hour (08:00) and 12-hour (8:00 am) formats
-            let hour = parseInt(task.startTime.split(':')[0], 10);
-            const isPM = task.startTime.toLowerCase().includes('pm');
-            const isAM = task.startTime.toLowerCase().includes('am');
-
-            if (isPM && hour !== 12) hour += 12;
-            if (isAM && hour === 12) hour = 0;
-
-            if (!isNaN(hour) && hour < earliestHour) {
-              earliestHour = hour;
-            }
-          }
-        });
-
-        // If no tasks found, default to 6am
-        if (earliestHour === 24) earliestHour = 7;
-
-        // Scroll to 1 hour before earliest task, but minimum 5am
-        const scrollToHour = Math.max(5, earliestHour - 1);
-        const scrollPosition = scrollToHour * 90 * state.todayZoomLevel;
-        viewport.scrollTop = scrollPosition;
-      }
-    }, 50);
-    return () => clearTimeout(timer);
-  }, [derived.dateString]);
-
-  // Sync times and tab when dialog opens
-  useEffect(() => {
-    if (addDialogOpen) {
-      // Reset drag offset when dialog opens
-      setDialogDragOffset({ x: 0, y: 0 });
-      // Set times from dialog state
-      setTaskStartTime(addDialogStartTime);
-      setTaskEndTime(addDialogEndTime);
-      setContentStartTime(addDialogStartTime);
-      setContentEndTime(addDialogEndTime);
-      // Set default tab based on display mode
-      if (contentDisplayMode === 'content') {
-        setAddDialogTab('content');
-      } else if (contentDisplayMode === 'tasks') {
-        setAddDialogTab('task');
-      }
-      // For 'both' mode, keep the current tab
-    }
-  }, [addDialogOpen, addDialogStartTime, addDialogEndTime, contentDisplayMode]);
-
-  // Reset form state
-  const resetFormState = () => {
-    setTaskTitle("");
-    setTaskStartTime("");
-    setTaskEndTime("");
-    setTaskDescription("");
-    setTaskColor("");
-    setTaskIncludeInContentCalendar(false);
-    setContentHook("");
-    setContentNotes("");
-    setContentColor("");
-    setContentStartTime("");
-    setContentEndTime("");
-    setAddToContentHub(true);
-    // Reset color picker popover states
-    contentColorPalette.resetPickerState();
-  };
-
-  // Close dialog
-  const closeAddDialog = () => {
-    if (setTodayAddDialogState) {
-      setTodayAddDialogState({ open: false, startTime: '', endTime: '' });
-    }
-  };
-
-  // Sync state when dialog opens
-  useEffect(() => {
-    if (addDialogOpen) {
-      // Set times for both tasks and content
-      setTaskStartTime(addDialogStartTime);
-      setTaskEndTime(addDialogEndTime);
-      setContentStartTime(addDialogStartTime);
-      setContentEndTime(addDialogEndTime);
-      // Set correct tab based on mode
-      if (contentDisplayMode === 'content') {
-        setAddDialogTab('content');
-      } else {
-        setAddDialogTab('task');
-      }
-    }
-  }, [addDialogOpen, addDialogStartTime, addDialogEndTime, contentDisplayMode]);
-
-  // Handle creating a task from the dialog
-  const handleCreateTaskFromDialog = () => {
-    if (!taskTitle.trim()) {
-      toast.error('Please enter a task title');
-      return;
-    }
-
-    // Convert 12-hour to 24-hour format for storage
-    const convert12To24 = (time12: string): string => {
-      const match = time12.match(/(\d{1,2}):(\d{2})\s*(am|pm)/i);
-      if (!match) return '';
-      let hour = parseInt(match[1], 10);
-      const minute = match[2];
-      const period = match[3].toLowerCase();
-      if (hour > 12) hour = hour % 12;
-      if (hour < 1) hour = 1;
-      if (period === 'pm' && hour !== 12) hour += 12;
-      else if (period === 'am' && hour === 12) hour = 0;
-      return `${hour.toString().padStart(2, '0')}:${minute}`;
-    };
-
-    const newTask: PlannerItem = {
-      id: `task-${Date.now()}`,
-      text: taskTitle.trim(),
-      completed: false,
-      section: 'morning',
-      date: dateString,
-      startTime: taskStartTime ? convert12To24(taskStartTime) : undefined,
-      endTime: taskEndTime ? convert12To24(taskEndTime) : undefined,
-      description: taskDescription || undefined,
-      color: taskColor || undefined,
-      isContentCalendar: taskIncludeInContentCalendar,
-    };
-
-    // Add to planner data
-    const dayIndex = plannerData.findIndex(d => d.date === dateString);
-    const updatedPlannerData = [...plannerData];
-
-    if (dayIndex >= 0) {
-      updatedPlannerData[dayIndex] = {
-        ...updatedPlannerData[dayIndex],
-        items: [...updatedPlannerData[dayIndex].items, newTask]
-      };
-    } else {
-      updatedPlannerData.push({
-        date: dateString,
-        items: [newTask],
-        tasks: tasks,
-        greatDay: greatDay,
-        grateful: grateful
-      });
-    }
-
-    setters.setPlannerData(updatedPlannerData);
-    actions.savePlannerData(updatedPlannerData);
-    toast.success('Task created for ' + format(selectedDate, 'MMM d'));
-    closeAddDialog();
-    resetFormState();
-  };
-
-  // Handle creating planned content from the dialog
-  const handleCreateContentFromDialog = () => {
-    if (!contentHook.trim()) {
-      toast.error('Please enter a hook/title for your content');
-      return;
-    }
-
-    if (!contentStartTime.trim() || !contentEndTime.trim()) {
-      toast.error('Please select a time slot for your content');
-      return;
-    }
-
-    try {
-      const savedData = getString(StorageKeys.productionKanban);
-      const columns: KanbanColumn[] = savedData ? JSON.parse(savedData) : JSON.parse(JSON.stringify(defaultColumns));
-      let ideateColumn = columns.find(c => c.id === 'ideate');
-
-      // Create ideate column if it doesn't exist
-      if (!ideateColumn) {
-        ideateColumn = { id: 'ideate', title: 'Bank of Ideas', cards: [] };
-        columns.unshift(ideateColumn);
-      }
-
-      const newCard: ProductionCard = {
-        id: `card-${Date.now()}`,
-        title: contentHook.trim(),
-        hook: contentHook.trim(),
-        description: contentNotes || undefined,
-        columnId: 'ideate',
-        plannedDate: dateString,
-        plannedColor: contentColor as any,
-        plannedStartTime: parseTimeTo24(contentStartTime) || undefined,
-        plannedEndTime: parseTimeTo24(contentEndTime) || undefined,
-        isNew: true,
-        addedFrom: 'calendar',
-        calendarOnly: !addToContentHub,
-      };
-      ideateColumn.cards.push(newCard);
-      setString(StorageKeys.productionKanban, JSON.stringify(columns));
-
-      // DIRECTLY update productionContent state for immediate UI feedback
-      setProductionContent(prev => {
-        const updated = {
-          ...prev,
-          planned: [...prev.planned, newCard]
-        };
-        console.log('TodayView: Updated productionContent.planned:', updated.planned.length, 'items');
-        console.log('TodayView: New card:', newCard);
-        return updated;
-      });
-
-      // Emit events for cross-component sync (other views like CalendarView, WeekView)
-      emit(window, EVENTS.productionKanbanUpdated);
-      emit(window, EVENTS.scheduledContentUpdated);
-
-      toast.success('Content idea added for ' + format(selectedDate, 'MMM d'));
-    } catch (err) {
-      console.error('Error adding planned content:', err);
-    }
-
-    closeAddDialog();
-    resetFormState();
-  };
-
-  // Handle deleting content from calendar
-  const handleDeleteContent = (contentId: string, type: 'scheduled' | 'planned') => {
-    const savedData = getString(StorageKeys.productionKanban);
-    if (savedData) {
-      try {
-        const columns: KanbanColumn[] = JSON.parse(savedData);
-
-        if (type === 'scheduled') {
-          const toScheduleColumn = columns.find(c => c.id === 'to-schedule');
-          if (toScheduleColumn) {
-            const card = toScheduleColumn.cards.find(c => c.id === contentId);
-            if (card) {
-              card.scheduledDate = undefined;
-              card.schedulingStatus = undefined;
-            }
-          }
-        } else {
-          const ideateColumn = columns.find(c => c.id === 'ideate');
-          if (ideateColumn) {
-            const card = ideateColumn.cards.find(c => c.id === contentId);
-            if (card) {
-              card.plannedDate = undefined;
-            }
-          }
-        }
-
-        setString(StorageKeys.productionKanban, JSON.stringify(columns));
-        emit(window, EVENTS.productionKanbanUpdated);
-        emit(window, EVENTS.scheduledContentUpdated);
-        loadProductionContent();
-        if (type === 'scheduled') {
-          toast.success(
-            <span>
-              Content unscheduled — still in{' '}
-              <button
-                onClick={() => {
-                  setString(StorageKeys.highlightedUnscheduledCard, contentId);
-                  navigate('/production?scrollTo=to-schedule');
-                }}
-                className="underline font-medium text-indigo-600 hover:text-indigo-800"
-              >
-                Content Hub
-              </button>
-            </span>
-          );
-        } else {
-          toast.success('Idea removed from calendar');
-        }
-      } catch (err) {
-        console.error('Error removing content:', err);
-      }
-    }
-  };
-
-  // Handle toggling completion for scheduled content
-  const handleToggleComplete = (contentId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    const savedData = getString(StorageKeys.productionKanban);
-    if (savedData) {
-      try {
-        const columns: KanbanColumn[] = JSON.parse(savedData);
-        const toScheduleColumn = columns.find(c => c.id === 'to-schedule');
-        if (toScheduleColumn) {
-          const card = toScheduleColumn.cards.find(c => c.id === contentId);
-          if (card) {
-            const newCompletedState = !card.isCompleted;
-            card.isCompleted = newCompletedState;
-            setString(StorageKeys.productionKanban, JSON.stringify(columns));
-            emit(window, EVENTS.productionKanbanUpdated);
-            emit(window, EVENTS.scheduledContentUpdated);
-            loadProductionContent();
-            if (newCompletedState) {
-              // Create archive copy
-              const archivedCopy: ProductionCard = {
-                ...card,
-                id: `archived-${card.id}-${Date.now()}`,
-                columnId: 'posted',
-                schedulingStatus: undefined,
-                archivedAt: new Date().toISOString(),
-                postedAt: new Date().toISOString(),
-              } as ProductionCard & { archivedAt: string; postedAt: string };
-              emit(window, EVENTS.contentArchived, { card: archivedCopy });
-              toast.success("Posted! 🎉");
-            }
-          }
-        }
-      } catch (err) {
-        console.error('Error toggling completion:', err);
-      }
-    }
-  };
+  // Extract state/handlers into custom hook
+  const viewState = useTodayViewState({
+    state,
+    derived,
+    refs,
+    helpers,
+    setters,
+    actions,
+    todayAddDialogState,
+    setTodayAddDialogState,
+  });
 
   // Fetch Google Calendar events for selected date
   useEffect(() => {
@@ -494,122 +128,21 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
   console.log('TodayView render - productionContent.planned:', productionContent?.planned?.length || 0);
   console.log('TodayView render - plannedContent (filtered):', plannedContent.length);
 
-  const { dateString, currentDay, colors, getTimezoneDisplay } = derived;
-  const { todayScrollRef, isResizingRef } = refs;
-  const { convert24To12Hour, loadProductionContent } = helpers;
-  const {
-    handleOpenTaskDialog,
-    handleTimezoneChange,
-    handleToggleItem,
-    handleDeleteItem,
-    handleEditItem,
-    savePlannerData,
-    saveAllTasks,
-  } = actions;
-  const {
-    setPlannerData,
-    setAllTasks,
-    setIsDraggingCreate,
-    setDragCreateStart,
-    setDragCreateEnd,
-    setProductionContent,
-  } = setters;
-
   return (
     <>
 <CardContent className="px-0 h-full flex flex-col">
-  {/* All-Day Google Calendar Events */}
-  {googleEventsForToday.filter(e => e.isAllDay).length > 0 && (
-    <div className="flex-shrink-0 px-4 py-2 border-b border-blue-100">
-      <div className="flex flex-wrap gap-2">
-        {googleEventsForToday.filter(e => e.isAllDay).map((gEvent) => (
-          <div
-            key={`google-allday-${gEvent.id}`}
-            onClick={() => gEvent.htmlLink && window.open(gEvent.htmlLink, '_blank')}
-            className="group flex items-center gap-1.5 px-3 py-1.5 rounded-lg cursor-pointer hover:brightness-95 transition-all border-l-4"
-            style={{
-              background: 'linear-gradient(180deg, #E8F0FE 0%, #D2E3FC 100%)',
-              borderLeftColor: '#4285F4',
-            }}
-          >
-            <Calendar className="w-3 h-3 flex-shrink-0" style={{ color: '#4285F4' }} />
-            <span className="text-xs font-medium" style={{ color: '#1967D2' }}>
-              {gEvent.title}
-            </span>
-            <span className="text-[10px] opacity-60" style={{ color: '#1967D2' }}>All day</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  )}
-
-  {/* Untimed Tasks Section - tasks without start/end times */}
-  {showTasks && (() => {
-    const untimedTasks = currentDay.items.filter(item => !item.startTime || !item.endTime);
-    if (untimedTasks.length === 0) return null;
-
-    return (
-      <div className="flex-shrink-0 px-4 py-3 bg-gradient-to-r from-purple-50/50 to-pink-50/50 border-b border-purple-100">
-        <div className="flex items-center gap-2 mb-2">
-          <ListTodo className="w-4 h-4 text-purple-500" />
-          <span className="text-sm font-semibold text-gray-800">All Day</span>
-          <span className="text-xs text-gray-400">({untimedTasks.length})</span>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {untimedTasks.map((task) => {
-            // Use preview color if this task is being edited
-            const isBeingEdited = state.editingTask?.id === task.id;
-            const colorToUse = isBeingEdited && state.dialogTaskColor ? state.dialogTaskColor : task.color;
-            const taskColorInfo = getTaskColorByHex(colorToUse);
-            return (
-              <div
-                key={task.id}
-                draggable
-                onDragStart={(e) => {
-                  e.dataTransfer.setData('taskId', task.id);
-                  e.dataTransfer.setData('fromDate', task.date || dateString);
-                  e.dataTransfer.setData('fromAllTasks', 'false');
-                  e.dataTransfer.effectAllowed = 'move';
-                  e.currentTarget.style.opacity = '0.5';
-                }}
-                onDragEnd={(e) => {
-                  e.currentTarget.style.opacity = '1';
-                }}
-                onClick={() => handleOpenTaskDialog(9, task)}
-                className="group flex items-center gap-2 px-3 py-1.5 rounded-lg cursor-pointer hover:shadow-sm transition-all border-l-4"
-                style={{
-                  backgroundColor: taskColorInfo.fill,
-                  borderLeftColor: taskColorInfo.border,
-                }}
-              >
-                <Checkbox
-                  checked={task.isCompleted}
-                  onCheckedChange={() => handleToggleItem(task.id)}
-                  onClick={(e) => e.stopPropagation()}
-                  className="h-3.5 w-3.5"
-                />
-                <span
-                  className={`text-xs font-medium ${task.isCompleted ? 'line-through opacity-50' : ''}`}
-                  style={{ color: taskColorInfo.text }}
-                >
-                  {task.text}
-                </span>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteItem(task.id);
-                  }}
-                  className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-opacity"
-                >
-                  <Trash2 className="w-3 h-3" />
-                </button>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    );
-  })()}
+  <TodayHeader
+    selectedDate={selectedDate}
+    dateString={dateString}
+    currentDay={currentDay}
+    showTasks={showTasks}
+    editingTask={state.editingTask}
+    dialogTaskColor={state.dialogTaskColor}
+    googleEventsForToday={googleEventsForToday}
+    handleOpenTaskDialog={handleOpenTaskDialog}
+    handleToggleItem={handleToggleItem}
+    handleDeleteItem={handleDeleteItem}
+  />
 
   <div ref={todayScrollRef} className="flex-1 flex flex-col min-h-0 overflow-hidden">
     <div className="flex flex-col flex-1 min-h-0 bg-white">
@@ -666,188 +199,25 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
               className="relative"
               style={{ height: `${24 * 90 * todayZoomLevel}px` }}
             >
-            {/* Hour labels and grid lines */}
-            {Array.from({ length: 24 }, (_, i) => {
-              const hour = i;
-
-              return (
-                <div
-                  key={hour}
-                  data-hour-row={hour}
-                  className="absolute left-0 right-0"
-                  style={{ top: `${hour * 90 * todayZoomLevel}px`, height: `${90 * todayZoomLevel}px` }}
-                >
-                  {/* Hour row container */}
-                  <div className="flex h-full border-t border-gray-300 bg-white">
-                    {/* 10-minute slots (6 slots per hour) */}
-                    <div className="flex-1 flex flex-col">
-                  {[0, 10, 20, 30, 40, 50].map((minute, idx) => {
-                    return (
-                      <div
-                        key={`${hour}-${minute}`}
-                        className={`flex-1 relative group/slot hover:bg-gray-100 transition-colors ${addDialogOpen ? 'pointer-events-none' : 'cursor-crosshair'}`}
-                        onMouseDown={(e) => {
-                          // Don't allow drag-to-create when dialog is open
-                          if (addDialogOpen) return;
-                          // Only start drag create if clicking directly on the slot (not on a task)
-                          if (e.target === e.currentTarget || (e.currentTarget.contains(e.target as Node) && (e.target as HTMLElement).classList.contains('pointer-events-none'))) {
-                            e.preventDefault();
-                            setIsDraggingCreate(true);
-                            setDragCreateStart({ hour, minute });
-                            setDragCreateEnd({ hour, minute });
-                          }
-                        }}
-                        onDragOver={(e) => {
-                          e.preventDefault();
-                          e.currentTarget.classList.add('bg-blue-100');
-                        }}
-                        onDragLeave={(e) => {
-                          e.currentTarget.classList.remove('bg-blue-100');
-                        }}
-                        onDrop={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          e.currentTarget.classList.remove('bg-blue-100');
-
-                          const taskId = e.dataTransfer.getData('taskId');
-                          const fromAllTasks = e.dataTransfer.getData('fromAllTasks');
-
-                          console.log('=== DROP EVENT ===');
-                          console.log('TaskId:', taskId);
-                          console.log('FromAllTasks:', fromAllTasks);
-                          console.log('Hour:', hour, 'Minute:', minute);
-                          console.log('All Tasks:', allTasks);
-
-                          if (!taskId) {
-                            console.log('❌ No taskId found, aborting');
-                            return;
-                          }
-
-                          // Calculate new time based on drop position
-                          const hourStr = hour.toString().padStart(2, '0');
-                          const minuteStr = minute.toString().padStart(2, '0');
-
-                          if (fromAllTasks === 'true') {
-                            console.log('✅ Handling drop from All Tasks');
-
-                            // Task is from All Tasks
-                            const taskFromAllTasks = allTasks.find(t => t.id === taskId);
-                            console.log('Found task:', taskFromAllTasks);
-
-                            if (!taskFromAllTasks) {
-                              console.log('❌ Task not found in allTasks');
-                              return;
-                            }
-
-                            // Calculate duration - preserve if task already has times, otherwise 20 minutes
-                            let durationMinutes = 20;
-                            if (taskFromAllTasks.startTime && taskFromAllTasks.endTime) {
-                              const [oldStartHour, oldStartMinute] = taskFromAllTasks.startTime.split(':').map(Number);
-                              const [oldEndHour, oldEndMinute] = taskFromAllTasks.endTime.split(':').map(Number);
-                              durationMinutes = (oldEndHour * 60 + oldEndMinute) - (oldStartHour * 60 + oldStartMinute);
-                            }
-
-                            const newStartMinutes = hour * 60 + minute;
-                            let newEndMinutes = newStartMinutes + durationMinutes;
-
-                            // Cap at end of day (23:59)
-                            if (newEndMinutes > 1439) {
-                              newEndMinutes = 1439;
-                            }
-
-                            const newEndHour = Math.floor(newEndMinutes / 60);
-                            const newEndMinute = newEndMinutes % 60;
-
-                            const newStartTime = `${hourStr}:${minuteStr}`;
-                            const newEndTime = `${newEndHour.toString().padStart(2, '0')}:${newEndMinute.toString().padStart(2, '0')}`;
-
-                            console.log('New times:', newStartTime, '-', newEndTime);
-
-                            // Add to calendar with time
-                            const newTask: PlannerItem = {
-                              ...taskFromAllTasks,
-                              date: dateString,
-                              startTime: newStartTime,
-                              endTime: newEndTime,
-                              section: "morning"
-                            };
-
-                            console.log('New task object:', newTask);
-
-                            const dayIndex = plannerData.findIndex(day => day.date === dateString);
-                            console.log('Day index:', dayIndex);
-
-                            const updatedPlannerData = [...plannerData];
-
-                            if (dayIndex >= 0) {
-                              updatedPlannerData[dayIndex] = {
-                                ...updatedPlannerData[dayIndex],
-                                items: [...updatedPlannerData[dayIndex].items, newTask]
-                              };
-                            } else {
-                              updatedPlannerData.push({
-                                date: dateString,
-                                items: [newTask],
-                                tasks: tasks,
-                                greatDay: greatDay,
-                                grateful: grateful
-                              });
-                            }
-
-                            console.log('Updating planner data...');
-                            setPlannerData(updatedPlannerData);
-                            savePlannerData(updatedPlannerData);
-
-                            console.log('Removing from All Tasks...');
-                            // Remove from All Tasks AFTER adding to calendar
-                            const filteredAllTasks = allTasks.filter(t => t.id !== taskId);
-                            setAllTasks(filteredAllTasks);
-                            saveAllTasks(filteredAllTasks);
-                            console.log('New All Tasks count:', filteredAllTasks.length);
-
-                            console.log('✅ Drop complete!');
-                          } else {
-                            // Task is already in calendar, just moving it
-                            const dayIndex = plannerData.findIndex(day => day.date === dateString);
-                            if (dayIndex < 0) return;
-
-                            const taskToMove = currentDay.items.find(item => item.id === taskId);
-                            if (!taskToMove) return;
-
-                            // Calculate duration to maintain it
-                            const [oldStartHour, oldStartMinute] = taskToMove.startTime!.split(':').map(Number);
-                            const [oldEndHour, oldEndMinute] = taskToMove.endTime!.split(':').map(Number);
-                            const durationMinutes = (oldEndHour * 60 + oldEndMinute) - (oldStartHour * 60 + oldStartMinute);
-
-                            // Calculate new end time
-                            const newStartMinutes = hour * 60 + minute;
-                            let newEndMinutes = newStartMinutes + durationMinutes;
-
-                            // Cap at end of day (23:59)
-                            if (newEndMinutes > 1439) {
-                              newEndMinutes = 1439;
-                            }
-
-                            const newEndHour = Math.floor(newEndMinutes / 60);
-                            const newEndMinute = newEndMinutes % 60;
-
-                            const newStartTime = `${hourStr}:${minuteStr}`;
-                            const newEndTime = `${newEndHour.toString().padStart(2, '0')}:${newEndMinute.toString().padStart(2, '0')}`;
-
-                            // Update the task with new times
-                            handleEditItem(taskId, taskToMove.text, newStartTime, newEndTime, taskToMove.color, taskToMove.description, taskToMove.isCompleted);
-                          }
-                        }}
-                      >
-                        {/* Remove Plus icon - drag to create instead */}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          );
-        })}
+            <TimeGrid
+              todayZoomLevel={todayZoomLevel}
+              dateString={dateString}
+              currentDay={currentDay}
+              plannerData={plannerData}
+              allTasks={allTasks}
+              tasks={tasks}
+              greatDay={greatDay}
+              grateful={grateful}
+              addDialogOpen={viewState.addDialogOpen}
+              setPlannerData={setPlannerData}
+              setAllTasks={setAllTasks}
+              setIsDraggingCreate={setIsDraggingCreate}
+              setDragCreateStart={setDragCreateStart}
+              setDragCreateEnd={setDragCreateEnd}
+              handleEditItem={handleEditItem}
+              savePlannerData={savePlannerData}
+              saveAllTasks={saveAllTasks}
+            />
 
         {/* Time labels are handled by hour labels only */}
 
@@ -855,361 +225,25 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
         {showTasks && (
         <div className="absolute top-0 left-2 right-2" style={{ zIndex: 10 }}>
           {(() => {
-            const tasksWithTimes = currentDay.items.filter(item => item.startTime && item.endTime);
+            const tasksWithLayout = calculateTaskLayout(currentDay.items);
 
-            // Calculate time ranges and detect overlaps
-            const tasksWithLayout = tasksWithTimes.map((task, index) => {
-              const [startHour, startMinute] = task.startTime!.split(':').map(Number);
-              const [endHour, endMinute] = task.endTime!.split(':').map(Number);
-              const startTotalMinutes = startHour * 60 + startMinute;
-              let endTotalMinutes = endHour * 60 + endMinute;
-
-              // Handle overnight tasks (e.g., 10 PM - 2 AM)
-              // If end time is before start time, it means the task spans midnight
-              // For display purposes, extend it to midnight (end of current day)
-              let durationMinutes = endTotalMinutes - startTotalMinutes;
-              if (durationMinutes < 0) {
-                // Task goes overnight - display until midnight
-                endTotalMinutes = 1440; // 24:00 = midnight
-                durationMinutes = endTotalMinutes - startTotalMinutes;
-              }
-
-              return {
-                task,
-                startMinutes: startTotalMinutes,
-                endMinutes: endTotalMinutes,
-                durationMinutes,
-                column: 0,
-                totalColumns: 1,
-                isBackground: false,
-                inOverlapGroup: false
-              };
-            });
-
-            // Detect overlaps and assign columns
-            const processedTasks = new Set<typeof tasksWithLayout[0]>();
-
-            for (let i = 0; i < tasksWithLayout.length; i++) {
-              const currentTask = tasksWithLayout[i];
-
-              // Skip if already processed as part of another group
-              if (processedTasks.has(currentTask)) continue;
-
-              const overlappingTasks = [currentTask];
-
-              // Find all tasks that overlap with this one
-              for (let j = i + 1; j < tasksWithLayout.length; j++) {
-                const otherTask = tasksWithLayout[j];
-
-                // Check if this task overlaps with ANY task in the current group
-                const overlapsWithGroup = overlappingTasks.some(groupTask =>
-                  (groupTask.startMinutes < otherTask.endMinutes &&
-                   groupTask.endMinutes > otherTask.startMinutes)
-                );
-
-                if (overlapsWithGroup && !overlappingTasks.includes(otherTask)) {
-                  overlappingTasks.push(otherTask);
-                }
-              }
-
-              // Mark all tasks in this group as processed
-              overlappingTasks.forEach(t => processedTasks.add(t));
-
-              // Assign columns to overlapping tasks
-              if (overlappingTasks.length > 1) {
-                // Find the longest task - it should be the background
-                const longestTask = overlappingTasks.reduce((longest, current) =>
-                  current.durationMinutes > longest.durationMinutes ? current : longest
-                );
-
-                // Mark longest task as background (full width, behind others)
-                longestTask.isBackground = true;
-                longestTask.column = 0;
-                longestTask.totalColumns = 1;
-                longestTask.inOverlapGroup = true;
-
-                // Other tasks are positioned on top - but only in columns if they directly overlap
-                const foregroundTasks = overlappingTasks.filter(t => t !== longestTask);
-
-                // Group foreground tasks that directly overlap with each other
-                const directOverlapGroups: typeof foregroundTasks[] = [];
-                const assignedToGroup = new Set<typeof foregroundTasks[0]>();
-
-                for (const task of foregroundTasks) {
-                  if (assignedToGroup.has(task)) continue;
-
-                  const group = [task];
-                  assignedToGroup.add(task);
-
-                  // Find other foreground tasks that directly overlap with this one
-                  for (const otherTask of foregroundTasks) {
-                    if (assignedToGroup.has(otherTask)) continue;
-
-                    // Check if otherTask overlaps with any task in current group
-                    const overlapsWithGroup = group.some(groupTask =>
-                      groupTask.startMinutes < otherTask.endMinutes &&
-                      groupTask.endMinutes > otherTask.startMinutes
-                    );
-
-                    if (overlapsWithGroup) {
-                      group.push(otherTask);
-                      assignedToGroup.add(otherTask);
-                    }
-                  }
-
-                  directOverlapGroups.push(group);
-                }
-
-                // Assign columns within each direct overlap group
-                for (const group of directOverlapGroups) {
-                  const totalColumns = group.length;
-                  group.forEach((t, idx) => {
-                    t.column = idx;
-                    t.totalColumns = totalColumns;
-                    t.isBackground = false;
-                    t.inOverlapGroup = true;
-                  });
-                }
-              }
-            }
-
-            return tasksWithLayout.map(({ task, startMinutes, endMinutes, column, totalColumns, isBackground, inOverlapGroup }) => {
-              let durationMinutes = endMinutes - startMinutes;
-
-              // Safety check: if duration is negative or spans multiple days, warn and cap
-              if (durationMinutes < 0) {
-                console.warn('Invalid task duration (negative):', task.text, 'Duration:', durationMinutes, 'Start:', task.startTime, 'End:', task.endTime);
-                durationMinutes = 60; // Default to 1 hour
-              } else if (durationMinutes > 1439) {
-                console.warn('Invalid task duration (>24h):', task.text, 'Duration:', durationMinutes, 'Start:', task.startTime, 'End:', task.endTime);
-                durationMinutes = 1439; // Cap at 23:59 (full day minus 1 minute)
-              }
-
-              const top = (startMinutes * 1.5 * todayZoomLevel) + 0.5;
-              const height = Math.max(durationMinutes * 1.5 * todayZoomLevel, 28) - 1;
-              const [startHour, startMinute] = task.startTime!.split(':').map(Number);
-
-              // Get task color info - use preview color if this task is being edited
-              const isBeingEdited = state.editingTask?.id === task.id;
-              const colorToUse = isBeingEdited && state.dialogTaskColor ? state.dialogTaskColor : task.color;
-              const taskColorInfo = getTaskColorByHex(colorToUse);
-
-              // Calculate width and position for overlapping tasks
-              // When showing both content and tasks, tasks take left 50%, content takes right 45%
-              const maxTaskWidth = showContent ? 50 : 88;
-              let widthPercent, leftPercent, zIndex;
-
-              if (isBackground) {
-                // Background task
-                widthPercent = maxTaskWidth;
-                leftPercent = 0;
-                zIndex = 5; // Lower z-index to stay behind
-              } else if (inOverlapGroup) {
-                // Foreground tasks in an overlapping group: position starting from left for better visibility
-                const availableSpace = showContent ? 40 : 75;
-                const startPosition = showContent ? 5 : 10;
-                widthPercent = availableSpace / totalColumns;
-                leftPercent = startPosition + (column * widthPercent);
-                zIndex = 15 + column; // Higher z-index to appear on top
-              } else {
-                // Standalone task (no overlap)
-                widthPercent = maxTaskWidth;
-                leftPercent = 0;
-                zIndex = 10;
-              }
-
-              return (
-                <div
-                  key={task.id}
-                  draggable
-                  onDragStart={(e) => {
-                    console.log('🚀 DRAG START FROM TODAY:', { id: task.id, date: task.date, text: task.text });
-                    e.dataTransfer.setData('taskId', task.id);
-                    e.dataTransfer.setData('fromDate', task.date || dateString);
-                    e.dataTransfer.setData('fromAllTasks', 'false');
-                    e.dataTransfer.effectAllowed = 'move';
-                    console.log('✅ Drag data set - taskId:', task.id, 'fromDate:', task.date || dateString);
-                    e.currentTarget.style.opacity = '0.5';
-                  }}
-                  onDragEnd={(e) => {
-                    console.log('🏁 DRAG END FROM TODAY');
-                    e.currentTarget.style.opacity = '1';
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    // Don't open dialog if we just finished resizing
-                    if (isResizingRef.current) {
-                      return;
-                    }
-                    handleOpenTaskDialog(startHour, task);
-                  }}
-                  data-time-item
-                  data-start-minutes={startMinutes}
-                  data-duration-minutes={durationMinutes}
-                  className="group absolute rounded px-2 py-1 border-l-4 hover:shadow-sm cursor-pointer overflow-hidden"
-                  style={{
-                    top: `${top}px`,
-                    height: `${height}px`,
-                    left: `${leftPercent}%`,
-                    width: `calc(${widthPercent}% - 4px)`,
-                    backgroundColor: taskColorInfo.fill,
-                    borderLeftColor: taskColorInfo.border,
-                    zIndex: zIndex,
-                  }}
-                >
-                  {/* Top resize handle */}
-                  <div
-                    className="absolute top-0 left-0 right-0 h-1 cursor-ns-resize opacity-0 group-hover:opacity-100 transition-opacity z-30"
-                    onMouseDown={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
-                      isResizingRef.current = true;
-
-                      const startY = e.clientY;
-                      const originalStartMinutes = startMinutes;
-
-                      const handleMouseMove = (moveEvent: MouseEvent) => {
-                        const deltaY = moveEvent.clientY - startY;
-                        const rawDeltaMinutes = deltaY / (1.5 * todayZoomLevel); // 1.5px per minute * zoom
-                        // Snap to 10-minute increments
-                        const deltaMinutes = Math.round(rawDeltaMinutes / 10) * 10;
-                        let newStartMinutes = originalStartMinutes + deltaMinutes;
-
-                        // Snap to 10-minute intervals
-                        newStartMinutes = Math.round(newStartMinutes / 10) * 10;
-
-                        // Cap at 0-1430 (00:00 - 23:50)
-                        newStartMinutes = Math.max(0, Math.min(1430, newStartMinutes));
-
-                        // Ensure start time is before end time (at least 15 min duration)
-                        if (newStartMinutes < endMinutes - 15) {
-                          const newStartHour = Math.floor(newStartMinutes / 60);
-                          const newStartMinute = newStartMinutes % 60;
-                          const newStartTime = `${newStartHour.toString().padStart(2, '0')}:${newStartMinute.toString().padStart(2, '0')}`;
-
-                          handleEditItem(task.id, task.text, newStartTime, task.endTime, task.color, task.description, task.isCompleted, task.date);
-                        }
-                      };
-
-                      const handleMouseUp = () => {
-                        document.removeEventListener('mousemove', handleMouseMove);
-                        document.removeEventListener('mouseup', handleMouseUp);
-                        // Reset after a short delay to allow click event to be checked
-                        setTimeout(() => {
-                          isResizingRef.current = false;
-                        }, 100);
-                      };
-
-                      document.addEventListener('mousemove', handleMouseMove);
-                      document.addEventListener('mouseup', handleMouseUp);
-                    }}
-                  />
-
-                  {/* Bottom resize handle */}
-                  <div
-                    className="absolute bottom-0 left-0 right-0 h-1 cursor-ns-resize opacity-0 group-hover:opacity-100 transition-opacity z-30"
-                    onMouseDown={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
-                      isResizingRef.current = true;
-
-                      const startY = e.clientY;
-                      const originalEndMinutes = endMinutes;
-
-                      const handleMouseMove = (moveEvent: MouseEvent) => {
-                        const deltaY = moveEvent.clientY - startY;
-                        const rawDeltaMinutes = deltaY / (1.5 * todayZoomLevel); // 1.5px per minute * zoom
-                        // Snap to 10-minute increments
-                        const deltaMinutes = Math.round(rawDeltaMinutes / 10) * 10;
-                        let newEndMinutes = originalEndMinutes + deltaMinutes;
-
-                        // Snap to 10-minute intervals
-                        newEndMinutes = Math.round(newEndMinutes / 10) * 10;
-
-                        // Cap at 10-1440 (00:10 - 24:00)
-                        newEndMinutes = Math.max(10, Math.min(1440, newEndMinutes));
-
-                        // Ensure end time is after start time (at least 15 min duration)
-                        if (newEndMinutes > startMinutes + 15) {
-                          const newEndHour = Math.floor(newEndMinutes / 60);
-                          const newEndMinute = newEndMinutes % 60;
-                          const newEndTime = `${newEndHour.toString().padStart(2, '0')}:${newEndMinute.toString().padStart(2, '0')}`;
-
-                          handleEditItem(task.id, task.text, task.startTime, newEndTime, task.color, task.description, task.isCompleted, task.date);
-                        }
-                      };
-
-                      const handleMouseUp = () => {
-                        document.removeEventListener('mousemove', handleMouseMove);
-                        document.removeEventListener('mouseup', handleMouseUp);
-                        // Reset after a short delay to allow click event to be checked
-                        setTimeout(() => {
-                          isResizingRef.current = false;
-                        }, 100);
-                      };
-
-                      document.addEventListener('mousemove', handleMouseMove);
-                      document.addEventListener('mouseup', handleMouseUp);
-                    }}
-                  />
-
-                  <div className="flex items-start gap-2">
-                    <Checkbox
-                      checked={task.isCompleted}
-                      onCheckedChange={(checked) => {
-                        handleToggleItem(task.id);
-                      }}
-                      onClick={(e) => e.stopPropagation()}
-                      className="mt-0.5 h-3.5 w-3.5 flex-shrink-0"
-                    />
-                    <div className="flex-1 min-w-0 overflow-hidden">
-                      {height >= 45 ? (
-                        // Show time below title when there's enough space
-                        <>
-                          <div
-                            className={`text-xs font-medium truncate ${task.isCompleted ? 'line-through opacity-50' : ''}`}
-                            style={{ color: taskColorInfo.text }}
-                          >
-                            {task.text}
-                          </div>
-                          {(task.startTime || task.endTime) && (
-                            <div className="text-[10px] mt-0.5 opacity-70" style={{ color: taskColorInfo.text }}>
-                              {task.startTime && convert24To12Hour(task.startTime)}
-                              {task.startTime && task.endTime && ' - '}
-                              {task.endTime && convert24To12Hour(task.endTime)}
-                            </div>
-                          )}
-                        </>
-                      ) : (
-                        // Show time inline with title when space is limited
-                        <div
-                          className={`text-xs font-medium truncate ${task.isCompleted ? 'line-through opacity-50' : ''}`}
-                          style={{ color: taskColorInfo.text }}
-                        >
-                          {task.text}
-                          {(task.startTime || task.endTime) && (
-                            <span className="text-[10px] ml-1.5 font-normal opacity-70" style={{ color: taskColorInfo.text }}>
-                              {task.startTime && convert24To12Hour(task.startTime)}
-                              {task.startTime && task.endTime && ' - '}
-                              {task.endTime && convert24To12Hour(task.endTime)}
-                            </span>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteItem(task.id);
-                      }}
-                      className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-opacity flex-shrink-0 mt-0.5"
-                    >
-                      <Trash2 size={12} />
-                    </button>
-                  </div>
-                </div>
-              );
-            });
+            return tasksWithLayout.map((layoutInfo) => (
+              <TimeSlotTask
+                key={layoutInfo.task.id}
+                layoutInfo={layoutInfo}
+                todayZoomLevel={todayZoomLevel}
+                dateString={dateString}
+                showContent={showContent}
+                editingTask={state.editingTask}
+                dialogTaskColor={state.dialogTaskColor}
+                isResizingRef={isResizingRef}
+                convert24To12Hour={convert24To12Hour}
+                handleOpenTaskDialog={handleOpenTaskDialog}
+                handleToggleItem={handleToggleItem}
+                handleDeleteItem={handleDeleteItem}
+                handleEditItem={handleEditItem}
+              />
+            ));
           })()}
         </div>
         )}
@@ -1228,10 +262,6 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
             console.log('TodayView content render - allContent:', allContent.length, 'timedContent:', timedContent.length);
             allContent.forEach((c, i) => console.log(`  Content ${i}:`, c.id, c.plannedStartTime, c.plannedEndTime));
 
-            // Check if any tasks for today have dark colors
-            const todayTasks = currentDay?.items || [];
-            const hasDarkTasks = todayTasks.some(task => isColorDark(task.color));
-
             return timedContent.map((content) => {
               // Use scheduled times if available, otherwise use planned times
               const startTimeStr = content.scheduledStartTime || content.plannedStartTime!;
@@ -1247,8 +277,7 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
               const height = Math.max(durationMinutes * 1.5 * todayZoomLevel, 28) - 1;
 
               const isPlanned = !content.scheduledDate;
-              // Use default mauve color for scheduled content, violet for planned
-              const colors = isPlanned
+              const contentColors = isPlanned
                 ? (scheduleColors[content.plannedColor || 'violet'] || scheduleColors.violet)
                 : defaultScheduledColor;
 
@@ -1268,7 +297,7 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                       const imageLabel = content.imageMode === 'carousel' ? 'Carousel' : 'Image';
                       if (!derivedFormats.includes(imageLabel)) derivedFormats.unshift(imageLabel);
                     }
-                    setContentTooltip({
+                    viewState.setContentTooltip({
                       text: content.hook || content.title || '',
                       timeStr: `${convert24To12Hour(startTimeStr)} – ${convert24To12Hour(endTimeStr)}`,
                       isPlanned,
@@ -1278,7 +307,7 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                       y: rect.bottom + 8,
                     });
                   }}
-                  onMouseLeave={() => setContentTooltip(null)}
+                  onMouseLeave={() => viewState.setContentTooltip(null)}
                   className="absolute rounded-2xl cursor-pointer hover:brightness-95 group border-l-4 overflow-hidden shadow-[0_2px_8px_rgba(139,112,130,0.25)] hover:shadow-[0_4px_12px_rgba(139,112,130,0.35)]"
                   style={{
                     top: `${top}px`,
@@ -1298,12 +327,12 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                         <Lightbulb className="w-3.5 h-3.5 text-[#8B7082] flex-shrink-0 mt-0.5" />
                       ) : (
                         <button
-                          onClick={(e) => handleToggleComplete(content.id, e)}
+                          onClick={(e) => viewState.handleToggleComplete(content.id, e)}
                           className={cn(
                             "w-3.5 h-3.5 rounded-full border-[1.5px] flex-shrink-0 mt-0.5 flex items-center justify-center transition-colors",
                             content.isCompleted ? "bg-white border-white" : "hover:bg-current/20"
                           )}
-                          style={{ borderColor: content.isCompleted ? 'white' : colors.text }}
+                          style={{ borderColor: content.isCompleted ? 'white' : contentColors.text }}
                         >
                           {content.isCompleted && <Check className="w-2.5 h-2.5 text-[#612A4F]" />}
                         </button>
@@ -1312,17 +341,17 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                         <div className={cn(
                           "text-xs font-medium truncate",
                           content.isCompleted && "line-through opacity-60"
-                        )} style={{ color: isPlanned ? '#8B7082' : colors.text }}>
+                        )} style={{ color: isPlanned ? '#8B7082' : contentColors.text }}>
                           {content.hook || content.title}
                         </div>
-                        <div className="text-[9px] opacity-70 leading-tight" style={{ color: isPlanned ? '#8B7082' : colors.text }}>
+                        <div className="text-[9px] opacity-70 leading-tight" style={{ color: isPlanned ? '#8B7082' : contentColors.text }}>
                           {convert24To12Hour(startTimeStr)} - {convert24To12Hour(endTimeStr)}
                         </div>
                       </div>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleDeleteContent(content.id, isPlanned ? 'planned' : 'scheduled');
+                          viewState.handleDeleteContent(content.id, isPlanned ? 'planned' : 'scheduled');
                         }}
                         className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-opacity flex-shrink-0"
                       >
@@ -1463,25 +492,25 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
 </CardContent>
 
       {/* Add Task/Content Dialog */}
-      {addDialogOpen && (
+      {viewState.addDialogOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/15"
             onClick={() => {
-              closeAddDialog();
-              resetFormState();
+              viewState.closeAddDialog();
+              viewState.resetFormState();
             }}
           />
 
           {/* Dialog */}
           <div
             className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto"
-            style={{ transform: `translate(${dialogDragOffset.x}px, ${dialogDragOffset.y}px)` }}
+            style={{ transform: `translate(${viewState.dialogDragOffset.x}px, ${viewState.dialogDragOffset.y}px)` }}
           >
             {/* Drag handle */}
             <div
-              onMouseDown={handleDialogDragStart}
+              onMouseDown={viewState.handleDialogDragStart}
               className="flex justify-center py-2 cursor-grab active:cursor-grabbing hover:bg-gray-50 transition-colors rounded-t-2xl"
             >
               <GripHorizontal className="w-5 h-5 text-gray-300" />
@@ -1491,10 +520,10 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
               <div className="flex px-6 gap-2 mb-4">
                 <button
                   type="button"
-                  onClick={() => setAddDialogTab('task')}
+                  onClick={() => viewState.setAddDialogTab('task')}
                   className={cn(
                     "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer select-none",
-                    addDialogTab === 'task'
+                    viewState.addDialogTab === 'task'
                       ? "bg-[#8B7082] text-white shadow-sm"
                       : "bg-[#F5F0F3] text-gray-700 hover:bg-[#EDE5EA]"
                   )}
@@ -1504,10 +533,10 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                 </button>
                 <button
                   type="button"
-                  onClick={() => setAddDialogTab('content')}
+                  onClick={() => viewState.setAddDialogTab('content')}
                   className={cn(
                     "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer select-none",
-                    addDialogTab === 'content'
+                    viewState.addDialogTab === 'content'
                       ? "bg-[#8B7082] text-white shadow-sm"
                       : "bg-[#F5F0F3] text-gray-700 hover:bg-[#EDE5EA]"
                   )}
@@ -1519,16 +548,15 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
             )}
 
             {/* Task Form */}
-            {addDialogTab === 'task' && (
+            {viewState.addDialogTab === 'task' && (
               <div className="px-6 pb-6 space-y-4 relative">
-                {/* Header - only show when not in "both" mode */}
                 {/* Title */}
                 <div>
                   <input
                     type="text"
                     placeholder="Add task"
-                    value={taskTitle}
-                    onChange={(e) => setTaskTitle(e.target.value)}
+                    value={viewState.taskTitle}
+                    onChange={(e) => viewState.setTaskTitle(e.target.value)}
                     autoFocus
                     className="w-full text-lg border-b border-gray-200 pb-2 focus:outline-none placeholder:text-gray-400"
                   />
@@ -1538,15 +566,15 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                 <div className="flex items-center gap-3">
                   <Clock className="w-5 h-5 text-gray-400" />
                   <TimePicker
-                    value={taskStartTime}
-                    onChange={setTaskStartTime}
+                    value={viewState.taskStartTime}
+                    onChange={viewState.setTaskStartTime}
                     placeholder="Start time"
                     className="flex-1"
                   />
                   <span className="text-gray-400">—</span>
                   <TimePicker
-                    value={taskEndTime}
-                    onChange={setTaskEndTime}
+                    value={viewState.taskEndTime}
+                    onChange={viewState.setTaskEndTime}
                     placeholder="End time"
                     className="flex-1"
                   />
@@ -1557,8 +585,8 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                   <FileText className="w-5 h-5 text-gray-400 mt-2" />
                   <textarea
                     placeholder="Add description"
-                    value={taskDescription}
-                    onChange={(e) => setTaskDescription(e.target.value)}
+                    value={viewState.taskDescription}
+                    onChange={(e) => viewState.setTaskDescription(e.target.value)}
                     rows={2}
                     className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
                   />
@@ -1566,23 +594,23 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
 
                 {/* Color Picker */}
                 <TaskColorPicker
-                  selectedColor={taskColor}
-                  onColorSelect={setTaskColor}
+                  selectedColor={viewState.taskColor}
+                  onColorSelect={viewState.setTaskColor}
                 />
 
                 {/* Actions */}
                 <div className="flex justify-end gap-3 pt-4">
                   <button
                     onClick={() => {
-                      closeAddDialog();
-                      resetFormState();
+                      viewState.closeAddDialog();
+                      viewState.resetFormState();
                     }}
                     className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
                   >
                     Cancel
                   </button>
                   <button
-                    onClick={handleCreateTaskFromDialog}
+                    onClick={viewState.handleCreateTaskFromDialog}
                     className="px-6 py-2 text-sm font-medium text-white bg-[#612a4f] rounded-lg hover:bg-[#4a1f3c] transition-colors"
                   >
                     Create
@@ -1592,15 +620,15 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
             )}
 
             {/* Content Form */}
-            {addDialogTab === 'content' && (
+            {viewState.addDialogTab === 'content' && (
               <div className="px-6 pb-4 space-y-4">
                 {/* Hook/Title */}
                 <div>
                   <input
                     type="text"
                     placeholder="Add hook"
-                    value={contentHook}
-                    onChange={(e) => setContentHook(e.target.value)}
+                    value={viewState.contentHook}
+                    onChange={(e) => viewState.setContentHook(e.target.value)}
                     className="w-full text-lg border-b border-gray-200 pb-2 focus:outline-none placeholder:text-gray-400"
                   />
                 </div>
@@ -1609,15 +637,15 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                 <div className="flex items-center gap-3">
                   <Clock className="w-5 h-5 text-gray-400" />
                   <TimePicker
-                    value={contentStartTime}
-                    onChange={setContentStartTime}
+                    value={viewState.contentStartTime}
+                    onChange={viewState.setContentStartTime}
                     placeholder="Start time"
                     className="flex-1"
                   />
                   <span className="text-gray-400">—</span>
                   <TimePicker
-                    value={contentEndTime}
-                    onChange={setContentEndTime}
+                    value={viewState.contentEndTime}
+                    onChange={viewState.setContentEndTime}
                     placeholder="End time"
                     className="flex-1"
                   />
@@ -1628,8 +656,8 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                   <FileText className="w-5 h-5 text-gray-400 mt-2" />
                   <textarea
                     placeholder="Add description"
-                    value={contentNotes}
-                    onChange={(e) => setContentNotes(e.target.value)}
+                    value={viewState.contentNotes}
+                    onChange={(e) => viewState.setContentNotes(e.target.value)}
                     rows={3}
                     className="flex-1 px-3 py-2 border border-input rounded-md text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-none"
                   />
@@ -1640,18 +668,18 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                 <div
                   className={cn(
                     "flex items-center gap-3 p-4 rounded-xl border-2 transition-all duration-200",
-                    addToContentHub
+                    viewState.addToContentHub
                       ? "bg-gradient-to-r from-[#F5F0F3] to-[#EDE5EA] border-[#8B7082]/30 shadow-[0_2px_8px_rgba(139,112,130,0.15)]"
                       : "bg-gray-50/50 border-gray-200 hover:border-gray-300"
                   )}
                 >
                   <Checkbox
                     id="addToContentHubToday"
-                    checked={addToContentHub}
-                    onCheckedChange={(checked) => setAddToContentHub(checked as boolean)}
+                    checked={viewState.addToContentHub}
+                    onCheckedChange={(checked) => viewState.setAddToContentHub(checked as boolean)}
                     className={cn(
                       "h-5 w-5 border-2 cursor-pointer transition-all",
-                      addToContentHub
+                      viewState.addToContentHub
                         ? "data-[state=checked]:bg-[#612a4f] data-[state=checked]:border-[#612a4f]"
                         : "border-gray-300"
                     )}
@@ -1659,14 +687,14 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                   <div className="flex-1">
                     <label htmlFor="addToContentHubToday" className={cn(
                       "text-sm font-medium cursor-pointer transition-colors",
-                      addToContentHub ? "text-[#4a2a3f]" : "text-gray-600"
+                      viewState.addToContentHub ? "text-[#4a2a3f]" : "text-gray-600"
                     )}>
                       Add to{' '}
                       <span
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          navigate('/production');
+                          viewState.navigate('/production');
                         }}
                         className="text-[#612a4f] hover:text-[#8B7082] underline underline-offset-2 decoration-[#8B7082]/50 cursor-pointer font-semibold"
                       >
@@ -1676,7 +704,7 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                     </label>
                     <p className={cn(
                       "text-xs mt-0.5 transition-colors",
-                      addToContentHub ? "text-[#8B7082]" : "text-gray-400"
+                      viewState.addToContentHub ? "text-[#8B7082]" : "text-gray-400"
                     )}>
                       Uncheck for quick content like Stories
                     </p>
@@ -1687,13 +715,13 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
             )}
 
             {/* Actions - Outside content form */}
-            {addDialogTab === 'content' && (
+            {viewState.addDialogTab === 'content' && (
               <div className="px-6 pb-6 pt-4 border-t border-gray-100 flex justify-end gap-3 bg-white">
                 <button
                   type="button"
                   onClick={() => {
-                    closeAddDialog();
-                    resetFormState();
+                    viewState.closeAddDialog();
+                    viewState.resetFormState();
                   }}
                   className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
                 >
@@ -1701,7 +729,7 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                 </button>
                 <button
                   type="button"
-                  onClick={handleCreateContentFromDialog}
+                  onClick={viewState.handleCreateContentFromDialog}
                   className="px-6 py-2 text-sm font-medium text-white bg-[#612a4f] rounded-lg hover:bg-[#4d2240] transition-colors"
                 >
                   Create
@@ -1713,7 +741,7 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
       )}
 
       {/* Fixed-position content tooltip — renders above all stacking contexts */}
-      {contentTooltip && (() => {
+      {viewState.contentTooltip && (() => {
         const platformIconMap: Record<string, React.ReactNode> = {
           instagram: <SiInstagram style={{ color: '#ffffff' }} />,
           tiktok: <SiTiktok style={{ color: '#ffffff' }} />,
@@ -1724,24 +752,24 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
           twitter: <RiTwitterXLine style={{ color: '#ffffff' }} />,
           threads: <RiThreadsLine style={{ color: '#ffffff' }} />,
         };
-        const platforms = contentTooltip.platforms || [];
-        const formats = contentTooltip.formats || [];
+        const platforms = viewState.contentTooltip.platforms || [];
+        const formats = viewState.contentTooltip.formats || [];
         return (
           <div
             className="pointer-events-none px-3 py-2.5 rounded-xl text-white text-[11px] leading-snug shadow-xl"
             style={{
               position: 'fixed',
-              left: contentTooltip.x,
-              top: contentTooltip.y,
-              background: contentTooltip.isPlanned
+              left: viewState.contentTooltip.x,
+              top: viewState.contentTooltip.y,
+              background: viewState.contentTooltip.isPlanned
                 ? 'linear-gradient(135deg, #9a8090 0%, #7a6070 100%)'
                 : 'linear-gradient(135deg, #7a3868 0%, #4e2040 100%)',
               zIndex: 99999,
               maxWidth: '240px',
             }}
           >
-            <p className="font-semibold whitespace-normal">{contentTooltip.text}</p>
-            <p className="opacity-75 mt-0.5 text-[10px]">{contentTooltip.timeStr}</p>
+            <p className="font-semibold whitespace-normal">{viewState.contentTooltip.text}</p>
+            <p className="opacity-75 mt-0.5 text-[10px]">{viewState.contentTooltip.timeStr}</p>
 
             {/* Formats */}
             {formats.length > 0 && (

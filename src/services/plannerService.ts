@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { fetchAll, createOne, updateOne, deleteOne, createMany } from './baseService';
 
 /**
  * Planner Service
@@ -117,12 +118,12 @@ const plannerItemToDb = (
 // Planner Days CRUD
 // =====================================================
 
-// Get or create a planner day
+// Get or create a planner day - uses get-or-create + join with items, keep partially raw
 export const getPlannerDay = async (
   userId: string,
   date: string
 ): Promise<PlannerDay> => {
-  // First try to get existing day
+  // First try to get existing day using two-column lookup (non-standard)
   const { data: existingDay, error: fetchError } = await supabase
     .from('planner_days')
     .select('*')
@@ -139,32 +140,17 @@ export const getPlannerDay = async (
 
   if (!existingDay) {
     // Create new day
-    const { data: newDay, error: createError } = await supabase
-      .from('planner_days')
-      .insert([{ user_id: userId, date }])
-      .select()
-      .single();
-
-    if (createError) {
-      console.error('Error creating planner day:', createError);
-      throw createError;
-    }
-    plannerDay = newDay as DbPlannerDay;
+    plannerDay = await createOne<DbPlannerDay>('planner_days', { user_id: userId, date });
   } else {
     plannerDay = existingDay as DbPlannerDay;
   }
 
   // Fetch items for this day
-  const { data: items, error: itemsError } = await supabase
-    .from('planner_items')
-    .select('*')
-    .eq('planner_day_id', plannerDay.id)
-    .order('display_order', { ascending: true });
-
-  if (itemsError) {
-    console.error('Error fetching planner items:', itemsError);
-    throw itemsError;
-  }
+  const items = await fetchAll<DbPlannerItem>('planner_items', {
+    orderBy: 'display_order',
+    ascending: true,
+    filters: { planner_day_id: plannerDay.id },
+  });
 
   return {
     id: plannerDay.id,
@@ -173,13 +159,13 @@ export const getPlannerDay = async (
     greatDay: plannerDay.great_day || undefined,
     grateful: plannerDay.grateful || undefined,
     tasks: plannerDay.tasks || undefined,
-    items: (items || []).map(i => dbToPlannerItem(i as DbPlannerItem)),
+    items: items.map(i => dbToPlannerItem(i)),
     createdAt: plannerDay.created_at,
     updatedAt: plannerDay.updated_at,
   };
 };
 
-// Get planner days in a date range
+// Get planner days in a date range - uses .gte/.lte, keep raw Supabase
 export const getPlannerDaysInRange = async (
   userId: string,
   startDate: string,
@@ -202,7 +188,7 @@ export const getPlannerDaysInRange = async (
     return [];
   }
 
-  // Fetch all items for these days
+  // Fetch all items for these days - uses .in(), keep raw Supabase
   const dayIds = days.map(d => d.id);
   const { data: items, error: itemsError } = await supabase
     .from('planner_items')
@@ -254,6 +240,7 @@ export const updatePlannerDay = async (
   if (updates.grateful !== undefined) dbUpdates.grateful = updates.grateful;
   if (updates.tasks !== undefined) dbUpdates.tasks = updates.tasks;
 
+  // Uses .update() without .select().single() - does not return data
   const { error } = await supabase
     .from('planner_days')
     .update(dbUpdates)
@@ -276,36 +263,19 @@ export const createPlannerItem = async (
   plannerDayId?: string
 ): Promise<PlannerItem> => {
   const dbItem = plannerItemToDb(userId, item, plannerDayId);
-
-  const { data, error } = await supabase
-    .from('planner_items')
-    .insert([dbItem])
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error creating planner item:', error);
-    throw error;
-  }
-
-  return dbToPlannerItem(data as DbPlannerItem);
+  const data = await createOne<DbPlannerItem>('planner_items', dbItem);
+  return dbToPlannerItem(data);
 };
 
 // Get all planner items for a user (for global tasks)
 export const getGlobalTasks = async (userId: string): Promise<PlannerItem[]> => {
-  const { data, error } = await supabase
-    .from('planner_items')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('is_global_task', true)
-    .order('display_order', { ascending: true });
-
-  if (error) {
-    console.error('Error fetching global tasks:', error);
-    throw error;
-  }
-
-  return (data || []).map(i => dbToPlannerItem(i as DbPlannerItem));
+  const data = await fetchAll<DbPlannerItem>('planner_items', {
+    userId,
+    orderBy: 'display_order',
+    ascending: true,
+    filters: { is_global_task: true },
+  });
+  return data.map(dbToPlannerItem);
 };
 
 // Get items by date (for calendar view)
@@ -313,19 +283,13 @@ export const getItemsByDate = async (
   userId: string,
   date: string
 ): Promise<PlannerItem[]> => {
-  const { data, error } = await supabase
-    .from('planner_items')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('date', date)
-    .order('display_order', { ascending: true });
-
-  if (error) {
-    console.error('Error fetching items by date:', error);
-    throw error;
-  }
-
-  return (data || []).map(i => dbToPlannerItem(i as DbPlannerItem));
+  const data = await fetchAll<DbPlannerItem>('planner_items', {
+    userId,
+    orderBy: 'display_order',
+    ascending: true,
+    filters: { date },
+  });
+  return data.map(dbToPlannerItem);
 };
 
 // Update a planner item
@@ -349,32 +313,13 @@ export const updatePlannerItem = async (
   if (updates.isPlaceholder !== undefined) dbUpdates.is_placeholder = updates.isPlaceholder;
   if (updates.isGlobalTask !== undefined) dbUpdates.is_global_task = updates.isGlobalTask;
 
-  const { data, error } = await supabase
-    .from('planner_items')
-    .update(dbUpdates)
-    .eq('id', itemId)
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error updating planner item:', error);
-    throw error;
-  }
-
-  return dbToPlannerItem(data as DbPlannerItem);
+  const data = await updateOne<DbPlannerItem>('planner_items', itemId, dbUpdates);
+  return dbToPlannerItem(data);
 };
 
 // Delete a planner item
 export const deletePlannerItem = async (itemId: string): Promise<void> => {
-  const { error } = await supabase
-    .from('planner_items')
-    .delete()
-    .eq('id', itemId);
-
-  if (error) {
-    console.error('Error deleting planner item:', error);
-    throw error;
-  }
+  await deleteOne('planner_items', itemId);
 };
 
 // =====================================================
@@ -388,18 +333,7 @@ export const batchCreatePlannerItems = async (
   plannerDayId?: string
 ): Promise<PlannerItem[]> => {
   if (items.length === 0) return [];
-
   const dbItems = items.map(item => plannerItemToDb(userId, item, plannerDayId));
-
-  const { data, error } = await supabase
-    .from('planner_items')
-    .insert(dbItems)
-    .select();
-
-  if (error) {
-    console.error('Error batch creating planner items:', error);
-    throw error;
-  }
-
-  return (data || []).map(i => dbToPlannerItem(i as DbPlannerItem));
+  const data = await createMany<DbPlannerItem>('planner_items', dbItems);
+  return data.map(dbToPlannerItem);
 };

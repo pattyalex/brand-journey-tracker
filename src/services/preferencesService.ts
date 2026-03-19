@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { createOne, updateOneBy, fetchOneBy } from './baseService';
 
 /**
  * Preferences Service
@@ -86,54 +86,35 @@ const dbToUserPreferences = (db: DbUserPreferences): UserPreferences => ({
 
 // Get or create user preferences
 export const getUserPreferences = async (userId: string): Promise<UserPreferences> => {
-  const { data, error } = await supabase
-    .from('user_preferences')
-    .select('*')
-    .eq('user_id', userId)
-    .single();
+  const data = await fetchOneBy<DbUserPreferences>('user_preferences', 'user_id', userId);
 
-  if (error) {
-    if (error.code === 'PGRST116') {
-      // Not found, create default
-      return createUserPreferences(userId);
-    }
-    console.error('Error fetching user preferences:', error);
-    throw error;
+  if (!data) {
+    return createUserPreferences(userId);
   }
 
-  return dbToUserPreferences(data as DbUserPreferences);
+  return dbToUserPreferences(data);
 };
 
 // Create user preferences with defaults
 export const createUserPreferences = async (userId: string): Promise<UserPreferences> => {
-  const { data, error } = await supabase
-    .from('user_preferences')
-    .insert([{
-      user_id: userId,
-      selected_timezone: 'auto',
-      today_zoom_level: 1.0,
-      weekly_zoom_level: 1.0,
-      today_scroll_position: 0,
-      weekly_scroll_position: 0,
-      planner_color_palette: [],
-      sidebar_state: {},
-      sidebar_menu_items: [],
-      content_formats: [],
-      platform_usernames: {},
-      custom_hooks: [],
-      editor_checklist_items: [],
-      has_completed_onboarding: false,
-      has_seen_goals_onboarding: false,
-    }])
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error creating user preferences:', error);
-    throw error;
-  }
-
-  return dbToUserPreferences(data as DbUserPreferences);
+  const data = await createOne<DbUserPreferences>('user_preferences', {
+    user_id: userId,
+    selected_timezone: 'auto',
+    today_zoom_level: 1.0,
+    weekly_zoom_level: 1.0,
+    today_scroll_position: 0,
+    weekly_scroll_position: 0,
+    planner_color_palette: [],
+    sidebar_state: {},
+    sidebar_menu_items: [],
+    content_formats: [],
+    platform_usernames: {},
+    custom_hooks: [],
+    editor_checklist_items: [],
+    has_completed_onboarding: false,
+    has_seen_goals_onboarding: false,
+  });
+  return dbToUserPreferences(data);
 };
 
 // Update user preferences
@@ -160,19 +141,8 @@ export const updateUserPreferences = async (
   if (updates.hasCompletedOnboarding !== undefined) dbUpdates.has_completed_onboarding = updates.hasCompletedOnboarding;
   if (updates.hasSeenGoalsOnboarding !== undefined) dbUpdates.has_seen_goals_onboarding = updates.hasSeenGoalsOnboarding;
 
-  const { data, error } = await supabase
-    .from('user_preferences')
-    .update(dbUpdates)
-    .eq('user_id', userId)
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error updating user preferences:', error);
-    throw error;
-  }
-
-  return dbToUserPreferences(data as DbUserPreferences);
+  const data = await updateOneBy<DbUserPreferences>('user_preferences', 'user_id', userId, dbUpdates);
+  return dbToUserPreferences(data);
 };
 
 // =====================================================

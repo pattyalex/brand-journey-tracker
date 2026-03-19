@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { fetchAll, createOne, updateOne, deleteOne } from './baseService';
 
 export interface ResearchItem {
   id: string;
@@ -11,74 +12,37 @@ export interface ResearchItem {
 }
 
 export async function getUserResearchItems(userId: string): Promise<ResearchItem[]> {
-  const { data, error } = await supabase
-    .from('research_items')
-    .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    console.error('Error fetching research items:', error);
-    throw error;
-  }
-
-  return data || [];
+  return fetchAll<ResearchItem>('research_items', {
+    userId,
+    orderBy: 'created_at',
+    ascending: false,
+  });
 }
 
 export async function createResearchItem(
   userId: string,
   item: Pick<ResearchItem, 'title' | 'content' | 'tags'>
 ): Promise<ResearchItem> {
-  const { data, error } = await supabase
-    .from('research_items')
-    .insert({
-      user_id: userId,
-      title: item.title,
-      content: item.content,
-      tags: item.tags || [],
-    })
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error creating research item:', error);
-    throw error;
-  }
-
-  return data;
+  return createOne<ResearchItem>('research_items', {
+    user_id: userId,
+    title: item.title,
+    content: item.content,
+    tags: item.tags || [],
+  });
 }
 
 export async function updateResearchItem(
   id: string,
   updates: Partial<Pick<ResearchItem, 'title' | 'content' | 'tags'>>
 ): Promise<ResearchItem> {
-  const { data, error } = await supabase
-    .from('research_items')
-    .update(updates)
-    .eq('id', id)
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error updating research item:', error);
-    throw error;
-  }
-
-  return data;
+  return updateOne<ResearchItem>('research_items', id, updates);
 }
 
 export async function deleteResearchItem(id: string): Promise<void> {
-  const { error } = await supabase
-    .from('research_items')
-    .delete()
-    .eq('id', id);
-
-  if (error) {
-    console.error('Error deleting research item:', error);
-    throw error;
-  }
+  await deleteOne('research_items', id);
 }
 
+// Uses .contains() which is non-standard - keep raw Supabase query
 export async function searchResearchItemsByTag(userId: string, tag: string): Promise<ResearchItem[]> {
   const { data, error } = await supabase
     .from('research_items')
