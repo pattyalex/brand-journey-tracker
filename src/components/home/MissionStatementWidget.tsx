@@ -38,7 +38,7 @@ const MissionStatementWidget: React.FC<MissionStatementWidgetProps> = ({
         </TooltipProvider>
       </div>
 
-      <div className="flex flex-col items-center">
+      <div className="flex flex-col items-center cursor-pointer" onClick={() => navigate('/strategy-growth#mission')}>
         {/* Decorative line above */}
         <div className="w-20 h-px mb-4 bg-gradient-to-r from-transparent via-[#8B7082]/40 to-transparent" />
 
