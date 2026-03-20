@@ -32,8 +32,17 @@ export default function AuthCallback() {
           .eq('id', user.id)
           .single();
 
-        if (!profile || !profile.has_completed_onboarding) {
+        if (!profile) {
+          // Brand new user — no profile yet, send to onboarding
           navigate('/onboarding');
+        } else if (!profile.has_completed_onboarding) {
+          // Existing profile but onboarding not marked complete —
+          // mark it complete now (returning user) and go to dashboard
+          await supabase
+            .from('profiles')
+            .update({ has_completed_onboarding: true })
+            .eq('id', user.id);
+          navigate('/home-page');
         } else {
           navigate('/home-page');
         }
