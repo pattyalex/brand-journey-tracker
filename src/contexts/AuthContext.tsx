@@ -74,6 +74,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setActiveUserId(session?.user?.id ?? null);
         setSession(session);
         setUser(session?.user ?? null);
+        // Reset onboarding check so ProtectedRoute shows loading spinner
+        // until the DB check completes for the new user
+        if (session?.user) {
+          setCheckingOnboarding(true);
+        }
         setIsAuthLoaded(true);
 
         // Ensure profile exists for this user
