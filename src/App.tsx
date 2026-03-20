@@ -36,6 +36,7 @@ const Help = lazy(() => import('./pages/Help'));
 const WeeklyContentTasks = lazy(() => import('./pages/WeeklyContentTasks'));
 const SocialMediaScheduler = lazy(() => import('./pages/SocialMediaScheduler'));
 const Index = lazy(() => import('./pages/Index'));
+const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
 
 // Loading component - invisible to prevent flash during lazy load
 const PageLoader = () => null;
@@ -59,9 +60,35 @@ const LandingRedirect = () => {
   return null;
 };
 
-// Protected route component — AUTH BYPASS for local dev
+// Protected route component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  return <>{children}</>;
+  const { isAuthenticated, isAuthLoaded, hasCompletedOnboarding } = useAuth();
+
+  // Wait for auth to load before making any decisions
+  if (!isAuthLoaded) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#fcf9fe' }}>
+        <div
+          className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-serif text-xl animate-pulse"
+          style={{ background: 'linear-gradient(135deg, #7a3868 0%, #612a4f 50%, #4e2040 100%)' }}
+        >
+          M
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    window.location.href = '/landing.html';
+    return null;
+  }
+
+  if (isAuthenticated && !hasCompletedOnboarding) {
+    return <Navigate to="/onboarding" replace />;
+  }
+
+  // Wrap with mobile interstitial for protected routes
+  return <MobileInterstitialWrapper>{children}</MobileInterstitialWrapper>;
 };
 
 
@@ -92,6 +119,7 @@ function App() {
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/onboarding" element={<OnboardingFlow />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
 
               {/* Protected routes - require authentication */}
               <Route path="/app" element={
