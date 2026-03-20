@@ -115,7 +115,7 @@ const WorkHabitsWidget: React.FC<WorkHabitsWidgetProps> = ({
       {habits.length > 0 || isAddingHabit ? (
         <div>
           {/* Day Headers */}
-          <div className="grid grid-cols-[1fr_repeat(7,28px)_20px] sm:grid-cols-[1fr_repeat(7,36px)_20px] gap-0.5 sm:gap-1 mb-1 pb-3" style={{ borderBottom: '1px solid rgba(139, 115, 130, 0.08)' }}>
+          <div className="grid grid-cols-[1fr_repeat(7,28px)_20px] sm:grid-cols-[1fr_repeat(7,32px)_20px] gap-0.5 sm:gap-1 mb-1 pb-3" style={{ borderBottom: '1px solid rgba(139, 115, 130, 0.08)' }}>
             <div></div>
             {getWeekDays(habitWeekOffset).map((day, idx) => {
               const isToday = getDateString(day) === getDateString(new Date());
@@ -139,7 +139,7 @@ const WorkHabitsWidget: React.FC<WorkHabitsWidgetProps> = ({
           {/* Habit Rows */}
           <div
             ref={habitsScrollRef}
-            className={`pt-2 ${habits.length >= 5 ? 'space-y-1 max-h-[150px] overflow-y-auto' : habits.length >= 3 ? 'space-y-1' : 'space-y-5'}`}
+            className={`pt-2 ${habits.length >= 5 ? 'max-h-[200px] overflow-y-auto' : ''}`}
             style={{ scrollbarWidth: 'thin', scrollbarColor: '#d1d5db transparent' }}
           >
             {habits.map((habit) => {
@@ -150,7 +150,7 @@ const WorkHabitsWidget: React.FC<WorkHabitsWidgetProps> = ({
               return (
               <div
                 key={habit.id}
-                className={`grid grid-cols-[1fr_repeat(7,28px)_20px] sm:grid-cols-[1fr_repeat(7,36px)_20px] gap-0.5 sm:gap-1 items-center group ${habits.length >= 3 ? 'py-1.5' : 'py-2'}`}
+                className={`grid grid-cols-[1fr_repeat(7,28px)_20px] sm:grid-cols-[1fr_repeat(7,32px)_20px] gap-0.5 sm:gap-1 items-center group py-2.5 border-b border-[#8B7082]/[0.08] last:border-b-0`}
               >
                 {/* Habit Name */}
                 <div className="flex items-center gap-2 min-w-0 pr-2">
@@ -171,7 +171,7 @@ const WorkHabitsWidget: React.FC<WorkHabitsWidgetProps> = ({
                     <>
                       <div className="relative min-w-0 flex-1">
                         <span
-                          className="text-[13px] text-[#2d2a26] truncate cursor-pointer hover:text-[#6b4a5e] transition-colors block"
+                          className="text-sm font-semibold text-[#2d2a26] truncate cursor-pointer hover:text-[#6b4a5e] transition-colors block"
                           style={{ fontFamily: "'DM Sans', sans-serif" }}
                           onClick={() => startEditingHabit(habit.id, habit.name)}
                           onMouseEnter={(e) => {
@@ -258,22 +258,19 @@ const WorkHabitsWidget: React.FC<WorkHabitsWidgetProps> = ({
                     >
                       <button
                         onClick={() => toggleHabit(habit.id, dateStr)}
-                        className="w-[18px] h-[18px] rounded-md flex items-center justify-center transition-all"
+                        className="w-[20px] h-[20px] sm:w-[26px] sm:h-[26px] rounded-md flex items-center justify-center transition-all"
                         style={{
                           background: isCompleted
-                            ? 'linear-gradient(145deg, #8aae8a 0%, #6a9a6a 100%)'
-                            : 'transparent',
+                            ? 'linear-gradient(145deg, #8aae8a, #6a9a6a)'
+                            : 'rgba(139,115,130,0.04)',
                           border: isCompleted
                             ? 'none'
-                            : '1.5px solid rgba(139, 115, 130, 0.15)',
-                          boxShadow: isCompleted
-                            ? '0 2px 6px rgba(106, 154, 106, 0.25)'
-                            : 'none',
+                            : '1.5px solid rgba(139,115,130,0.1)',
                         }}
                       >
                         {isCompleted && (
-                          <svg width="8" height="6" viewBox="0 0 10 8" fill="none">
-                            <path d="M1 4.5Q2 6 3.5 7Q5.5 4 9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                            <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                           </svg>
                         )}
                       </button>
@@ -282,14 +279,23 @@ const WorkHabitsWidget: React.FC<WorkHabitsWidgetProps> = ({
                 })}
 
                 {/* Delete button */}
-                <button
-                  onClick={() => deleteHabit(habit.id)}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-red-500 flex items-center justify-center"
-                >
-                  <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
-                    <path d="M1 1l6 6M7 1L1 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                  </svg>
-                </button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => deleteHabit(habit.id)}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-red-500 flex items-center justify-center"
+                      >
+                        <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
+                          <path d="M1 1l6 6M7 1L1 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                        </svg>
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent className="bg-black text-white border-black">
+                      <p>Remove Habit</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             );
             })}
@@ -407,17 +413,31 @@ const WorkHabitsWidget: React.FC<WorkHabitsWidgetProps> = ({
                       </div>
                     ))}
                     <div className="flex items-center justify-end gap-0.5 opacity-0 group-hover:opacity-100 transition-all">
-                      <button onClick={() => keepPlaceholderHabit(habit.name, `wh-${origIdx}`)} className="w-5 h-5 flex items-center justify-center rounded-full text-[#612a4f] hover:bg-[#612a4f] hover:text-white transition-all flex-shrink-0" title="Keep this habit">
-                        <svg width="9" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                      </button>
-                      <button onClick={(e) => dismissPlaceholder(`wh-${origIdx}`, e)} className="w-5 h-5 flex items-center justify-center rounded-full text-gray-300 hover:text-gray-500 hover:bg-gray-100 transition-all flex-shrink-0" title="Remove">
-                        <svg width="7" height="7" viewBox="0 0 8 8" fill="none"><path d="M1 1l6 6M7 1L1 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
-                      </button>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button onClick={() => keepPlaceholderHabit(habit.name, `wh-${origIdx}`)} className="w-5 h-5 flex items-center justify-center rounded-full text-[#612a4f] hover:bg-[#612a4f] hover:text-white transition-all flex-shrink-0">
+                              <svg width="9" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent className="bg-black text-white border-black"><p>Keep Habit</p></TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button onClick={(e) => dismissPlaceholder(`wh-${origIdx}`, e)} className="w-5 h-5 flex items-center justify-center rounded-full bg-gray-200 text-gray-400 hover:text-gray-600 hover:bg-gray-300 transition-all flex-shrink-0">
+                              <svg width="7" height="7" viewBox="0 0 8 8" fill="none"><path d="M1 1l6 6M7 1L1 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent className="bg-black text-white border-black"><p>Remove Habit</p></TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </div>
                   </div>
                 );
               })}
-              <button onClick={() => setIsAddingHabit(true)} className="mt-3 text-xs font-semibold text-[#612a4f] hover:text-[#4a3442] transition-colors" style={{ fontFamily: "'DM Sans', sans-serif" }}>+ Add a habit</button>
+              <button onClick={() => setIsAddingHabit(true)} className="mt-3 text-xs font-semibold text-[#612a4f] hover:text-[#4a3442] transition-colors" style={{ fontFamily: "'DM Sans', sans-serif" }}>+ Add your first habit</button>
             </div>
           );
         })()

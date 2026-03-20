@@ -106,6 +106,7 @@ const HomePage = () => {
                 monthlyGoalsScrollRef={state.monthlyGoalsScrollRef}
                 dismissedPlaceholders={state.dismissedPlaceholders}
                 dismissPlaceholder={state.dismissPlaceholder}
+                keepPlaceholderGoal={state.keepPlaceholderGoal}
               />
               </div>
 

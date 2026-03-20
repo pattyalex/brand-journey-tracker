@@ -24,6 +24,7 @@ interface MonthlyGoalsWidgetProps {
   monthlyGoalsScrollRef: React.RefObject<HTMLDivElement>;
   dismissedPlaceholders: Record<string, boolean>;
   dismissPlaceholder: (key: string, e: React.MouseEvent) => void;
+  keepPlaceholderGoal: (text: string, status: string, key: string) => void;
 }
 
 const MonthlyGoalsWidget: React.FC<MonthlyGoalsWidgetProps> = ({
@@ -40,6 +41,7 @@ const MonthlyGoalsWidget: React.FC<MonthlyGoalsWidgetProps> = ({
   monthlyGoalsScrollRef,
   dismissedPlaceholders,
   dismissPlaceholder,
+  keepPlaceholderGoal,
 }) => {
   const navigate = useNavigate();
 
@@ -103,9 +105,26 @@ const MonthlyGoalsWidget: React.FC<MonthlyGoalsWidgetProps> = ({
                   <div key={origIdx} className="group flex items-center px-3 py-2.5 rounded-xl border border-gray-100 opacity-30 hover:opacity-50 transition-opacity">
                     <span className="text-sm font-semibold text-[#2d2a26] flex-1 pr-2 cursor-pointer" onClick={() => navigate('/strategy-growth?tab=growth-goals#monthly-goals')} style={{ fontFamily: "'DM Sans', sans-serif" }}>{goal.text}</span>
                     <span className="text-[11px] font-medium px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-500 whitespace-nowrap mr-2 cursor-pointer" onClick={() => navigate('/strategy-growth?tab=growth-goals#monthly-goals')} style={{ fontFamily: "'DM Sans', sans-serif" }}>{goal.status}</span>
-                    <button onClick={(e) => dismissPlaceholder(`mg-${origIdx}`, e)} className="w-4 h-4 flex items-center justify-center rounded-full text-gray-300 hover:text-gray-600 hover:bg-gray-200 transition-all opacity-50 hover:opacity-100 flex-shrink-0" title="Remove">
-                      <svg width="7" height="7" viewBox="0 0 8 8" fill="none"><path d="M1 1l6 6M7 1L1 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
-                    </button>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button onClick={() => keepPlaceholderGoal(goal.text, goal.status, `mg-${origIdx}`)} className="opacity-0 group-hover:opacity-100 w-5 h-5 flex items-center justify-center rounded-full text-[#612a4f] hover:bg-[#612a4f] hover:text-white transition-all flex-shrink-0">
+                            <svg width="9" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent className="bg-black text-white border-black"><p>Keep Goal</p></TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button onClick={(e) => dismissPlaceholder(`mg-${origIdx}`, e)} className="opacity-0 group-hover:opacity-100 w-5 h-5 flex items-center justify-center rounded-full bg-gray-200 text-gray-400 hover:text-gray-600 hover:bg-gray-300 transition-all flex-shrink-0">
+                            <svg width="7" height="7" viewBox="0 0 8 8" fill="none"><path d="M1 1l6 6M7 1L1 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent className="bg-black text-white border-black"><p>Remove Goal</p></TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                 );
               })}

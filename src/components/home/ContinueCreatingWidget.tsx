@@ -122,13 +122,20 @@ const ContinueCreatingWidget: React.FC<ContinueCreatingWidgetProps> = ({
                         <p className="text-sm font-semibold text-[#2d2a26] mb-1.5" style={{ fontFamily: "'DM Sans', sans-serif" }}>{item.title}</p>
                         <span className="inline-block text-[10px] font-semibold text-white px-2 py-0.5 rounded" style={{ fontFamily: "'DM Sans', sans-serif", backgroundColor: '#8b6a7e' }}>{item.label}</span>
                       </div>
-                      <button onClick={(e) => dismissPlaceholder(`cc-${origIdx}`, e)} className="mt-0.5 ml-2 w-4 h-4 flex items-center justify-center rounded-full text-gray-300 hover:text-gray-600 hover:bg-gray-200 transition-all opacity-50 hover:opacity-100 flex-shrink-0" title="Remove">
-                        <svg width="7" height="7" viewBox="0 0 8 8" fill="none"><path d="M1 1l6 6M7 1L1 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
-                      </button>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button onClick={(e) => dismissPlaceholder(`cc-${origIdx}`, e)} className="opacity-0 group-hover:opacity-100 mt-0.5 ml-2 w-5 h-5 flex items-center justify-center rounded-full bg-gray-200 text-gray-400 hover:text-gray-600 hover:bg-gray-300 transition-all flex-shrink-0">
+                              <svg width="7" height="7" viewBox="0 0 8 8" fill="none"><path d="M1 1l6 6M7 1L1 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent className="bg-gray-700 text-white border-gray-700"><p>Remove</p></TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </div>
                   );
                 })}
-                <button onClick={() => navigate('/production')} className="mt-1 text-xs font-semibold text-[#612a4f] hover:text-[#4a3442] transition-colors" style={{ fontFamily: "'DM Sans', sans-serif" }}>+ Start your first piece of content</button>
+                <button onClick={() => navigate('/production')} className="mt-1 text-xs font-semibold text-[#612a4f] hover:text-[#4a3442] transition-colors text-left" style={{ fontFamily: "'DM Sans', sans-serif" }}>+ Start your first piece of content</button>
               </div>
             );
           })()

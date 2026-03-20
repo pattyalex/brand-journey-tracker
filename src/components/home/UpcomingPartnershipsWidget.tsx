@@ -81,9 +81,16 @@ const UpcomingPartnershipsWidget: React.FC<UpcomingPartnershipsWidgetProps> = ({
                         <p className="text-[11px] text-[#8b7a85]" style={{ fontFamily: "'DM Sans', sans-serif" }}>{item.action}</p>
                       </div>
                       <span className="text-[9px] font-medium px-1.5 py-0.5 rounded tracking-wide mr-2" style={{ fontFamily: "'DM Sans', sans-serif", color: '#8b7a85', background: 'rgba(139, 115, 130, 0.1)' }}>{item.type}</span>
-                      <button onClick={(e) => dismissPlaceholder(`up-${origIdx}`, e)} className="w-4 h-4 flex items-center justify-center rounded-full text-gray-300 hover:text-gray-600 hover:bg-gray-200 transition-all opacity-50 hover:opacity-100 flex-shrink-0" title="Remove">
-                        <svg width="7" height="7" viewBox="0 0 8 8" fill="none"><path d="M1 1l6 6M7 1L1 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
-                      </button>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button onClick={(e) => dismissPlaceholder(`up-${origIdx}`, e)} className="opacity-0 group-hover:opacity-100 w-5 h-5 flex items-center justify-center rounded-full bg-gray-200 text-gray-400 hover:text-gray-600 hover:bg-gray-300 transition-all flex-shrink-0">
+                              <svg width="7" height="7" viewBox="0 0 8 8" fill="none"><path d="M1 1l6 6M7 1L1 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent className="bg-black text-white border-black"><p>Remove</p></TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </div>
                   );
                 })}

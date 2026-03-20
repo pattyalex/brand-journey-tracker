@@ -1577,6 +1577,34 @@ export const useHomePageState = () => {
     });
   };
 
+  const keepPlaceholderGoal = (text: string, status: string, key: string) => {
+    const year = String(getCurrentYear());
+    const month = getCurrentMonth();
+    const currentGoals = getCurrentMonthGoals();
+    const statusMap: Record<string, string> = {
+      'On It': 'somewhat-done',
+      'Not Started': 'not-started',
+      'Almost There': 'great-progress',
+    };
+    const newGoal: MonthlyGoal = {
+      id: Date.now(),
+      text,
+      status: (statusMap[status] || 'not-started') as MonthlyGoal['status'],
+    };
+    setMonthlyGoalsData(prev => ({
+      ...prev,
+      [year]: {
+        ...prev[year],
+        [month]: [...currentGoals, newGoal],
+      },
+    }));
+    setDismissedPlaceholders(prev => {
+      const next = { ...prev, [key]: true };
+      localStorage.setItem(`dismissedDashboardPlaceholders_${user?.id}`, JSON.stringify(next));
+      return next;
+    });
+  };
+
   const startEditingHabit = (habitId: string, currentName: string) => {
     setEditingHabitId(habitId);
     setEditingHabitName(currentName);
@@ -1885,6 +1913,7 @@ export const useHomePageState = () => {
     addHabit,
     deleteHabit,
     keepPlaceholderHabit,
+    keepPlaceholderGoal,
     startEditingHabit,
     saveEditingHabit,
     cancelEditingHabit,
