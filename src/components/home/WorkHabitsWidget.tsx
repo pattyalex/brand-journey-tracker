@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Trash2, ChevronDown } from "lucide-react";
+import { Plus, ChevronDown } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -115,7 +115,7 @@ const WorkHabitsWidget: React.FC<WorkHabitsWidgetProps> = ({
       {habits.length > 0 || isAddingHabit ? (
         <div>
           {/* Day Headers */}
-          <div className="grid grid-cols-[1fr_repeat(7,28px)] sm:grid-cols-[1fr_repeat(7,36px)] gap-0.5 sm:gap-1 mb-1 pb-3" style={{ borderBottom: '1px solid rgba(139, 115, 130, 0.08)' }}>
+          <div className="grid grid-cols-[1fr_repeat(7,28px)_20px] sm:grid-cols-[1fr_repeat(7,36px)_20px] gap-0.5 sm:gap-1 mb-1 pb-3" style={{ borderBottom: '1px solid rgba(139, 115, 130, 0.08)' }}>
             <div></div>
             {getWeekDays(habitWeekOffset).map((day, idx) => {
               const isToday = getDateString(day) === getDateString(new Date());
@@ -150,7 +150,7 @@ const WorkHabitsWidget: React.FC<WorkHabitsWidgetProps> = ({
               return (
               <div
                 key={habit.id}
-                className={`grid grid-cols-[1fr_repeat(7,28px)] sm:grid-cols-[1fr_repeat(7,36px)] gap-0.5 sm:gap-1 items-center group ${habits.length >= 3 ? 'py-1.5' : 'py-2'}`}
+                className={`grid grid-cols-[1fr_repeat(7,28px)_20px] sm:grid-cols-[1fr_repeat(7,36px)_20px] gap-0.5 sm:gap-1 items-center group ${habits.length >= 3 ? 'py-1.5' : 'py-2'}`}
               >
                 {/* Habit Name */}
                 <div className="flex items-center gap-2 min-w-0 pr-2">
@@ -243,12 +243,6 @@ const WorkHabitsWidget: React.FC<WorkHabitsWidgetProps> = ({
                       )}
                     </>
                   )}
-                  <button
-                    onClick={() => deleteHabit(habit.id)}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-red-500 flex-shrink-0"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </button>
                 </div>
 
                 {/* Day Checkboxes */}
@@ -286,6 +280,16 @@ const WorkHabitsWidget: React.FC<WorkHabitsWidgetProps> = ({
                     </div>
                   );
                 })}
+
+                {/* Delete button */}
+                <button
+                  onClick={() => deleteHabit(habit.id)}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-red-500 flex items-center justify-center"
+                >
+                  <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
+                    <path d="M1 1l6 6M7 1L1 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  </svg>
+                </button>
               </div>
             );
             })}

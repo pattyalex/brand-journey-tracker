@@ -9,6 +9,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   hasCompletedOnboarding: boolean;
+  isPasswordRecovery: boolean;
   login: () => void;
   logout: () => void;
   completeOnboarding: () => void;
@@ -34,6 +35,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
   const [checkingOnboarding, setCheckingOnboarding] = useState(true);
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
 
   // Get user-specific localStorage key
   const getOnboardingKey = (userId: string) => `${StorageKeys.hasCompletedOnboarding}_${userId}`;
@@ -71,6 +73,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
+        // Detect password recovery flow — user should stay on reset page
+        if (_event === 'PASSWORD_RECOVERY') {
+          setIsPasswordRecovery(true);
+        }
+
         setActiveUserId(session?.user?.id ?? null);
         setSession(session);
         setUser(session?.user ?? null);
@@ -216,6 +223,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       user,
       session,
       hasCompletedOnboarding,
+      isPasswordRecovery,
       login,
       logout,
       completeOnboarding,

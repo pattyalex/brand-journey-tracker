@@ -7,6 +7,14 @@ export default function AuthCallback() {
 
   useEffect(() => {
     const handleCallback = async () => {
+      // Check for password recovery in the URL hash (type=recovery)
+      const hash = window.location.hash;
+      if (hash.includes('type=recovery')) {
+        // Redirect to reset password page with the hash intact
+        window.location.href = '/reset-password' + window.location.search + hash;
+        return;
+      }
+
       // Handle PKCE code flow (email confirmation)
       const params = new URLSearchParams(window.location.search);
       const code = params.get('code');
@@ -19,6 +27,21 @@ export default function AuthCallback() {
           return;
         }
       }
+
+      // Check if this is a password recovery session
+      let isRecovery = false;
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+        if (event === 'PASSWORD_RECOVERY') {
+          isRecovery = true;
+          navigate('/reset-password');
+        }
+      });
+
+      // Small delay to let PASSWORD_RECOVERY event fire if applicable
+      await new Promise(resolve => setTimeout(resolve, 500));
+      subscription.unsubscribe();
+
+      if (isRecovery) return;
 
       // Now get the session (works for both hash and code flows)
       const { data: { session } } = await supabase.auth.getSession();

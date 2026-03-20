@@ -13,18 +13,29 @@ const ResetPasswordPage: React.FC = () => {
   const [sessionReady, setSessionReady] = useState(false);
 
   useEffect(() => {
-    // Supabase automatically picks up the recovery token from the URL hash
-    // and establishes a session. We need to wait for that.
+    const init = async () => {
+      // Handle PKCE code exchange if present
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get('code');
+      if (code) {
+        await supabase.auth.exchangeCodeForSession(code);
+      }
+
+      // Wait for session to be available
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        setSessionReady(true);
+      }
+    };
+
+    // Also listen for PASSWORD_RECOVERY event (hash-based flow)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') {
+      if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') {
         setSessionReady(true);
       }
     });
 
-    // Also check if session already exists (in case event fired before listener)
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) setSessionReady(true);
-    });
+    init();
 
     return () => subscription.unsubscribe();
   }, []);
