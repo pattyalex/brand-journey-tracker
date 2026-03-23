@@ -15,7 +15,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { CalendarDays, ChevronLeft, ChevronRight, Video, Camera, Check, X, Pin, Clock, Lightbulb } from "lucide-react";
+import { ArrowLeft, CalendarDays, ChevronLeft, ChevronRight, Video, Camera, Check, X, Pin, Clock, Lightbulb } from "lucide-react";
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
 import { cn } from "@/lib/utils";

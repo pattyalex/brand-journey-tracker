@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { CalendarDays, ChevronLeft, ChevronRight, Video, Camera, Check, X, Lightbulb, Clock, Sparkles, Archive, Trash2, AlertCircle } from "lucide-react";
+import { ArrowLeft, CalendarDays, ChevronLeft, ChevronRight, Video, Camera, Check, X, Lightbulb, Clock, Sparkles, Archive, Trash2, AlertCircle } from "lucide-react";
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
 import { cn } from "@/lib/utils";
@@ -72,6 +72,17 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = (props) => {
   // Content component - shared between modal and embedded modes
   const content = (
     <div className="flex flex-col h-full overflow-hidden relative">
+      {/* Back Button - top left */}
+      {onNavigateToStep && singleCard && (
+        <button
+          onClick={() => onNavigateToStep(4)}
+          className="absolute top-8 left-4 flex items-center gap-1 text-sm text-gray-400 hover:text-gray-600 transition-colors z-10"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          Back
+        </button>
+      )}
+
       {/* Expand button when collapsed */}
       {singleCard && isLeftPanelCollapsed && (
         <button

@@ -23,6 +23,7 @@ import {
   Check,
   Sparkles,
   MessageSquare,
+  ArrowLeft,
   ArrowRight,
   X,
 } from "lucide-react";
@@ -270,6 +271,15 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
 
   const dialogContent = (
     <>
+      {/* Back Button - top left */}
+      <button
+        onClick={() => handleNavigateWithSave(editStepNumber - 1)}
+        className="absolute top-8 left-4 flex items-center gap-1 text-sm text-gray-400 hover:text-gray-600 transition-colors z-10"
+      >
+        <ArrowLeft className="w-3.5 h-3.5" />
+        Back
+      </button>
+
       {/* Close Button */}
       <button
         onClick={() => onOpenChange(false)}

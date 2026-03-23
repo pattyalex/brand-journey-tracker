@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
 import {
-  MoreHorizontal, X, MapPin, Shirt, Boxes, Plus, ArrowRight, ChevronDown, ChevronUp,
+  MoreHorizontal, X, MapPin, Shirt, Boxes, Plus, ArrowLeft, ArrowRight, ChevronDown, ChevronUp,
   Sparkles, Send, Bot, User, Upload, Link2, Image as ImageIcon, Layers,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -265,6 +265,15 @@ Guidelines:
 
   const dialogContent = (
     <div onClick={() => isMegAIOpen && setIsMegAIOpen(false)} className="flex flex-col h-full">
+      {/* Back Button - top left */}
+      <button
+        onClick={() => onNavigateToStep?.(1)}
+        className="absolute top-8 left-4 flex items-center gap-1 text-sm text-gray-400 hover:text-gray-600 transition-colors z-10"
+      >
+        <ArrowLeft className="w-3.5 h-3.5" />
+        Back
+      </button>
+
       {/* Close Button */}
       <button
         onClick={() => onOpenChange(false)}

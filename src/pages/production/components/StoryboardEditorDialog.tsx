@@ -45,6 +45,7 @@ import {
   Wrench,
   CheckCircle2,
   SquarePen,
+  ArrowLeft,
   ArrowRight,
 } from "lucide-react";
 import { ProductionCard, StoryboardScene } from "../types";
@@ -785,6 +786,15 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
 
   const dialogContent = (
     <>
+      {/* Back Button - top left */}
+      <button
+        onClick={() => handleNavigateWithSave(2)}
+        className="absolute top-8 left-4 flex items-center gap-1 text-sm text-gray-400 hover:text-gray-600 transition-colors z-10"
+      >
+        <ArrowLeft className="w-3.5 h-3.5" />
+        Back
+      </button>
+
       {/* Close Button */}
       <button
         onClick={() => onOpenChange(false)}
