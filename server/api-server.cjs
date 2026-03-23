@@ -525,6 +525,165 @@ app.post('/api/generate-ideas', async (req, res) => {
   }
 });
 
+// Generate sub-categories for a content pillar
+app.post('/api/generate-subcategories', async (req, res) => {
+  try {
+    const { pillarName } = req.body;
+    const apiKey = process.env.ANTHROPIC_API_KEY || process.env.VITE_ANTHROPIC_API_KEY;
+
+    if (!apiKey || apiKey === 'your_anthropic_api_key') {
+      return res.status(400).json({ error: 'Anthropic API key not configured' });
+    }
+
+    if (!pillarName || pillarName.trim().length < 2) {
+      return res.status(400).json({ error: 'Pillar name must be at least 2 characters' });
+    }
+
+    console.log(`Generating sub-categories for pillar: "${pillarName}"...`);
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 300,
+        system: `Generate sub-categories for content pillars.
+
+STRICT RULES:
+- Each sub-category MUST be 1-2 words ONLY
+- Maximum 15 characters per sub-category
+- NO sentences, NO hooks, NO content ideas
+- Think: folder names, not video titles
+
+CORRECT FORMAT:
+["Fundraising", "Leadership", "Hiring", "Failures", "Growth"]
+
+WRONG FORMAT (DO NOT DO THIS):
+["How I raised money", "My leadership journey", "Hiring mistakes I made"]
+
+Return ONLY a JSON array.`,
+        messages: [{
+          role: 'user',
+          content: `Content pillar: "${pillarName}"
+
+Generate 5-7 sub-categories. Each must be 1-2 words only (like folder names).
+
+Example: For "Fitness" → ["Workouts", "Nutrition", "Recovery", "Mindset", "Equipment"]
+
+Return JSON array only.`
+        }]
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.text();
+      console.error('Claude API error:', response.status, errorData);
+      return res.status(response.status).json({ error: `Claude API error: ${response.status}` });
+    }
+
+    const data = await response.json();
+    const text = data.content[0].text;
+
+    // Parse the JSON array from the response
+    const match = text.match(/\[[\s\S]*\]/);
+    if (match) {
+      const subCategories = JSON.parse(match[0]);
+      console.log(`Generated ${subCategories.length} sub-categories for "${pillarName}"`);
+      res.json({ subCategories });
+    } else {
+      console.error('No valid JSON array found in response:', text);
+      res.status(500).json({ error: 'Failed to parse sub-categories from AI response' });
+    }
+  } catch (error) {
+    console.error('Error generating sub-categories:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Generate content ideas for a pillar + sub-category
+app.post('/api/generate-content-ideas', async (req, res) => {
+  try {
+    const { pillarName, subCategory } = req.body;
+    const apiKey = process.env.ANTHROPIC_API_KEY || process.env.VITE_ANTHROPIC_API_KEY;
+
+    if (!apiKey || apiKey === 'your_anthropic_api_key') {
+      return res.status(400).json({ error: 'Anthropic API key not configured' });
+    }
+
+    if (!pillarName || !subCategory) {
+      return res.status(400).json({ error: 'Both pillarName and subCategory are required' });
+    }
+
+    console.log(`Generating content ideas for "${pillarName}" > "${subCategory}"...`);
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 600,
+        system: `You are a content strategist helping creators generate scroll-stopping content ideas.
+
+BEFORE generating, think:
+- What personal story could a creator tell about this topic?
+- What vulnerable moment or realization would resonate?
+- What surprising angle hasn't been done to death?
+- What would make someone comment "I needed to hear this"?
+
+QUALITY TEST: If the idea sounds like it could come from any creator, REJECT it. Generate ideas that feel personal and specific.
+
+RULES:
+- Write as actual video/post titles that make people stop scrolling
+- Mix: vulnerable confessions, surprising takes, specific stories, relatable fails, hard-won lessons
+- NO generic templates like "5 tips for X" or "How to Y"
+- NO emojis
+- Each idea should spark curiosity or emotion
+- Keep titles concise (under 15 words)
+
+Return ONLY a JSON array of 10 strings, nothing else.`,
+        messages: [{
+          role: 'user',
+          content: `Generate 10 content ideas for a creator focused on "${pillarName}", specifically about "${subCategory}".
+
+Create ideas that feel personal and specific - like real stories a creator would tell, not generic advice anyone could give. Think: vulnerable moments, specific realizations, relatable struggles, surprising perspectives.
+
+Return only a JSON array of strings.`
+        }]
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.text();
+      console.error('Claude API error:', response.status, errorData);
+      return res.status(response.status).json({ error: `Claude API error: ${response.status}` });
+    }
+
+    const data = await response.json();
+    const text = data.content[0].text;
+
+    const match = text.match(/\[[\s\S]*\]/);
+    if (match) {
+      const ideas = JSON.parse(match[0]);
+      console.log(`Generated ${ideas.length} content ideas for "${pillarName}" > "${subCategory}"`);
+      res.json({ ideas });
+    } else {
+      console.error('No valid JSON array found in response:', text);
+      res.status(500).json({ error: 'Failed to parse ideas from AI response' });
+    }
+  } catch (error) {
+    console.error('Error generating content ideas:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Shot suggestion endpoint for storyboard
 app.post('/api/suggest-shots', async (req, res) => {
   try {

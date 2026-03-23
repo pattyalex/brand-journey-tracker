@@ -343,74 +343,38 @@ const Production = () => {
   const [isGeneratingMoreIdeas, setIsGeneratingMoreIdeas] = useState(false);
   const [addedIdeaText, setAddedIdeaText] = useState<string | null>(null);
 
-  // Helper function to generate sub-categories using Claude API
+  // Helper function to generate sub-categories using server API (key stays hidden)
   const generateSubCategoriesWithAI = async (pillarName: string): Promise<string[]> => {
-    const result = await callClaudeForJSON<string[]>({
-      system: `Generate sub-categories for content pillars.
-
-STRICT RULES:
-- Each sub-category MUST be 1-2 words ONLY
-- Maximum 15 characters per sub-category
-- NO sentences, NO hooks, NO content ideas
-- Think: folder names, not video titles
-
-CORRECT FORMAT:
-["Fundraising", "Leadership", "Hiring", "Failures", "Growth"]
-
-WRONG FORMAT (DO NOT DO THIS):
-["How I raised money", "My leadership journey", "Hiring mistakes I made"]
-
-Return ONLY a JSON array.`,
-      messages: [{
-        role: "user",
-        content: `Content pillar: "${pillarName}"
-
-Generate 5-7 sub-categories. Each must be 1-2 words only (like folder names).
-
-Example: For "Fitness" → ["Workouts", "Nutrition", "Recovery", "Mindset", "Equipment"]
-
-Return JSON array only.`
-      }],
-      maxTokens: 300,
-    }, "array");
-
-    return result.ok && result.data ? result.data : [];
+    try {
+      const response = await fetch('http://localhost:3001/api/generate-subcategories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pillarName }),
+      });
+      if (!response.ok) return [];
+      const data = await response.json();
+      return data.subCategories || [];
+    } catch (error) {
+      console.error('Error generating subcategories:', error);
+      return [];
+    }
   };
 
-  // Helper function to generate content ideas using Claude API
+  // Helper function to generate content ideas using server API (key stays hidden)
   const generateContentIdeasWithAI = async (pillarName: string, subCategory: string): Promise<string[]> => {
-    const result = await callClaudeForJSON<string[]>({
-      system: `You are a content strategist helping creators generate scroll-stopping content ideas.
-
-BEFORE generating, think:
-- What personal story could a creator tell about this topic?
-- What vulnerable moment or realization would resonate?
-- What surprising angle hasn't been done to death?
-- What would make someone comment "I needed to hear this"?
-
-QUALITY TEST: If the idea sounds like it could come from any creator, REJECT it. Generate ideas that feel personal and specific.
-
-RULES:
-- Write as actual video/post titles that make people stop scrolling
-- Mix: vulnerable confessions, surprising takes, specific stories, relatable fails, hard-won lessons
-- NO generic templates like "5 tips for X" or "How to Y"
-- NO emojis
-- Each idea should spark curiosity or emotion
-- Keep titles concise (under 15 words)
-
-Return ONLY a JSON array of 10 strings, nothing else.`,
-      messages: [{
-        role: "user",
-        content: `Generate 10 content ideas for a creator focused on "${pillarName}", specifically about "${subCategory}".
-
-Create ideas that feel personal and specific - like real stories a creator would tell, not generic advice anyone could give. Think: vulnerable moments, specific realizations, relatable struggles, surprising perspectives.
-
-Return only a JSON array of strings.`
-      }],
-      maxTokens: 600,
-    }, "array");
-
-    return result.ok && result.data ? result.data : [];
+    try {
+      const response = await fetch('http://localhost:3001/api/generate-content-ideas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pillarName, subCategory }),
+      });
+      if (!response.ok) return [];
+      const data = await response.json();
+      return data.ideas || [];
+    } catch (error) {
+      console.error('Error generating content ideas:', error);
+      return [];
+    }
   };
 
   // Helper function to generate content angles using Claude API
