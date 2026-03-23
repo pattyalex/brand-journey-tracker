@@ -9,8 +9,9 @@ import {
 } from "@/components/ui/popover";
 import {
   CalendarDays, X, Trash2, PenLine, Clapperboard, Scissors,
-  Video, Camera, Sparkles, Check, PartyPopper, Layers, Image as ImageIcon,
+  Video, Camera, Sparkles, Check, PartyPopper, Layers, Image as ImageIcon, GripVertical,
 } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
 import { ProductionCard } from "../types";
@@ -260,6 +261,18 @@ const ProductionCardItem: React.FC<ProductionCardItemProps> = ({
           </div>
         )}
         <div className="flex items-center justify-between gap-2">
+          {!isEditing && (
+            <TooltipProvider delayDuration={0}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <GripVertical className="w-4 h-4 text-gray-300 flex-shrink-0 cursor-grab active:cursor-grabbing" />
+                </TooltipTrigger>
+                <TooltipContent side="left" sideOffset={6}>
+                  <p>Drag to move between columns</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
           {isEditing ? (
             <input
               ref={editInputRef}

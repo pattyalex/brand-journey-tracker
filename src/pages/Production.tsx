@@ -3468,6 +3468,10 @@ Generate ${count} highly specific content angles. Each hook should feel like it 
               setPlatformTags={setPlatformTags}
               formatTags={formatTags}
               setFormatTags={setFormatTags}
+              showCustomFormatInput={showCustomFormatInput}
+              setShowCustomFormatInput={setShowCustomFormatInput}
+              customFormatInput={customFormatInput}
+              setCustomFormatInput={setCustomFormatInput}
               platformInput={platformInput}
               setPlatformInput={setPlatformInput}
               formatInput={formatInput}
@@ -3495,6 +3499,10 @@ Generate ${count} highly specific content angles. Each hook should feel like it 
               onRemoveFormatTag={handleRemoveFormatTag}
               onAddPlatformTag={handleAddPlatformTag}
               onRemovePlatformTag={handleRemovePlatformTag}
+              showCustomPlatformInput={showCustomPlatformInput}
+              setShowCustomPlatformInput={setShowCustomPlatformInput}
+              customPlatformInput={customPlatformInput}
+              setCustomPlatformInput={setCustomPlatformInput}
               onNavigateToStep={handleNavigateToStep}
               slideDirection={slideDirection}
               embedded={true}

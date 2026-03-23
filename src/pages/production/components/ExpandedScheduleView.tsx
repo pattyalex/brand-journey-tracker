@@ -7,13 +7,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ArrowLeft, CalendarDays, ChevronLeft, ChevronRight, Video, Camera, Check, X, Lightbulb, Clock, Sparkles, Archive, Trash2, AlertCircle } from "lucide-react";
+import { ArrowLeft, CalendarDays, ChevronLeft, ChevronRight, Video, Camera, Check, X, GripVertical, Lightbulb, Clock, Sparkles, Archive, Trash2, AlertCircle } from "lucide-react";
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
 import { cn } from "@/lib/utils";
 import ContentFlowProgress from "./ContentFlowProgress";
 import { EVENTS, emit } from "@/lib/events";
 import { useScheduleState, isStaticFormat, parseTimeToMinutes, ExpandedScheduleViewProps } from "../hooks/useScheduleState";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import CalendarGrid from "./schedule/CalendarGrid";
 import ScheduleTimeline from "./schedule/ScheduleTimeline";
 import BatchSchedulePanel from "./schedule/BatchSchedulePanel";
@@ -315,27 +316,41 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = (props) => {
             draggedCardId === singleCard.id && "opacity-40 scale-[0.98]"
           )}
         >
-          <h4 className="text-base font-bold text-gray-900 mb-3">{singleCard.hook || singleCard.title || "Untitled content"}</h4>
-          {singleCard.script && (
-            <div className="mb-3">
-              <p className="text-[11px] font-semibold text-[#8B7082] uppercase tracking-wider mb-1">Script</p>
-              <p className="text-sm text-gray-600 line-clamp-3">{singleCard.script}</p>
+          <div className="flex items-center gap-3">
+            <TooltipProvider delayDuration={0}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <GripVertical className="w-4 h-4 text-gray-300 flex-shrink-0 cursor-grab active:cursor-grabbing" />
+                </TooltipTrigger>
+                <TooltipContent side="left" sideOffset={6}>
+                  <p>Drag to a date to schedule</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <div className="flex-1">
+              <h4 className="text-base font-bold text-gray-900 mb-3">{singleCard.hook || singleCard.title || "Untitled content"}</h4>
+              {singleCard.script && (
+                <div className="mb-3">
+                  <p className="text-[11px] font-semibold text-[#8B7082] uppercase tracking-wider mb-1">Script</p>
+                  <p className="text-sm text-gray-600 line-clamp-3">{singleCard.script}</p>
+                </div>
+              )}
+              <div className="flex items-center justify-between">
+                {singleCard.formats && singleCard.formats.length > 0 && (
+                  <div className="flex items-center gap-1.5">
+                    {isStaticFormat(singleCard.formats[0]) ? <Camera className="w-4 h-4 text-[#8B7082]" /> : <Video className="w-4 h-4 text-[#8B7082]" />}
+                    <span className="text-xs text-gray-600">{singleCard.formats[0]}</span>
+                  </div>
+                )}
+                {singleCard.platforms && singleCard.platforms.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    {singleCard.platforms.map((platform, idx) => (
+                      <span key={idx} className="text-[#8B7082]">{getPlatformIcon(platform, "w-4 h-4")}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-          )}
-          <div className="flex items-center justify-between">
-            {singleCard.formats && singleCard.formats.length > 0 && (
-              <div className="flex items-center gap-1.5">
-                {isStaticFormat(singleCard.formats[0]) ? <Camera className="w-4 h-4 text-[#8B7082]" /> : <Video className="w-4 h-4 text-[#8B7082]" />}
-                <span className="text-xs text-gray-600">{singleCard.formats[0]}</span>
-              </div>
-            )}
-            {singleCard.platforms && singleCard.platforms.length > 0 && (
-              <div className="flex items-center gap-2">
-                {singleCard.platforms.map((platform, idx) => (
-                  <span key={idx} className="text-[#8B7082]">{getPlatformIcon(platform, "w-4 h-4")}</span>
-                ))}
-              </div>
-            )}
           </div>
         </div>
         <p className="text-sm text-[#8B7082] text-center italic">
