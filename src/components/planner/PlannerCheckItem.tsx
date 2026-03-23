@@ -8,6 +8,7 @@ import { Trash2, Check, ArrowRight, Clock, GripVertical, Palette, X as XIcon, Ed
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface PlannerCheckItemProps {
   item: PlannerItem;
@@ -18,6 +19,7 @@ interface PlannerCheckItemProps {
   renderCheckbox?: boolean;
   index?: number;
   onDragStartCapture?: () => void;
+  isAllTasksSection?: boolean;
 }
 
 export const PlannerCheckItem = ({
@@ -28,7 +30,8 @@ export const PlannerCheckItem = ({
   showTimeInItem = false,
   renderCheckbox = false,
   index,
-  onDragStartCapture
+  onDragStartCapture,
+  isAllTasksSection = false
 }: PlannerCheckItemProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isSimpleEdit, setIsSimpleEdit] = useState(false);
@@ -315,6 +318,18 @@ export const PlannerCheckItem = ({
             e.currentTarget.style.opacity = '1';
           }}
         >
+          {isAllTasksSection && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <GripVertical className="w-3.5 h-3.5 mr-1 flex-shrink-0 text-gray-500 cursor-grab" />
+                </TooltipTrigger>
+                <TooltipContent side="top" sideOffset={8} className="bg-gray-600 text-white border-gray-600 z-[9999]">
+                  <p>Drag into timeline</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
           {renderCheckbox && (
             <Checkbox
               checked={item.isCompleted}

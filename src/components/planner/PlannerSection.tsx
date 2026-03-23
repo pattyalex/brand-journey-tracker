@@ -21,6 +21,7 @@ interface PlannerSectionProps {
   isAllTasksSection?: boolean;
   onDropTaskFromWeekly?: (draggedTaskId: string, targetTaskId: string, fromDate: string) => void;
   onDropTaskFromCalendar?: (taskId: string, fromDate: string, targetIndex: number) => void;
+  onAddingStateChange?: (isAdding: boolean) => void;
 }
 
 export const PlannerSection = ({
@@ -34,12 +35,17 @@ export const PlannerSection = ({
   onReorderItems,
   isAllTasksSection = false,
   onDropTaskFromWeekly,
-  onDropTaskFromCalendar
+  onDropTaskFromCalendar,
+  onAddingStateChange
 }: PlannerSectionProps) => {
   const [newItemText, setNewItemText] = useState("");
   const [newItemStartTime, setNewItemStartTime] = useState("");
   const [newItemEndTime, setNewItemEndTime] = useState("");
-  const [isAddingItem, setIsAddingItem] = useState(false);
+  const [isAddingItem, setIsAddingItemRaw] = useState(false);
+  const setIsAddingItem = (v: boolean) => {
+    setIsAddingItemRaw(v);
+    onAddingStateChange?.(v);
+  };
   const [showTimeInput, setShowTimeInput] = useState(false);
   const [editingTimeItemId, setEditingTimeItemId] = useState<string | null>(null);
   const isMobile = useIsMobile();
@@ -386,9 +392,10 @@ export const PlannerSection = ({
                             onDelete={onDeleteItem}
                             onEdit={onEditItem}
                             showTimeInItem={false}
-                            renderCheckbox={true}
+                            renderCheckbox={!isAllTasksSection}
                             index={index}
                             onDragStartCapture={isAllTasksSection ? () => setDraggedIndex(index) : undefined}
+                            isAllTasksSection={isAllTasksSection}
                           />
                         </div>
                       </div>
@@ -447,12 +454,14 @@ export const PlannerSection = ({
             </div>
 
             {isAddingItem ? (
-              <div ref={addItemRef} className="flex flex-col mt-2">
+              <div ref={addItemRef} className={`flex flex-col ${isAllTasksSection && items.length === 0 ? '-order-1 mb-2' : 'mt-2'}`}>
                 <div className="flex items-center">
-                  <div className="pl-3 pr-1">
-                    <div className="h-4 w-4 border border-gray-400 rounded-sm"></div>
-                  </div>
-                  <div className="flex-1 ml-1 border border-gray-200 p-1 rounded-lg bg-white shadow-sm">
+                  {!isAllTasksSection && (
+                    <div className="pl-3 pr-1">
+                      <div className="h-4 w-4 border border-gray-400 rounded-sm"></div>
+                    </div>
+                  )}
+                  <div className={`flex-1 ${isAllTasksSection ? 'ml-0' : 'ml-1'} border border-gray-200 p-1 rounded-lg bg-white shadow-sm`}>
                     <div className="flex items-center gap-1">
                       <Input
                         value={newItemText}
@@ -470,10 +479,10 @@ export const PlannerSection = ({
             ) : (
               <button
                 onClick={() => setIsAddingItem(true)}
-                className={`flex items-center justify-center w-full py-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors text-sm ${items.length > 0 ? 'mt-2' : 'mt-0'}`}
+                className={`flex items-center justify-center w-full py-2.5 text-[#612a4f] font-medium hover:bg-[#612a4f]/10 rounded-lg transition-colors text-sm ${items.length > 0 ? 'mt-3' : 'mt-0'}`}
               >
                 <Plus size={16} strokeWidth={2} className="mr-1" />
-                <span>Add task</span>
+                <span>Add</span>
               </button>
             )}
 

@@ -2,10 +2,10 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { PlannerItem } from "@/types/planner";
 import { PlannerSection } from "@/components/planner/PlannerSection";
-import { ChevronLeft, ChevronRight, ListTodo, ClipboardList } from "lucide-react";
+import { ChevronLeft, ChevronRight, ListTodo, ClipboardList, GripVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSidebar } from "@/components/ui/sidebar";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface AllTasksSidebarProps {
   isAllTasksCollapsed: boolean;
@@ -55,6 +55,8 @@ export const AllTasksSidebar = ({
   const { user } = useAuth();
 
   const [dismissed, setDismissed] = useState<Record<string, boolean>>({});
+  const [isAddingTask, setIsAddingTask] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
   useEffect(() => {
     if (!user?.id) return;
     try { setDismissed(JSON.parse(localStorage.getItem(`dismissedAllTasksPlaceholders_${user.id}`) || '{}')); }
@@ -74,25 +76,27 @@ export const AllTasksSidebar = ({
 
   const placeholderList = (
     <div className="mb-2">
+      {/* Empty state illustration */}
+      <div className="flex flex-col items-center text-center px-4 pt-4 pb-6 mb-2">
+        <div className="w-10 h-10 rounded-full flex items-center justify-center mb-3" style={{ background: 'rgba(97,42,79,0.07)' }}>
+          <GripVertical className="w-5 h-5 text-[#612a4f]" />
+        </div>
+        <p className="text-[13px] font-medium text-gray-700" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+          Add your to-dos below, then drag into your timeline to schedule
+        </p>
+      </div>
+
+      {/* Example */}
+      <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-400 px-2 mb-1.5" style={{ fontFamily: "'DM Sans', sans-serif" }}>Example</p>
       {visiblePlaceholders.map((task) => (
         <div
           key={task.id}
-          className="group flex items-center gap-2 px-2 py-2.5 rounded-lg opacity-30 hover:opacity-60 transition-opacity"
+          className="group flex items-center gap-2 px-2 py-2 rounded-lg opacity-55 hover:opacity-75 transition-opacity"
         >
-          {/* Fake checkbox */}
-          <div className="w-4 h-4 rounded border flex-shrink-0" style={{ borderColor: 'rgba(97,42,79,0.3)' }} />
-          <span className="flex-1 text-sm font-medium text-gray-700 truncate" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+          <GripVertical className="w-3.5 h-3.5 flex-shrink-0 text-gray-400" />
+          <span className="flex-1 text-[13px] text-gray-400 truncate" style={{ fontFamily: "'DM Sans', sans-serif" }}>
             {task.text}
           </span>
-          <button
-            onClick={(e) => dismissTask(task.id, e)}
-            className="w-5 h-5 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-200 transition-all opacity-50 hover:opacity-100 flex-shrink-0"
-            title="Remove"
-          >
-            <svg width="7" height="7" viewBox="0 0 8 8" fill="none">
-              <path d="M1 1l6 6M7 1L1 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-            </svg>
-          </button>
         </div>
       ))}
     </div>
@@ -111,7 +115,16 @@ export const AllTasksSidebar = ({
             setIsDraggingOverAllTasks(false);
           }
         }}
-        onDrop={() => setIsDraggingOverAllTasks(false)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setIsDraggingOverAllTasks(false);
+          const taskId = e.dataTransfer.getData('taskId');
+          const fromDate = e.dataTransfer.getData('fromDate');
+          const fromAllTasks = e.dataTransfer.getData('fromAllTasks');
+          if (taskId && fromDate && fromAllTasks === 'false') {
+            handleDropTaskFromCalendarToAllTasks(taskId, fromDate, allTasks.length);
+          }
+        }}
       >
         <div className="flex items-center gap-2.5 mb-4 ml-2">
           <ListTodo className="w-5 h-5 text-gray-900" />
@@ -143,15 +156,40 @@ export const AllTasksSidebar = ({
         "bg-gradient-to-br from-[#F0EAED] via-[#F8F6F6] to-[#FAFAFA]",
         isAllTasksCollapsed ? 'w-12' : 'w-80'
       )}
-      onDragEnter={(e) => { e.preventDefault(); setIsDraggingOverAllTasks(true); }}
+      onDragEnter={(e) => { e.preventDefault(); setIsDraggingOverAllTasks(true); setIsDragOver(true); }}
       onDragOver={(e) => { e.preventDefault(); }}
       onDragLeave={(e) => {
         if (e.currentTarget === e.target || !e.currentTarget.contains(e.relatedTarget as Node)) {
           setIsDraggingOverAllTasks(false);
+          setIsDragOver(false);
         }
       }}
-      onDrop={() => setIsDraggingOverAllTasks(false)}
+      onDrop={(e) => {
+        e.preventDefault();
+        setIsDraggingOverAllTasks(false);
+        setIsDragOver(false);
+        const taskId = e.dataTransfer.getData('taskId');
+        const fromDate = e.dataTransfer.getData('fromDate');
+        const fromAllTasks = e.dataTransfer.getData('fromAllTasks');
+        if (taskId && fromDate && fromAllTasks === 'false') {
+          handleDropTaskFromCalendarToAllTasks(taskId, fromDate, allTasks.length);
+        }
+      }}
     >
+      {/* Drop zone overlay */}
+      {isDragOver && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center rounded-xl border-2 border-dashed border-[#612a4f]/40 pointer-events-none" style={{ background: 'linear-gradient(135deg, #F0EAED, #F8F6F6)' }}>
+          <div className="flex flex-col items-center gap-2">
+            <div className="w-10 h-10 rounded-full bg-[#612a4f]/10 flex items-center justify-center">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#612a4f" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+            </div>
+            <p className="text-sm font-medium text-[#612a4f]" style={{ fontFamily: "'DM Sans', sans-serif" }}>Drop here</p>
+          </div>
+        </div>
+      )}
+
       {/* Collapse/Expand Button */}
       <Tooltip>
         <TooltipTrigger asChild>
@@ -187,27 +225,29 @@ export const AllTasksSidebar = ({
           <div className="flex-1 overflow-y-auto">
             {emptyWithPlaceholders ? (
               <>
-                {visiblePlaceholders.length > 0 ? (
-                  placeholderList
-                ) : (
-                  <div className="py-12 flex flex-col items-center gap-5 text-center px-4">
-                    <div
-                      className="flex items-center justify-center text-white"
-                      style={{
-                        width: '48px',
-                        height: '48px',
-                        borderRadius: '14px',
-                        background: 'linear-gradient(145deg, #612A4F 0%, #4d2140 100%)',
-                        boxShadow: '0 8px 24px rgba(97,42,79,0.2)'
-                      }}
-                    >
-                      <ClipboardList className="w-5 h-5" />
+                {!isAddingTask && (
+                  visiblePlaceholders.length > 0 ? (
+                    placeholderList
+                  ) : (
+                    <div className="py-12 flex flex-col items-center gap-5 text-center px-4">
+                      <div
+                        className="flex items-center justify-center text-white"
+                        style={{
+                          width: '48px',
+                          height: '48px',
+                          borderRadius: '14px',
+                          background: 'linear-gradient(145deg, #612A4F 0%, #4d2140 100%)',
+                          boxShadow: '0 8px 24px rgba(97,42,79,0.2)'
+                        }}
+                      >
+                        <ClipboardList className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <p className="text-xl font-semibold text-[#2d2a26] mb-1.5" style={{ fontFamily: "'Playfair Display', serif" }}>No tasks yet</p>
+                        <p className="text-sm text-[#8b7a85]" style={{ fontFamily: "'DM Sans', sans-serif" }}>Start your to-do list</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-xl font-semibold text-[#2d2a26] mb-1.5" style={{ fontFamily: "'Playfair Display', serif" }}>No tasks yet</p>
-                      <p className="text-sm text-[#8b7a85]" style={{ fontFamily: "'DM Sans', sans-serif" }}>Start your to-do list</p>
-                    </div>
-                  </div>
+                  )
                 )}
                 <PlannerSection
                   title=""
@@ -221,6 +261,7 @@ export const AllTasksSidebar = ({
                   isAllTasksSection={true}
                   onDropTaskFromWeekly={handleDropTaskFromWeeklyToAllTasks}
                   onDropTaskFromCalendar={handleDropTaskFromCalendarToAllTasks}
+                  onAddingStateChange={setIsAddingTask}
                 />
               </>
             ) : (
