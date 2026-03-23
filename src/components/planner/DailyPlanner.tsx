@@ -445,9 +445,18 @@ export const DailyPlanner = () => {
         {(currentView === 'today' || currentView === 'week' || currentView === 'calendar') && (
           contentDisplayMode === 'content' ? (
             <div className="hidden lg:block">
-              <ContentOverviewSidebar
-                isCollapsed={isAllTasksCollapsed}
-                setIsCollapsed={setIsAllTasksCollapsed}
+              <AllTasksSidebar
+                isAllTasksCollapsed={isAllTasksCollapsed}
+                setIsAllTasksCollapsed={setIsAllTasksCollapsed}
+                setIsDraggingOverAllTasks={setIsDraggingOverAllTasks}
+                allTasks={allTasks}
+                handleToggleAllTask={handleToggleAllTask}
+                handleDeleteAllTask={handleDeleteAllTask}
+                handleEditAllTask={handleEditAllTask}
+                handleAddAllTask={handleAddAllTask}
+                handleReorderAllTasks={handleReorderAllTasks}
+                handleDropTaskFromWeeklyToAllTasks={handleDropTaskFromWeeklyToAllTasks}
+                handleDropTaskFromCalendarToAllTasks={handleDropTaskFromCalendarToAllTasks}
               />
             </div>
           ) : contentDisplayMode === 'both' ? (
@@ -496,16 +505,6 @@ export const DailyPlanner = () => {
                     handleReorderAllTasks={handleReorderAllTasks}
                     handleDropTaskFromWeeklyToAllTasks={handleDropTaskFromWeeklyToAllTasks}
                     handleDropTaskFromCalendarToAllTasks={handleDropTaskFromCalendarToAllTasks}
-                    embedded={true}
-                  />
-
-                  {/* Divider */}
-                  <div className="border-t border-gray-200 my-4" />
-
-                  {/* Content Overview Section */}
-                  <ContentOverviewSidebar
-                    isCollapsed={false}
-                    setIsCollapsed={() => {}}
                     embedded={true}
                   />
                 </div>

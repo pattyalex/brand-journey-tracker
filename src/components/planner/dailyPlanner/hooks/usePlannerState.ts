@@ -90,7 +90,7 @@ export const usePlannerState = ({
   const [calendarFilterMode, setCalendarFilterMode] = useState<'all' | 'content'>('all');
 
   // Content display mode: 'tasks', 'content', or 'both'
-  const [contentDisplayMode, setContentDisplayMode] = useState<ContentDisplayMode>('tasks');
+  const [contentDisplayMode, setContentDisplayMode] = useState<ContentDisplayMode>('both');
 
   // Derived values for convenience
   const showTasks = contentDisplayMode === 'tasks' || contentDisplayMode === 'both';
