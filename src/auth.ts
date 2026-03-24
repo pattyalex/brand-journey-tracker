@@ -104,6 +104,19 @@ export async function signUp(email: string, password: string, fullName: string):
     // Create profile immediately regardless of email confirmation status
     await createUserRecords(userId, userEnteredEmail, fullName);
 
+    // Send welcome email to user + admin notification (fire and forget)
+    fetch('http://localhost:3001/api/send-welcome-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: userEnteredEmail, name: fullName }),
+    }).catch(err => console.error('Failed to send welcome email:', err));
+
+    fetch('http://localhost:3001/api/send-signup-admin-notification', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: userEnteredEmail, name: fullName, userId }),
+    }).catch(err => console.error('Failed to send signup admin notification:', err));
+
     if (!isEmailConfirmed) {
       console.log('📧 Email verification required');
       return {

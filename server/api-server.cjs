@@ -1316,7 +1316,7 @@ app.post('/api/send-welcome-email', async (req, res) => {
   }
 });
 
-// Generic send email endpoint (for future use)
+// Generic send email endpoint
 app.post('/api/send-email', async (req, res) => {
   try {
     const { to, subject, html } = req.body;
@@ -1326,7 +1326,7 @@ app.post('/api/send-email', async (req, res) => {
     }
 
     const { data, error } = await resend.emails.send({
-      from: 'Meg <contact@heymeg.ai>',
+      from: 'HeyMeg <noreply@heymeg.ai>',
       to,
       subject,
       html,
@@ -1341,6 +1341,311 @@ app.post('/api/send-email', async (req, res) => {
   } catch (err) {
     console.error('Email send error:', err);
     res.status(500).json({ error: 'Failed to send email' });
+  }
+});
+
+// New user signup - admin notification
+app.post('/api/send-signup-admin-notification', async (req, res) => {
+  try {
+    const { email, name, userId } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    const signedUpAt = new Date().toLocaleString();
+
+    const { data, error } = await resend.emails.send({
+      from: 'HeyMeg <noreply@heymeg.ai>',
+      to: 'contact@heymeg.ai',
+      subject: `New User Signup: ${name || 'Unknown'} (${email})`,
+      html: `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+          <h1 style="color: #1a1a1a; font-size: 28px; margin-bottom: 8px;">New User Signed Up! 🎉</h1>
+          <p style="color: #555; font-size: 16px; line-height: 1.6;">A new user has joined HeyMeg.</p>
+          <table style="border-collapse: collapse; margin: 20px 0;">
+            <tr><td style="padding: 8px 16px; font-weight: bold; color: #333;">Name:</td><td style="padding: 8px 16px; color: #555;">${name || 'N/A'}</td></tr>
+            <tr><td style="padding: 8px 16px; font-weight: bold; color: #333;">Email:</td><td style="padding: 8px 16px; color: #555;">${email}</td></tr>
+            <tr><td style="padding: 8px 16px; font-weight: bold; color: #333;">User ID:</td><td style="padding: 8px 16px; color: #555;">${userId || 'N/A'}</td></tr>
+            <tr><td style="padding: 8px 16px; font-weight: bold; color: #333;">Signed up at:</td><td style="padding: 8px 16px; color: #555;">${signedUpAt}</td></tr>
+            <tr><td style="padding: 8px 16px; font-weight: bold; color: #333;">Trial ends:</td><td style="padding: 8px 16px; color: #555;">${new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString()}</td></tr>
+          </table>
+        </div>
+      `,
+    });
+
+    if (error) {
+      console.error('Resend error:', error);
+      return res.status(400).json({ error: error.message });
+    }
+
+    console.log('✅ Signup admin notification sent for:', email);
+    res.json({ success: true, messageId: data.id });
+  } catch (err) {
+    console.error('Email send error:', err);
+    res.status(500).json({ error: 'Failed to send email' });
+  }
+});
+
+// Trial ending reminder email
+app.post('/api/send-trial-reminder', async (req, res) => {
+  try {
+    const { email, name, trialEndsAt } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    const firstName = name ? name.split(' ')[0] : 'there';
+    const endDate = new Date(trialEndsAt).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+
+    const { data, error } = await resend.emails.send({
+      from: 'HeyMeg <noreply@heymeg.ai>',
+      to: email,
+      subject: `Your HeyMeg trial ends in 2 days`,
+      html: `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+          <h1 style="color: #1a1a1a; font-size: 28px; margin-bottom: 8px;">Your trial is ending soon</h1>
+          <p style="color: #555; font-size: 16px; line-height: 1.6;">Hi ${firstName},</p>
+          <p style="color: #555; font-size: 16px; line-height: 1.6;">Just a heads up — your HeyMeg free trial ends on <strong>${endDate}</strong>.</p>
+          <p style="color: #555; font-size: 16px; line-height: 1.6;">After your trial ends, your subscription will automatically begin and your card on file will be charged.</p>
+          <p style="color: #555; font-size: 16px; line-height: 1.6;">If you'd like to cancel before your trial ends, you can do so from your account settings.</p>
+          <p style="color: #555; font-size: 16px; line-height: 1.6;">We hope you've been enjoying HeyMeg!</p>
+          <p style="color: #555; font-size: 16px; line-height: 1.6;">— The HeyMeg Team</p>
+          <p style="color: #999; font-size: 12px; line-height: 1.4; margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px;">This is an automated message. Please do not reply to this email. If you need help, contact us at contact@heymeg.ai.</p>
+        </div>
+      `,
+    });
+
+    if (error) {
+      console.error('Resend error:', error);
+      return res.status(400).json({ error: error.message });
+    }
+
+    console.log('✅ Trial reminder sent to:', email);
+    res.json({ success: true, messageId: data.id });
+  } catch (err) {
+    console.error('Email send error:', err);
+    res.status(500).json({ error: 'Failed to send email' });
+  }
+});
+
+// Payment failed email
+app.post('/api/send-payment-failed', async (req, res) => {
+  try {
+    const { email, name } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    const firstName = name ? name.split(' ')[0] : 'there';
+
+    const { data, error } = await resend.emails.send({
+      from: 'HeyMeg <noreply@heymeg.ai>',
+      to: email,
+      subject: `Action required: Your HeyMeg payment failed`,
+      html: `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+          <h1 style="color: #1a1a1a; font-size: 28px; margin-bottom: 8px;">Payment Failed</h1>
+          <p style="color: #555; font-size: 16px; line-height: 1.6;">Hi ${firstName},</p>
+          <p style="color: #555; font-size: 16px; line-height: 1.6;">We were unable to process your latest payment for HeyMeg. This can happen if your card has expired or if there are insufficient funds.</p>
+          <p style="color: #555; font-size: 16px; line-height: 1.6;">Please update your payment method in your account settings to avoid any interruption to your service.</p>
+          <p style="color: #555; font-size: 16px; line-height: 1.6;">If you believe this is a mistake or need help, don't hesitate to reach out to us at contact@heymeg.ai.</p>
+          <p style="color: #555; font-size: 16px; line-height: 1.6;">— The HeyMeg Team</p>
+          <p style="color: #999; font-size: 12px; line-height: 1.4; margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px;">This is an automated message. Please do not reply to this email. If you need help, contact us at contact@heymeg.ai.</p>
+        </div>
+      `,
+    });
+
+    if (error) {
+      console.error('Resend error:', error);
+      return res.status(400).json({ error: error.message });
+    }
+
+    console.log('✅ Payment failed email sent to:', email);
+    res.json({ success: true, messageId: data.id });
+  } catch (err) {
+    console.error('Email send error:', err);
+    res.status(500).json({ error: 'Failed to send email' });
+  }
+});
+
+// Subscription cancelled email
+app.post('/api/send-subscription-cancelled', async (req, res) => {
+  try {
+    const { email, name, accessEndsAt } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    const firstName = name ? name.split(' ')[0] : 'there';
+    const endDate = accessEndsAt
+      ? new Date(accessEndsAt).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
+      : 'the end of your current billing period';
+
+    const { data, error } = await resend.emails.send({
+      from: 'HeyMeg <noreply@heymeg.ai>',
+      to: email,
+      subject: `Your HeyMeg subscription has been cancelled`,
+      html: `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+          <h1 style="color: #1a1a1a; font-size: 28px; margin-bottom: 8px;">Subscription Cancelled</h1>
+          <p style="color: #555; font-size: 16px; line-height: 1.6;">Hi ${firstName},</p>
+          <p style="color: #555; font-size: 16px; line-height: 1.6;">Your HeyMeg subscription has been cancelled as requested.</p>
+          <p style="color: #555; font-size: 16px; line-height: 1.6;">You'll still have access to all features until <strong>${endDate}</strong>. After that, your account will be downgraded.</p>
+          <p style="color: #555; font-size: 16px; line-height: 1.6;">If you change your mind, you can resubscribe anytime from your account settings.</p>
+          <p style="color: #555; font-size: 16px; line-height: 1.6;">We'd love to know what we could have done better. Feel free to reach out to us at contact@heymeg.ai with any feedback.</p>
+          <p style="color: #555; font-size: 16px; line-height: 1.6;">— The HeyMeg Team</p>
+          <p style="color: #999; font-size: 12px; line-height: 1.4; margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px;">This is an automated message. Please do not reply to this email. If you need help, contact us at contact@heymeg.ai.</p>
+        </div>
+      `,
+    });
+
+    if (error) {
+      console.error('Resend error:', error);
+      return res.status(400).json({ error: error.message });
+    }
+
+    console.log('✅ Subscription cancelled email sent to:', email);
+    res.json({ success: true, messageId: data.id });
+  } catch (err) {
+    console.error('Email send error:', err);
+    res.status(500).json({ error: 'Failed to send email' });
+  }
+});
+
+// Payment receipt/confirmation email
+app.post('/api/send-payment-receipt', async (req, res) => {
+  try {
+    const { email, name, amount, planType } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    const firstName = name ? name.split(' ')[0] : 'there';
+    const formattedAmount = amount ? `$${(amount / 100).toFixed(2)}` : (planType === 'annual' ? '$168.00' : '$17.00');
+    const planLabel = planType === 'annual' ? 'Annual' : 'Monthly';
+    const paidDate = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+    const { data, error } = await resend.emails.send({
+      from: 'HeyMeg <noreply@heymeg.ai>',
+      to: email,
+      subject: `Payment received — thank you!`,
+      html: `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+          <h1 style="color: #1a1a1a; font-size: 28px; margin-bottom: 8px;">Payment Received</h1>
+          <p style="color: #555; font-size: 16px; line-height: 1.6;">Hi ${firstName},</p>
+          <p style="color: #555; font-size: 16px; line-height: 1.6;">We've received your payment. Here's your receipt:</p>
+          <table style="border-collapse: collapse; margin: 20px 0; width: 100%; max-width: 400px;">
+            <tr><td style="padding: 8px 16px; font-weight: bold; color: #333;">Amount:</td><td style="padding: 8px 16px; color: #555;">${formattedAmount}</td></tr>
+            <tr><td style="padding: 8px 16px; font-weight: bold; color: #333;">Plan:</td><td style="padding: 8px 16px; color: #555;">HeyMeg ${planLabel}</td></tr>
+            <tr><td style="padding: 8px 16px; font-weight: bold; color: #333;">Date:</td><td style="padding: 8px 16px; color: #555;">${paidDate}</td></tr>
+          </table>
+          <p style="color: #555; font-size: 16px; line-height: 1.6;">You can manage your billing details anytime from your account settings.</p>
+          <p style="color: #555; font-size: 16px; line-height: 1.6;">— The HeyMeg Team</p>
+          <p style="color: #999; font-size: 12px; line-height: 1.4; margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px;">This is an automated message. Please do not reply to this email. If you need help, contact us at contact@heymeg.ai.</p>
+        </div>
+      `,
+    });
+
+    if (error) {
+      console.error('Resend error:', error);
+      return res.status(400).json({ error: error.message });
+    }
+
+    console.log('✅ Payment receipt sent to:', email);
+    res.json({ success: true, messageId: data.id });
+  } catch (err) {
+    console.error('Email send error:', err);
+    res.status(500).json({ error: 'Failed to send email' });
+  }
+});
+
+// ============================================================
+// STRIPE WEBHOOK (handles payment events and triggers emails)
+// ============================================================
+
+app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), async (req, res) => {
+  const event = req.body;
+
+  console.log('📩 Stripe webhook received:', event.type);
+
+  try {
+    switch (event.type) {
+      // Payment failed
+      case 'invoice.payment_failed': {
+        const invoice = event.data.object;
+        const customerId = invoice.customer;
+        // Look up user by stripe_customer_id
+        const { data: profile } = await supabaseAdmin.from('profiles').select('email, full_name').eq('stripe_customer_id', customerId).single();
+        if (profile) {
+          await fetch(`http://localhost:${port}/api/send-payment-failed`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: profile.email, name: profile.full_name }),
+          });
+        }
+        break;
+      }
+
+      // Payment succeeded (receipt)
+      case 'invoice.payment_succeeded': {
+        const invoice = event.data.object;
+        const customerId = invoice.customer;
+        // Skip the first invoice if it's a trial (amount = 0)
+        if (invoice.amount_paid === 0) break;
+        const { data: profile } = await supabaseAdmin.from('profiles').select('email, full_name, plan_type').eq('stripe_customer_id', customerId).single();
+        if (profile) {
+          await fetch(`http://localhost:${port}/api/send-payment-receipt`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: profile.email, name: profile.full_name, amount: invoice.amount_paid, planType: profile.plan_type }),
+          });
+        }
+        break;
+      }
+
+      // Subscription cancelled
+      case 'customer.subscription.deleted': {
+        const subscription = event.data.object;
+        const customerId = subscription.customer;
+        const { data: profile } = await supabaseAdmin.from('profiles').select('email, full_name').eq('stripe_customer_id', customerId).single();
+        if (profile) {
+          await fetch(`http://localhost:${port}/api/send-subscription-cancelled`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: profile.email, name: profile.full_name }),
+          });
+        }
+        break;
+      }
+
+      // Trial ending soon (Stripe sends this 3 days before trial ends)
+      case 'customer.subscription.trial_will_end': {
+        const subscription = event.data.object;
+        const customerId = subscription.customer;
+        const { data: profile } = await supabaseAdmin.from('profiles').select('email, full_name, trial_ends_at').eq('stripe_customer_id', customerId).single();
+        if (profile) {
+          await fetch(`http://localhost:${port}/api/send-trial-reminder`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: profile.email, name: profile.full_name, trialEndsAt: profile.trial_ends_at }),
+          });
+        }
+        break;
+      }
+
+      default:
+        console.log('Unhandled Stripe event type:', event.type);
+    }
+
+    res.json({ received: true });
+  } catch (err) {
+    console.error('Webhook error:', err);
+    res.status(500).json({ error: 'Webhook handler failed' });
   }
 });
 
