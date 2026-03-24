@@ -231,7 +231,7 @@ export const MembershipPage: React.FC = () => {
             </h1>
             <p className="text-white/60 text-sm">
               {isCancelled
-                ? 'Your data is safe and waiting for you'
+                ? 'We\'re glad to see you again'
                 : 'Start your journey with HeyMeg'}
             </p>
           </div>
