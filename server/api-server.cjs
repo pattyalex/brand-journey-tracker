@@ -6,6 +6,7 @@ const cors = require('cors');
 const Stripe = require('stripe');
 const puppeteer = require('puppeteer');
 const { createClient } = require('@supabase/supabase-js');
+const { Resend } = require('resend');
 
 const app = express();
 const port = 3001;
@@ -17,6 +18,14 @@ if (!process.env.STRIPE_SECRET_KEY) {
   console.log('✅ Stripe configured successfully');
 }
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder');
+
+// Initialize Resend (email)
+const resend = new Resend(process.env.RESEND_API_KEY);
+if (!process.env.RESEND_API_KEY) {
+  console.warn('⚠️  RESEND_API_KEY not configured. Email features will not work.');
+} else {
+  console.log('✅ Resend configured successfully');
+}
 
 // Initialize Supabase (anon client for auth verification)
 const supabase = createClient(
@@ -1242,6 +1251,97 @@ app.post('/api/save-onboarding-responses', verifySupabaseAuth, async (req, res) 
 
 app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
+// ============================================================
+// EMAIL ENDPOINTS (Resend)
+// ============================================================
+
+// Send welcome email when a new user signs up
+app.post('/api/send-welcome-email', async (req, res) => {
+  try {
+    const { email, name } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    const firstName = name ? name.split(' ')[0] : 'there';
+
+    const { data, error } = await resend.emails.send({
+      from: 'HeyMeg <noreply@heymeg.ai>',
+      to: email,
+      subject: `Welcome to HeyMeg, ${firstName}! 🎉`,
+      html: `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+          <h1 style="color: #1a1a1a; font-size: 28px; margin-bottom: 8px;">Welcome to HeyMeg!</h1>
+          <p style="color: #555; font-size: 16px; line-height: 1.6;">
+            Hi ${firstName},
+          </p>
+          <p style="color: #555; font-size: 16px; line-height: 1.6;">
+            We're so excited to have you on board! Your 7-day free trial has started, and you now have full access to everything HeyMeg has to offer.
+          </p>
+          <p style="color: #555; font-size: 16px; line-height: 1.6;">
+            Here's what you can do to get started:
+          </p>
+          <ul style="color: #555; font-size: 16px; line-height: 1.8;">
+            <li>Set up your brand profile</li>
+            <li>Define your content pillars</li>
+            <li>Plan your content calendar</li>
+            <li>Track your brand journey</li>
+          </ul>
+          <p style="color: #555; font-size: 16px; line-height: 1.6;">
+            If you have any questions, just reply to this email — we're here to help!
+          </p>
+          <p style="color: #555; font-size: 16px; line-height: 1.6;">
+            — The HeyMeg Team
+          </p>
+          <p style="color: #999; font-size: 12px; line-height: 1.4; margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px;">
+            This is an automated message. Please do not reply to this email. If you need help, contact us at contact@heymeg.ai.
+          </p>
+        </div>
+      `,
+    });
+
+    if (error) {
+      console.error('Resend error:', error);
+      return res.status(400).json({ error: error.message });
+    }
+
+    console.log('✅ Welcome email sent to:', email);
+    res.json({ success: true, messageId: data.id });
+  } catch (err) {
+    console.error('Email send error:', err);
+    res.status(500).json({ error: 'Failed to send email' });
+  }
+});
+
+// Generic send email endpoint (for future use)
+app.post('/api/send-email', async (req, res) => {
+  try {
+    const { to, subject, html } = req.body;
+
+    if (!to || !subject || !html) {
+      return res.status(400).json({ error: 'to, subject, and html are required' });
+    }
+
+    const { data, error } = await resend.emails.send({
+      from: 'Meg <contact@heymeg.ai>',
+      to,
+      subject,
+      html,
+    });
+
+    if (error) {
+      console.error('Resend error:', error);
+      return res.status(400).json({ error: error.message });
+    }
+
+    res.json({ success: true, messageId: data.id });
+  } catch (err) {
+    console.error('Email send error:', err);
+    res.status(500).json({ error: 'Failed to send email' });
+  }
 });
 
 app.listen(port, '0.0.0.0', () => {
