@@ -139,15 +139,20 @@ export default async function handler(req, res) {
           ? new Date(subscription.trial_end * 1000).toISOString()
           : null;
 
+        const patchBody = {
+          subscription_status: status,
+          stripe_subscription_id: subscription.id,
+          plan_type: planType,
+          is_on_trial: isTrialing,
+          trial_ends_at: trialEnd,
+        };
+        if (isTrialing) {
+          patchBody.has_used_trial = true;
+        }
+
         const result = await supabasePatch(
           `profiles?stripe_customer_id=eq.${customerId}`,
-          {
-            subscription_status: status,
-            stripe_subscription_id: subscription.id,
-            plan_type: planType,
-            is_on_trial: isTrialing,
-            trial_ends_at: trialEnd,
-          }
+          patchBody
         );
         console.log(`Updated subscription for ${customerId}: ${status}, supabase status: ${result.status}`);
         break;

@@ -12,6 +12,7 @@ interface SubscriptionData {
   plan_type: string | null;
   is_on_trial: boolean | null;
   trial_ends_at: string | null;
+  has_used_trial: boolean | null;
 }
 
 export const MembershipPage: React.FC = () => {
@@ -42,7 +43,7 @@ export const MembershipPage: React.FC = () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('stripe_customer_id, stripe_subscription_id, subscription_status, plan_type, is_on_trial, trial_ends_at')
+        .select('stripe_customer_id, stripe_subscription_id, subscription_status, plan_type, is_on_trial, trial_ends_at, has_used_trial')
         .eq('id', user?.id)
         .single();
 
@@ -263,14 +264,16 @@ export const MembershipPage: React.FC = () => {
             <p className="text-sm mb-6" style={{ color: '#4d3e48' }}>
               {isCancelled
                 ? 'Resubscribe to regain access to all your content and features.'
-                : 'Start your 14-day free trial to access all features.'}
+                : subscriptionData?.has_used_trial
+                  ? 'Subscribe to access all features.'
+                  : 'Start your 14-day free trial to access all features.'}
             </p>
             <button
               onClick={() => window.location.href = '/onboarding?step=payment-setup'}
               className="w-full py-3 px-6 rounded-xl text-white font-medium text-sm transition-opacity hover:opacity-90"
               style={{ background: 'linear-gradient(135deg, #7a3868 0%, #612a4f 50%, #4e2040 100%)' }}
             >
-              {isCancelled ? 'Resubscribe' : 'Start Free Trial'}
+              {isCancelled ? 'Resubscribe' : subscriptionData?.has_used_trial ? 'Subscribe Now' : 'Start Free Trial'}
             </button>
             <p className="text-xs mt-5" style={{ color: '#8B7082' }}>
               Questions? Reach out to us at{' '}

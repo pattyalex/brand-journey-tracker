@@ -163,7 +163,7 @@ const socialAccountsSchema = z.object({
 const OnboardingFlow: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { user, session, isAuthLoaded, hasCompletedOnboarding, isAuthenticated } = useAuth();
+  const { user, session, isAuthLoaded, hasCompletedOnboarding, isAuthenticated, hasUsedTrial } = useAuth();
   const [currentStep, setCurrentStep] = useState<OnboardingStep>("account-creation");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<string>('');
@@ -615,6 +615,7 @@ const OnboardingFlow: React.FC = () => {
             user={user}
             onContinueToPayment={() => setCurrentStep("payment-entry")}
             showPaymentForm={false}
+            hasUsedTrial={hasUsedTrial}
           />
         );
 
@@ -629,6 +630,7 @@ const OnboardingFlow: React.FC = () => {
             onSuccess={() => setCurrentStep("user-goals")}
             onBack={() => setCurrentStep("plan-selection")}
             showPaymentForm={true}
+            hasUsedTrial={hasUsedTrial}
           />
         );
 

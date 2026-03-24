@@ -13,6 +13,7 @@ interface StripePaymentFormProps {
   userId: string;
   userEmail: string;
   userName: string;
+  hasUsedTrial?: boolean;
 }
 
 const CARD_ELEMENT_OPTIONS = {
@@ -41,6 +42,7 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
   userId,
   userEmail,
   userName,
+  hasUsedTrial = false,
 }) => {
   const stripe = useStripe();
   const elements = useElements();
@@ -170,6 +172,7 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
           customerId: customerId,
           priceId: priceId,
           paymentMethodId: paymentMethod!.id,
+          trialPeriodDays: hasUsedTrial ? 0 : 14,
         }),
       });
 
@@ -193,6 +196,7 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
           trial_ends_at: subscription.trial_end
             ? new Date(subscription.trial_end * 1000).toISOString()
             : null,
+          has_used_trial: true,
         })
         .eq('id', userId);
 
@@ -341,7 +345,7 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
               Processing...
             </>
           ) : (
-            'Start 14-Day Free Trial'
+            hasUsedTrial ? 'Subscribe Now' : 'Start 14-Day Free Trial'
           )}
         </button>
       </div>

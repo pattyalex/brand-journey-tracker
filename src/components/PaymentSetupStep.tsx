@@ -17,6 +17,7 @@ interface PaymentSetupStepProps {
   onContinueToPayment?: () => void;
   onSuccess?: () => void;
   onBack?: () => void;
+  hasUsedTrial?: boolean;
 }
 
 export const PaymentSetupStep: React.FC<PaymentSetupStepProps> = ({
@@ -24,7 +25,8 @@ export const PaymentSetupStep: React.FC<PaymentSetupStepProps> = ({
   showPaymentForm = false,
   onContinueToPayment,
   onSuccess,
-  onBack
+  onBack,
+  hasUsedTrial = false,
 }) => {
   const [billingPlan, setBillingPlan] = useState<'monthly' | 'annual'>('annual');
   const [termsAccepted, setTermsAccepted] = useState(false);
@@ -58,7 +60,9 @@ export const PaymentSetupStep: React.FC<PaymentSetupStepProps> = ({
               Enter payment details
             </h2>
             <p className="text-sm mb-6" style={{ color: '#6b6478' }}>
-              Your card won't be charged until your 14-day free trial ends.
+              {hasUsedTrial
+                ? 'Enter your payment details to start your subscription.'
+                : 'Your card won\'t be charged until your 14-day free trial ends.'}
             </p>
 
 
@@ -70,6 +74,7 @@ export const PaymentSetupStep: React.FC<PaymentSetupStepProps> = ({
                 userId={user.id}
                 userEmail={user.primaryEmailAddress?.emailAddress || ''}
                 userName={user.fullName || user.firstName || 'User'}
+                hasUsedTrial={hasUsedTrial}
               />
             </Elements>
           </div>
@@ -94,7 +99,7 @@ export const PaymentSetupStep: React.FC<PaymentSetupStepProps> = ({
             Select your plan
           </h2>
           <p className="text-sm" style={{ color: '#6b6478' }}>
-            Start your 14-day free trial. Cancel anytime.
+            {hasUsedTrial ? 'Choose your plan. Cancel anytime.' : 'Start your 14-day free trial. Cancel anytime.'}
           </p>
         </div>
 
@@ -204,7 +209,7 @@ export const PaymentSetupStep: React.FC<PaymentSetupStepProps> = ({
 
           {/* Trial notice */}
           <p className="text-center text-sm mb-6" style={{ color: '#8a7a85' }}>
-            Your card won't be charged until after your 14-day trial.
+            {hasUsedTrial ? 'Your card will be charged immediately.' : 'Your card won\'t be charged until after your 14-day trial.'}
           </p>
 
           {/* Trust Badges */}
