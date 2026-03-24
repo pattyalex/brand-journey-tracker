@@ -30,6 +30,14 @@ export const MembershipPage: React.FC = () => {
     }
   }, [user, isAuthLoaded]);
 
+  // Timeout fallback — never spin forever
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (loading) setLoading(false);
+    }, 3000);
+    return () => clearTimeout(timeout);
+  }, []);
+
   const fetchSubscriptionData = async () => {
     try {
       const { data, error } = await supabase
