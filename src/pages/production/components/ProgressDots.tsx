@@ -12,7 +12,7 @@ const ProgressDots: React.FC<ProgressDotsProps> = ({ stageCompletions }) => {
   const completedCount = STAGE_ORDER.filter(s => completions[s]).length;
 
   return (
-    <TooltipProvider delayDuration={300}>
+    <TooltipProvider delayDuration={0}>
       <Tooltip>
         <TooltipTrigger asChild>
           <div className="flex items-center gap-1.5 cursor-default">
