@@ -3,8 +3,8 @@ import { toast } from "sonner";
 import { StorageKeys, getString, setString } from "@/lib/storage";
 import { EVENTS, emit, on } from "@/lib/events";
 import { getUserProductionCards, upsertProductionCard, deleteProductionCard } from "@/services/productionService";
-import { KanbanColumn, ProductionCard } from "../types";
-import { defaultColumns } from "../utils/productionConstants";
+import { KanbanColumn, ProductionCard, StageCompletions } from "../types";
+import { defaultColumns, DEFAULT_STAGE_COMPLETIONS, COLUMN_ORDER } from "../utils/productionConstants";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -27,6 +27,23 @@ export interface UseProductionBoardCallbacks {
   onSchedulingCardClear?: () => void;
 }
 
+// ─── Backfill stage completions for existing cards ─────────────────────
+
+const backfillStageCompletions = (card: ProductionCard): ProductionCard => {
+  if (card.stageCompletions) return card;
+  const colIdx = COLUMN_ORDER.indexOf(card.columnId);
+  return {
+    ...card,
+    stageCompletions: {
+      ideate: true,
+      scriptAndConcept: colIdx >= 1,
+      toFilm: colIdx >= 2,
+      toEdit: colIdx >= 3,
+      toSchedule: colIdx >= 4 || !!card.scheduledDate,
+    },
+  };
+};
+
 // ─── getInitialColumns (runs before hook, at module level) ─────────────
 
 export const getInitialColumns = (): KanbanColumn[] => {
@@ -38,7 +55,7 @@ export const getInitialColumns = (): KanbanColumn[] => {
         const savedCol = savedColumns.find((sc: KanbanColumn) => sc.id === defaultCol.id);
         return {
           ...defaultCol,
-          cards: savedCol?.cards || [],
+          cards: (savedCol?.cards || []).map(backfillStageCompletions),
         };
       });
     } catch (error) {
@@ -90,6 +107,16 @@ export function useProductionBoard(
     sourceColumnId: string;
   } | null>(null);
 
+  // ── Skip-column nudge dialog (used by drag-drop) ─────────────────────
+  const [showSkipColumnDialog, setShowSkipColumnDialog] = useState(false);
+  const [pendingSkipMove, setPendingSkipMove] = useState<{
+    card: ProductionCard;
+    sourceColumnId: string;
+    targetColumnId: string;
+    dropPosition: { columnId: string; index: number };
+    skippedColumnIds: string[];
+  } | null>(null);
+
   // ── Basic Card CRUD refs ──────────────────────────────────────────────
   const deletedCardRef = useRef<{ card: ProductionCard; columnId: string; index: number } | null>(null);
 
@@ -130,7 +157,8 @@ export function useProductionBoard(
           ...col,
           cards: cards
             .filter(c => c.columnId === col.id)
-            .sort((a, b) => (a as any).displayOrder - (b as any).displayOrder),
+            .sort((a, b) => (a as any).displayOrder - (b as any).displayOrder)
+            .map(backfillStageCompletions),
         }));
         setString(StorageKeys.productionKanban, JSON.stringify(columnsFromSupabase));
         prevColumnsRef.current = columnsFromSupabase;
@@ -495,6 +523,7 @@ export function useProductionBoard(
                 scheduledDate: dateString,
                 scheduledStartTime: startTime,
                 scheduledEndTime: endTime,
+                stageCompletions: { ...(card.stageCompletions || DEFAULT_STAGE_COMPLETIONS), toSchedule: true },
               }
             : card
         ),
@@ -514,6 +543,7 @@ export function useProductionBoard(
                 scheduledDate: undefined,
                 scheduledStartTime: undefined,
                 scheduledEndTime: undefined,
+                stageCompletions: { ...(card.stageCompletions || DEFAULT_STAGE_COMPLETIONS), toSchedule: false },
               }
             : card
         ),
@@ -750,65 +780,65 @@ export function useProductionBoard(
       return;
     }
 
-    const isSameColumn = sourceColumnId === actualTargetColumnId;
+    // Detect column skipping (only for forward moves across >1 column)
+    const sourceIdx = COLUMN_ORDER.indexOf(sourceColumnId!);
+    const targetIdx = COLUMN_ORDER.indexOf(actualTargetColumnId);
+    if (sourceIdx >= 0 && targetIdx >= 0 && targetIdx - sourceIdx > 1) {
+      const skippedColumnIds = COLUMN_ORDER.slice(sourceIdx + 1, targetIdx);
+      setPendingSkipMove({
+        card: draggedCard,
+        sourceColumnId: sourceColumnId!,
+        targetColumnId: actualTargetColumnId,
+        dropPosition: savedDropPosition,
+        skippedColumnIds,
+      });
+      setShowSkipColumnDialog(true);
+      setDraggedCard(null);
+      return;
+    }
 
-    // Create updated columns
+    executeColumnMove(draggedCard, sourceColumnId!, actualTargetColumnId, savedDropPosition);
+    setDraggedCard(null);
+  }, [draggedCard, dropPosition, columns]);
+
+  // Reusable column move logic (used by handleDrop and skip-column confirmation)
+  const executeColumnMove = useCallback((
+    card: ProductionCard,
+    sourceColId: string,
+    targetColId: string,
+    pos: { columnId: string; index: number },
+  ) => {
+    const isSameColumn = sourceColId === targetColId;
+
     const updatedColumns = columns.map((column) => {
-      // Get filtered cards for this column
       const filterCard = (c: ProductionCard) =>
         c.title && c.title.trim() && !c.title.toLowerCase().includes('add quick idea');
 
-      if (column.id === sourceColumnId && isSameColumn) {
-        // Moving within the same column
+      if (column.id === sourceColId && isSameColumn) {
         const filtered = column.cards.filter(filterCard);
-        const draggedIndex = filtered.findIndex((c) => c.id === draggedCard.id);
-
+        const draggedIndex = filtered.findIndex((c) => c.id === card.id);
         if (draggedIndex === -1) return column;
-
-        // Remove dragged card from filtered array
-        const withoutDragged = filtered.filter((c) => c.id !== draggedCard.id);
-
-        // Calculate actual drop index (accounting for removed card)
-        let actualDropIndex = savedDropPosition.index;
-        if (actualDropIndex > draggedIndex) {
-          actualDropIndex--;
-        }
-
-        // Insert at new position
-        withoutDragged.splice(actualDropIndex, 0, { ...draggedCard, columnId: column.id, lastUpdated: new Date().toISOString() });
-
+        const withoutDragged = filtered.filter((c) => c.id !== card.id);
+        let actualDropIndex = pos.index;
+        if (actualDropIndex > draggedIndex) actualDropIndex--;
+        withoutDragged.splice(actualDropIndex, 0, { ...card, columnId: column.id, lastUpdated: new Date().toISOString() });
         return { ...column, cards: withoutDragged };
-      } else if (column.id === sourceColumnId) {
-        // Removing from source column (moving to different column)
-        return {
-          ...column,
-          cards: column.cards.filter((c) => c.id !== draggedCard.id),
-        };
-      } else if (column.id === actualTargetColumnId) {
-        // Adding to target column (from different column)
+      } else if (column.id === sourceColId) {
+        return { ...column, cards: column.cards.filter((c) => c.id !== card.id) };
+      } else if (column.id === targetColId) {
         const filtered = column.cards.filter(filterCard);
-        // Auto-set status when moving between columns
-        // Auto-unpin if moving to 'posted' column (finished work shouldn't be on dashboard)
-        let cardToAdd = { ...draggedCard, columnId: column.id, lastUpdated: new Date().toISOString() };
+        let cardToAdd = { ...card, columnId: column.id, lastUpdated: new Date().toISOString() };
 
-        // Set status to 'to-start' if moving to shape-ideas column and card doesn't already have a status
-        if (column.id === 'shape-ideas' && !draggedCard.status) {
+        if (column.id === 'shape-ideas' && !card.status) {
           cardToAdd = { ...cardToAdd, status: 'to-start' as const };
         }
-
-        // Auto-set filming status to 'to-start' when moving to 'to-film' column
         if (column.id === 'to-film') {
           cardToAdd = { ...cardToAdd, status: 'to-start' as const };
         }
-
-        if (column.id === 'posted' && draggedCard.isPinned) {
+        if (column.id === 'posted' && card.isPinned) {
           cardToAdd = { ...cardToAdd, isPinned: false };
-          toast.info("Auto-unpinned", {
-            description: "Posted content is removed from your dashboard"
-          });
+          toast.info("Auto-unpinned", { description: "Posted content is removed from your dashboard" });
         }
-
-        // Auto-set editing status to 'to-start-editing' when moving to 'to-edit' column
         if (column.id === 'to-edit') {
           cardToAdd = {
             ...cardToAdd,
@@ -817,28 +847,37 @@ export function useProductionBoard(
               items: cardToAdd.editingChecklist?.items || [],
               notes: cardToAdd.editingChecklist?.notes || '',
               externalLinks: cardToAdd.editingChecklist?.externalLinks || [],
-              status: 'to-start-editing' as const
-            }
+              status: 'to-start-editing' as const,
+            },
           };
         }
-
-        // Auto-set scheduling status to 'to-schedule' when moving to 'to-schedule' column
         if (column.id === 'to-schedule') {
-          cardToAdd = {
-            ...cardToAdd,
-            schedulingStatus: 'to-schedule' as const
-          };
+          cardToAdd = { ...cardToAdd, schedulingStatus: 'to-schedule' as const };
         }
-        filtered.splice(savedDropPosition.index, 0, cardToAdd);
+        filtered.splice(pos.index, 0, cardToAdd);
         return { ...column, cards: filtered };
       }
-
       return column;
     });
 
     setColumns(updatedColumns);
-    setDraggedCard(null);
-  }, [draggedCard, dropPosition, columns]);
+  }, [columns]);
+
+  // Handle skip-column confirmation
+  const handleSkipColumnChoice = useCallback((confirmed: boolean) => {
+    setShowSkipColumnDialog(false);
+    if (!confirmed || !pendingSkipMove) {
+      setPendingSkipMove(null);
+      return;
+    }
+    executeColumnMove(
+      pendingSkipMove.card,
+      pendingSkipMove.sourceColumnId,
+      pendingSkipMove.targetColumnId,
+      pendingSkipMove.dropPosition,
+    );
+    setPendingSkipMove(null);
+  }, [pendingSkipMove, executeColumnMove]);
 
   // Handle the planned-to-scheduled conversion dialog choice
   const handlePlannedToScheduledChoice = useCallback((useAsScheduled: boolean) => {
@@ -874,6 +913,7 @@ export function useProductionBoard(
               schedulingStatus: 'scheduled' as const,
               plannedDate: undefined,
               plannedColor: undefined,
+              stageCompletions: { ...(cardToAdd.stageCompletions || DEFAULT_STAGE_COMPLETIONS), toSchedule: true },
             };
           } else {
             // Clear the planned date, let them schedule manually
@@ -966,5 +1006,11 @@ export function useProductionBoard(
     handleDragLeave,
     handleDrop,
     handlePlannedToScheduledChoice,
+
+    // Skip-column nudge
+    showSkipColumnDialog,
+    setShowSkipColumnDialog,
+    pendingSkipMove,
+    handleSkipColumnChoice,
   };
 }

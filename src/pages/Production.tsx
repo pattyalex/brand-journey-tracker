@@ -51,7 +51,7 @@ import ScriptEditorDialog from "./production/components/ScriptEditorDialog";
 import ContentFlowProgress, { getCompletedSteps } from "./production/components/ContentFlowProgress";
 import ContentFlowDialog from "./production/components/ContentFlowDialog";
 import BrainDumpGuidanceDialog from "./production/components/BrainDumpGuidanceDialog";
-import { KanbanColumn, ProductionCard, StoryboardScene, EditingChecklist, SchedulingStatus, ContentType, ImageSlide, VisualReference, LinkPreview } from "./production/types";
+import { KanbanColumn, ProductionCard, StoryboardScene, EditingChecklist, SchedulingStatus, ContentType, ImageSlide, VisualReference, LinkPreview, StageCompletions } from "./production/types";
 import StoryboardEditorDialog from "./production/components/StoryboardEditorDialog";
 import ConceptEditorDialog from "./production/components/ConceptEditorDialog";
 import EditChecklistDialog from "./production/components/EditChecklistDialog";
@@ -60,7 +60,8 @@ import ArchiveDialog from "./production/components/ArchiveDialog";
 import MobileContentView from "./production/components/MobileContentView";
 import MobileCardEditor from "./production/components/MobileCardEditor";
 import MobileStoryboardView from "./production/components/MobileStoryboardView";
-import { columnColors, cardColors, columnAccentColors, columnIcons, emptyStateIcons } from "./production/utils/productionConstants";
+import { columnColors, cardColors, columnAccentColors, columnIcons, emptyStateIcons, DEFAULT_STAGE_COMPLETIONS } from "./production/utils/productionConstants";
+import SkipColumnDialog from "./production/components/SkipColumnDialog";
 import { getFormatColors, getPlatformColors } from "./production/utils/productionHelpers";
 import { useSidebar } from "@/components/ui/sidebar";
 import { ProductionProvider } from "@/contexts/ProductionContext";
@@ -180,6 +181,9 @@ const Production = () => {
     handleDragLeave,
     handleDrop,
     handlePlannedToScheduledChoice,
+    showSkipColumnDialog,
+    pendingSkipMove,
+    handleSkipColumnChoice,
   } = board;
 
   const [isAddCardDialogOpen, setIsAddCardDialogOpen] = useState(false);
@@ -701,6 +705,25 @@ Generate ${count} highly specific content angles. Each hook should feel like it 
     } else {
       setContentType(card.contentType);
       setActiveContentFlowStep(2);
+    }
+  };
+
+  // Toggle a stage completion on the currently-open content flow card
+  const handleToggleStage = (stage: keyof StageCompletions) => {
+    const card = contentFlowCard || editingScriptCard || editingStoryboardCard || editingEditCard || editingIdeateCard;
+    if (!card) return;
+    const current = card.stageCompletions || DEFAULT_STAGE_COMPLETIONS;
+    const updated = { ...current, [stage]: !current[stage] };
+    setColumns(prev =>
+      prev.map(col => ({
+        ...col,
+        cards: col.cards.map(c =>
+          c.id === card.id ? { ...c, stageCompletions: updated } : c
+        ),
+      }))
+    );
+    if (contentFlowCard?.id === card.id) {
+      setContentFlowCard(prev => prev ? { ...prev, stageCompletions: updated } : prev);
     }
   };
 
@@ -1694,6 +1717,7 @@ Generate ${count} highly specific content angles. Each hook should feel like it 
       isCompleted: false,
       isNew: true,
       addedFrom: 'bank-of-ideas',
+      stageCompletions: { ...DEFAULT_STAGE_COMPLETIONS, ideate: true },
     };
 
     setColumns((prev) =>
@@ -1717,6 +1741,7 @@ Generate ${count} highly specific content angles. Each hook should feel like it 
       isCompleted: false,
       isNew: true,
       addedFrom: 'bank-of-ideas',
+      stageCompletions: { ...DEFAULT_STAGE_COMPLETIONS, ideate: true },
     };
 
     setColumns((prev) =>
@@ -1792,6 +1817,7 @@ Generate ${count} highly specific content angles. Each hook should feel like it 
       isCompleted: false,
       isNew: true,
       addedFrom: 'idea-expander',
+      stageCompletions: { ...DEFAULT_STAGE_COMPLETIONS, ideate: true },
     };
 
     setColumns((prev) =>
@@ -1891,6 +1917,7 @@ Generate ${count} highly specific content angles. Each hook should feel like it 
       isCompleted: false,
       isNew: true,
       addedFrom: 'bank-of-ideas',
+      stageCompletions: { ...DEFAULT_STAGE_COMPLETIONS, ideate: true },
     };
 
     setColumns((prev) =>
@@ -1979,6 +2006,7 @@ Generate ${count} highly specific content angles. Each hook should feel like it 
                       description: ideateCardNotes.trim() || undefined,
                       columnId: 'ideate',
                       addedFrom: 'quick-idea',
+                      stageCompletions: { ...DEFAULT_STAGE_COMPLETIONS, ideate: true },
                     };
                     setColumns(prev => prev.map(col =>
                       col.id === 'ideate'
@@ -2625,6 +2653,7 @@ Generate ${count} highly specific content angles. Each hook should feel like it 
                                   isCompleted: false,
                                   isNew: true,
                                   addedFrom: 'ai-generated',
+                                  stageCompletions: { ...DEFAULT_STAGE_COMPLETIONS, ideate: true },
                                 };
                                 setColumns((prev) =>
                                   prev.map((col) =>
@@ -3080,6 +3109,7 @@ Generate ${count} highly specific content angles. Each hook should feel like it 
                                   isCompleted: false,
                                   isNew: true,
                                   addedFrom: 'ai-generated',
+                                  stageCompletions: { ...DEFAULT_STAGE_COMPLETIONS, ideate: true },
                                 };
                                 setColumns((prev) =>
                                   prev.map((col) =>
@@ -3423,6 +3453,8 @@ Generate ${count} highly specific content angles. Each hook should feel like it 
           completedSteps={getCompletedSteps(editingScriptCard)}
           caption={caption}
           setCaption={setCaption}
+          card={editingScriptCard}
+          onToggleStage={handleToggleStage}
         />
 
         <BrainDumpGuidanceDialog
@@ -3438,6 +3470,8 @@ Generate ${count} highly specific content angles. Each hook should feel like it 
           onNavigateToStep={handleNavigateToStep}
           slideDirection={slideDirection}
           completedSteps={getCompletedSteps(editingIdeateCard)}
+          card={editingIdeateCard}
+          onToggleStage={handleToggleStage}
         />
 
         <StoryboardEditorDialog
@@ -3448,6 +3482,7 @@ Generate ${count} highly specific content angles. Each hook should feel like it 
           onNavigateToStep={handleNavigateToStep}
           slideDirection={slideDirection}
           completedSteps={getCompletedSteps(editingStoryboardCard)}
+          onToggleStage={handleToggleStage}
         />
 
         <EditChecklistDialog
@@ -3458,6 +3493,7 @@ Generate ${count} highly specific content angles. Each hook should feel like it 
           onNavigateToStep={handleNavigateToStep}
           slideDirection={slideDirection}
           completedSteps={getCompletedSteps(editingEditCard)}
+          onToggleStage={handleToggleStage}
         />
 
         {/* Unified Content Flow Dialog - seamless transitions between steps */}
@@ -3468,6 +3504,8 @@ Generate ${count} highly specific content angles. Each hook should feel like it 
           contentType={contentType}
           onContentTypeChange={handleContentTypeChange}
           onSelectContentTypeAndProceed={handleSelectContentTypeAndProceed}
+          card={contentFlowCard}
+          onToggleStage={handleToggleStage}
         >
           {/* Step 1: Ideate (same for both video and image) */}
           {activeContentFlowStep === 1 && contentFlowCard && (
@@ -3846,6 +3884,18 @@ Generate ${count} highly specific content angles. Each hook should feel like it 
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Skip Column Nudge Dialog */}
+        <SkipColumnDialog
+          open={showSkipColumnDialog}
+          cardTitle={pendingSkipMove?.card.title || pendingSkipMove?.card.hook || ''}
+          skippedColumnIds={pendingSkipMove?.skippedColumnIds || []}
+          targetColumnTitle={
+            columns.find(c => c.id === pendingSkipMove?.targetColumnId)?.title || ''
+          }
+          onConfirm={() => handleSkipColumnChoice(true)}
+          onCancel={() => handleSkipColumnChoice(false)}
+        />
 
               </div>
     </Layout>

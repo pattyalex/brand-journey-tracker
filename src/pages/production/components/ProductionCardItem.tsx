@@ -17,6 +17,7 @@ import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
 import { ProductionCard } from "../types";
 import { useProductionContext } from "@/contexts/ProductionContext";
 import ExpandedScheduleView from "./ExpandedScheduleView";
+import ProgressDots from "./ProgressDots";
 
 // Platform icon helper - returns icon component for each platform
 const getPlatformIcon = (platform: string): React.ReactNode => {
@@ -516,6 +517,10 @@ const ProductionCardItem: React.FC<ProductionCardItemProps> = ({
             </div>
           );
         })()}
+        {/* Stage completion progress dots */}
+        <div className="mt-2 pt-2 border-t border-[#E8E2E5]">
+          <ProgressDots stageCompletions={card.stageCompletions} />
+        </div>
         {/* Just added message at bottom */}
         {card.isNew && (
           <motion.div

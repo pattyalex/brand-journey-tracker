@@ -1,4 +1,4 @@
-import { KanbanColumn } from "../types";
+import { KanbanColumn, StageCompletions } from "../types";
 
 // Column accent colors - each column gets a unique color
 export const columnAccentColors: Record<string, { accent: string; accentLight: string; accentBg: string }> = {
@@ -54,6 +54,37 @@ export const emptyStateIcons: Record<string, string> = {
   "scheduled": "CalendarCheck",
   posted: "Archive",
 };
+
+// Stage completion tracking
+export const DEFAULT_STAGE_COMPLETIONS: StageCompletions = {
+  ideate: false,
+  scriptAndConcept: false,
+  toFilm: false,
+  toEdit: false,
+  toSchedule: false,
+};
+
+export const STAGE_ORDER: (keyof StageCompletions)[] = [
+  'ideate', 'scriptAndConcept', 'toFilm', 'toEdit', 'toSchedule',
+];
+
+export const STAGE_LABELS: Record<keyof StageCompletions, string> = {
+  ideate: 'Bank of Ideas',
+  scriptAndConcept: 'Script & Concept',
+  toFilm: 'To Film',
+  toEdit: 'To Edit',
+  toSchedule: 'To Schedule',
+};
+
+export const COLUMN_TO_STAGE: Record<string, keyof StageCompletions> = {
+  'ideate': 'ideate',
+  'shape-ideas': 'scriptAndConcept',
+  'to-film': 'toFilm',
+  'to-edit': 'toEdit',
+  'to-schedule': 'toSchedule',
+};
+
+export const COLUMN_ORDER = ['ideate', 'shape-ideas', 'to-film', 'to-edit', 'to-schedule'];
 
 export const defaultColumns: KanbanColumn[] = [
   { id: "ideate", title: "Bank of Ideas", cards: [] },

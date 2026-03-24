@@ -5,6 +5,7 @@ import {
   DialogContent,
 } from "@/components/ui/dialog";
 import ContentFlowProgress from "./ContentFlowProgress";
+import StageTimeline from "./StageTimeline";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
@@ -76,6 +77,7 @@ interface EditChecklistDialogProps {
   completedSteps?: number[];
   contentType?: ContentType;
   onContentTypeChange?: (type: 'video' | 'image') => void;
+  onToggleStage?: (stage: keyof import("../types").StageCompletions) => void;
 }
 
 // Default example items for the global checklist (video)
@@ -135,6 +137,7 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
   completedSteps = [],
   contentType = 'video',
   onContentTypeChange,
+  onToggleStage,
 }) => {
   const [shakeButton, setShakeButton] = useState(false);
   const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
@@ -540,21 +543,28 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent hideCloseButton onInteractOutside={handleInteractOutside} onEscapeKeyDown={handleInteractOutside} className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[950px] border-0 shadow-2xl p-0 overflow-hidden flex flex-col bg-gradient-to-br from-[#F5EEF2] via-white to-[#F5EEF2]/30">
-        <AnimatePresence mode="wait" custom={slideDirection}>
-          <motion.div
-            key="edit-content"
-            custom={slideDirection}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="flex-1 flex flex-col overflow-hidden"
-          >
-            {dialogContent}
-          </motion.div>
-        </AnimatePresence>
+      <DialogContent hideCloseButton onInteractOutside={handleInteractOutside} onEscapeKeyDown={handleInteractOutside} className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[950px] border-0 shadow-2xl p-0 overflow-hidden flex flex-row bg-gradient-to-br from-[#F5EEF2] via-white to-[#F5EEF2]/30">
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <AnimatePresence mode="wait" custom={slideDirection}>
+            <motion.div
+              key="edit-content"
+              custom={slideDirection}
+              variants={slideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="flex-1 flex flex-col overflow-hidden"
+            >
+              {dialogContent}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+        {card && onToggleStage && (
+          <div className="w-[200px] flex-shrink-0 border-l border-[#E8E2E5] p-4 overflow-y-auto bg-[#FDFBFC]">
+            <StageTimeline card={card} onToggleStage={onToggleStage} />
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

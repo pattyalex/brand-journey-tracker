@@ -23,6 +23,14 @@ export type EditingStatus = 'to-start-editing' | 'needs-more-editing' | 'ready-t
 export type SchedulingStatus = 'to-schedule' | 'scheduled';
 export type CardStatus = 'to-start' | 'needs-work' | 'ready' | null;
 export type CardAddedFrom = 'calendar' | 'quick-idea' | 'ai-generated' | 'bank-of-ideas' | 'repurposed' | 'idea-expander';
+
+export interface StageCompletions {
+  ideate: boolean;
+  scriptAndConcept: boolean;
+  toFilm: boolean;
+  toEdit: boolean;
+  toSchedule: boolean;
+}
 export type ScheduledColor = 'indigo' | 'rose' | 'amber' | 'emerald' | 'sky' | 'violet' | 'orange' | 'cyan' | 'sage';
 
 export interface EditingChecklistItem {
@@ -76,6 +84,7 @@ export interface ProductionCard {
   plannedEndTime?: string;
   brainDumpHandledText?: string;
   calendarOnly?: boolean;
+  stageCompletions?: StageCompletions;
   displayOrder: number;
 }
 
@@ -120,6 +129,7 @@ interface DbProductionCard {
   from_calendar: boolean;
   brain_dump_handled_text: string | null;
   calendar_only: boolean;
+  stage_completions: Record<string, boolean> | null;
   display_order: number;
 }
 
@@ -164,6 +174,7 @@ const dbToProductionCard = (db: DbProductionCard): ProductionCard => ({
   plannedEndTime: db.planned_end_time || undefined,
   brainDumpHandledText: db.brain_dump_handled_text || undefined,
   calendarOnly: db.calendar_only || false,
+  stageCompletions: db.stage_completions as StageCompletions | undefined,
   displayOrder: db.display_order || 0,
 });
 
@@ -204,6 +215,7 @@ const productionCardToDb = (userId: string, card: Omit<ProductionCard, 'id'>) =>
   from_calendar: card.fromCalendar || false,
   brain_dump_handled_text: card.brainDumpHandledText || null,
   calendar_only: card.calendarOnly || false,
+  stage_completions: card.stageCompletions || null,
   display_order: card.displayOrder || 0,
 });
 
@@ -287,6 +299,7 @@ export const updateProductionCard = async (
   if (updates.plannedEndTime !== undefined) dbUpdates.planned_end_time = updates.plannedEndTime;
   if (updates.brainDumpHandledText !== undefined) dbUpdates.brain_dump_handled_text = updates.brainDumpHandledText;
   if (updates.calendarOnly !== undefined) dbUpdates.calendar_only = updates.calendarOnly;
+  if (updates.stageCompletions !== undefined) dbUpdates.stage_completions = updates.stageCompletions;
   if (updates.displayOrder !== undefined) dbUpdates.display_order = updates.displayOrder;
 
   const data = await updateOne<DbProductionCard>('production_cards', cardId, dbUpdates);

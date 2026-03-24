@@ -59,6 +59,14 @@ export type ContentType = 'video' | 'image';
 
 export type CardAddedFrom = 'calendar' | 'quick-idea' | 'ai-generated' | 'bank-of-ideas' | 'repurposed' | 'idea-expander';
 
+export interface StageCompletions {
+  ideate: boolean;
+  scriptAndConcept: boolean;
+  toFilm: boolean;
+  toEdit: boolean;
+  toSchedule: boolean;
+}
+
 export interface ProductionCard {
   id: string;
   title: string;
@@ -103,6 +111,7 @@ export interface ProductionCard {
   slides?: ImageSlide[]; // Image content: per-slide planning cards
   imageMode?: 'image' | 'carousel'; // Image content: single image or carousel
   lastUpdated?: string; // ISO timestamp of last edit
+  stageCompletions?: StageCompletions; // User-controlled stage completion tracking
 }
 
 export interface KanbanColumn {

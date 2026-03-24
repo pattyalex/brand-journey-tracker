@@ -23,6 +23,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
+import StageTimeline from "./StageTimeline";
 import {
   Clapperboard,
   FileText,
@@ -118,6 +119,7 @@ interface StoryboardEditorDialogProps {
   completedSteps?: number[];
   contentType?: 'video' | 'image';
   onContentTypeChange?: (type: 'video' | 'image') => void;
+  onToggleStage?: (stage: keyof import("../types").StageCompletions) => void;
 }
 
 // Sortable Scene Card Component
@@ -317,6 +319,7 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
   completedSteps = [],
   contentType = 'video',
   onContentTypeChange,
+  onToggleStage,
 }) => {
   const [shakeButton, setShakeButton] = useState(false);
   const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
@@ -1194,21 +1197,28 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
   return (
     <>
       <Dialog open={open} onOpenChange={handleClose}>
-        <DialogContent hideCloseButton onInteractOutside={handleInteractOutside} onEscapeKeyDown={handleInteractOutside} className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[1100px] border-0 shadow-2xl p-0 overflow-hidden flex flex-col bg-gradient-to-br from-[#FFF9EE] via-white to-[#FFF9EE]/30">
-          <AnimatePresence mode="wait" custom={slideDirection}>
-            <motion.div
-              key="storyboard-content"
-              custom={slideDirection}
-              variants={slideVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="flex-1 flex flex-col overflow-hidden"
-            >
-              {dialogContent}
-            </motion.div>
-          </AnimatePresence>
+        <DialogContent hideCloseButton onInteractOutside={handleInteractOutside} onEscapeKeyDown={handleInteractOutside} className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[1100px] border-0 shadow-2xl p-0 overflow-hidden flex flex-row bg-gradient-to-br from-[#FFF9EE] via-white to-[#FFF9EE]/30">
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <AnimatePresence mode="wait" custom={slideDirection}>
+              <motion.div
+                key="storyboard-content"
+                custom={slideDirection}
+                variants={slideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                className="flex-1 flex flex-col overflow-hidden"
+              >
+                {dialogContent}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+          {card && onToggleStage && (
+            <div className="w-[200px] flex-shrink-0 border-l border-[#E8E2E5] p-4 overflow-y-auto bg-[#FDFBFC]">
+              <StageTimeline card={card} onToggleStage={onToggleStage} />
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 

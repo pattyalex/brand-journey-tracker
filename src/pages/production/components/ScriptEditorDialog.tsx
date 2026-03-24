@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import { motion, AnimatePresence } from "framer-motion";
 import ContentFlowProgress from "./ContentFlowProgress";
+import StageTimeline from "./StageTimeline";
 import {
   Select,
   SelectContent,
@@ -114,6 +115,8 @@ interface ScriptEditorDialogProps {
   onContentTypeChange?: (type: 'video' | 'image') => void;
   caption?: string;
   setCaption?: (value: string) => void;
+  card?: import("../types").ProductionCard | null;
+  onToggleStage?: (stage: keyof import("../types").StageCompletions) => void;
 }
 
 const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
@@ -172,6 +175,8 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
   onContentTypeChange,
   caption = '',
   setCaption,
+  card,
+  onToggleStage,
 }) => {
   // Internal refs for shooting plan navigation (fallback when external refs not provided)
   const internalTitleRef = useRef<HTMLInputElement>(null);
@@ -987,21 +992,28 @@ Guidelines:
   // Standalone mode: return with full Dialog wrapper
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent hideCloseButton onInteractOutside={handleInteractOutside} onEscapeKeyDown={handleInteractOutside} className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[900px] overflow-hidden border-0 shadow-2xl flex flex-col bg-gradient-to-br from-[#f0f7fa] via-white to-[#f0f7fa]/30">
-        <AnimatePresence mode="wait" custom={slideDirection}>
-          <motion.div
-            key="script-content"
-            custom={slideDirection}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="flex-1 flex flex-col overflow-hidden"
-          >
-            {dialogContent}
-          </motion.div>
-        </AnimatePresence>
+      <DialogContent hideCloseButton onInteractOutside={handleInteractOutside} onEscapeKeyDown={handleInteractOutside} className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[900px] overflow-hidden border-0 shadow-2xl flex flex-row bg-gradient-to-br from-[#f0f7fa] via-white to-[#f0f7fa]/30">
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <AnimatePresence mode="wait" custom={slideDirection}>
+            <motion.div
+              key="script-content"
+              custom={slideDirection}
+              variants={slideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="flex-1 flex flex-col overflow-hidden"
+            >
+              {dialogContent}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+        {card && onToggleStage && (
+          <div className="w-[200px] flex-shrink-0 border-l border-[#E8E2E5] p-4 overflow-y-auto bg-[#FDFBFC]">
+            <StageTimeline card={card} onToggleStage={onToggleStage} />
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import StageTimeline from "./StageTimeline";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Tooltip,
@@ -29,6 +30,8 @@ interface BrainDumpGuidanceDialogProps {
   completedSteps?: number[];
   contentType?: ContentType;
   onContentTypeChange?: (type: ContentType) => void;
+  card?: import("../types").ProductionCard | null;
+  onToggleStage?: (stage: keyof import("../types").StageCompletions) => void;
 }
 
 const BrainDumpGuidanceDialog: React.FC<BrainDumpGuidanceDialogProps> = ({
@@ -47,6 +50,8 @@ const BrainDumpGuidanceDialog: React.FC<BrainDumpGuidanceDialogProps> = ({
   completedSteps = [],
   contentType = 'video',
   onContentTypeChange,
+  card,
+  onToggleStage,
 }) => {
   const [shakeButton, setShakeButton] = useState(false);
   const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
@@ -180,21 +185,28 @@ const BrainDumpGuidanceDialog: React.FC<BrainDumpGuidanceDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent hideCloseButton onInteractOutside={handleInteractOutside} onEscapeKeyDown={handleInteractOutside} className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[900px] border-0 shadow-2xl p-0 overflow-hidden flex flex-col bg-gradient-to-b from-[#8B7082]/10 via-white to-white">
-        <AnimatePresence mode="wait" custom={slideDirection}>
-          <motion.div
-            key="ideate-content"
-            custom={slideDirection}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="flex-1 flex flex-col overflow-hidden"
-          >
-            {dialogContent}
-          </motion.div>
-        </AnimatePresence>
+      <DialogContent hideCloseButton onInteractOutside={handleInteractOutside} onEscapeKeyDown={handleInteractOutside} className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[900px] border-0 shadow-2xl p-0 overflow-hidden flex flex-row bg-gradient-to-b from-[#8B7082]/10 via-white to-white">
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <AnimatePresence mode="wait" custom={slideDirection}>
+            <motion.div
+              key="ideate-content"
+              custom={slideDirection}
+              variants={slideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="flex-1 flex flex-col overflow-hidden"
+            >
+              {dialogContent}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+        {card && onToggleStage && (
+          <div className="w-[200px] flex-shrink-0 border-l border-[#E8E2E5] p-4 overflow-y-auto bg-[#FDFBFC]">
+            <StageTimeline card={card} onToggleStage={onToggleStage} />
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
