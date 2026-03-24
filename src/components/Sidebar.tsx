@@ -120,15 +120,15 @@ const Sidebar = () => {
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => (
-                <SidebarMenuItemComponent 
-                  key={item.title} 
-                  item={item} 
+                <SidebarMenuItemComponent
+                  key={item.title}
+                  item={item}
                   onDelete={handleDeleteItem}
                 />
               ))}
-              
+
               {showAddForm && (
-                <AddPageForm 
+                <AddPageForm
                   menuItems={menuItems}
                   setMenuItems={setMenuItems}
                   onCancel={() => {

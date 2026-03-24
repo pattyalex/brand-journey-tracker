@@ -34,7 +34,7 @@ const SidebarFooterSection = ({ settingsItem, helpItem }: SidebarFooterSectionPr
   return (
     <SidebarFooter className="mt-auto border-t border-[#E8E4E6] pt-2 relative z-10">
       <SidebarMenu>
-        {user && (
+        {(
           <SidebarMenuItem>
             <div className={cn(
               "flex items-center py-1.5",
@@ -60,7 +60,6 @@ const SidebarFooterSection = ({ settingsItem, helpItem }: SidebarFooterSectionPr
             </div>
           </SidebarMenuItem>
         )}
-
       </SidebarMenu>
     </SidebarFooter>
   );

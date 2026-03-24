@@ -5,7 +5,7 @@ import {
 } from "@/components/ui/dialog";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { Video, Image as ImageIcon } from "lucide-react";
+import { Video, Image as ImageIcon, X, Sparkles } from "lucide-react";
 import { ContentType } from "../types";
 
 interface ContentFlowDialogProps {
@@ -15,6 +15,7 @@ interface ContentFlowDialogProps {
   slideDirection: 'left' | 'right';
   contentType?: ContentType;
   onContentTypeChange?: (type: ContentType) => void;
+  onSelectContentTypeAndProceed?: (type: ContentType) => void;
 }
 
 const ContentFlowDialog: React.FC<ContentFlowDialogProps> = ({
@@ -24,12 +25,14 @@ const ContentFlowDialog: React.FC<ContentFlowDialogProps> = ({
   slideDirection,
   contentType = 'video',
   onContentTypeChange,
+  onSelectContentTypeAndProceed,
 }) => {
 
   // Background colors for each step — keyed by step number
   // For video: 1=Ideate, 2=Script, 3=Film, 4=Edit, 5=Schedule
   // For image: 1=Ideate, 2=Concept, 3=Edit, 4=Schedule
   const videoBackgrounds: Record<number, string> = {
+    0: "bg-gradient-to-b from-[#8B7082]/10 via-white to-white",
     1: "bg-gradient-to-b from-[#8B7082]/10 via-white to-white",
     2: "bg-gradient-to-br from-[#f0f7fa] via-white to-[#f0f7fa]/30",
     3: "bg-gradient-to-br from-[#FFF9EE] via-white to-[#FFF9EE]/30",
@@ -38,6 +41,7 @@ const ContentFlowDialog: React.FC<ContentFlowDialogProps> = ({
   };
 
   const imageBackgrounds: Record<number, string> = {
+    0: "bg-gradient-to-b from-[#8B7082]/10 via-white to-white",
     1: "bg-gradient-to-b from-[#8B7082]/10 via-white to-white",     // Ideate
     2: "bg-gradient-to-br from-[#f0f7fa] via-white to-[#f0f7fa]/30", // Concept
     3: "bg-gradient-to-br from-[#F5EEF2] via-white to-[#F5EEF2]/30", // Edit
@@ -45,6 +49,7 @@ const ContentFlowDialog: React.FC<ContentFlowDialogProps> = ({
   };
 
   const videoMaxWidths: Record<number, string> = {
+    0: "sm:max-w-[600px]",
     1: "sm:max-w-[900px]",
     2: "sm:max-w-[900px]",
     3: "sm:max-w-[1100px]",
@@ -53,6 +58,7 @@ const ContentFlowDialog: React.FC<ContentFlowDialogProps> = ({
   };
 
   const imageMaxWidths: Record<number, string> = {
+    0: "sm:max-w-[600px]",
     1: "sm:max-w-[900px]",   // Ideate
     2: "sm:max-w-[900px]",   // Concept
     3: "sm:max-w-[950px]",   // Edit
@@ -77,62 +83,93 @@ const ContentFlowDialog: React.FC<ContentFlowDialogProps> = ({
     }),
   };
 
+  const isTypePickerStep = activeStep === 0;
+
   return (
     <Dialog open={activeStep !== null} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
         hideCloseButton
         className={cn(
-          "h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden border-0 shadow-2xl p-0 flex flex-col transition-all duration-300",
-          activeStep ? stepBackgrounds[activeStep] || 'bg-white' : 'bg-white',
-          activeStep ? stepMaxWidths[activeStep] || 'sm:max-w-[900px]' : 'sm:max-w-[900px]'
+          "overflow-hidden border-0 shadow-2xl p-0 flex flex-col transition-all duration-300",
+          isTypePickerStep ? "h-auto max-h-[90vh]" : "h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)]",
+          activeStep !== null ? stepBackgrounds[activeStep] || 'bg-white' : 'bg-white',
+          activeStep !== null ? stepMaxWidths[activeStep] || 'sm:max-w-[900px]' : 'sm:max-w-[900px]'
         )}
       >
-        {/* Video / Image Toggle */}
-        {onContentTypeChange && (
-          <div className="flex justify-center pt-4 pb-0 flex-shrink-0 z-10">
-            <div className="inline-flex items-center bg-gray-100 rounded-full p-0.5">
-              <button
-                onClick={() => onContentTypeChange('video')}
-                className={cn(
-                  "flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium transition-all",
-                  contentType === 'video'
-                    ? "bg-[#612A4F] text-white shadow-sm"
-                    : "text-gray-500 hover:text-gray-700"
-                )}
-              >
-                <Video className="w-3.5 h-3.5" />
-                Video
-              </button>
-              <button
-                onClick={() => onContentTypeChange('image')}
-                className={cn(
-                  "flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium transition-all",
-                  contentType === 'image'
-                    ? "bg-[#612A4F] text-white shadow-sm"
-                    : "text-gray-500 hover:text-gray-700"
-                )}
-              >
-                <ImageIcon className="w-3.5 h-3.5" />
-                Image
-              </button>
+        {/* Content type picker - step 0 */}
+        {isTypePickerStep && (
+          <>
+            <button
+              onClick={onClose}
+              className="absolute top-4 right-4 p-2 rounded-full hover:bg-white/60 text-gray-400 hover:text-gray-600 transition-colors z-10"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex flex-col items-center justify-center flex-1 px-10 py-16">
+              <h2 className="text-[22px] font-semibold text-gray-900 mb-1.5 tracking-tight" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                What are you creating?
+              </h2>
+              <p className="text-[13px] text-gray-400 mb-10">
+                Pick one to start your workflow
+              </p>
+
+              <div className="flex gap-5 w-full max-w-sm">
+                {/* Video option */}
+                <button
+                  onClick={() => onSelectContentTypeAndProceed?.('video')}
+                  className="flex-1 relative overflow-hidden rounded-2xl p-[1px] transition-all duration-300 group hover:scale-[1.03] hover:shadow-[0_8px_30px_rgba(97,42,79,0.15)]"
+                  style={{ background: 'linear-gradient(145deg, rgba(97,42,79,0.15), rgba(97,42,79,0.05))' }}
+                >
+                  <div className="relative bg-white rounded-[15px] px-6 py-8 flex flex-col items-center gap-5 h-full group-hover:bg-gradient-to-b group-hover:from-white group-hover:to-[#612A4F]/[0.03] transition-all duration-300">
+                    <div className="w-14 h-14 rounded-xl flex items-center justify-center transition-all duration-300"
+                      style={{ background: 'linear-gradient(145deg, #612A4F, #8B5A7C)' }}
+                    >
+                      <Video className="w-6 h-6 text-white" />
+                    </div>
+                    <p className="text-[15px] font-semibold text-gray-900">Video</p>
+                  </div>
+                </button>
+
+                {/* Image option */}
+                <button
+                  onClick={() => onSelectContentTypeAndProceed?.('image')}
+                  className="flex-1 relative overflow-hidden rounded-2xl p-[1px] transition-all duration-300 group hover:scale-[1.03] hover:shadow-[0_8px_30px_rgba(97,42,79,0.15)]"
+                  style={{ background: 'linear-gradient(145deg, rgba(97,42,79,0.15), rgba(97,42,79,0.05))' }}
+                >
+                  <div className="relative bg-white rounded-[15px] px-6 py-8 flex flex-col items-center gap-5 h-full group-hover:bg-gradient-to-b group-hover:from-white group-hover:to-[#612A4F]/[0.03] transition-all duration-300">
+                    <div className="w-14 h-14 rounded-xl flex items-center justify-center transition-all duration-300"
+                      style={{ background: 'linear-gradient(145deg, #612A4F, #8B5A7C)' }}
+                    >
+                      <ImageIcon className="w-6 h-6 text-white" />
+                    </div>
+                    <p className="text-[15px] font-semibold text-gray-900">Image</p>
+                  </div>
+                </button>
+              </div>
             </div>
-          </div>
+          </>
         )}
 
-        <AnimatePresence mode="wait" custom={slideDirection}>
-          <motion.div
-            key={`${activeStep}-${contentType}`}
-            custom={slideDirection}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{ type: "tween", duration: 0.15, ease: "easeOut" }}
-            className="flex-1 flex flex-col overflow-hidden"
-          >
-            {children}
-          </motion.div>
-        </AnimatePresence>
+        {/* Regular step content */}
+        {!isTypePickerStep && (
+          <>
+            <AnimatePresence mode="wait" custom={slideDirection}>
+              <motion.div
+                key={`${activeStep}-${contentType}`}
+                custom={slideDirection}
+                variants={slideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{ type: "tween", duration: 0.15, ease: "easeOut" }}
+                className="flex-1 flex flex-col overflow-hidden"
+              >
+                {children}
+              </motion.div>
+            </AnimatePresence>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );

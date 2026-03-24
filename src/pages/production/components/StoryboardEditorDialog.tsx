@@ -47,6 +47,8 @@ import {
   SquarePen,
   ArrowLeft,
   ArrowRight,
+  Image as ImageIcon,
+  ChevronDown,
 } from "lucide-react";
 import { ProductionCard, StoryboardScene } from "../types";
 import { shotTemplates, getShotTemplateById, ShotTemplate } from "../utils/shotTemplates";
@@ -114,6 +116,8 @@ interface StoryboardEditorDialogProps {
   slideDirection?: 'left' | 'right';
   embedded?: boolean;
   completedSteps?: number[];
+  contentType?: 'video' | 'image';
+  onContentTypeChange?: (type: 'video' | 'image') => void;
 }
 
 // Sortable Scene Card Component
@@ -311,8 +315,11 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
   slideDirection = 'right',
   embedded = false,
   completedSteps = [],
+  contentType = 'video',
+  onContentTypeChange,
 }) => {
   const [shakeButton, setShakeButton] = useState(false);
+  const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
 
   const handleInteractOutside = (e: Event) => {
     e.preventDefault();
@@ -814,7 +821,7 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
         >
           {/* Headers row - both headers scroll together */}
           <div className="flex border-b border-[#8B7082]/30">
-            {/* Script Header */}
+            {/* Content Overview Header */}
             <div className="w-[320px] flex-shrink-0 px-4 py-3 bg-transparent flex items-center relative">
               <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-6 bg-[#8B7082]/30"></div>
               <h3 className="font-semibold text-[#612A4F] flex items-center gap-2 text-base">
@@ -847,13 +854,6 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
                     Regenerate
                   </Button>
                 )}
-                <Button
-                  size="sm"
-                  onClick={() => handleNavigateWithSave(4)}
-                  className="bg-[#612A4F] hover:bg-[#4A1F3D] text-white text-sm"
-                >
-                  Save & Move to Edit <ArrowRight className="w-3 h-3 ml-1" />
-                </Button>
               </div>
             </div>
           </div>
@@ -1162,6 +1162,16 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
           </div>
 
         </div>
+      {/* Bottom bar with Next button */}
+      <div className="px-6 py-4 border-t border-gray-100 flex justify-end flex-shrink-0">
+        <Button
+          size="sm"
+          onClick={() => handleNavigateWithSave(4)}
+          className="bg-[#612A4F] hover:bg-[#4A1F3D] text-white text-sm"
+        >
+          Next <ArrowRight className="w-3 h-3 ml-1" />
+        </Button>
+      </div>
     </>
   );
 

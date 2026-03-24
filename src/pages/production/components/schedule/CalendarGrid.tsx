@@ -137,7 +137,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ state }) => {
       {singleCard && isLeftPanelCollapsed && (
         <button
           onClick={() => state.setIsLeftPanelCollapsed(false)}
-          className="absolute left-1 top-1/2 -translate-y-1/2 z-30 p-1.5 bg-white/80 hover:bg-white shadow-md rounded-lg border border-gray-200 transition-colors"
+          className="sticky top-[calc(50%-16px)] z-30 p-1.5 bg-white/80 hover:bg-white shadow-md rounded-lg border border-gray-200 transition-colors self-start -ml-7 -mr-2 flex-shrink-0"
         >
           <ChevronRight className="w-5 h-5 text-[#612A4F]" strokeWidth={2.5} />
         </button>

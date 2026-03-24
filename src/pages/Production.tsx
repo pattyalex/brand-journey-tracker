@@ -696,7 +696,12 @@ Generate ${count} highly specific content angles. Each hook should feel like it 
     }
     // Use unified content flow dialog
     setContentFlowCard(card);
-    setActiveContentFlowStep(2);
+    if (!card.contentType) {
+      setActiveContentFlowStep(0);
+    } else {
+      setContentType(card.contentType);
+      setActiveContentFlowStep(2);
+    }
   };
 
   const handleSaveScript = () => {
@@ -763,7 +768,12 @@ Generate ${count} highly specific content angles. Each hook should feel like it 
     setEditingStoryboardCard(card);
     // Use unified content flow dialog
     setContentFlowCard(card);
-    setActiveContentFlowStep(3);
+    if (!card.contentType) {
+      setActiveContentFlowStep(0);
+    } else {
+      setContentType(card.contentType);
+      setActiveContentFlowStep(3);
+    }
   };
 
   const handleSaveStoryboard = (storyboard: StoryboardScene[], title?: string, script?: string, hook?: string, status?: "to-start" | "needs-work" | "ready" | null) => {
@@ -796,7 +806,12 @@ Generate ${count} highly specific content angles. Each hook should feel like it 
     setEditingEditCard(card);
     // Use unified content flow dialog
     setContentFlowCard(card);
-    setActiveContentFlowStep(4);
+    if (!card.contentType) {
+      setActiveContentFlowStep(0);
+    } else {
+      setContentType(card.contentType);
+      setActiveContentFlowStep(4);
+    }
   };
 
   const handleSaveEditChecklist = (checklist: EditingChecklist, title?: string, hook?: string, script?: string) => {
@@ -840,12 +855,28 @@ Generate ${count} highly specific content angles. Each hook should feel like it 
     setCardHook(initialTitle);
     // Use unified content flow dialog
     setContentFlowCard(card);
-    setActiveContentFlowStep(1);
+    // If card has no content type set, show the picker first (step 0)
+    if (!card.contentType) {
+      setActiveContentFlowStep(0);
+    } else {
+      setContentType(card.contentType);
+      setActiveContentFlowStep(1);
+    }
   };
 
   // Open content flow dialog for any card (used for scheduled content)
   const handleOpenContentFlowForCard = (card: ProductionCard, startStep?: number) => {
-    const cardContentType = card.contentType || 'video';
+    if (!card.contentType) {
+      // No content type set — show picker first
+      setContentFlowCard(card);
+      setEditingIdeateCard(card);
+      setIdeateCardTitle(card.hook || card.title || "");
+      setIdeateCardNotes(card.description || "");
+      setCardHook(card.hook || card.title || "");
+      setActiveContentFlowStep(0);
+      return;
+    }
+    const cardContentType = card.contentType;
     setContentType(cardContentType);
 
     // Determine which step to start on based on what's completed
@@ -1117,6 +1148,23 @@ Generate ${count} highly specific content angles. Each hook should feel like it 
     // Reset to step 1 when switching content type
     setActiveContentFlowStep(1);
     // Update the card's content type in columns
+    if (contentFlowCard) {
+      setColumns((prev) =>
+        prev.map((col) => ({
+          ...col,
+          cards: col.cards.map((card) =>
+            card.id === contentFlowCard.id ? { ...card, contentType: newType } : card
+          ),
+        }))
+      );
+    }
+  };
+
+  // Handle first-time content type selection (step 0 → step 1)
+  const handleSelectContentTypeAndProceed = (newType: ContentType) => {
+    setContentType(newType);
+    setActiveContentFlowStep(1);
+    // Save the content type to the card
     if (contentFlowCard) {
       setColumns((prev) =>
         prev.map((col) => ({
@@ -3419,6 +3467,7 @@ Generate ${count} highly specific content angles. Each hook should feel like it 
           slideDirection={slideDirection}
           contentType={contentType}
           onContentTypeChange={handleContentTypeChange}
+          onSelectContentTypeAndProceed={handleSelectContentTypeAndProceed}
         >
           {/* Step 1: Ideate (same for both video and image) */}
           {activeContentFlowStep === 1 && contentFlowCard && (
@@ -3441,6 +3490,7 @@ Generate ${count} highly specific content angles. Each hook should feel like it 
               embedded={true}
               completedSteps={getCompletedSteps(contentFlowCard)}
               contentType={contentType}
+              onContentTypeChange={handleContentTypeChange}
             />
           )}
 
@@ -3507,6 +3557,8 @@ Generate ${count} highly specific content angles. Each hook should feel like it 
               slideDirection={slideDirection}
               embedded={true}
               completedSteps={getCompletedSteps(contentFlowCard)}
+              contentType={contentType}
+              onContentTypeChange={handleContentTypeChange}
               caption={caption}
               setCaption={setCaption}
             />
@@ -3546,6 +3598,8 @@ Generate ${count} highly specific content angles. Each hook should feel like it 
               slideDirection={slideDirection}
               embedded={true}
               completedSteps={getCompletedSteps(contentFlowCard)}
+              contentType={contentType}
+              onContentTypeChange={handleContentTypeChange}
             />
           )}
 
@@ -3564,6 +3618,8 @@ Generate ${count} highly specific content angles. Each hook should feel like it 
               slideDirection={slideDirection}
               embedded={true}
               completedSteps={getCompletedSteps(contentFlowCard)}
+              contentType={contentType}
+              onContentTypeChange={handleContentTypeChange}
             />
           )}
           {activeContentFlowStep === 3 && contentFlowCard && contentType === 'image' && (
@@ -3581,6 +3637,7 @@ Generate ${count} highly specific content angles. Each hook should feel like it 
               embedded={true}
               completedSteps={getCompletedSteps(contentFlowCard)}
               contentType="image"
+              onContentTypeChange={handleContentTypeChange}
             />
           )}
 
@@ -3600,6 +3657,7 @@ Generate ${count} highly specific content angles. Each hook should feel like it 
               embedded={true}
               completedSteps={getCompletedSteps(contentFlowCard)}
               contentType="video"
+              onContentTypeChange={handleContentTypeChange}
             />
           )}
           {/* Step 5: Schedule (video) — or step 4 for image is handled above */}

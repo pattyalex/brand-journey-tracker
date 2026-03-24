@@ -84,19 +84,11 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = (props) => {
         </button>
       )}
 
-      {/* Expand button when collapsed */}
-      {singleCard && isLeftPanelCollapsed && (
-        <button
-          onClick={() => setIsLeftPanelCollapsed(false)}
-          className="absolute left-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-30 p-1.5 bg-white/80 hover:bg-white shadow-md rounded-lg border border-gray-200 transition-colors"
-        >
-          <ChevronRight className="w-5 h-5 text-[#612A4F]" strokeWidth={2.5} />
-        </button>
-      )}
+      {/* Expand button when collapsed - hidden in single card mode */}
 
-      {/* Collapsed single card mode - card on left, stepper in middle, button on right */}
+      {/* Collapsed single card mode - card on left, stepper in middle */}
       {!planningMode && singleCard && isLeftPanelCollapsed && !singleCardScheduled && (
-        <div className="flex items-center gap-4 px-4 py-3 border-b border-gray-100 flex-shrink-0">
+        <div className="flex items-center gap-4 pl-8 pr-4 pt-12 pb-3 border-b border-gray-100 flex-shrink-0">
           <div
             draggable
             onDragStart={(e) => handleDragStart(e, singleCard.id)}
@@ -106,9 +98,9 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = (props) => {
               draggedCardId === singleCard.id && "opacity-40"
             )}
           >
-            <CalendarDays className="w-5 h-5 text-[#8B7082] flex-shrink-0" />
+            <GripVertical className="w-4 h-4 text-gray-300 flex-shrink-0" />
             <span className="text-sm font-medium text-gray-900 truncate">{singleCard.hook || singleCard.title || "Untitled content"}</span>
-            <span className="text-xs text-[#8B7082] flex-shrink-0">Drag to schedule →</span>
+            <span className="text-xs text-[#8B7082] flex-shrink-0">Drag to schedule</span>
           </div>
           <div className="flex-1 flex justify-center">
             <ContentFlowProgress
@@ -118,17 +110,6 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = (props) => {
               completedSteps={completedSteps}
             />
           </div>
-          {onMoveToScheduleColumn && (
-            <button onClick={() => onMoveToScheduleColumn(singleCard)} className="px-4 py-2 text-sm font-medium bg-[#612A4F] hover:bg-[#4A1F3D] text-white rounded-lg transition-colors flex-shrink-0 whitespace-nowrap">
-              Save & Schedule Later
-            </button>
-          )}
-          <button
-            onClick={() => { if (onClose) onClose(); emit(window, EVENTS.OPEN_BATCH_SCHEDULE); }}
-            className="text-sm text-[#8B7082] underline hover:text-[#612A4F] transition-colors flex-shrink-0"
-          >
-            Batch Schedule
-          </button>
         </div>
       )}
 
@@ -172,11 +153,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = (props) => {
           <div className="col-span-2 flex-shrink-0 pt-3 pb-2 flex items-center justify-between px-4">
             <div className="w-[160px]" />
             <ContentFlowProgress currentStep={5} onStepClick={onNavigateToStep ? (step) => { if (step !== 5) onNavigateToStep(step); } : undefined} completedSteps={completedSteps} />
-            {onMoveToScheduleColumn && !singleCardScheduled ? (
-              <button onClick={() => onMoveToScheduleColumn(singleCard)} className="px-4 py-2 text-sm font-medium bg-[#612A4F] hover:bg-[#4A1F3D] text-white rounded-lg transition-colors whitespace-nowrap">
-                Save & Schedule Later
-              </button>
-            ) : <div className="w-[160px]" />}
+            <div className="w-[160px]" />
             {onClose && (
               <button onClick={onClose} className="absolute top-3 right-3 p-2 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors z-10" aria-label="Close">
                 <X className="w-5 h-5" />
@@ -219,13 +196,15 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = (props) => {
               setDragOverUnschedule(false);
             }}
           >
-            {/* Collapse/Expand Button */}
-            <button
-              onClick={() => setIsLeftPanelCollapsed(!isLeftPanelCollapsed)}
-              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-30 p-1.5 bg-white/80 hover:bg-white shadow-md rounded-lg border border-gray-200 transition-colors"
-            >
-              <ChevronLeft className={cn("w-5 h-5 text-[#612A4F] transition-transform duration-300", isLeftPanelCollapsed && "rotate-180")} strokeWidth={2.5} />
-            </button>
+            {/* Collapse/Expand Button - hidden when single card is collapsed */}
+            {!(singleCard && isLeftPanelCollapsed) && (
+              <button
+                onClick={() => setIsLeftPanelCollapsed(!isLeftPanelCollapsed)}
+                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-30 p-1.5 bg-white/80 hover:bg-white shadow-md rounded-lg border border-gray-200 transition-colors"
+              >
+                <ChevronLeft className={cn("w-5 h-5 text-[#612A4F] transition-transform duration-300", isLeftPanelCollapsed && "rotate-180")} strokeWidth={2.5} />
+              </button>
+            )}
 
             {/* Header for embedded mode */}
             {embedded && !singleCard && (
@@ -357,7 +336,14 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = (props) => {
           <CalendarDays className="w-4 h-4 inline-block align-middle mr-1" />
           Drag to a date on the calendar<br />to schedule
         </p>
-        <div className="!mt-20 text-center">
+        <div className="!mt-32 text-center space-y-4">
+          {onMoveToScheduleColumn && (
+            <div>
+              <button onClick={() => onMoveToScheduleColumn(singleCard)} className="px-4 py-2 text-sm font-medium bg-[#612A4F] hover:bg-[#4A1F3D] text-white rounded-lg transition-colors whitespace-nowrap">
+                Save & Schedule Later
+              </button>
+            </div>
+          )}
           <button onClick={() => { if (onClose) onClose(); emit(window, EVENTS.OPEN_BATCH_SCHEDULE); }} className="text-sm text-[#8B7082] underline hover:text-[#612A4F] transition-colors">
             Batch Schedule
           </button>

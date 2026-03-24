@@ -26,6 +26,8 @@ import {
   ArrowLeft,
   ArrowRight,
   X,
+  Image as ImageIcon,
+  ChevronDown,
 } from "lucide-react";
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
@@ -73,6 +75,7 @@ interface EditChecklistDialogProps {
   embedded?: boolean;
   completedSteps?: number[];
   contentType?: ContentType;
+  onContentTypeChange?: (type: 'video' | 'image') => void;
 }
 
 // Default example items for the global checklist (video)
@@ -131,8 +134,10 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
   embedded = false,
   completedSteps = [],
   contentType = 'video',
+  onContentTypeChange,
 }) => {
   const [shakeButton, setShakeButton] = useState(false);
+  const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
 
   const handleInteractOutside = (e: Event) => {
     e.preventDefault();
@@ -307,18 +312,11 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
             </h3>
           </div>
           {/* Checklist Header */}
-          <div className="flex-1 px-4 py-3 bg-transparent flex items-center justify-between">
+          <div className="flex-1 px-4 py-3 bg-transparent flex items-center">
             <h3 className="font-semibold text-[#612A4F] flex items-center gap-2 text-base">
-              <CheckSquare className="w-5 h-5" />
-              Editing Checklist
+              <MessageSquare className="w-5 h-5" />
+              Editing Notes
             </h3>
-            <Button
-              size="sm"
-              onClick={() => handleNavigateWithSave(scheduleStepNumber)}
-              className="bg-[#612A4F] hover:bg-[#4A1F3D] text-white text-sm"
-            >
-              Save & Move to Schedule <ArrowRight className="w-3 h-3 ml-1" />
-            </Button>
           </div>
         </div>
 
@@ -504,210 +502,35 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
             </div>
           </div>
 
-          {/* Right Column - Checklist & Notes */}
-          <div className="flex-1 bg-white/30 py-4 pl-8 pr-4">
-            {/* Progress Ring & Stats */}
-            <div className="flex items-center gap-4 mb-5">
-              {/* Circular Progress */}
-              <div className="relative flex-shrink-0">
-                <svg width="70" height="70" className="transform -rotate-90">
-                  {/* Background circle */}
-                  <circle
-                    cx="35"
-                    cy="35"
-                    r="28"
-                    fill="none"
-                    stroke="#E5E7EB"
-                    strokeWidth="6"
-                  />
-                  {/* Progress circle */}
-                  <motion.circle
-                    cx="35"
-                    cy="35"
-                    r="28"
-                    fill="none"
-                    stroke={isAllComplete ? "#4E9D5A" : "#8B7082"}
-                    strokeWidth="6"
-                    strokeLinecap="round"
-                    strokeDasharray={2 * Math.PI * 28}
-                    initial={{ strokeDashoffset: 2 * Math.PI * 28 }}
-                    animate={{ strokeDashoffset: 2 * Math.PI * 28 - (progressPercent / 100) * 2 * Math.PI * 28 }}
-                    transition={{ duration: 0.5, ease: "easeOut" }}
-                  />
-                </svg>
-                {/* Center content */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  {isAllComplete ? (
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                    >
-                      <Sparkles className="w-5 h-5 text-[#4E9D5A]" />
-                    </motion.div>
-                  ) : (
-                    <span className="text-lg font-bold text-[#612A4F]">{progressPercent}%</span>
-                  )}
-                </div>
-              </div>
-
-              {/* Stats */}
-              <div className="flex-1">
-                <motion.p
-                  className={cn(
-                    "text-base font-semibold",
-                    isAllComplete ? "text-[#3D8A48]" : "text-[#612A4F]"
-                  )}
-                  key={isAllComplete ? "complete" : "progress"}
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                >
-                  {isAllComplete ? "All done!" : `${completedCount} of ${totalCount} complete`}
-                </motion.p>
-                <p className="text-xs text-gray-500">
-                  {isAllComplete
-                    ? "Your edit is ready for scheduling"
-                    : "Check off items as you edit in your editing app of choice"}
-                </p>
-              </div>
+          {/* Right Column - Editing Notes */}
+          <div className="flex-1 bg-white/30 py-4 pl-8 pr-4 flex flex-col">
+            {/* Notes Header */}
+            <div className="flex items-center gap-2 mb-3">
+              <MessageSquare className="w-4 h-4 text-[#8B7082]" />
+              <h3 className="text-sm font-semibold text-[#612A4F]">Editing Notes</h3>
             </div>
-
-            {/* Checklist Items */}
-            <div className="space-y-1.5 mb-5">
-              <AnimatePresence mode="popLayout">
-                {globalItems.map((item, index) => (
-                  <motion.div
-                    key={item.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 20, height: 0 }}
-                    transition={{ delay: index * 0.02 }}
-                    className={cn(
-                      "flex items-center gap-3 group rounded-lg px-3 py-2 transition-all duration-200",
-                      item.checked
-                        ? "bg-[#EFF5F0]/80 border border-[#A5D4AE]"
-                        : "bg-white border border-gray-100 hover:border-[#8B7082]/30 hover:shadow-sm"
-                    )}
-                  >
-                    <motion.div
-                      whileTap={{ scale: 0.9 }}
-                    >
-                      <Checkbox
-                        checked={item.checked}
-                        onCheckedChange={() => handleToggleItem(item.id)}
-                        className={cn(
-                          "h-4 w-4 rounded-full transition-colors",
-                          item.checked
-                            ? "data-[state=checked]:bg-[#4E9D5A] data-[state=checked]:border-[#4E9D5A]"
-                            : "data-[state=checked]:bg-[#8B7082] data-[state=checked]:border-[#8B7082] border-gray-300"
-                        )}
-                      />
-                    </motion.div>
-                    <input
-                      type="text"
-                      data-checklist-item
-                      value={item.text}
-                      onChange={(e) => handleUpdateItemText(item.id, e.target.value)}
-                      onKeyDown={(e) => {
-                        const currentIndex = globalItems.findIndex(i => i.id === item.id);
-
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          const newItem: EditingChecklistItem = {
-                            id: `item-${Date.now()}`,
-                            text: "",
-                            checked: false,
-                            isExample: false,
-                          };
-                          setGlobalItems(prev => [
-                            ...prev.slice(0, currentIndex + 1),
-                            newItem,
-                            ...prev.slice(currentIndex + 1)
-                          ]);
-                          setTimeout(() => {
-                            const inputs = document.querySelectorAll<HTMLInputElement>('[data-checklist-item]');
-                            inputs[currentIndex + 1]?.focus();
-                          }, 50);
-                        }
-
-                        if (e.key === "Backspace" && !item.text && currentIndex > 0) {
-                          e.preventDefault();
-                          setGlobalItems(prev => prev.filter(i => i.id !== item.id));
-                          setTimeout(() => {
-                            const inputs = document.querySelectorAll<HTMLInputElement>('[data-checklist-item]');
-                            inputs[currentIndex - 1]?.focus();
-                          }, 50);
-                        }
-                      }}
-                      onBlur={(e) => {
-                        const relatedTarget = e.relatedTarget as HTMLElement;
-                        if (!item.text.trim() && !relatedTarget?.hasAttribute('data-checklist-item')) {
-                          setTimeout(() => {
-                            setGlobalItems(prev => prev.filter(i => i.id !== item.id));
-                          }, 100);
-                        }
-                      }}
-                      className={cn(
-                        "flex-1 text-sm transition-all bg-transparent border-none outline-none focus:ring-0 p-0",
-                        item.checked
-                          ? "text-[#3D8A48] line-through"
-                          : item.isExample
-                            ? "text-gray-400 italic"
-                            : "text-gray-700"
-                      )}
-                    />
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity rounded-full hover:bg-red-50 text-gray-300 hover:text-red-500"
-                      onClick={() => handleDeleteItem(item.id)}
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-
-              {/* Add new item button */}
-              <motion.button
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.99 }}
-                onClick={() => {
-                  const newItem: EditingChecklistItem = {
-                    id: `item-${Date.now()}`,
-                    text: "",
-                    checked: false,
-                    isExample: false,
-                  };
-                  setGlobalItems(prev => [...prev, newItem]);
-                  setTimeout(() => {
-                    const inputs = document.querySelectorAll<HTMLInputElement>('[data-checklist-item]');
-                    const lastInput = inputs[inputs.length - 1];
-                    lastInput?.focus();
-                  }, 50);
-                }}
-                className="flex items-center gap-2 w-full text-xs text-[#8B7082] hover:text-[#612A4F] transition-colors px-3 py-2 rounded-lg border border-dashed border-[#8B7082]/30 hover:border-[#8B7082]/50 hover:bg-white/50"
-              >
-                <Plus className="h-3.5 w-3.5" />
-                <span>Add item</span>
-              </motion.button>
-            </div>
-
-            {/* Notes Section */}
-            <div className="bg-gradient-to-br from-white to-[#F5EEF2]/50 rounded-xl p-4 border border-[#8B7082]/10">
-              <div className="flex items-center gap-2 mb-2">
-                <MessageSquare className="w-3.5 h-3.5 text-[#8B7082]" />
-                <h3 className="text-xs font-medium text-[#612A4F]">Editor Notes</h3>
-              </div>
-              <Textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder={isImage ? "Color grading, font choices, brand consistency..." : "Pacing, music, transitions, text overlays..."}
-                className="min-h-[120px] max-h-[200px] border-0 bg-transparent focus:ring-0 resize-none overflow-y-auto placeholder:text-gray-400 text-xs text-gray-700"
-              />
-            </div>
+            <p className="text-xs text-gray-400 mb-4">
+              Jot down reminders for your edit — pacing, music, transitions, text overlays, color grading, or anything else you want to remember.
+            </p>
+            <Textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder={isImage ? "Color grading notes, font choices, brand consistency, layout ideas..." : "Pacing, music choices, transitions, text overlays, color grading, sound effects..."}
+              className="flex-1 min-h-[300px] border border-gray-200 bg-white rounded-xl focus:ring-1 focus:ring-[#8B7082]/30 focus:border-[#8B7082]/30 resize-none overflow-y-auto placeholder:text-gray-300 text-sm text-gray-700 p-4 leading-relaxed"
+            />
           </div>
         </div>
+
+      {/* Bottom bar with Next button */}
+      <div className="px-6 py-4 border-t border-gray-100 flex justify-end flex-shrink-0">
+        <Button
+          size="sm"
+          onClick={() => handleNavigateWithSave(scheduleStepNumber)}
+          className="bg-[#612A4F] hover:bg-[#4A1F3D] text-white text-sm"
+        >
+          Next <ArrowRight className="w-3 h-3 ml-1" />
+        </Button>
+      </div>
     </>
   );
 

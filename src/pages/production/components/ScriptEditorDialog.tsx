@@ -21,7 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { getFormatColors, getPlatformColors } from "../utils/productionHelpers";
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
-import { MoreHorizontal, Video, Camera, ChevronDown, X, Circle, Wrench, CheckCircle2, MapPin, Shirt, Boxes, NotebookPen, PenLine, Check, Plus, ArrowLeft, ArrowRight, ArrowDown, Sparkles, Send, Bot, User, AlertCircle } from "lucide-react";
+import { MoreHorizontal, Video, Camera, ChevronDown, X, Circle, Wrench, CheckCircle2, MapPin, Shirt, Boxes, NotebookPen, PenLine, Check, Plus, ArrowLeft, ArrowRight, ArrowDown, Sparkles, Send, Bot, User, AlertCircle, Image as ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "sonner";
@@ -110,6 +110,8 @@ interface ScriptEditorDialogProps {
   onNavigateToStep?: (step: number) => void;
   slideDirection?: 'left' | 'right';
   completedSteps?: number[];
+  contentType?: 'video' | 'image';
+  onContentTypeChange?: (type: 'video' | 'image') => void;
   caption?: string;
   setCaption?: (value: string) => void;
 }
@@ -166,6 +168,8 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
   onNavigateToStep,
   slideDirection = 'right',
   completedSteps = [],
+  contentType = 'video',
+  onContentTypeChange,
   caption = '',
   setCaption,
 }) => {
@@ -189,6 +193,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
   const [megAIInput, setMegAIInput] = useState("");
   const [isAILoading, setIsAILoading] = useState(false);
   const chatMessagesRef = useRef<HTMLDivElement>(null);
+  const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -339,8 +344,42 @@ Guidelines:
         <ContentFlowProgress currentStep={2} className="w-[550px]" onStepClick={onNavigateToStep} completedSteps={completedSteps} />
       </div>
       <div className="flex-1 overflow-y-auto px-6 pb-1">
-        {/* Title Section + Move to Film Button */}
-        <div className="flex items-center gap-4 border-b border-gray-200 pb-2 mb-6">
+        {/* Content Type Dropdown + Title */}
+        <div className="flex items-center gap-3 border-b border-gray-200 pb-2 mb-6">
+          {/* Content Type Dropdown */}
+          {onContentTypeChange && (
+            <div className="relative flex-shrink-0">
+              <button
+                onClick={() => setIsTypeDropdownOpen(!isTypeDropdownOpen)}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-gray-200 hover:border-gray-300 bg-white text-sm text-gray-700 transition-colors"
+              >
+                {contentType === 'video' ? <Video className="w-3.5 h-3.5 text-[#612A4F]" /> : <ImageIcon className="w-3.5 h-3.5 text-[#612A4F]" />}
+                <span className="font-medium text-[13px]">{contentType === 'video' ? 'Video' : 'Image'}</span>
+                <ChevronDown className="w-3 h-3 text-gray-400" />
+              </button>
+              {isTypeDropdownOpen && (
+                <>
+                  <div className="fixed inset-0 z-20" onClick={() => setIsTypeDropdownOpen(false)} />
+                  <div className="absolute top-full left-0 mt-1 w-36 bg-white rounded-xl border border-gray-200 shadow-lg z-30 overflow-hidden">
+                    <button
+                      onClick={() => { onContentTypeChange('video'); setIsTypeDropdownOpen(false); }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm hover:bg-gray-50 transition-colors"
+                    >
+                      <Video className="w-4 h-4 text-[#612A4F]" />
+                      <span className={contentType === 'video' ? 'font-semibold text-gray-900' : 'text-gray-600'}>Video</span>
+                    </button>
+                    <button
+                      onClick={() => { onContentTypeChange('image'); setIsTypeDropdownOpen(false); }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm hover:bg-gray-50 transition-colors"
+                    >
+                      <ImageIcon className="w-4 h-4 text-[#612A4F]" />
+                      <span className={contentType === 'image' ? 'font-semibold text-gray-900' : 'text-gray-600'}>Image</span>
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -366,13 +405,6 @@ Guidelines:
               )}
             </Tooltip>
           </TooltipProvider>
-          <Button
-            size="sm"
-            onClick={() => onNavigateToStep?.(3)}
-            className="bg-[#612A4F] hover:bg-[#4A1F3D] text-white flex-shrink-0 ml-auto text-sm"
-          >
-            Save & Move to Film <ArrowRight className="w-3 h-3 ml-1" />
-          </Button>
         </div>
 
         {/* Two Column Layout */}
@@ -933,6 +965,16 @@ Guidelines:
 
           </div>
         </div>
+      </div>
+      {/* Bottom bar with Next button */}
+      <div className="px-6 py-4 border-t border-gray-100 flex justify-end flex-shrink-0">
+        <Button
+          size="sm"
+          onClick={() => onNavigateToStep?.(3)}
+          className="bg-[#612A4F] hover:bg-[#4A1F3D] text-white text-sm"
+        >
+          Next <ArrowRight className="w-3 h-3 ml-1" />
+        </Button>
       </div>
     </div>
   );

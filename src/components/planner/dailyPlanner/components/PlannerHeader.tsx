@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { addMonths, addWeeks, endOfWeek, format, startOfWeek, subWeeks } from "date-fns";
 import { CalendarIcon, ChevronLeft, ChevronRight, ChevronDown, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -48,6 +49,7 @@ export const PlannerHeader = ({
   contentDisplayMode,
   setContentDisplayMode,
 }: PlannerHeaderProps) => {
+  const [filterOpen, setFilterOpen] = useState(false);
   return (
     <div className="pt-4 pb-2">
       {/* Top Row: Date Navigation (centered) */}
@@ -183,7 +185,7 @@ export const PlannerHeader = ({
         </div>
 
         {/* Right: Filter */}
-        <Popover>
+        <Popover open={filterOpen} onOpenChange={setFilterOpen}>
           <PopoverTrigger asChild>
             <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition-colors text-sm text-gray-700 shadow-sm">
               <Filter className="w-3.5 h-3.5 text-gray-400" />
@@ -195,7 +197,7 @@ export const PlannerHeader = ({
           </PopoverTrigger>
           <PopoverContent className="w-44 p-1 bg-white" align="end">
             <button
-              onClick={() => setContentDisplayMode('both')}
+              onClick={() => { setContentDisplayMode('both'); setFilterOpen(false); }}
               className={cn(
                 "w-full text-left px-3 py-2 rounded-md text-sm transition-colors",
                 contentDisplayMode === 'both' ? "bg-[#612a4f]/10 text-[#612a4f] font-medium" : "text-gray-700 hover:bg-gray-100"
@@ -205,7 +207,7 @@ export const PlannerHeader = ({
               See all
             </button>
             <button
-              onClick={() => setContentDisplayMode('tasks')}
+              onClick={() => { setContentDisplayMode('tasks'); setFilterOpen(false); }}
               className={cn(
                 "w-full text-left px-3 py-2 rounded-md text-sm transition-colors",
                 contentDisplayMode === 'tasks' ? "bg-[#612a4f]/10 text-[#612a4f] font-medium" : "text-gray-700 hover:bg-gray-100"
@@ -215,7 +217,7 @@ export const PlannerHeader = ({
               See tasks only
             </button>
             <button
-              onClick={() => setContentDisplayMode('content')}
+              onClick={() => { setContentDisplayMode('content'); setFilterOpen(false); }}
               className={cn(
                 "w-full text-left px-3 py-2 rounded-md text-sm transition-colors",
                 contentDisplayMode === 'content' ? "bg-[#612a4f]/10 text-[#612a4f] font-medium" : "text-gray-700 hover:bg-gray-100"
