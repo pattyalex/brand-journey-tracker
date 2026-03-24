@@ -1,11 +1,11 @@
 import https from 'https';
 import crypto from 'crypto';
 
-// Supabase REST helper (no external dependencies needed)
-function supabaseRequest(path, method, body) {
+// Supabase REST helper
+function supabasePatch(path, body) {
   const url = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) throw new Error('Supabase not configured');
+  if (!url || !key) throw new Error('Supabase not configured: url=' + !!url + ' key=' + !!key);
 
   const hostname = new URL(url).hostname;
   const data = JSON.stringify(body);
@@ -15,22 +15,19 @@ function supabaseRequest(path, method, body) {
       hostname,
       port: 443,
       path: `/rest/v1/${path}`,
-      method,
+      method: 'PATCH',
       headers: {
         'apikey': key,
         'Authorization': `Bearer ${key}`,
         'Content-Type': 'application/json',
-        'Prefer': method === 'PATCH' ? 'return=minimal' : 'return=representation',
+        'Prefer': 'return=minimal',
         'Content-Length': Buffer.byteLength(data),
       },
     };
     const req = https.request(options, (res) => {
       let result = '';
       res.on('data', (chunk) => { result += chunk; });
-      res.on('end', () => {
-        try { resolve({ status: res.statusCode, body: result ? JSON.parse(result) : null }); }
-        catch { resolve({ status: res.statusCode, body: result }); }
-      });
+      res.on('end', () => resolve({ status: res.statusCode, body: result }));
     });
     req.on('error', reject);
     req.write(data);
@@ -38,48 +35,19 @@ function supabaseRequest(path, method, body) {
   });
 }
 
-function supabaseGet(path) {
-  const url = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) throw new Error('Supabase not configured');
-
-  const hostname = new URL(url).hostname;
-
-  return new Promise((resolve, reject) => {
-    const options = {
-      hostname,
-      port: 443,
-      path: `/rest/v1/${path}`,
-      method: 'GET',
-      headers: {
-        'apikey': key,
-        'Authorization': `Bearer ${key}`,
-        'Accept': 'application/json',
-      },
-    };
-    const req = https.request(options, (res) => {
-      let result = '';
-      res.on('data', (chunk) => { result += chunk; });
-      res.on('end', () => {
-        try { resolve({ status: res.statusCode, body: JSON.parse(result) }); }
-        catch { resolve({ status: res.statusCode, body: result }); }
-      });
-    });
-    req.on('error', reject);
-    req.end();
-  });
-}
-
 // Verify Stripe webhook signature
 function verifyStripeSignature(payload, sigHeader, secret) {
-  const parts = sigHeader.split(',').reduce((acc, part) => {
-    const [key, value] = part.split('=');
-    acc[key] = value;
-    return acc;
-  }, {});
+  const parts = {};
+  for (const item of sigHeader.split(',')) {
+    const idx = item.indexOf('=');
+    if (idx !== -1) {
+      parts[item.slice(0, idx)] = item.slice(idx + 1);
+    }
+  }
 
   const timestamp = parts.t;
   const signature = parts.v1;
+  if (!timestamp || !signature) return false;
 
   const signedPayload = `${timestamp}.${payload}`;
   const expectedSignature = crypto
@@ -93,7 +61,7 @@ function verifyStripeSignature(payload, sigHeader, secret) {
   );
 }
 
-// Need raw body for signature verification
+// Disable Vercel body parsing so we get the raw body for signature verification
 export const config = {
   api: {
     bodyParser: false,
@@ -101,6 +69,17 @@ export const config = {
 };
 
 function getRawBody(req) {
+  // Vercel with bodyParser:false provides body as a Buffer on req.body
+  if (Buffer.isBuffer(req.body)) {
+    return Promise.resolve(req.body.toString('utf8'));
+  }
+  if (typeof req.body === 'string') {
+    return Promise.resolve(req.body);
+  }
+  if (req.body && typeof req.body === 'object') {
+    return Promise.resolve(JSON.stringify(req.body));
+  }
+  // Fallback: read from stream
   return new Promise((resolve, reject) => {
     const chunks = [];
     req.on('data', (chunk) => chunks.push(chunk));
@@ -114,36 +93,40 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-  const rawBody = await getRawBody(req);
+  try {
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    let rawBody;
 
-  // Verify signature if webhook secret is configured
-  if (webhookSecret) {
-    const sigHeader = req.headers['stripe-signature'];
-    if (!sigHeader) {
-      return res.status(400).json({ error: 'Missing stripe-signature header' });
-    }
     try {
-      const valid = verifyStripeSignature(rawBody, sigHeader, webhookSecret);
-      if (!valid) {
-        return res.status(400).json({ error: 'Invalid signature' });
-      }
-    } catch (err) {
-      console.error('Signature verification failed:', err.message);
-      return res.status(400).json({ error: 'Signature verification failed' });
+      rawBody = await getRawBody(req);
+    } catch (bodyErr) {
+      console.error('Failed to read body:', bodyErr);
+      return res.status(400).json({ error: 'Failed to read request body' });
     }
-  }
 
-  let event;
-  try {
-    event = JSON.parse(rawBody);
-  } catch {
-    return res.status(400).json({ error: 'Invalid JSON' });
-  }
+    console.log('Webhook received, body length:', rawBody.length);
 
-  console.log('Stripe webhook received:', event.type);
+    // Verify signature if webhook secret is configured
+    if (webhookSecret) {
+      const sigHeader = req.headers['stripe-signature'];
+      if (!sigHeader) {
+        return res.status(400).json({ error: 'Missing stripe-signature header' });
+      }
+      try {
+        const valid = verifyStripeSignature(rawBody, sigHeader, webhookSecret);
+        if (!valid) {
+          console.error('Invalid webhook signature');
+          return res.status(400).json({ error: 'Invalid signature' });
+        }
+      } catch (sigErr) {
+        console.error('Signature verification error:', sigErr.message);
+        return res.status(400).json({ error: 'Signature verification failed: ' + sigErr.message });
+      }
+    }
 
-  try {
+    const event = JSON.parse(rawBody);
+    console.log('Stripe webhook event:', event.type);
+
     switch (event.type) {
       case 'customer.subscription.created':
       case 'customer.subscription.updated': {
@@ -152,19 +135,15 @@ export default async function handler(req, res) {
         const status = subscription.status;
         const priceId = subscription.items?.data?.[0]?.price?.id;
 
-        // Determine plan type from price ID
         const monthlyPriceId = process.env.STRIPE_PRICE_MONTHLY || process.env.VITE_STRIPE_PRICE_MONTHLY;
         const planType = priceId === monthlyPriceId ? 'monthly' : 'annual';
-
         const isTrialing = status === 'trialing';
         const trialEnd = subscription.trial_end
           ? new Date(subscription.trial_end * 1000).toISOString()
           : null;
 
-        // Update the profile in Supabase
-        await supabaseRequest(
+        const result = await supabasePatch(
           `profiles?stripe_customer_id=eq.${customerId}`,
-          'PATCH',
           {
             subscription_status: status,
             stripe_subscription_id: subscription.id,
@@ -173,8 +152,7 @@ export default async function handler(req, res) {
             trial_ends_at: trialEnd,
           }
         );
-
-        console.log(`Updated subscription for customer ${customerId}: ${status}`);
+        console.log(`Updated subscription for ${customerId}: ${status}, supabase status: ${result.status}`);
         break;
       }
 
@@ -182,16 +160,11 @@ export default async function handler(req, res) {
         const subscription = event.data.object;
         const customerId = subscription.customer;
 
-        await supabaseRequest(
+        const result = await supabasePatch(
           `profiles?stripe_customer_id=eq.${customerId}`,
-          'PATCH',
-          {
-            subscription_status: 'canceled',
-            is_on_trial: false,
-          }
+          { subscription_status: 'canceled', is_on_trial: false }
         );
-
-        console.log(`Subscription canceled for customer ${customerId}`);
+        console.log(`Subscription canceled for ${customerId}, supabase status: ${result.status}`);
         break;
       }
 
@@ -199,20 +172,16 @@ export default async function handler(req, res) {
         const invoice = event.data.object;
         const customerId = invoice.customer;
 
-        // Skip trial invoices (amount = 0)
-        if (invoice.amount_paid === 0) break;
+        if (invoice.amount_paid === 0) {
+          console.log('Skipping trial invoice (amount=0)');
+          break;
+        }
 
-        // Update subscription status to active (payment confirmed)
-        await supabaseRequest(
+        const result = await supabasePatch(
           `profiles?stripe_customer_id=eq.${customerId}`,
-          'PATCH',
-          {
-            subscription_status: 'active',
-            is_on_trial: false,
-          }
+          { subscription_status: 'active', is_on_trial: false }
         );
-
-        console.log(`Payment succeeded for customer ${customerId}`);
+        console.log(`Payment succeeded for ${customerId}, supabase status: ${result.status}`);
         break;
       }
 
@@ -220,15 +189,11 @@ export default async function handler(req, res) {
         const invoice = event.data.object;
         const customerId = invoice.customer;
 
-        await supabaseRequest(
+        const result = await supabasePatch(
           `profiles?stripe_customer_id=eq.${customerId}`,
-          'PATCH',
-          {
-            subscription_status: 'past_due',
-          }
+          { subscription_status: 'past_due' }
         );
-
-        console.log(`Payment failed for customer ${customerId}`);
+        console.log(`Payment failed for ${customerId}, supabase status: ${result.status}`);
         break;
       }
 
@@ -236,9 +201,9 @@ export default async function handler(req, res) {
         console.log('Unhandled event type:', event.type);
     }
 
-    res.json({ received: true });
+    return res.json({ received: true });
   } catch (err) {
-    console.error('Webhook handler error:', err);
-    res.status(500).json({ error: 'Webhook handler failed' });
+    console.error('Webhook error:', err.message, err.stack);
+    return res.status(500).json({ error: err.message || 'Webhook handler failed' });
   }
 }
