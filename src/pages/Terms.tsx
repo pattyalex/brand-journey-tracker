@@ -37,7 +37,7 @@ const Terms = () => {
             Terms of Service
           </h1>
           <p className="text-white/50 text-sm">
-            Effective Date: February 12, 2026 &nbsp;|&nbsp; Last Updated: February 12, 2026
+            Effective Date: February 12, 2026 &nbsp;|&nbsp; Last Updated: March 24, 2026
           </p>
         </div>
       </div>
@@ -274,7 +274,7 @@ const Terms = () => {
             </div>
             <div className="space-y-4 text-[15px] leading-relaxed text-[#4d3e48]">
               <p>
-                <strong>6.1 Cancellation.</strong> You may cancel your subscription at any time. Upon cancellation, you will retain access to the Service until the end of your current billing period. Cancellations are non-reversible and are limited to non-refundable terms.
+                <strong>6.1 Cancellation.</strong> You may cancel your subscription at any time. Upon cancellation, you will retain access to the Service until the end of your current billing period. After your billing period ends, your account will be deactivated and you will no longer be able to access the Service. Your data will be retained for 90 days following deactivation, during which time you may resubscribe to regain full access to your account and content. After 90 days of inactivity, your data will be permanently deleted.
               </p>
               <p>
                 <strong>6.2 Refunds.</strong> Because we encourage you to fully evaluate the Service during the free trial, unused portions of paid subscriptions are generally non-refundable. We do not issue refunds for downgrades. In exceptional circumstances, refund requests may be considered on a case-by-case basis. To request a refund, please contact us.
@@ -326,7 +326,7 @@ const Terms = () => {
               <div>
                 <h3 className="font-semibold text-[#2d2a26] mb-2">7.4 Data Export</h3>
                 <p>
-                  You may export Your Content at any time while your account is active. If you cancel your membership, your account will remain active through the end of your current billing period, and you may export Your Content until that date. Once your billing period ends, your account will be deactivated and Your Content will be permanently deleted. If you choose to delete your account at any time, all your data will be deleted immediately and permanently. We strongly recommend exporting your data before deleting your account, as this action cannot be undone.
+                  You may export Your Content at any time while your account is active. If you cancel your membership, your account will remain active through the end of your current billing period, and you may export Your Content until that date. Once your billing period ends, your account will be deactivated, but Your Content will be retained for 90 days. During this 90-day period, you may resubscribe to regain access to your account and all of Your Content. After 90 days of inactivity, Your Content will be permanently deleted. If you choose to delete your account at any time, all your data will be deleted immediately and permanently. We strongly recommend exporting your data before deleting your account, as this action cannot be undone.
                 </p>
               </div>
             </div>

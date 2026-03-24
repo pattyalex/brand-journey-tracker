@@ -1494,12 +1494,13 @@ app.post('/api/send-subscription-cancelled', async (req, res) => {
           <h1 style="color: #1a1a1a; font-size: 28px; margin-bottom: 8px;">Subscription Cancelled</h1>
           <p style="color: #555; font-size: 16px; line-height: 1.6;">Hi ${firstName},</p>
           <p style="color: #555; font-size: 16px; line-height: 1.6;">Your HeyMeg subscription has been cancelled as requested.</p>
-          <p style="color: #555; font-size: 16px; line-height: 1.6;">You'll still have access to all features until <strong>${endDate}</strong>. After that, you'll no longer be able to access HeyMeg — but don't worry, your data will be saved if you decide to come back.</p>
-          <p style="color: #555; font-size: 16px; line-height: 1.6;">You can resubscribe anytime to pick up right where you left off.</p>
+          <p style="color: #555; font-size: 16px; line-height: 1.6;">You will continue to have full access to all features until <strong>${endDate}</strong>.</p>
+          <p style="color: #555; font-size: 16px; line-height: 1.6;">After that date, your account will be deactivated. Your data will be securely retained for 90 days, giving you the opportunity to resubscribe and regain access to your content at any time. After 90 days, your data will be permanently deleted.</p>
           <div style="text-align: left; margin: 30px 0;">
             <a href="https://heymeg.ai/membership" style="display: inline-block; padding: 14px 32px; background-color: #7c3aed; color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">Resubscribe to HeyMeg</a>
           </div>
-          <p style="color: #555; font-size: 16px; line-height: 1.6;">We'd love to know what we could have done better. Feel free to reach out to us at contact@heymeg.ai with any feedback.</p>
+          <p style="color: #555; font-size: 16px; line-height: 1.6;">If you have any questions or feedback, please don't hesitate to reach out to us at <a href="mailto:contact@heymeg.ai" style="color: #7c3aed; text-decoration: none;">contact@heymeg.ai</a>.</p>
+          <p style="color: #555; font-size: 16px; line-height: 1.6;">Thank you for being part of HeyMeg.</p>
           <p style="color: #555; font-size: 16px; line-height: 1.6;">— The HeyMeg Team</p>
           <p style="color: #999; font-size: 12px; line-height: 1.4; margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px;">This is an automated message. Please do not reply to this email. If you need help, contact us at contact@heymeg.ai.</p>
         </div>

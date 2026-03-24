@@ -19,8 +19,9 @@ const SubscriptionEnded = () => {
           Welcome back, {firstName}
         </h1>
         <p className="text-muted-foreground text-base leading-relaxed">
-          Your HeyMeg subscription has ended. Your data is safe and waiting for
-          you — resubscribe anytime to pick up right where you left off.
+          Your HeyMeg subscription has ended. Your data will be kept for 90 days
+          — resubscribe anytime during this period to pick up right where you
+          left off.
         </p>
         <div className="space-y-3 pt-2">
           <button

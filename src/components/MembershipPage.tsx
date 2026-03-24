@@ -16,18 +16,19 @@ interface SubscriptionData {
 }
 
 export const MembershipPage: React.FC = () => {
-  const { user } = useAuth();
+  const { user, isAuthLoaded } = useAuth();
   const [loading, setLoading] = useState(true);
   const [subscriptionData, setSubscriptionData] = useState<SubscriptionData | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
 
   useEffect(() => {
+    if (!isAuthLoaded) return;
     if (user) {
       fetchSubscriptionData();
-    } else if (user === null) {
+    } else {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, isAuthLoaded]);
 
   const fetchSubscriptionData = async () => {
     try {
