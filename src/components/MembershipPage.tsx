@@ -24,6 +24,8 @@ export const MembershipPage: React.FC = () => {
   useEffect(() => {
     if (user) {
       fetchSubscriptionData();
+    } else if (user === null) {
+      setLoading(false);
     }
   }, [user]);
 
@@ -131,7 +133,19 @@ export const MembershipPage: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="flex flex-col items-center justify-center p-8 space-y-4">
+        <h2 className="text-xl font-semibold">Log in to manage your membership</h2>
+        <p className="text-muted-foreground">Please log in to view your subscription details or resubscribe.</p>
+        <a href="/login" className="py-3 px-6 rounded-lg bg-purple-600 text-white font-medium hover:opacity-90 transition-opacity">
+          Log in
+        </a>
       </div>
     );
   }

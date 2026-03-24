@@ -10,6 +10,8 @@ interface AuthContextType {
   session: Session | null;
   hasCompletedOnboarding: boolean;
   isPasswordRecovery: boolean;
+  subscriptionStatus: string | null;
+  hasActiveSubscription: boolean;
   login: () => void;
   logout: () => void;
   completeOnboarding: () => void;
@@ -36,6 +38,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loginOpen, setLoginOpen] = useState(false);
   const [checkingOnboarding, setCheckingOnboarding] = useState(true);
   const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
+  const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
 
   // Get user-specific localStorage key
   const getOnboardingKey = (userId: string) => `${StorageKeys.hasCompletedOnboarding}_${userId}`;
@@ -135,10 +138,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         console.log('🔍 Checking onboarding status for user:', user.id);
 
-        // Check if profile exists and onboarding is complete
+        // Check if profile exists, onboarding is complete, and subscription status
         const { data: profile, error } = await supabase
           .from('profiles')
-          .select('id, has_completed_onboarding')
+          .select('id, has_completed_onboarding, subscription_status, is_on_trial, trial_ends_at')
           .eq('id', user.id)
           .single();
 
@@ -151,6 +154,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } else {
           console.log('❌ Onboarding not yet complete');
           setHasCompletedOnboarding(false);
+        }
+
+        // Set subscription status
+        if (profile) {
+          setSubscriptionStatus(profile.subscription_status);
+          console.log('📊 Subscription status:', profile.subscription_status);
         }
       } else {
         // Not signed in
@@ -208,6 +217,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // User has access if subscription is active, trialing, or not yet set (during onboarding)
+  const hasActiveSubscription = subscriptionStatus === 'active' || subscriptionStatus === 'trialing' || subscriptionStatus === null;
+
   const openLoginModal = useCallback(() => {
     setLoginOpen(true);
   }, []);
@@ -224,6 +236,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       session,
       hasCompletedOnboarding,
       isPasswordRecovery,
+      subscriptionStatus,
+      hasActiveSubscription,
       login,
       logout,
       completeOnboarding,

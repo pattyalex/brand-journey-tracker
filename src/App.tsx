@@ -37,6 +37,7 @@ const WeeklyContentTasks = lazy(() => import('./pages/WeeklyContentTasks'));
 const SocialMediaScheduler = lazy(() => import('./pages/SocialMediaScheduler'));
 const Index = lazy(() => import('./pages/Index'));
 const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
+const SubscriptionEnded = lazy(() => import('./pages/SubscriptionEnded'));
 
 // Loading component - invisible to prevent flash during lazy load
 const PageLoader = () => null;
@@ -60,8 +61,22 @@ const LandingRedirect = () => {
   return null;
 };
 
-// Protected route component — auth bypass for local dev
+// Protected route component — checks auth and subscription status
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isAuthenticated, isAuthLoaded, hasActiveSubscription, hasCompletedOnboarding } = useAuth();
+
+  // Still loading auth state
+  if (!isAuthLoaded) return null;
+
+  // Not logged in — redirect to login
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+
+  // Hasn't finished onboarding yet — let them through to onboarding
+  if (!hasCompletedOnboarding) return <Navigate to="/onboarding" replace />;
+
+  // Subscription ended — redirect to subscription ended page
+  if (!hasActiveSubscription) return <Navigate to="/subscription-ended" replace />;
+
   return <>{children}</>;
 };
 
@@ -94,6 +109,7 @@ function App() {
               <Route path="/onboarding" element={<OnboardingFlow />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />
+              <Route path="/subscription-ended" element={<SubscriptionEnded />} />
 
               {/* Protected routes - require authentication */}
               <Route path="/app" element={
@@ -161,11 +177,7 @@ function App() {
                   <MyAccount />
                 </ProtectedRoute>
               } />
-              <Route path="/membership" element={
-                <ProtectedRoute>
-                  <MembershipPage />
-                </ProtectedRoute>
-              } />
+              <Route path="/membership" element={<MembershipPage />} />
               <Route path="/help" element={
                 <ProtectedRoute>
                   <Help />
