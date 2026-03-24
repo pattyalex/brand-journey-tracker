@@ -122,6 +122,55 @@ export function useMyAccount() {
     if (deleteEmailInput.trim().toLowerCase() !== email.trim().toLowerCase()) return;
     setDeletingAccount(true);
     try {
+      // Send deletion emails BEFORE deleting the account
+      const firstName = name ? name.split(' ')[0] : 'there';
+      try {
+        // Email to the user
+        await fetch('http://localhost:3001/api/send-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            to: email,
+            subject: 'Your HeyMeg account has been deleted',
+            html: `
+              <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+                <h1 style="color: #1a1a1a; font-size: 28px; margin-bottom: 8px;">Account Deleted</h1>
+                <p style="color: #555; font-size: 16px; line-height: 1.6;">Hi ${firstName},</p>
+                <p style="color: #555; font-size: 16px; line-height: 1.6;">Your HeyMeg account and all associated data have been permanently deleted as requested.</p>
+                <p style="color: #555; font-size: 16px; line-height: 1.6;">We're sorry to see you go. If you ever want to come back, you're always welcome to create a new account at <strong>heymeg.ai</strong>.</p>
+                <p style="color: #555; font-size: 16px; line-height: 1.6;">Thank you for being part of HeyMeg.</p>
+                <p style="color: #555; font-size: 16px; line-height: 1.6;">— The HeyMeg Team</p>
+                <p style="color: #999; font-size: 12px; line-height: 1.4; margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px;">This is an automated message. Please do not reply to this email. If you need help, contact us at contact@heymeg.ai.</p>
+              </div>
+            `,
+          }),
+        });
+        // Email to Patricia (admin notification)
+        await fetch('http://localhost:3001/api/send-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            to: 'contact@heymeg.ai',
+            subject: `Account Deleted: ${name || 'Unknown'} (${email})`,
+            html: `
+              <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+                <h1 style="color: #1a1a1a; font-size: 28px; margin-bottom: 8px;">User Account Deleted</h1>
+                <p style="color: #555; font-size: 16px; line-height: 1.6;">A user has deleted their HeyMeg account.</p>
+                <table style="border-collapse: collapse; margin: 20px 0;">
+                  <tr><td style="padding: 8px 16px; font-weight: bold; color: #333;">Name:</td><td style="padding: 8px 16px; color: #555;">${name || 'N/A'}</td></tr>
+                  <tr><td style="padding: 8px 16px; font-weight: bold; color: #333;">Email:</td><td style="padding: 8px 16px; color: #555;">${email}</td></tr>
+                  <tr><td style="padding: 8px 16px; font-weight: bold; color: #333;">User ID:</td><td style="padding: 8px 16px; color: #555;">${user?.id || 'N/A'}</td></tr>
+                  <tr><td style="padding: 8px 16px; font-weight: bold; color: #333;">Deleted at:</td><td style="padding: 8px 16px; color: #555;">${new Date().toLocaleString()}</td></tr>
+                </table>
+              </div>
+            `,
+          }),
+        });
+      } catch (emailErr) {
+        console.error('Error sending deletion emails:', emailErr);
+        // Continue with deletion even if emails fail
+      }
+
       if (user?.id) {
         await supabase.from('profiles').delete().eq('id', user?.id);
         await supabase.from('users').delete().eq('id', user?.id);
