@@ -1,11 +1,12 @@
 /**
  * Centralized Claude API service.
- * All calls to the Anthropic Messages API go through here.
+ * All calls go through the server-side proxy at /api/claude
+ * to keep the API key secure.
  */
 
-const API_URL = "https://api.anthropic.com/v1/messages";
+import { supabase } from '@/lib/supabase';
+
 const DEFAULT_MODEL = "claude-haiku-4-5-20251001";
-const ANTHROPIC_VERSION = "2023-06-01";
 
 export interface ClaudeMessage {
   role: "user" | "assistant";
@@ -26,23 +27,22 @@ export interface ClaudeResponse {
 }
 
 /**
- * Call the Claude API with a system prompt and messages.
+ * Call the Claude API through the server-side proxy.
  * Returns { ok, text, error }.
  */
 export async function callClaudeAPI(options: ClaudeRequestOptions): Promise<ClaudeResponse> {
-  const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    return { ok: false, text: "", error: "API key not configured" };
-  }
-
   try {
-    const response = await fetch(API_URL, {
+    // Get the current session token for auth
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      return { ok: false, text: "", error: "Not authenticated" };
+    }
+
+    const response = await fetch("http://localhost:3001/api/claude", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": ANTHROPIC_VERSION,
-        "anthropic-dangerous-direct-browser-access": "true",
+        "Authorization": `Bearer ${session.access_token}`,
       },
       body: JSON.stringify({
         model: options.model ?? DEFAULT_MODEL,
@@ -56,7 +56,7 @@ export async function callClaudeAPI(options: ClaudeRequestOptions): Promise<Clau
 
     if (!response.ok) {
       console.error("Claude API error:", data);
-      const errorMessage = data.error?.message || "Unknown error";
+      const errorMessage = data.error?.message || data.error || "Unknown error";
       return { ok: false, text: "", error: errorMessage };
     }
 

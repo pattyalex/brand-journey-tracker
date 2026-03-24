@@ -61,6 +61,47 @@ async function verifySupabaseAuth(req, res, next) {
   next();
 }
 
+// ============================================================
+// CLAUDE API PROXY (keeps API key server-side only)
+// ============================================================
+app.post('/api/claude', verifySupabaseAuth, async (req, res) => {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    return res.status(500).json({ error: 'Anthropic API key not configured' });
+  }
+
+  try {
+    const { model, max_tokens, system, messages } = req.body;
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: model || 'claude-haiku-4-5-20251001',
+        max_tokens: max_tokens || 800,
+        system,
+        messages,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error('Claude API error:', data);
+      return res.status(response.status).json(data);
+    }
+
+    res.json(data);
+  } catch (err) {
+    console.error('Claude proxy error:', err);
+    res.status(500).json({ error: 'Failed to call Claude API' });
+  }
+});
+
 // Create customer endpoint
 app.post('/api/create-customer', verifySupabaseAuth, async (req, res) => {
   try {
@@ -352,7 +393,7 @@ async function captureScreenshot(url, contentType) {
 app.post('/api/analyze-content', async (req, res) => {
   try {
     const { contentUrl, contentType, imageData: providedImageData, mediaType: providedMediaType, directUrl } = req.body;
-    const apiKey = process.env.VITE_ANTHROPIC_API_KEY;
+    const apiKey = process.env.ANTHROPIC_API_KEY;
 
     if (!apiKey || apiKey === 'your_claude_api_key_here') {
       return res.status(400).json({ error: 'Claude API key not configured' });
@@ -493,7 +534,7 @@ CRITICAL INSTRUCTIONS:
 app.post('/api/generate-ideas', async (req, res) => {
   try {
     const { prompt } = req.body;
-    const apiKey = process.env.VITE_ANTHROPIC_API_KEY;
+    const apiKey = process.env.ANTHROPIC_API_KEY;
 
     if (!apiKey || apiKey === 'your_claude_api_key_here') {
       return res.status(400).json({ error: 'Claude API key not configured' });
@@ -538,7 +579,7 @@ app.post('/api/generate-ideas', async (req, res) => {
 app.post('/api/generate-subcategories', async (req, res) => {
   try {
     const { pillarName } = req.body;
-    const apiKey = process.env.ANTHROPIC_API_KEY || process.env.VITE_ANTHROPIC_API_KEY;
+    const apiKey = process.env.ANTHROPIC_API_KEY;
 
     if (!apiKey || apiKey === 'your_anthropic_api_key') {
       return res.status(400).json({ error: 'Anthropic API key not configured' });
@@ -617,7 +658,7 @@ Return JSON array only.`
 app.post('/api/generate-content-ideas', async (req, res) => {
   try {
     const { pillarName, subCategory } = req.body;
-    const apiKey = process.env.ANTHROPIC_API_KEY || process.env.VITE_ANTHROPIC_API_KEY;
+    const apiKey = process.env.ANTHROPIC_API_KEY;
 
     if (!apiKey || apiKey === 'your_anthropic_api_key') {
       return res.status(400).json({ error: 'Anthropic API key not configured' });
@@ -698,7 +739,7 @@ app.post('/api/suggest-shots', async (req, res) => {
   try {
     const { sceneTitle, sceneVisualNotes, scriptExcerpt, format, platform, shotTemplates, apiKey: clientApiKey } = req.body;
     // Use client-provided API key first, fallback to environment variable
-    const apiKey = clientApiKey || process.env.VITE_ANTHROPIC_API_KEY;
+    const apiKey = process.env.ANTHROPIC_API_KEY;
 
     if (!apiKey || apiKey === 'your_claude_api_key_here') {
       return res.status(400).json({ error: 'Claude API key not configured' });
@@ -814,7 +855,7 @@ app.post('/api/generate-storyboard', async (req, res) => {
   try {
     const { script, format, platform, shotTemplates, apiKey: clientApiKey } = req.body;
     // Use client-provided API key first, fallback to environment variable
-    const apiKey = clientApiKey || process.env.VITE_ANTHROPIC_API_KEY;
+    const apiKey = process.env.ANTHROPIC_API_KEY;
 
     if (!apiKey || apiKey === 'your_claude_api_key_here') {
       return res.status(400).json({ error: 'Claude API key not configured' });
