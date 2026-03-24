@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Loader2, CreditCard, Calendar, AlertCircle } from 'lucide-react';
+import { Loader2, CreditCard, Calendar, AlertCircle, ArrowLeft, ExternalLink } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { useNavigate } from 'react-router-dom';
 
 interface SubscriptionData {
   stripe_customer_id: string | null;
@@ -17,6 +16,7 @@ interface SubscriptionData {
 
 export const MembershipPage: React.FC = () => {
   const { user, isAuthLoaded } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [subscriptionData, setSubscriptionData] = useState<SubscriptionData | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
@@ -49,7 +49,6 @@ export const MembershipPage: React.FC = () => {
       if (error) {
         console.error('Error fetching subscription data:', error);
       } else {
-        console.log('Subscription data from Supabase:', data);
         setSubscriptionData(data);
       }
     } catch (err) {
@@ -67,23 +66,17 @@ export const MembershipPage: React.FC = () => {
 
     setLoading(true);
     try {
-      // Fetch fresh subscription data from Stripe via our API
       const response = await fetch('http://localhost:3001/api/get-subscription', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          customerId: subscriptionData.stripe_customer_id
-        })
+        body: JSON.stringify({ customerId: subscriptionData.stripe_customer_id })
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch subscription from Stripe');
-      }
+      if (!response.ok) throw new Error('Failed to fetch subscription from Stripe');
 
       const { subscription } = await response.json();
 
       if (subscription) {
-        // Update Supabase with the subscription data
         const { error: updateError } = await supabase
           .from('profiles')
           .update({
@@ -98,7 +91,6 @@ export const MembershipPage: React.FC = () => {
           .eq('id', user?.id);
 
         if (updateError) {
-          console.error('Failed to update profile:', updateError);
           alert('Failed to sync subscription data');
         } else {
           alert('Subscription synced successfully!');
@@ -116,7 +108,6 @@ export const MembershipPage: React.FC = () => {
   const handleManageBilling = async () => {
     setPortalLoading(true);
     try {
-      // Create a Stripe billing portal session
       const response = await fetch('http://localhost:3001/api/create-portal-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -126,9 +117,7 @@ export const MembershipPage: React.FC = () => {
         })
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to create portal session');
-      }
+      if (!response.ok) throw new Error('Failed to create portal session');
 
       const { url } = await response.json();
       window.location.href = url;
@@ -136,67 +125,6 @@ export const MembershipPage: React.FC = () => {
       console.error('Error opening billing portal:', error);
       alert('Failed to open billing portal. Please try again.');
       setPortalLoading(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="flex flex-col items-center justify-center p-8 space-y-4">
-        <h2 className="text-xl font-semibold">Log in to manage your membership</h2>
-        <p className="text-muted-foreground">Please log in to view your subscription details or resubscribe.</p>
-        <a href="/login" className="py-3 px-6 rounded-lg bg-purple-600 text-white font-medium hover:opacity-90 transition-opacity">
-          Log in
-        </a>
-      </div>
-    );
-  }
-
-  if (!subscriptionData?.stripe_subscription_id || subscriptionData?.subscription_status === 'canceled') {
-    const isCancelled = subscriptionData?.subscription_status === 'canceled' || subscriptionData?.stripe_customer_id;
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>{isCancelled ? 'Subscription Ended' : 'No Active Subscription'}</CardTitle>
-          <CardDescription>
-            {isCancelled
-              ? 'Your subscription has been cancelled. Your data is being kept for 90 days.'
-              : 'You don\'t have an active subscription yet.'}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <p className="text-sm text-muted-foreground">
-            {isCancelled
-              ? 'Resubscribe to regain access to all your content and features.'
-              : 'Start your 14-day free trial to access all features.'}
-          </p>
-          <Button onClick={() => window.location.href = '/onboarding?step=payment-setup'} className="w-full">
-            {isCancelled ? 'Resubscribe' : 'Start Free Trial'}
-          </Button>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  const getStatusBadge = (status: string | null) => {
-    switch (status) {
-      case 'active':
-        return <Badge className="bg-green-500">Active</Badge>;
-      case 'trialing':
-        return <Badge className="bg-blue-500">Trial</Badge>;
-      case 'past_due':
-        return <Badge variant="destructive">Past Due</Badge>;
-      case 'canceled':
-        return <Badge variant="secondary">Canceled</Badge>;
-      default:
-        return <Badge variant="outline">{status || 'Unknown'}</Badge>;
     }
   };
 
@@ -209,103 +137,320 @@ export const MembershipPage: React.FC = () => {
     });
   };
 
-  return (
-    <div className="space-y-6 max-w-2xl">
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Subscription Details</CardTitle>
-              <CardDescription>Manage your billing and subscription</CardDescription>
-            </div>
-            {getStatusBadge(subscriptionData.subscription_status)}
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Current Plan */}
-          <div className="flex items-start gap-4">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <CreditCard className="h-5 w-5 text-primary" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium">Current Plan</p>
-              <p className="text-lg font-semibold capitalize">
-                {subscriptionData.plan_type === 'annual' ? 'Annual Plan' : 'Monthly Plan'}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {subscriptionData.plan_type === 'annual'
-                  ? '$168/year ($14/month)'
-                  : '$17/month'}
-              </p>
-            </div>
-          </div>
+  const getStatusConfig = (status: string | null) => {
+    switch (status) {
+      case 'active':
+        return { label: 'Active', bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500' };
+      case 'trialing':
+        return { label: 'Trial', bg: 'bg-blue-50', text: 'text-blue-700', dot: 'bg-blue-500' };
+      case 'past_due':
+        return { label: 'Past Due', bg: 'bg-red-50', text: 'text-red-700', dot: 'bg-red-500' };
+      case 'canceled':
+        return { label: 'Cancelled', bg: 'bg-gray-100', text: 'text-gray-600', dot: 'bg-gray-400' };
+      default:
+        return { label: status || 'Unknown', bg: 'bg-gray-100', text: 'text-gray-600', dot: 'bg-gray-400' };
+    }
+  };
 
-          {/* Trial Information */}
-          {subscriptionData.is_on_trial && subscriptionData.trial_ends_at && (
-            <div className="flex items-start gap-4 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
-              <AlertCircle className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
-              <div className="flex-1">
-                <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
-                  Trial Period Active
-                </p>
-                <p className="text-sm text-blue-700 dark:text-blue-300">
-                  Your trial ends on {formatDate(subscriptionData.trial_ends_at)}.
-                  You won't be charged until then.
-                </p>
-              </div>
-            </div>
-          )}
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#f9f7f5' }}>
+        <Loader2 className="h-8 w-8 animate-spin" style={{ color: '#612a4f' }} />
+      </div>
+    );
+  }
 
-          {/* Billing Period */}
-          {subscriptionData.trial_ends_at && !subscriptionData.is_on_trial && (
-            <div className="flex items-start gap-4">
-              <div className="p-2 bg-muted rounded-lg">
-                <Calendar className="h-5 w-5 text-muted-foreground" />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium">Next Billing Date</p>
-                <p className="text-sm text-muted-foreground">
-                  {formatDate(subscriptionData.trial_ends_at)}
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Manage Billing Button */}
-          <div className="pt-4 border-t">
-            <Button
-              onClick={handleManageBilling}
-              disabled={portalLoading}
-              className="w-full"
+  // Not logged in
+  if (!user) {
+    return (
+      <div className="min-h-screen" style={{ background: '#f9f7f5', fontFamily: "'DM Sans', sans-serif" }}>
+        <div
+          className="relative overflow-hidden"
+          style={{ background: 'linear-gradient(135deg, #7a3868 0%, #612a4f 50%, #4e2040 100%)' }}
+        >
+          <div className="max-w-2xl mx-auto px-6 md:px-8 py-12 md:py-16 text-center">
+            <h1
+              className="text-3xl md:text-4xl text-white mb-3"
+              style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
             >
-              {portalLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Opening Billing Portal...
-                </>
-              ) : (
-                'Manage Billing & Payment Methods'
-              )}
-            </Button>
-            <p className="text-xs text-muted-foreground mt-2 text-center">
-              Update payment method, view invoices, or cancel subscription
+              Membership
+            </h1>
+            <p className="text-white/60 text-sm">Manage your HeyMeg subscription</p>
+          </div>
+        </div>
+        <div className="max-w-md mx-auto px-6 md:px-8 py-12 text-center">
+          <div
+            className="bg-white/80 rounded-[20px] p-8"
+            style={{
+              boxShadow: '0 4px 24px rgba(45, 42, 38, 0.04)',
+              border: '1px solid rgba(139, 115, 130, 0.06)',
+            }}
+          >
+            <div className="w-14 h-14 rounded-2xl mx-auto mb-5 flex items-center justify-center" style={{ background: 'rgba(97, 42, 79, 0.08)' }}>
+              <CreditCard className="w-6 h-6" style={{ color: '#612a4f' }} />
+            </div>
+            <h2
+              className="text-xl mb-2"
+              style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600, color: '#2d2a26' }}
+            >
+              Log in to continue
+            </h2>
+            <p className="text-sm mb-6" style={{ color: '#8B7082' }}>
+              Please log in to view your subscription details or resubscribe.
+            </p>
+            <a
+              href="/login"
+              className="inline-block w-full py-3 px-6 rounded-xl text-white font-medium text-sm transition-opacity hover:opacity-90"
+              style={{ background: 'linear-gradient(135deg, #7a3868 0%, #612a4f 50%, #4e2040 100%)' }}
+            >
+              Log in
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // No subscription or cancelled
+  if (!subscriptionData?.stripe_subscription_id || subscriptionData?.subscription_status === 'canceled') {
+    const isCancelled = subscriptionData?.subscription_status === 'canceled' || !!subscriptionData?.stripe_customer_id;
+    return (
+      <div className="min-h-screen" style={{ background: '#f9f7f5', fontFamily: "'DM Sans', sans-serif" }}>
+        <div
+          className="relative overflow-hidden"
+          style={{ background: 'linear-gradient(135deg, #7a3868 0%, #612a4f 50%, #4e2040 100%)' }}
+        >
+          <div className="max-w-2xl mx-auto px-6 md:px-8 py-12 md:py-16 text-center">
+            <h1
+              className="text-3xl md:text-4xl text-white mb-3"
+              style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
+            >
+              {isCancelled ? 'Welcome Back' : 'Get Started'}
+            </h1>
+            <p className="text-white/60 text-sm">
+              {isCancelled
+                ? 'Your data is safe and waiting for you'
+                : 'Start your journey with HeyMeg'}
             </p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+        <div className="max-w-md mx-auto px-6 md:px-8 py-12">
+          <div
+            className="bg-white/80 rounded-[20px] p-8 text-center"
+            style={{
+              boxShadow: '0 4px 24px rgba(45, 42, 38, 0.04)',
+              border: '1px solid rgba(139, 115, 130, 0.06)',
+            }}
+          >
+            <div className="w-14 h-14 rounded-2xl mx-auto mb-5 flex items-center justify-center" style={{ background: isCancelled ? 'rgba(97, 42, 79, 0.08)' : 'rgba(97, 42, 79, 0.08)' }}>
+              {isCancelled
+                ? <AlertCircle className="w-6 h-6" style={{ color: '#612a4f' }} />
+                : <CreditCard className="w-6 h-6" style={{ color: '#612a4f' }} />
+              }
+            </div>
+            <h2
+              className="text-xl mb-2"
+              style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600, color: '#2d2a26' }}
+            >
+              {isCancelled ? 'Subscription Ended' : 'No Active Subscription'}
+            </h2>
+            <p className="text-sm mb-2" style={{ color: '#8B7082' }}>
+              {isCancelled
+                ? 'Your subscription has been cancelled. Your data is being securely retained for 90 days.'
+                : 'You don\'t have an active subscription yet.'}
+            </p>
+            <p className="text-sm mb-6" style={{ color: '#4d3e48' }}>
+              {isCancelled
+                ? 'Resubscribe to regain access to all your content and features.'
+                : 'Start your 14-day free trial to access all features.'}
+            </p>
+            <button
+              onClick={() => window.location.href = '/onboarding?step=payment-setup'}
+              className="w-full py-3 px-6 rounded-xl text-white font-medium text-sm transition-opacity hover:opacity-90"
+              style={{ background: 'linear-gradient(135deg, #7a3868 0%, #612a4f 50%, #4e2040 100%)' }}
+            >
+              {isCancelled ? 'Resubscribe' : 'Start Free Trial'}
+            </button>
+            <p className="text-xs mt-5" style={{ color: '#8B7082' }}>
+              Questions? Reach out to us at{' '}
+              <a href="mailto:contact@heymeg.ai" className="underline hover:no-underline" style={{ color: '#612a4f' }}>
+                contact@heymeg.ai
+              </a>
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-      {/* Additional Information */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Need Help?</CardTitle>
-        </CardHeader>
-        <CardContent className="text-sm text-muted-foreground">
-          <p>
-            If you have any questions about your subscription or need assistance,
-            please contact our support team.
+  // Active subscription view
+  const statusConfig = getStatusConfig(subscriptionData.subscription_status);
+
+  return (
+    <div className="min-h-screen" style={{ background: '#f9f7f5', fontFamily: "'DM Sans', sans-serif" }}>
+      {/* Header */}
+      <div
+        className="relative overflow-hidden"
+        style={{ background: 'linear-gradient(135deg, #7a3868 0%, #612a4f 50%, #4e2040 100%)' }}
+      >
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: `
+              radial-gradient(ellipse 60% 50% at 20% 80%, rgba(139, 106, 126, 0.3) 0%, transparent 60%),
+              radial-gradient(ellipse 40% 60% at 80% 20%, rgba(97, 42, 79, 0.2) 0%, transparent 60%)
+            `,
+          }}
+        />
+        <div className="max-w-2xl mx-auto px-6 md:px-8 py-12 md:py-16 relative z-10">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 text-white/60 hover:text-white/90 transition-colors mb-8 text-sm"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back
+          </button>
+          <h1
+            className="text-3xl md:text-4xl text-white mb-3"
+            style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
+          >
+            Membership
+          </h1>
+          <p className="text-white/60 text-sm">Manage your subscription and billing</p>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="max-w-2xl mx-auto px-6 md:px-8 py-10 md:py-14 space-y-6">
+
+        {/* Subscription Details Card */}
+        <section
+          className="bg-white/80 rounded-[20px] p-6 md:p-8"
+          style={{
+            boxShadow: '0 4px 24px rgba(45, 42, 38, 0.04)',
+            border: '1px solid rgba(139, 115, 130, 0.06)',
+          }}
+        >
+          <div className="flex items-center justify-between mb-6">
+            <h2
+              className="text-lg"
+              style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600, color: '#2d2a26' }}
+            >
+              Subscription Details
+            </h2>
+            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${statusConfig.bg} ${statusConfig.text}`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${statusConfig.dot}`} />
+              {statusConfig.label}
+            </span>
+          </div>
+
+          <div className="space-y-5">
+            {/* Current Plan */}
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(97, 42, 79, 0.08)' }}>
+                <CreditCard className="w-5 h-5" style={{ color: '#612a4f' }} />
+              </div>
+              <div className="flex-1">
+                <p className="text-xs font-medium uppercase tracking-wide" style={{ color: '#8B7082' }}>Current Plan</p>
+                <p className="text-base font-semibold capitalize" style={{ color: '#2d2a26' }}>
+                  {subscriptionData.plan_type === 'annual' ? 'Annual Plan' : 'Monthly Plan'}
+                </p>
+              </div>
+              <p className="text-sm font-semibold" style={{ color: '#2d2a26' }}>
+                {subscriptionData.plan_type === 'annual' ? '$168/year' : '$17/month'}
+              </p>
+            </div>
+
+            {/* Trial Info */}
+            {subscriptionData.is_on_trial && subscriptionData.trial_ends_at && (
+              <div
+                className="flex items-center gap-4 p-4 rounded-xl"
+                style={{
+                  background: 'linear-gradient(145deg, rgba(59, 130, 246, 0.06) 0%, rgba(59, 130, 246, 0.03) 100%)',
+                  border: '1px solid rgba(59, 130, 246, 0.1)',
+                }}
+              >
+                <AlertCircle className="w-5 h-5 text-blue-500 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-blue-900">Trial Active</p>
+                  <p className="text-xs text-blue-700">
+                    Your trial ends on {formatDate(subscriptionData.trial_ends_at)}. You won't be charged until then.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Next Billing Date */}
+            {subscriptionData.trial_ends_at && !subscriptionData.is_on_trial && (
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(97, 42, 79, 0.08)' }}>
+                  <Calendar className="w-5 h-5" style={{ color: '#612a4f' }} />
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs font-medium uppercase tracking-wide" style={{ color: '#8B7082' }}>Next Billing Date</p>
+                  <p className="text-sm font-medium" style={{ color: '#2d2a26' }}>
+                    {formatDate(subscriptionData.trial_ends_at)}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Manage Billing Card */}
+        <section
+          className="bg-white/80 rounded-[20px] p-6 md:p-8"
+          style={{
+            boxShadow: '0 4px 24px rgba(45, 42, 38, 0.04)',
+            border: '1px solid rgba(139, 115, 130, 0.06)',
+          }}
+        >
+          <h2
+            className="text-lg mb-2"
+            style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600, color: '#2d2a26' }}
+          >
+            Billing
+          </h2>
+          <p className="text-sm mb-5" style={{ color: '#8B7082' }}>
+            Update your payment method, view invoices, or manage your subscription.
           </p>
-        </CardContent>
-      </Card>
+          <button
+            onClick={handleManageBilling}
+            disabled={portalLoading}
+            className="w-full py-3 px-6 rounded-xl text-white font-medium text-sm transition-opacity hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
+            style={{ background: 'linear-gradient(135deg, #7a3868 0%, #612a4f 50%, #4e2040 100%)' }}
+          >
+            {portalLoading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Opening Billing Portal...
+              </>
+            ) : (
+              <>
+                Manage Billing
+                <ExternalLink className="w-4 h-4" />
+              </>
+            )}
+          </button>
+        </section>
+
+        {/* Help Card */}
+        <section
+          className="rounded-[20px] p-6 md:p-8"
+          style={{
+            background: 'linear-gradient(145deg, rgba(97, 42, 79, 0.06) 0%, rgba(139, 106, 126, 0.03) 100%)',
+            border: '1px solid rgba(139, 115, 130, 0.08)',
+          }}
+        >
+          <p className="text-sm" style={{ color: '#8B7082' }}>
+            Need help with your subscription? Contact us at{' '}
+            <a href="mailto:contact@heymeg.ai" className="font-medium hover:underline" style={{ color: '#612a4f' }}>
+              contact@heymeg.ai
+            </a>
+          </p>
+        </section>
+      </div>
     </div>
   );
 };
