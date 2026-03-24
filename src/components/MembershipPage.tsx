@@ -159,28 +159,27 @@ export const MembershipPage: React.FC = () => {
     );
   }
 
-  if (!subscriptionData?.stripe_subscription_id) {
+  if (!subscriptionData?.stripe_subscription_id || subscriptionData?.subscription_status === 'canceled') {
+    const isCancelled = subscriptionData?.subscription_status === 'canceled' || subscriptionData?.stripe_customer_id;
     return (
       <Card>
         <CardHeader>
-          <CardTitle>No Active Subscription</CardTitle>
-          <CardDescription>You don't have an active subscription yet.</CardDescription>
+          <CardTitle>{isCancelled ? 'Subscription Ended' : 'No Active Subscription'}</CardTitle>
+          <CardDescription>
+            {isCancelled
+              ? 'Your subscription has been cancelled. Your data is being kept for 90 days.'
+              : 'You don\'t have an active subscription yet.'}
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           <p className="text-sm text-muted-foreground">
-            Start your 14-day free trial to access all features.
+            {isCancelled
+              ? 'Resubscribe to regain access to all your content and features.'
+              : 'Start your 14-day free trial to access all features.'}
           </p>
           <Button onClick={() => window.location.href = '/onboarding?step=payment-setup'} className="w-full">
-            Start Free Trial
+            {isCancelled ? 'Resubscribe' : 'Start Free Trial'}
           </Button>
-          {subscriptionData?.stripe_customer_id && (
-            <>
-              <p className="text-xs text-muted-foreground text-center">or</p>
-              <Button onClick={syncSubscriptionFromStripe} variant="outline" className="w-full">
-                Sync from Stripe
-              </Button>
-            </>
-          )}
         </CardContent>
       </Card>
     );
