@@ -7,7 +7,7 @@ import { StorageKeys, getString, setString } from "@/lib/storage";
 
 export function useMyAccount() {
   const navigate = useNavigate();
-  const { user, openLoginModal, logout } = useAuth();
+  const { user, session, openLoginModal, logout } = useAuth();
 
   // Profile state
   const [name, setName] = useState('');
@@ -25,7 +25,7 @@ export function useMyAccount() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [changingPassword, setChangingPassword] = useState(false);
   const [updatingProfile, setUpdatingProfile] = useState(false);
-  const justSavedRef = useRef(false);
+  const hasLoadedRef = useRef(false);
 
   // Preferences state
   const [selectedTimezone, setSelectedTimezone] = useState(() => {
@@ -35,53 +35,63 @@ export function useMyAccount() {
     return getString(StorageKeys.firstDayOfWeek) || 'sunday';
   });
 
+  // Load profile data ONCE when user becomes available.
+  // Do NOT re-run on tab switches or token refreshes.
   useEffect(() => {
-    // Skip re-fetching if we just saved — the local state already has the correct values
-    if (justSavedRef.current) {
-      justSavedRef.current = false;
-      return;
-    }
+    if (!user || hasLoadedRef.current) return;
 
     const loadUserData = async () => {
       setLoading(true);
       try {
-        if (user) {
-          // Use auth context user (already loaded, no extra API call)
-          const meta = user.user_metadata || {};
-          const authName = meta.full_name || meta.name || '';
-          const authEmail = user.email || '';
+        const meta = user.user_metadata || {};
+        const authName = meta.full_name || meta.name || '';
+        const authEmail = user.email || '';
 
-          // Also check profiles table for the most complete data
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('full_name, email')
-            .eq('id', user.id)
-            .single();
+        const accessToken = session?.access_token;
+        let profileName = '';
+        let profileEmail = '';
 
-          setName(profile?.full_name || authName || '');
-          setEmail(profile?.email || authEmail || '');
+        if (accessToken) {
+          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+          const res = await fetch(
+            `${supabaseUrl}/rest/v1/profiles?id=eq.${user.id}&select=full_name,email`,
+            {
+              headers: {
+                'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+                'Authorization': `Bearer ${accessToken}`,
+              },
+            }
+          );
+          if (res.ok) {
+            const rows = await res.json();
+            if (rows.length > 0) {
+              profileName = rows[0].full_name || '';
+              profileEmail = rows[0].email || '';
+            }
+          }
         }
+
+        setName(profileName || authName || '');
+        setEmail(profileEmail || authEmail || '');
+        hasLoadedRef.current = true;
       } catch (error) {
         console.error('Error loading user data:', error);
-        // Still populate from auth context even if profiles query fails
-        if (user) {
-          const meta = user.user_metadata || {};
-          setName(meta.full_name || meta.name || '');
-          setEmail(user.email || '');
-        }
+        const meta = user.user_metadata || {};
+        setName(meta.full_name || meta.name || '');
+        setEmail(user.email || '');
+        hasLoadedRef.current = true;
       } finally {
         setLoading(false);
       }
     };
 
     loadUserData();
-  }, [user]);
+  }, [user, session]);
 
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
     setUpdatingProfile(true);
-    justSavedRef.current = true;
 
     try {
       const updateFields: Record<string, string> = { full_name: name };
@@ -90,7 +100,6 @@ export function useMyAccount() {
       // Bypass the Supabase JS client entirely — its internal auth lock is
       // corrupted and causes all requests to hang. Use a direct REST call.
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const session = (await supabase.auth.getSession()).data.session;
       const accessToken = session?.access_token;
 
       if (!accessToken) {
@@ -116,9 +125,30 @@ export function useMyAccount() {
         throw new Error(`${res.status}: ${errBody}`);
       }
 
-      toast.success('Profile updated successfully');
+      // If email changed, also update Supabase Auth so password resets
+      // and login use the new email. This sends a confirmation to the new email.
+      if (email && email !== user.email) {
+        const authRes = await fetch(
+          `${supabaseUrl}/auth/v1/user`,
+          {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+              'Authorization': `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify({ email }),
+          }
+        );
+        if (authRes.ok) {
+          toast.success('Profile updated. Check your new email to confirm the address change.');
+        } else {
+          toast.success('Profile updated, but email change needs confirmation — check your inbox.');
+        }
+      } else {
+        toast.success('Profile updated successfully');
+      }
     } catch (error) {
-      justSavedRef.current = false;
       console.error('Error updating profile:', error);
       toast.error('Failed to update profile');
     } finally {
