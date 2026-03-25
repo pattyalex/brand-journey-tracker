@@ -125,9 +125,16 @@ export function useMyAccount() {
         throw new Error(`${res.status}: ${errBody}`);
       }
 
-      // If email changed, also update Supabase Auth so password resets
-      // and login use the new email. This sends a confirmation to the new email.
+      // Update auth.users metadata (name and/or email)
+      const authUpdateBody: Record<string, any> = {};
+      if (name !== (user.user_metadata?.full_name || user.user_metadata?.name || '')) {
+        authUpdateBody.data = { full_name: name };
+      }
       if (email && email !== user.email) {
+        authUpdateBody.email = email;
+      }
+
+      if (Object.keys(authUpdateBody).length > 0) {
         const authRes = await fetch(
           `${supabaseUrl}/auth/v1/user`,
           {
@@ -137,13 +144,17 @@ export function useMyAccount() {
               'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
               'Authorization': `Bearer ${accessToken}`,
             },
-            body: JSON.stringify({ email }),
+            body: JSON.stringify(authUpdateBody),
           }
         );
-        if (authRes.ok) {
-          toast.success('Profile updated. Check your new email to confirm the address change.');
+        if (authUpdateBody.email) {
+          if (authRes.ok) {
+            toast.success('Profile updated. Check your new email to confirm the address change.');
+          } else {
+            toast.success('Profile updated, but email change needs confirmation — check your inbox.');
+          }
         } else {
-          toast.success('Profile updated, but email change needs confirmation — check your inbox.');
+          toast.success('Profile updated successfully');
         }
       } else {
         toast.success('Profile updated successfully');
