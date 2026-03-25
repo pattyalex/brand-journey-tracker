@@ -1,6 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { addDays, format } from "date-fns";
-import { Lightbulb, X, Clock, FileText, GripHorizontal, ListTodo, Check, Calendar, ExternalLink } from "lucide-react";
+import { Lightbulb, X, Clock, FileText, GripHorizontal, ListTodo, Check, Calendar, ExternalLink, MapPin, Pencil } from "lucide-react";
 import { SiInstagram, SiTiktok, SiYoutube, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
 import { CardContent } from "@/components/ui/card";
@@ -47,7 +47,31 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
     connection: googleConnection,
     events: googleEvents,
     fetchEvents: fetchGoogleEvents,
+    createEvent: createGoogleEvent,
+    updateEvent: updateGoogleEvent,
   } = useGoogleCalendar();
+
+  // Google Calendar event dialog state
+  const [googleEventDialog, setGoogleEventDialog] = useState<{
+    open: boolean;
+    mode: 'create' | 'edit';
+    eventId?: string;
+    title: string;
+    description: string;
+    location: string;
+    startTime: string;
+    endTime: string;
+    isAllDay: boolean;
+  }>({
+    open: false,
+    mode: 'create',
+    title: '',
+    description: '',
+    location: '',
+    startTime: '',
+    endTime: '',
+    isAllDay: false,
+  });
 
   const {
     selectedDate,
@@ -122,6 +146,59 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
   const googleEventsForToday = googleConnection.showEvents && showTasks
     ? googleEvents.filter(e => e.date === todayString)
     : [];
+
+  const openGoogleEventCreate = (defaultStart?: string, defaultEnd?: string) => {
+    setGoogleEventDialog({
+      open: true,
+      mode: 'create',
+      title: '',
+      description: '',
+      location: '',
+      startTime: defaultStart || '09:00',
+      endTime: defaultEnd || '10:00',
+      isAllDay: false,
+    });
+  };
+
+  const openGoogleEventEdit = (gEvent: typeof googleEventsForToday[0]) => {
+    setGoogleEventDialog({
+      open: true,
+      mode: 'edit',
+      eventId: gEvent.id,
+      title: gEvent.title,
+      description: gEvent.description || '',
+      location: gEvent.location || '',
+      startTime: gEvent.startTime || '09:00',
+      endTime: gEvent.endTime || '10:00',
+      isAllDay: gEvent.isAllDay,
+    });
+  };
+
+  const handleSaveGoogleEvent = async () => {
+    const dateStr = format(selectedDate, 'yyyy-MM-dd');
+    if (googleEventDialog.mode === 'create') {
+      await createGoogleEvent({
+        summary: googleEventDialog.title,
+        description: googleEventDialog.description,
+        location: googleEventDialog.location,
+        date: dateStr,
+        startTime: googleEventDialog.startTime,
+        endTime: googleEventDialog.endTime,
+        isAllDay: googleEventDialog.isAllDay,
+      });
+    } else if (googleEventDialog.eventId) {
+      await updateGoogleEvent(googleEventDialog.eventId, {
+        summary: googleEventDialog.title,
+        description: googleEventDialog.description,
+        location: googleEventDialog.location,
+        date: dateStr,
+        startTime: googleEventDialog.startTime,
+        endTime: googleEventDialog.endTime,
+        isAllDay: googleEventDialog.isAllDay,
+      });
+    }
+    setGoogleEventDialog(prev => ({ ...prev, open: false }));
+  };
 
   // Debug logging for content rendering
   console.log('TodayView render - todayString:', todayString, 'showContent:', showContent);
@@ -384,9 +461,7 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                 key={`google-${gEvent.id}`}
                 onClick={(e) => {
                   e.stopPropagation();
-                  if (gEvent.htmlLink) {
-                    window.open(gEvent.htmlLink, '_blank');
-                  }
+                  openGoogleEventEdit(gEvent);
                 }}
                 className="absolute rounded-lg px-2 py-1.5 border-l-4 cursor-pointer hover:brightness-95 overflow-hidden group"
                 style={{
@@ -412,9 +487,19 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                       </div>
                     )}
                   </div>
-                  {gEvent.htmlLink && (
-                    <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 flex-shrink-0 transition-opacity" style={{ color: '#4285F4' }} />
-                  )}
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    <Pencil className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: '#4285F4' }} />
+                    {gEvent.htmlLink && (
+                      <ExternalLink
+                        className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity"
+                        style={{ color: '#4285F4' }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.open(gEvent.htmlLink, '_blank');
+                        }}
+                      />
+                    )}
+                  </div>
                 </div>
               </div>
             );
@@ -515,9 +600,9 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
             >
               <GripHorizontal className="w-5 h-5 text-gray-300" />
             </div>
-            {/* Tabs - only show in "both" mode */}
-            {contentDisplayMode === 'both' && (
-              <div className="flex px-6 gap-2 mb-4">
+            {/* Tabs */}
+            {(contentDisplayMode === 'both' || googleConnection.isConnected) && (
+              <div className="flex px-6 gap-2 mb-4 flex-wrap">
                 <button
                   type="button"
                   onClick={() => viewState.setAddDialogTab('task')}
@@ -531,19 +616,37 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                   <ListTodo className="w-4 h-4" />
                   Add Task
                 </button>
-                <button
-                  type="button"
-                  onClick={() => viewState.setAddDialogTab('content')}
-                  className={cn(
-                    "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer select-none",
-                    viewState.addDialogTab === 'content'
-                      ? "bg-[#8B7082] text-white shadow-sm"
-                      : "bg-[#F5F0F3] text-gray-700 hover:bg-[#EDE5EA]"
-                  )}
-                >
-                  <Lightbulb className="w-4 h-4" />
-                  Add Content
-                </button>
+                {contentDisplayMode === 'both' && (
+                  <button
+                    type="button"
+                    onClick={() => viewState.setAddDialogTab('content')}
+                    className={cn(
+                      "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer select-none",
+                      viewState.addDialogTab === 'content'
+                        ? "bg-[#8B7082] text-white shadow-sm"
+                        : "bg-[#F5F0F3] text-gray-700 hover:bg-[#EDE5EA]"
+                    )}
+                  >
+                    <Lightbulb className="w-4 h-4" />
+                    Add Content
+                  </button>
+                )}
+                {googleConnection.isConnected && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      viewState.closeAddDialog();
+                      openGoogleEventCreate(
+                        viewState.taskStartTime || undefined,
+                        viewState.taskEndTime || undefined
+                      );
+                    }}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer select-none bg-[#E8F0FE] text-[#1967D2] hover:bg-[#D2E3FC]"
+                  >
+                    <Calendar className="w-4 h-4" />
+                    Google Event
+                  </button>
+                )}
               </div>
             )}
 
@@ -736,6 +839,118 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
                 </button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Google Calendar Event Dialog */}
+      {googleEventDialog.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/15"
+            onClick={() => setGoogleEventDialog(prev => ({ ...prev, open: false }))}
+          />
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
+            {/* Header */}
+            <div className="px-6 pt-5 pb-3 flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(145deg, #4285f4 0%, #1a73e8 100%)' }}>
+                <Calendar className="w-4 h-4 text-white" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">
+                {googleEventDialog.mode === 'create' ? 'New Google Calendar Event' : 'Edit Google Calendar Event'}
+              </h3>
+            </div>
+
+            <div className="px-6 pb-6 space-y-4">
+              {/* Title */}
+              <div>
+                <input
+                  type="text"
+                  placeholder="Event title"
+                  value={googleEventDialog.title}
+                  onChange={(e) => setGoogleEventDialog(prev => ({ ...prev, title: e.target.value }))}
+                  autoFocus
+                  className="w-full text-lg border-b border-gray-200 pb-2 focus:outline-none focus:border-[#4285F4] placeholder:text-gray-400"
+                />
+              </div>
+
+              {/* Time */}
+              <div className="flex items-center gap-3">
+                <Clock className="w-5 h-5 text-gray-400" />
+                <TimePicker
+                  value={googleEventDialog.startTime}
+                  onChange={(val) => setGoogleEventDialog(prev => ({ ...prev, startTime: val }))}
+                  placeholder="Start time"
+                  className="flex-1"
+                />
+                <span className="text-gray-400">—</span>
+                <TimePicker
+                  value={googleEventDialog.endTime}
+                  onChange={(val) => setGoogleEventDialog(prev => ({ ...prev, endTime: val }))}
+                  placeholder="End time"
+                  className="flex-1"
+                />
+              </div>
+
+              {/* Location */}
+              <div className="flex items-center gap-3">
+                <MapPin className="w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Add location"
+                  value={googleEventDialog.location}
+                  onChange={(e) => setGoogleEventDialog(prev => ({ ...prev, location: e.target.value }))}
+                  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#4285F4]"
+                />
+              </div>
+
+              {/* Description */}
+              <div className="flex items-start gap-3">
+                <FileText className="w-5 h-5 text-gray-400 mt-2" />
+                <textarea
+                  placeholder="Add description"
+                  value={googleEventDialog.description}
+                  onChange={(e) => setGoogleEventDialog(prev => ({ ...prev, description: e.target.value }))}
+                  rows={3}
+                  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#4285F4] resize-none"
+                />
+              </div>
+
+              {/* Actions */}
+              <div className="flex justify-between items-center pt-4">
+                {googleEventDialog.mode === 'edit' && googleEventDialog.eventId && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const event = googleEventsForToday.find(ev => ev.id === googleEventDialog.eventId);
+                      if (event?.htmlLink) {
+                        window.open(event.htmlLink, '_blank');
+                      }
+                    }}
+                    className="flex items-center gap-1.5 text-sm text-[#4285F4] hover:text-[#1967D2] transition-colors"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    Open in Google
+                  </button>
+                )}
+                <div className="flex gap-3 ml-auto">
+                  <button
+                    onClick={() => setGoogleEventDialog(prev => ({ ...prev, open: false }))}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSaveGoogleEvent}
+                    disabled={!googleEventDialog.title.trim()}
+                    className="px-6 py-2 text-sm font-medium text-white rounded-lg transition-colors disabled:opacity-50"
+                    style={{ background: 'linear-gradient(145deg, #4285f4 0%, #1a73e8 100%)' }}
+                  >
+                    {googleEventDialog.mode === 'create' ? 'Create' : 'Save'}
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}

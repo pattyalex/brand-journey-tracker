@@ -4,7 +4,8 @@ import { StorageKeys, getString, setString, remove } from '@/lib/storage';
 import {
   GoogleCalendarTokens,
   GoogleCalendarConnection,
-  TransformedGoogleEvent
+  TransformedGoogleEvent,
+  GoogleCalendarEventInput
 } from '@/types/google-calendar';
 
 // Use relative URLs in production (Vercel), absolute localhost in development
@@ -17,6 +18,8 @@ interface UseGoogleCalendarReturn {
   connect: () => Promise<void>;
   disconnect: () => Promise<void>;
   fetchEvents: (startDate: string, endDate: string) => Promise<void>;
+  createEvent: (event: GoogleCalendarEventInput) => Promise<TransformedGoogleEvent | null>;
+  updateEvent: (eventId: string, event: Partial<GoogleCalendarEventInput>) => Promise<TransformedGoogleEvent | null>;
   toggleShowEvents: (show: boolean) => void;
   refreshConnection: () => Promise<void>;
 }
@@ -234,6 +237,98 @@ export const useGoogleCalendar = (): UseGoogleCalendarReturn => {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [fetchEvents]);
 
+  // Create a new Google Calendar event
+  const createEvent = useCallback(async (event: GoogleCalendarEventInput): Promise<TransformedGoogleEvent | null> => {
+    const tokens = getTokens();
+    if (!tokens) {
+      toast.error('Not connected to Google Calendar');
+      return null;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${API_BASE}/api/google-calendar/create-event`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tokens, event })
+      });
+
+      const data = await response.json();
+
+      if (data.error) {
+        if (data.needsReauth) {
+          setConnection(prev => ({ ...prev, isConnected: false }));
+          remove(StorageKeys.googleCalendarConnected);
+          toast.error('Google Calendar session expired. Please reconnect.');
+          return null;
+        }
+        throw new Error(data.error);
+      }
+
+      if (data.tokens) {
+        updateTokens(data.tokens);
+      }
+
+      // Add the new event to the local list
+      const newEvent = data.event as TransformedGoogleEvent;
+      setEvents(prev => [...prev, newEvent]);
+      toast.success('Event created in Google Calendar');
+      return newEvent;
+    } catch (error) {
+      console.error('Error creating Google Calendar event:', error);
+      toast.error('Failed to create Google Calendar event');
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [getTokens, updateTokens]);
+
+  // Update an existing Google Calendar event
+  const updateEvent = useCallback(async (eventId: string, event: Partial<GoogleCalendarEventInput>): Promise<TransformedGoogleEvent | null> => {
+    const tokens = getTokens();
+    if (!tokens) {
+      toast.error('Not connected to Google Calendar');
+      return null;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${API_BASE}/api/google-calendar/update-event`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tokens, eventId, event })
+      });
+
+      const data = await response.json();
+
+      if (data.error) {
+        if (data.needsReauth) {
+          setConnection(prev => ({ ...prev, isConnected: false }));
+          remove(StorageKeys.googleCalendarConnected);
+          toast.error('Google Calendar session expired. Please reconnect.');
+          return null;
+        }
+        throw new Error(data.error);
+      }
+
+      if (data.tokens) {
+        updateTokens(data.tokens);
+      }
+
+      // Update the event in the local list
+      const updatedEvent = data.event as TransformedGoogleEvent;
+      setEvents(prev => prev.map(e => e.id === eventId ? updatedEvent : e));
+      toast.success('Event updated in Google Calendar');
+      return updatedEvent;
+    } catch (error) {
+      console.error('Error updating Google Calendar event:', error);
+      toast.error('Failed to update Google Calendar event');
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [getTokens, updateTokens]);
+
   // Toggle showing events in calendar
   const toggleShowEvents = useCallback((show: boolean) => {
     setString(StorageKeys.googleCalendarShowEvents, show.toString());
@@ -283,6 +378,8 @@ export const useGoogleCalendar = (): UseGoogleCalendarReturn => {
     connect,
     disconnect,
     fetchEvents,
+    createEvent,
+    updateEvent,
     toggleShowEvents,
     refreshConnection
   };

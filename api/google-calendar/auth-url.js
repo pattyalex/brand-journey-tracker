@@ -30,7 +30,7 @@ export default async function handler(req, res) {
     const oauth2Client = createOAuth2Client();
 
     const scopes = [
-      'https://www.googleapis.com/auth/calendar.readonly',
+      'https://www.googleapis.com/auth/calendar',
       'https://www.googleapis.com/auth/userinfo.email'
     ];
 

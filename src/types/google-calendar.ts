@@ -45,3 +45,14 @@ export interface TransformedGoogleEvent {
   htmlLink?: string;
   location?: string;
 }
+
+export interface GoogleCalendarEventInput {
+  summary: string;
+  description?: string;
+  location?: string;
+  date: string;
+  startTime?: string;
+  endTime?: string;
+  endDate?: string;
+  isAllDay?: boolean;
+}
