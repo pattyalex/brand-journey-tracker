@@ -94,7 +94,6 @@ const AccountSection = ({
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                disabled={loading}
                 placeholder="Enter your name"
                 className="w-full h-11 px-4 rounded-xl border border-[#E8E4E6] bg-white text-sm focus:border-[#612a4f] focus:ring-2 focus:ring-[#612a4f]/20 outline-none transition-all disabled:opacity-50"
                 style={{ fontFamily: "'DM Sans', sans-serif" }}
@@ -108,7 +107,6 @@ const AccountSection = ({
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                disabled={loading}
                 placeholder="Enter your email"
                 className="w-full h-11 px-4 rounded-xl border border-[#E8E4E6] bg-white text-sm focus:border-[#612a4f] focus:ring-2 focus:ring-[#612a4f]/20 outline-none transition-all disabled:opacity-50"
                 style={{ fontFamily: "'DM Sans', sans-serif" }}

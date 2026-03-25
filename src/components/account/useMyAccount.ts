@@ -38,21 +38,37 @@ export function useMyAccount() {
     const loadUserData = async () => {
       setLoading(true);
       try {
-        const { user: currentUser } = await getCurrentUser();
-        if (currentUser) {
-          setName(currentUser.user_metadata?.full_name || '');
-          setEmail(currentUser.email || '');
+        if (user) {
+          // Use auth context user (already loaded, no extra API call)
+          const meta = user.user_metadata || {};
+          const authName = meta.full_name || meta.name || '';
+          const authEmail = user.email || '';
+
+          // Also check profiles table for the most complete data
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('full_name, email')
+            .eq('id', user.id)
+            .single();
+
+          setName(authName || profile?.full_name || '');
+          setEmail(authEmail || profile?.email || '');
         }
       } catch (error) {
         console.error('Error loading user data:', error);
-        toast.error('Could not load profile information');
+        // Still populate from auth context even if profiles query fails
+        if (user) {
+          const meta = user.user_metadata || {};
+          setName(meta.full_name || meta.name || '');
+          setEmail(user.email || '');
+        }
       } finally {
         setLoading(false);
       }
     };
 
     loadUserData();
-  }, []);
+  }, [user]);
 
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();

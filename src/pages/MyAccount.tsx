@@ -1,5 +1,4 @@
 import Layout from '@/components/Layout';
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import {
   User, Crown, ChevronRight, LogOut,
@@ -54,7 +53,6 @@ const MyAccount = () => {
 
   return (
     <Layout>
-      <ScrollArea className="h-full" style={{ background: '#f9f7f5' }}>
         <div className="min-h-screen" style={{ background: '#f9f7f5' }}>
           <div className="max-w-5xl mx-auto px-6 md:px-8 pt-8 pb-16">
             {/* Header */}
@@ -182,7 +180,6 @@ const MyAccount = () => {
             </div>
           </div>
         </div>
-      </ScrollArea>
     </Layout>
   );
 };
