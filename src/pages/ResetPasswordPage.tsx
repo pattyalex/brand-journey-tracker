@@ -11,6 +11,7 @@ const ResetPasswordPage: React.FC = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [sessionReady, setSessionReady] = useState(false);
+  const [linkExpired, setLinkExpired] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -18,7 +19,13 @@ const ResetPasswordPage: React.FC = () => {
       const params = new URLSearchParams(window.location.search);
       const code = params.get('code');
       if (code) {
-        await supabase.auth.exchangeCodeForSession(code);
+        try {
+          await supabase.auth.exchangeCodeForSession(code);
+        } catch (err) {
+          console.error('Code exchange failed:', err);
+          setLinkExpired(true);
+          return;
+        }
       }
 
       // Wait for session to be available
@@ -37,7 +44,18 @@ const ResetPasswordPage: React.FC = () => {
 
     init();
 
-    return () => subscription.unsubscribe();
+    // If no session after 5 seconds, the link is likely expired
+    const timeout = setTimeout(() => {
+      setSessionReady((ready) => {
+        if (!ready) setLinkExpired(true);
+        return ready;
+      });
+    }, 5000);
+
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(timeout);
+    };
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -57,16 +75,22 @@ const ResetPasswordPage: React.FC = () => {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.updateUser({ password });
+      // Add a timeout so the user isn't stuck forever if the session is invalid
+      const timeoutPromise = new Promise<{ error: { message: string } }>((resolve) =>
+        setTimeout(() => resolve({ error: { message: 'Request timed out. Your reset link may have expired. Please request a new one.' } }), 15000)
+      );
 
-      if (error) {
-        setError(error.message);
+      const updatePromise = supabase.auth.updateUser({ password });
+      const result = await Promise.race([updatePromise, timeoutPromise]);
+
+      if (result.error) {
+        setError(result.error.message);
       } else {
         setSuccess(true);
       }
     } catch (err) {
       console.error('Password update error:', err);
-      setError('Failed to update password. Please try again.');
+      setError('Failed to update password. Your reset link may have expired — please request a new one from the settings page.');
     } finally {
       setLoading(false);
     }
@@ -134,7 +158,26 @@ const ResetPasswordPage: React.FC = () => {
                 </Alert>
               )}
 
-              {!sessionReady ? (
+              {linkExpired ? (
+                <div className="text-center py-6">
+                  <AlertCircle className="w-10 h-10 mx-auto mb-3" style={{ color: '#dc2626' }} />
+                  <p className="text-sm font-medium mb-1" style={{ color: '#2a1f26' }}>Reset link expired</p>
+                  <p className="text-sm mb-5" style={{ color: '#8a7a85' }}>
+                    This link is no longer valid. Please request a new one from your account settings.
+                  </p>
+                  <a
+                    href="/my-account"
+                    className="inline-flex items-center justify-center gap-2 py-2.5 px-6 rounded-xl text-white font-medium transition-all text-sm"
+                    style={{
+                      background: 'linear-gradient(135deg, #7a3868 0%, #612a4f 50%, #4e2040 100%)',
+                      boxShadow: '0 4px 12px rgba(97, 42, 79, 0.3)',
+                      textDecoration: 'none'
+                    }}
+                  >
+                    Go to Settings
+                  </a>
+                </div>
+              ) : !sessionReady ? (
                 <div className="text-center py-8">
                   <div className="w-8 h-8 border-2 border-gray-300 border-t-[#7a3868] rounded-full animate-spin mx-auto mb-4" />
                   <p style={{ color: '#8a7a85', fontSize: '14px' }}>Verifying reset link...</p>

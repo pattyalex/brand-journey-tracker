@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { User, Lock, Trash2, Camera, AlertTriangle, Download } from 'lucide-react';
+import { User, Lock, Trash2, Camera, AlertTriangle, Download, Mail, Eye, EyeOff } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
+import { toast } from 'sonner';
 
 interface AccountSectionProps {
   name: string;
@@ -10,14 +12,6 @@ interface AccountSectionProps {
   loading: boolean;
   updatingProfile: boolean;
   handleProfileUpdate: (e: React.FormEvent) => void;
-  currentPassword: string;
-  setCurrentPassword: (v: string) => void;
-  newPassword: string;
-  setNewPassword: (v: string) => void;
-  confirmPassword: string;
-  setConfirmPassword: (v: string) => void;
-  changingPassword: boolean;
-  handlePasswordChange: (e: React.FormEvent) => void;
   showDeleteDialog: boolean;
   setShowDeleteDialog: (v: boolean) => void;
   deleteEmailInput: string;
@@ -28,11 +22,33 @@ interface AccountSectionProps {
 
 const AccountSection = ({
   name, setName, email, setEmail, loading, updatingProfile, handleProfileUpdate,
-  currentPassword, setCurrentPassword, newPassword, setNewPassword,
-  confirmPassword, setConfirmPassword, changingPassword, handlePasswordChange,
   showDeleteDialog, setShowDeleteDialog, deleteEmailInput, setDeleteEmailInput,
   deletingAccount, handleDeleteAccount,
 }: AccountSectionProps) => {
+  const [sendingResetEmail, setSendingResetEmail] = useState(false);
+  const [resetEmailSent, setResetEmailSent] = useState(false);
+
+  const handleSendPasswordReset = async () => {
+    if (!email) {
+      toast.error('No email address found');
+      return;
+    }
+    setSendingResetEmail(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      setResetEmailSent(true);
+      toast.success('Password reset link sent to your email');
+    } catch (error: any) {
+      console.error('Error sending reset email:', error);
+      toast.error('Failed to send reset email. Please try again.');
+    } finally {
+      setSendingResetEmail(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Profile Info */}
@@ -115,7 +131,7 @@ const AccountSection = ({
           </div>
           <Button
             type="submit"
-            disabled={loading || updatingProfile}
+            disabled={updatingProfile}
             className="h-11 px-6 rounded-xl text-white font-medium"
             style={{
               fontFamily: "'DM Sans', sans-serif",
@@ -135,96 +151,48 @@ const AccountSection = ({
           border: '1px solid rgba(139, 115, 130, 0.06)',
         }}
       >
-        <div className="flex items-center gap-3 mb-6">
-          <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center"
-            style={{
-              background: 'linear-gradient(145deg, #8b6a7e 0%, #4a3442 100%)',
-              boxShadow: '0 4px 12px rgba(107, 74, 94, 0.2)',
-            }}
-          >
-            <Lock className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h2 className="text-lg text-[#2d2a26]" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>
-              Change Password
-            </h2>
-            <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-              Keep your account secure
-            </p>
-          </div>
-        </div>
-
-        <form onSubmit={handlePasswordChange} className="space-y-5">
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-              Current Password
-            </label>
-            <input
-              type="password"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              disabled={changingPassword}
-              placeholder="••••••••••"
-              className="w-full h-11 px-4 rounded-xl border border-[#E8E4E6] bg-white text-sm focus:border-[#612a4f] focus:ring-2 focus:ring-[#612a4f]/20 outline-none transition-all disabled:opacity-50"
-              style={{ fontFamily: "'DM Sans', sans-serif" }}
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                New Password
-              </label>
-              <input
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                disabled={changingPassword}
-                placeholder="••••••••••"
-                className="w-full h-11 px-4 rounded-xl border border-[#E8E4E6] bg-white text-sm focus:border-[#612a4f] focus:ring-2 focus:ring-[#612a4f]/20 outline-none transition-all disabled:opacity-50"
-                style={{ fontFamily: "'DM Sans', sans-serif" }}
-              />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center"
+              style={{
+                background: 'linear-gradient(145deg, #8b6a7e 0%, #4a3442 100%)',
+                boxShadow: '0 4px 12px rgba(107, 74, 94, 0.2)',
+              }}
+            >
+              <Lock className="w-5 h-5 text-white" />
             </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                Confirm Password
-              </label>
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                disabled={changingPassword}
-                placeholder="••••••••••"
-                className="w-full h-11 px-4 rounded-xl border border-[#E8E4E6] bg-white text-sm focus:border-[#612a4f] focus:ring-2 focus:ring-[#612a4f]/20 outline-none transition-all disabled:opacity-50"
-                style={{ fontFamily: "'DM Sans', sans-serif" }}
-              />
+            <div>
+              <h2 className="text-lg text-[#2d2a26]" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>
+                Password
+              </h2>
+              <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                {resetEmailSent
+                  ? 'Check your email for the reset link'
+                  : 'Change your password via email'}
+              </p>
             </div>
           </div>
-
-          <div
-            className="p-4 rounded-xl"
-            style={{
-              background: 'linear-gradient(145deg, rgba(139, 106, 126, 0.08) 0%, rgba(74, 52, 66, 0.05) 100%)',
-              border: '1px solid rgba(139, 115, 130, 0.1)',
-            }}
-          >
-            <p className="text-sm text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-              Password must be at least 10 characters with one uppercase letter and one special character.
-            </p>
-          </div>
-
           <Button
-            type="submit"
-            disabled={changingPassword || !currentPassword || !newPassword || !confirmPassword}
+            type="button"
+            onClick={handleSendPasswordReset}
+            disabled={sendingResetEmail || resetEmailSent}
             variant="outline"
-            className="h-11 px-6 rounded-xl font-medium border-[#8B7082]/30 text-[#612a4f] hover:bg-[#612a4f]/5 hover:border-[#612a4f]/30 disabled:opacity-50"
+            className="h-9 px-4 rounded-lg border-[#8B7082]/30 text-[#612a4f] hover:bg-[#612a4f]/5 hover:border-[#612a4f]/30 disabled:opacity-50"
             style={{ fontFamily: "'DM Sans', sans-serif" }}
           >
-            {changingPassword ? 'Changing...' : 'Update Password'}
+            {sendingResetEmail ? (
+              'Sending...'
+            ) : resetEmailSent ? (
+              <>
+                <Mail className="w-4 h-4 mr-2" />
+                Email Sent
+              </>
+            ) : (
+              'Change Password'
+            )}
           </Button>
-        </form>
+        </div>
       </div>
 
       {/* Delete Account */}

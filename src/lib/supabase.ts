@@ -71,9 +71,14 @@ export const updateUserProfile = async (userMetadata: { full_name?: string; emai
     updateData.data = { full_name: userMetadata.full_name }
   }
 
-  // Update email if provided
-  if (userMetadata.email !== undefined) {
+  // Only update email if it's a non-empty value
+  if (userMetadata.email) {
     updateData.email = userMetadata.email
+  }
+
+  // Nothing to update
+  if (!updateData.data && !updateData.email) {
+    return null
   }
 
   try {

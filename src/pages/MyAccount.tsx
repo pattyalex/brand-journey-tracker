@@ -128,14 +128,6 @@ const MyAccount = () => {
                     loading={loading}
                     updatingProfile={updatingProfile}
                     handleProfileUpdate={handleProfileUpdate}
-                    currentPassword={currentPassword}
-                    setCurrentPassword={setCurrentPassword}
-                    newPassword={newPassword}
-                    setNewPassword={setNewPassword}
-                    confirmPassword={confirmPassword}
-                    setConfirmPassword={setConfirmPassword}
-                    changingPassword={changingPassword}
-                    handlePasswordChange={handlePasswordChange}
                     showDeleteDialog={showDeleteDialog}
                     setShowDeleteDialog={setShowDeleteDialog}
                     deleteEmailInput={deleteEmailInput}

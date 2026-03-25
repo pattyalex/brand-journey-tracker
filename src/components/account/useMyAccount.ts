@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -25,6 +25,7 @@ export function useMyAccount() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [changingPassword, setChangingPassword] = useState(false);
   const [updatingProfile, setUpdatingProfile] = useState(false);
+  const justSavedRef = useRef(false);
 
   // Preferences state
   const [selectedTimezone, setSelectedTimezone] = useState(() => {
@@ -35,6 +36,12 @@ export function useMyAccount() {
   });
 
   useEffect(() => {
+    // Skip re-fetching if we just saved — the local state already has the correct values
+    if (justSavedRef.current) {
+      justSavedRef.current = false;
+      return;
+    }
+
     const loadUserData = async () => {
       setLoading(true);
       try {
@@ -73,11 +80,18 @@ export function useMyAccount() {
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     setUpdatingProfile(true);
+    justSavedRef.current = true;
 
     try {
-      await updateUserProfile({ full_name: name, email });
+      // Only send non-empty fields to Supabase auth
+      const updatePayload: { full_name?: string; email?: string } = {};
+      if (name) updatePayload.full_name = name;
+      if (email) updatePayload.email = email;
+
+      await updateUserProfile(updatePayload);
       toast.success('Profile updated successfully');
     } catch (error) {
+      justSavedRef.current = false;
       console.error('Error updating profile:', error);
       toast.error('Failed to update profile');
     } finally {
