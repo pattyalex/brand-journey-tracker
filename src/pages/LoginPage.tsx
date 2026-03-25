@@ -1,21 +1,38 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/lib/supabase';
 
 const LoginPage: React.FC = () => {
-  const { openLoginModal, isAuthenticated, isAuthLoaded, loginOpen } = useAuth();
+  const { openLoginModal, isAuthenticated, isAuthLoaded, loginOpen, logout } = useAuth();
   const navigate = useNavigate();
   const [hasDecided, setHasDecided] = useState(false);
+  const [verifyingSession, setVerifyingSession] = useState(false);
 
   useEffect(() => {
     // Wait for auth to load before making any decisions
-    if (!isAuthLoaded) {
+    if (!isAuthLoaded || verifyingSession) {
       return;
     }
 
-    // If already authenticated, redirect to home-page (no modal)
-    if (isAuthenticated) {
-      navigate('/home-page', { replace: true });
+    // If apparently authenticated, verify the session is actually valid server-side
+    if (isAuthenticated && !hasDecided) {
+      setVerifyingSession(true);
+      supabase.auth.getUser().then(({ data: { user }, error }) => {
+        setVerifyingSession(false);
+        if (user && !error) {
+          // Session is genuinely valid — redirect to home
+          navigate('/home-page', { replace: true });
+        } else {
+          // Stale/expired session — clear it and show login
+          supabase.auth.signOut();
+          Object.keys(localStorage).forEach(key => {
+            if (key.startsWith('sb-')) localStorage.removeItem(key);
+          });
+          setHasDecided(true);
+          openLoginModal();
+        }
+      });
       return;
     }
 
@@ -24,10 +41,10 @@ const LoginPage: React.FC = () => {
       setHasDecided(true);
       openLoginModal();
     }
-  }, [isAuthLoaded, isAuthenticated, loginOpen, hasDecided, navigate, openLoginModal]);
+  }, [isAuthLoaded, isAuthenticated, loginOpen, hasDecided, navigate, openLoginModal, verifyingSession]);
 
-  // While loading, show a loading state
-  if (!isAuthLoaded) {
+  // While loading or verifying session, show a loading state
+  if (!isAuthLoaded || verifyingSession) {
     return (
       <div
         className="min-h-screen w-full flex items-center justify-center"
