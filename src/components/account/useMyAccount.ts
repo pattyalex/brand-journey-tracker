@@ -224,7 +224,7 @@ export function useMyAccount() {
           'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
           'Authorization': `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ data: { avatar_url: publicUrl } }),
+        body: JSON.stringify({ data: { avatar_url: publicUrl, picture: publicUrl } }),
       });
       if (!authRes.ok) {
         console.error('Failed to update auth metadata:', await authRes.text());
