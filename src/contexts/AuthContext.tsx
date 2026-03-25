@@ -173,11 +173,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       checkOnboardingStatus();
     }
 
-    // Timeout fallback — if DB is slow, let authenticated users through
+    // Timeout fallback — if DB is slow, stop blocking but do NOT assume
+    // onboarding is complete. Users who haven't finished onboarding should
+    // stay on the onboarding flow, not skip to the dashboard.
     const timeout = setTimeout(() => {
       if (checkingOnboarding) {
-        console.warn('⚠️ Onboarding check timed out, assuming complete for authenticated user');
-        if (user) setHasCompletedOnboarding(true);
+        console.warn('⚠️ Onboarding check timed out — stopping spinner but keeping current onboarding state');
         setCheckingOnboarding(false);
       }
     }, 5000);
