@@ -123,7 +123,7 @@ const AccountSection = ({
               {uploadingAvatar ? 'Uploading...' : 'Upload Photo'}
             </Button>
             <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-              JPG, PNG or GIF. Max 10MB.
+              JPG or PNG. Max 10MB.
             </p>
           </div>
         </div>
