@@ -9,6 +9,9 @@ interface AccountSectionProps {
   setName: (v: string) => void;
   email: string;
   setEmail: (v: string) => void;
+  avatarUrl: string | null;
+  uploadingAvatar: boolean;
+  handleAvatarUpload: (file: File) => void;
   loading: boolean;
   updatingProfile: boolean;
   handleProfileUpdate: (e: React.FormEvent) => void;
@@ -21,12 +24,14 @@ interface AccountSectionProps {
 }
 
 const AccountSection = ({
-  name, setName, email, setEmail, loading, updatingProfile, handleProfileUpdate,
+  name, setName, email, setEmail, avatarUrl, uploadingAvatar, handleAvatarUpload,
+  loading, updatingProfile, handleProfileUpdate,
   showDeleteDialog, setShowDeleteDialog, deleteEmailInput, setDeleteEmailInput,
   deletingAccount, handleDeleteAccount,
 }: AccountSectionProps) => {
   const [sendingResetEmail, setSendingResetEmail] = useState(false);
   const [resetEmailSent, setResetEmailSent] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const handleSendPasswordReset = async () => {
     if (!email) {
@@ -81,18 +86,41 @@ const AccountSection = ({
 
         {/* Profile Photo */}
         <div className="flex items-center gap-4 mb-6 pb-6 border-b border-[#8B7082]/10">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#8b6a7e] to-[#4a3442] flex items-center justify-center text-white text-2xl font-semibold">
-            {name ? name.charAt(0).toUpperCase() : 'U'}
+          <div className="w-20 h-20 rounded-full overflow-hidden flex-shrink-0">
+            {avatarUrl ? (
+              <img
+                src={avatarUrl}
+                alt="Profile"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-[#8b6a7e] to-[#4a3442] flex items-center justify-center text-white text-2xl font-semibold">
+                {name ? name.charAt(0).toUpperCase() : 'U'}
+              </div>
+            )}
           </div>
           <div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/gif,image/webp"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) handleAvatarUpload(file);
+                e.target.value = '';
+              }}
+            />
             <Button
               variant="outline"
               size="sm"
+              disabled={uploadingAvatar}
+              onClick={() => fileInputRef.current?.click()}
               className="h-9 px-4 rounded-lg border-[#8B7082]/30 text-[#612a4f] hover:bg-[#612a4f]/5 mb-2"
               style={{ fontFamily: "'DM Sans', sans-serif" }}
             >
               <Camera className="w-4 h-4 mr-2" />
-              Upload Photo
+              {uploadingAvatar ? 'Uploading...' : 'Upload Photo'}
             </Button>
             <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
               JPG, PNG or GIF. Max 2MB.

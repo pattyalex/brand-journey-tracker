@@ -12,6 +12,8 @@ export function useMyAccount() {
   // Profile state
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState('account');
   const [expandedFaq, setExpandedFaq] = useState<number | null>(0);
@@ -50,11 +52,12 @@ export function useMyAccount() {
         const accessToken = session?.access_token;
         let profileName = '';
         let profileEmail = '';
+        let profileAvatarUrl = '';
 
         if (accessToken) {
           const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
           const res = await fetch(
-            `${supabaseUrl}/rest/v1/profiles?id=eq.${user.id}&select=full_name,email`,
+            `${supabaseUrl}/rest/v1/profiles?id=eq.${user.id}&select=full_name,email,avatar_url`,
             {
               headers: {
                 'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
@@ -67,12 +70,14 @@ export function useMyAccount() {
             if (rows.length > 0) {
               profileName = rows[0].full_name || '';
               profileEmail = rows[0].email || '';
+              profileAvatarUrl = rows[0].avatar_url || '';
             }
           }
         }
 
         setName(profileName || authName || '');
         setEmail(profileEmail || authEmail || '');
+        setAvatarUrl(profileAvatarUrl || meta.avatar_url || meta.picture || null);
         hasLoadedRef.current = true;
       } catch (error) {
         console.error('Error loading user data:', error);
@@ -164,6 +169,71 @@ export function useMyAccount() {
       toast.error('Failed to update profile');
     } finally {
       setUpdatingProfile(false);
+    }
+  };
+
+  const handleAvatarUpload = async (file: File) => {
+    if (!user || !session?.access_token) return;
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('Image must be under 2MB');
+      return;
+    }
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please upload an image file (JPG, PNG, or GIF)');
+      return;
+    }
+
+    setUploadingAvatar(true);
+    try {
+      const ext = file.name.split('.').pop() || 'jpg';
+      const filePath = `${user.id}/avatar.${ext}`;
+
+      // Upload to Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      // Get the public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      // Add cache buster so the browser shows the new image
+      const avatarUrlWithCacheBuster = `${publicUrl}?t=${Date.now()}`;
+
+      // Update profiles table
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      await fetch(`${supabaseUrl}/rest/v1/profiles?id=eq.${user.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${session.access_token}`,
+          'Prefer': 'return=minimal',
+        },
+        body: JSON.stringify({ avatar_url: publicUrl }),
+      });
+
+      // Update auth metadata too
+      await fetch(`${supabaseUrl}/auth/v1/user`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ data: { avatar_url: publicUrl } }),
+      });
+
+      setAvatarUrl(avatarUrlWithCacheBuster);
+      toast.success('Photo updated');
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+      toast.error('Failed to upload photo');
+    } finally {
+      setUploadingAvatar(false);
     }
   };
 
@@ -605,6 +675,7 @@ export function useMyAccount() {
     // Profile
     name, setName,
     email, setEmail,
+    avatarUrl, uploadingAvatar, handleAvatarUpload,
     loading,
     activeSection, setActiveSection,
     expandedFaq, setExpandedFaq,

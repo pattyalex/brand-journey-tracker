@@ -18,6 +18,7 @@ const MyAccount = () => {
   const {
     name, setName,
     email, setEmail,
+    avatarUrl, uploadingAvatar, handleAvatarUpload,
     loading,
     activeSection, setActiveSection,
     expandedFaq, setExpandedFaq,
@@ -125,6 +126,9 @@ const MyAccount = () => {
                     setName={setName}
                     email={email}
                     setEmail={setEmail}
+                    avatarUrl={avatarUrl}
+                    uploadingAvatar={uploadingAvatar}
+                    handleAvatarUpload={handleAvatarUpload}
                     loading={loading}
                     updatingProfile={updatingProfile}
                     handleProfileUpdate={handleProfileUpdate}
