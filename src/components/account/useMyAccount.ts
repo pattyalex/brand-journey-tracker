@@ -133,7 +133,7 @@ export function useMyAccount() {
       // Update auth.users metadata (name and/or email)
       const authUpdateBody: Record<string, any> = {};
       if (name !== (user.user_metadata?.full_name || user.user_metadata?.name || '')) {
-        authUpdateBody.data = { full_name: name };
+        authUpdateBody.data = { full_name: name, name: name };
       }
       if (email && email !== user.email) {
         authUpdateBody.email = email;
