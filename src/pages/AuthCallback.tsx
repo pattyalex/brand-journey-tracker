@@ -7,24 +7,53 @@ export default function AuthCallback() {
 
   useEffect(() => {
     const handleCallback = async () => {
-      // Check for password recovery in the URL hash (type=recovery)
       const hash = window.location.hash;
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get('code');
+
+      // Check for password recovery in the URL hash (type=recovery)
       if (hash.includes('type=recovery')) {
-        // Redirect to reset password page with the hash intact
         window.location.href = '/reset-password' + window.location.search + hash;
         return;
       }
 
-      // Handle PKCE code flow (email confirmation)
-      const params = new URLSearchParams(window.location.search);
-      const code = params.get('code');
+      // Handle email change confirmation — Supabase sends type=email_change in the hash
+      if (hash.includes('type=email_change')) {
+        // The hash contains the tokens Supabase needs to finalize the email change.
+        // Calling getSession or exchangeCodeForSession will process them automatically.
+        const { error } = await supabase.auth.refreshSession();
+        if (error) {
+          console.error('Email change confirmation failed:', error);
+        } else {
+          console.log('✅ Email change confirmed successfully');
+          // Also update the profiles table with the new email
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user?.email) {
+            await supabase
+              .from('profiles')
+              .update({ email: user.email })
+              .eq('id', user.id);
+            console.log('✅ Profile email synced to:', user.email);
+          }
+        }
+        navigate('/home-page');
+        return;
+      }
 
+      // Handle PKCE code flow (email confirmation / signup)
       if (code) {
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        const { data, error } = await supabase.auth.exchangeCodeForSession(code);
         if (error) {
           console.error('Code exchange failed:', error);
           navigate('/login');
           return;
+        }
+        // If this was an email change code, sync the new email to profiles
+        if (data?.user?.email) {
+          await supabase
+            .from('profiles')
+            .update({ email: data.user.email })
+            .eq('id', data.user.id);
         }
       }
 
