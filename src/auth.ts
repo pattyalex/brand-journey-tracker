@@ -97,21 +97,23 @@ export async function signUp(email: string, password: string, fullName: string):
 
     const userId = data.user.id;
     const isEmailConfirmed = !!data.user.email_confirmed_at;
-    
+
     console.log('✅ Supabase Auth user created successfully:', userId);
     console.log('📧 Email confirmation status:', isEmailConfirmed ? 'CONFIRMED' : 'PENDING');
 
-    // Create profile immediately regardless of email confirmation status
-    await createUserRecords(userId, userEnteredEmail, fullName);
+    // Profile is created automatically by the handle_new_user() database trigger.
+    // Do NOT insert from the client — the anon role can't write to profiles,
+    // and the trigger runs with SECURITY DEFINER (postgres privileges).
 
     // Send welcome email to user + admin notification (fire and forget)
-    fetch('http://localhost:3001/api/send-welcome-email', {
+    const apiBase = import.meta.env.DEV ? 'http://localhost:3001' : '';
+    fetch(`${apiBase}/api/send-welcome-email`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: userEnteredEmail, name: fullName }),
     }).catch(err => console.error('Failed to send welcome email:', err));
 
-    fetch('http://localhost:3001/api/send-signup-admin-notification', {
+    fetch(`${apiBase}/api/send-signup-admin-notification`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: userEnteredEmail, name: fullName, userId }),
@@ -147,30 +149,6 @@ export async function signUp(email: string, password: string, fullName: string):
       }
     };
   }
-}
-
-async function createUserRecords(userId: string, email: string, fullName: string) {
-  console.log('Creating user records in database...');
-  
-  // Insert into profiles table
-  const trialEndDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-  const { data: profileData, error: profileInsertError } = await supabase
-    .from('profiles')
-    .insert([{
-      id: userId,
-      full_name: fullName,
-      email: email,
-      is_on_trial: true,
-      trial_ends_at: trialEndDate.toISOString()
-    }])
-    .select();
-
-  if (profileInsertError) {
-    console.error('❌ Profile insert failed:', profileInsertError);
-    throw new Error(`Failed to create user profile: ${profileInsertError.message}`);
-  }
-
-  console.log('✅ User records created successfully');
 }
 
 export async function resendVerificationEmail(email: string): Promise<VerificationResult> {

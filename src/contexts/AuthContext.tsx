@@ -107,25 +107,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
         setIsAuthLoaded(true);
 
-        // Ensure profile exists for this user
-        if (session?.user) {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('id')
-            .eq('id', session.user.id)
-            .single();
-
-          if (!profile) {
-            await supabase.from('profiles').insert([{
-              id: session.user.id,
-              full_name: session.user.user_metadata?.full_name || '',
-              email: session.user.email,
-              is_on_trial: true,
-              trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-            }]);
-            console.log('✅ Profile created for existing user:', session.user.email);
-          }
-        }
+        // Profile is created automatically by the handle_new_user() database trigger.
+        // Do NOT insert from the client — it causes race conditions and permission errors.
 
         // Sync any pending onboarding responses saved before session was available
         await syncPendingOnboardingResponses(session?.user?.id);

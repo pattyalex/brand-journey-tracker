@@ -3,7 +3,7 @@ export async function diagnoseSupabaseEmailValidation() {
   console.log('=== COMPREHENSIVE SUPABASE EMAIL VALIDATION DIAGNOSTICS ===');
   
   try {
-    const { supabase } = await import('./supabaseClient');
+    const { supabase } = await import('./lib/supabase');
     
     // Comprehensive test email list with various formats and edge cases
     const testEmails = [
