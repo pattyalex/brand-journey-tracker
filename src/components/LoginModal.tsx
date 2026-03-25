@@ -35,11 +35,14 @@ const LoginModal: React.FC = () => {
   const [pendingVerificationEmail, setPendingVerificationEmail] = useState('');
   const [step, setStep] = useState<'email' | 'password'>('email');
 
-  // Set signup mode if URL has ?mode=signup
+  // Set signup mode if URL has ?mode=signup, and show callback errors
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     if (params.get('mode') === 'signup') {
       setMode('signup');
+    }
+    if (params.get('error') === 'auth_callback_failed') {
+      setError('Google sign in failed. Please try again.');
     }
   }, [location.search]);
 
@@ -48,15 +51,28 @@ const LoginModal: React.FC = () => {
     setError('');
 
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`
+          redirectTo: `${window.location.origin}/auth/callback`,
+          skipBrowserRedirect: true
         }
       });
 
       if (error) {
+        console.error('Google OAuth error:', error);
+        alert('DEBUG: OAuth error: ' + JSON.stringify(error));
         setError('Failed to sign in with Google. Please try again.');
+        setGoogleLoading(false);
+        return;
+      }
+
+      if (data?.url) {
+        alert('DEBUG: Redirecting to: ' + data.url.substring(0, 150));
+        window.location.href = data.url;
+      } else {
+        alert('DEBUG: No URL returned. Data: ' + JSON.stringify(data));
+        setError('Failed to start Google sign in. Please try again.');
         setGoogleLoading(false);
       }
     } catch (err: any) {
@@ -223,6 +239,7 @@ const LoginModal: React.FC = () => {
 
                 {/* Google Sign In */}
                 <button
+                  type="button"
                   onClick={handleGoogleSignIn}
                   disabled={googleLoading}
                   className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-lg border transition-all hover:bg-gray-50 disabled:opacity-60 mb-5"

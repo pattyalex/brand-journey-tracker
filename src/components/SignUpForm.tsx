@@ -37,15 +37,25 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onSuccess }) => {
     setError('');
 
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`
+          redirectTo: `${window.location.origin}/auth/callback`,
+          skipBrowserRedirect: true
         }
       });
 
       if (error) {
+        console.error('Google OAuth error:', error);
         setError('Failed to sign up with Google. Please try again.');
+        setGoogleLoading(false);
+        return;
+      }
+
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        setError('Failed to start Google sign up. Please try again.');
         setGoogleLoading(false);
       }
     } catch (err: any) {
@@ -150,6 +160,7 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onSuccess }) => {
 
               {/* Google Sign Up */}
               <button
+                type="button"
                 onClick={handleGoogleSignUp}
                 disabled={googleLoading}
                 className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-lg border transition-all hover:bg-gray-50 disabled:opacity-60 mb-5"
