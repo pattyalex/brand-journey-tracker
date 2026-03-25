@@ -7,27 +7,24 @@ export default function AuthCallback() {
 
   useEffect(() => {
     const handleCallback = async () => {
-      alert('DEBUG AuthCallback: ' + window.location.href);
-
       // Check for password recovery in the URL hash (type=recovery)
       const hash = window.location.hash;
       if (hash.includes('type=recovery')) {
+        // Redirect to reset password page with the hash intact
         window.location.href = '/reset-password' + window.location.search + hash;
         return;
       }
 
-      // Handle PKCE code flow — try to exchange code for session.
-      // The Supabase client may have already auto-exchanged it via _initialize(),
-      // so if the exchange fails, fall through to getSession() which will have the
-      // session from the auto-exchange.
+      // Handle PKCE code flow (email confirmation)
       const params = new URLSearchParams(window.location.search);
       const code = params.get('code');
 
       if (code) {
         const { error } = await supabase.auth.exchangeCodeForSession(code);
         if (error) {
-          console.warn('Manual code exchange failed (may have been auto-exchanged):', error.message);
-          // Don't return here — the session may already exist from auto-exchange
+          console.error('Code exchange failed:', error);
+          navigate('/login');
+          return;
         }
       }
 
