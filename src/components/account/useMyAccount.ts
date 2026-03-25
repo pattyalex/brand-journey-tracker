@@ -216,8 +216,8 @@ export function useMyAccount() {
         body: JSON.stringify({ avatar_url: publicUrl }),
       });
 
-      // Update auth metadata too
-      await fetch(`${supabaseUrl}/auth/v1/user`, {
+      // Update auth metadata so it shows in Supabase Users dashboard
+      const authRes = await fetch(`${supabaseUrl}/auth/v1/user`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -226,12 +226,22 @@ export function useMyAccount() {
         },
         body: JSON.stringify({ data: { avatar_url: publicUrl } }),
       });
+      if (!authRes.ok) {
+        console.error('Failed to update auth metadata:', await authRes.text());
+      }
 
       setAvatarUrl(avatarUrlWithCacheBuster);
       toast.success('Photo updated');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error uploading avatar:', error);
-      toast.error('Failed to upload photo');
+      const msg = error?.message || '';
+      if (msg.includes('Payload too large') || msg.includes('file size') || msg.includes('too large')) {
+        toast.error('Image is too large. Please choose a smaller file (under 10MB).');
+      } else if (msg.includes('mime') || msg.includes('type')) {
+        toast.error('Unsupported file type. Please upload a JPG, PNG, or GIF.');
+      } else {
+        toast.error(`Failed to upload photo: ${msg || 'please try again'}`);
+      }
     } finally {
       setUploadingAvatar(false);
     }
