@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import {
   SidebarFooter,
   SidebarMenu,
@@ -8,6 +9,7 @@ import { MenuItem } from '@/types/sidebar';
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/lib/supabase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface SidebarFooterSectionProps {
@@ -18,18 +20,38 @@ interface SidebarFooterSectionProps {
 const SidebarFooterSection = ({ settingsItem, helpItem }: SidebarFooterSectionProps) => {
   const navigate = useNavigate();
   const { state } = useSidebar();
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const isCollapsed = state === 'collapsed';
+  const [profileAvatarUrl, setProfileAvatarUrl] = useState<string | null>(null);
 
   const fullName = user?.user_metadata?.full_name || 'User';
   const firstName = fullName.split(' ')[0];
-  const avatarUrl = user?.user_metadata?.avatar_url || user?.user_metadata?.picture;
+  const metaAvatarUrl = user?.user_metadata?.avatar_url || user?.user_metadata?.picture;
   const initials = fullName
     .split(' ')
     .map((n: string) => n[0])
     .join('')
     .toUpperCase()
     .slice(0, 2);
+
+  // Load avatar_url from profiles table (updates immediately after upload)
+  useEffect(() => {
+    if (!user?.id || !session?.access_token) return;
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    fetch(`${supabaseUrl}/rest/v1/profiles?id=eq.${user.id}&select=avatar_url`, {
+      headers: {
+        'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${session.access_token}`,
+      },
+    })
+      .then(res => res.json())
+      .then(rows => {
+        if (rows?.[0]?.avatar_url) setProfileAvatarUrl(rows[0].avatar_url);
+      })
+      .catch(() => {});
+  }, [user?.id, session?.access_token]);
+
+  const avatarUrl = profileAvatarUrl || metaAvatarUrl;
 
   return (
     <SidebarFooter className="mt-auto border-t border-[#E8E4E6] pt-2 relative z-10">
