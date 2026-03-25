@@ -174,8 +174,8 @@ export function useMyAccount() {
 
   const handleAvatarUpload = async (file: File) => {
     if (!user || !session?.access_token) return;
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error('Image must be under 2MB');
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Image must be under 10MB');
       return;
     }
     if (!file.type.startsWith('image/')) {
