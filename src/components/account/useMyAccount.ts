@@ -58,8 +58,8 @@ export function useMyAccount() {
             .eq('id', user.id)
             .single();
 
-          setName(authName || profile?.full_name || '');
-          setEmail(authEmail || profile?.email || '');
+          setName(profile?.full_name || authName || '');
+          setEmail(profile?.email || authEmail || '');
         }
       } catch (error) {
         console.error('Error loading user data:', error);
@@ -79,16 +79,43 @@ export function useMyAccount() {
 
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) return;
     setUpdatingProfile(true);
     justSavedRef.current = true;
 
     try {
-      // Only send non-empty fields to Supabase auth
-      const updatePayload: { full_name?: string; email?: string } = {};
-      if (name) updatePayload.full_name = name;
-      if (email) updatePayload.email = email;
+      const updateFields: Record<string, string> = { full_name: name };
+      if (email) updateFields.email = email;
 
-      await updateUserProfile(updatePayload);
+      // Bypass the Supabase JS client entirely — its internal auth lock is
+      // corrupted and causes all requests to hang. Use a direct REST call.
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const session = (await supabase.auth.getSession()).data.session;
+      const accessToken = session?.access_token;
+
+      if (!accessToken) {
+        throw new Error('Not authenticated');
+      }
+
+      const res = await fetch(
+        `${supabaseUrl}/rest/v1/profiles?id=eq.${user.id}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${accessToken}`,
+            'Prefer': 'return=minimal',
+          },
+          body: JSON.stringify(updateFields),
+        }
+      );
+
+      if (!res.ok) {
+        const errBody = await res.text();
+        throw new Error(`${res.status}: ${errBody}`);
+      }
+
       toast.success('Profile updated successfully');
     } catch (error) {
       justSavedRef.current = false;

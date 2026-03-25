@@ -66,13 +66,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Initialize auth session
   useEffect(() => {
-    // Get initial session
+    // Get initial session with timeout to prevent hanging forever
+    const sessionTimeout = setTimeout(() => {
+      console.warn('⚠️ getSession timed out — clearing stale tokens and proceeding');
+      Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('sb-')) localStorage.removeItem(key);
+      });
+      setSession(null);
+      setUser(null);
+      setIsAuthLoaded(true);
+    }, 8000);
+
     supabase.auth.getSession().then(async ({ data: { session } }) => {
+      clearTimeout(sessionTimeout);
       setActiveUserId(session?.user?.id ?? null);
       setSession(session);
       setUser(session?.user ?? null);
       setIsAuthLoaded(true);
       await syncPendingOnboardingResponses(session?.user?.id);
+    }).catch(() => {
+      clearTimeout(sessionTimeout);
+      setIsAuthLoaded(true);
     });
 
     // Listen for auth state changes

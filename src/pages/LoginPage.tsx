@@ -18,7 +18,20 @@ const LoginPage: React.FC = () => {
     // If apparently authenticated, verify the session is actually valid server-side
     if (isAuthenticated && !hasDecided) {
       setVerifyingSession(true);
+
+      const verifyTimeout = setTimeout(() => {
+        // If getUser hangs, treat as stale session
+        setVerifyingSession(false);
+        supabase.auth.signOut();
+        Object.keys(localStorage).forEach(key => {
+          if (key.startsWith('sb-')) localStorage.removeItem(key);
+        });
+        setHasDecided(true);
+        openLoginModal();
+      }, 8000);
+
       supabase.auth.getUser().then(({ data: { user }, error }) => {
+        clearTimeout(verifyTimeout);
         setVerifyingSession(false);
         if (user && !error) {
           // Session is genuinely valid — redirect to home
