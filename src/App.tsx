@@ -29,7 +29,6 @@ const Terms = lazy(() => import("./pages/Terms"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const Contact = lazy(() => import("./pages/Contact"));
 const Analytics = lazy(() => import('./pages/Analytics'));
-const QuickNotes = lazy(() => import('./pages/QuickNotes'));
 const Settings = lazy(() => import('./pages/Settings'));
 const MyAccount = lazy(() => import('./pages/MyAccount'));
 const Help = lazy(() => import('./pages/Help'));
@@ -150,11 +149,6 @@ function App() {
               <Route path="/analytics" element={
                 <ProtectedRoute>
                   <Analytics />
-                </ProtectedRoute>
-              } />
-              <Route path="/quick-notes" element={
-                <ProtectedRoute>
-                  <QuickNotes />
                 </ProtectedRoute>
               } />
               <Route path="/get-started" element={
