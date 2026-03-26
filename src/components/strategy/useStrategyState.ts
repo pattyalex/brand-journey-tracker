@@ -961,6 +961,9 @@ export function useStrategyState() {
     if (!user?.id) return;
     // Clear any pending debounce and save everything immediately
     if (strategyDebounceRef.current) clearTimeout(strategyDebounceRef.current);
+    // Show success immediately — auto-save already handles persistence
+    setShowSaveSuccess(true);
+    setTimeout(() => setShowSaveSuccess(false), 2000);
     updateUserStrategy(user.id, {
       missionStatement,
       brandValues,
@@ -977,9 +980,6 @@ export function useStrategyState() {
         pinterestUrl,
         threeYearVision,
       },
-    }).then(() => {
-      setShowSaveSuccess(true);
-      setTimeout(() => setShowSaveSuccess(false), 2000);
     }).catch(console.error);
   }, [user?.id, missionStatement, brandValues, contentValues, selectedTones, audienceAgeRanges, audienceStruggles, audienceDesires, additionalNotes, noteLinks, noteFiles, visionBoardImages, pinterestUrl, threeYearVision]);
 
