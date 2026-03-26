@@ -6,6 +6,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import LoginModal from "./components/LoginModal";
 import { MobileInterstitialWrapper } from "./components/MobileInterstitial";
 import Layout from "./components/Layout";
+import { BrandDealsProvider } from "./contexts/BrandDealsContext";
 
 // Lazy-load import functions (stored so we can preload on hover)
 const pageImports = {
@@ -172,6 +173,7 @@ function App() {
       <ErrorBoundary>
         <ThemeProvider defaultTheme="system" storageKey="vite-react-theme">
           <AuthProvider>
+            <BrandDealsProvider>
             <LoginModal />
             <Toaster />
             <Routes>
@@ -214,6 +216,7 @@ function App() {
 
               <Route path="*" element={<Suspense fallback={<PageLoader />}><NotFound /></Suspense>} />
             </Routes>
+            </BrandDealsProvider>
         </AuthProvider>
       </ThemeProvider>
       </ErrorBoundary>

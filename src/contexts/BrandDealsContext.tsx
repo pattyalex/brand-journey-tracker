@@ -1,8 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   BrandDeal,
-  Deliverable,
   getUserBrandDeals,
   createBrandDeal,
   updateBrandDealWithDeliverables,
@@ -12,14 +11,7 @@ import {
 } from '@/services/brandDealsService';
 import { toast } from 'sonner';
 
-// Re-export types for convenience
-export type { BrandDeal, Deliverable } from '@/services/brandDealsService';
-
-// Module-level cache so deals persist across navigations
-let cachedDeals: BrandDeal[] | null = null;
-let cachedUserId: string | null = null;
-
-interface UseBrandDealsReturn {
+interface BrandDealsContextValue {
   deals: BrandDeal[];
   isLoading: boolean;
   error: string | null;
@@ -31,36 +23,32 @@ interface UseBrandDealsReturn {
   refreshDeals: () => Promise<void>;
 }
 
-export const useBrandDeals = (): UseBrandDealsReturn => {
+const BrandDealsContext = createContext<BrandDealsContextValue | null>(null);
+
+export const BrandDealsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, isAuthLoaded } = useAuth();
-  // Use cached deals as initial state (user check happens in loadDeals)
-  const [deals, setDeals] = useState<BrandDeal[]>(cachedDeals ?? []);
-  const [isLoading, setIsLoading] = useState(cachedDeals === null);
+  const [deals, setDeals] = useState<BrandDeal[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [loadedForUser, setLoadedForUser] = useState<string | null>(null);
 
-  // Keep cache in sync with state
-  const updateDeals = useCallback((newDeals: BrandDeal[]) => {
-    setDeals(newDeals);
-    cachedDeals = newDeals;
-    cachedUserId = user?.id || null;
-  }, [user?.id]);
-
-  // Load deals from Supabase
   const loadDeals = useCallback(async () => {
     if (!user?.id) {
-      updateDeals([]);
+      setDeals([]);
       setIsLoading(false);
       return;
     }
 
+    // Don't show loading spinner if we already have data for this user
+    if (loadedForUser !== user.id) {
+      setIsLoading(true);
+    }
+
     try {
-      // Only show loading if we have no cached data for this user
-      if (cachedUserId !== user.id) {
-        setIsLoading(true);
-      }
       setError(null);
       const data = await getUserBrandDeals(user.id);
-      updateDeals(data);
+      setDeals(data);
+      setLoadedForUser(user.id);
     } catch (err) {
       console.error('Error loading brand deals:', err);
       setError('Failed to load brand deals');
@@ -68,88 +56,69 @@ export const useBrandDeals = (): UseBrandDealsReturn => {
     } finally {
       setIsLoading(false);
     }
-  }, [user?.id, updateDeals]);
+  }, [user?.id, loadedForUser]);
 
-  // Load deals on mount and when user changes
   useEffect(() => {
     if (isAuthLoaded) {
       loadDeals();
     }
   }, [isAuthLoaded, loadDeals]);
 
-  // Helper to update deals state and cache together
-  const setDealsAndCache = useCallback((updater: (prev: BrandDeal[]) => BrandDeal[]) => {
-    setDeals(prev => {
-      const next = updater(prev);
-      cachedDeals = next;
-      cachedUserId = user?.id || null;
-      return next;
-    });
-  }, [user?.id]);
-
-  // Add a new deal
   const addDeal = useCallback(async (dealData: Omit<BrandDeal, 'id' | 'createdAt'>) => {
     if (!user?.id) {
       toast.error('You must be logged in to add deals');
       return;
     }
-
     try {
       const newDeal = await createBrandDeal(user.id, dealData);
-      setDealsAndCache(prev => [newDeal, ...prev]);
+      setDeals(prev => [newDeal, ...prev]);
       toast.success(`${newDeal.brandName} added successfully`);
     } catch (err) {
       console.error('Error adding brand deal:', err);
       toast.error('Failed to add brand deal');
       throw err;
     }
-  }, [user?.id, setDealsAndCache]);
+  }, [user?.id]);
 
-  // Update a deal
   const updateDeal = useCallback(async (id: string, updates: Partial<BrandDeal>) => {
     if (!user?.id) {
       toast.error('You must be logged in to update deals');
       return;
     }
-
     try {
       const updatedDeal = await updateBrandDealWithDeliverables(id, updates);
-      setDealsAndCache(prev => prev.map(d => d.id === id ? updatedDeal : d));
+      setDeals(prev => prev.map(d => d.id === id ? updatedDeal : d));
     } catch (err) {
       console.error('Error updating brand deal:', err);
       toast.error('Failed to update brand deal');
       throw err;
     }
-  }, [user?.id, setDealsAndCache]);
+  }, [user?.id]);
 
-  // Delete a deal
   const deleteDeal = useCallback(async (id: string) => {
     if (!user?.id) {
       toast.error('You must be logged in to delete deals');
       return;
     }
-
     try {
       await deleteBrandDeal(id);
-      setDealsAndCache(prev => prev.filter(d => d.id !== id));
+      setDeals(prev => prev.filter(d => d.id !== id));
       toast.success('Deal deleted');
     } catch (err) {
       console.error('Error deleting brand deal:', err);
       toast.error('Failed to delete brand deal');
       throw err;
     }
-  }, [user?.id, setDealsAndCache]);
+  }, [user?.id]);
 
-  // Archive a deal
   const archiveDeal = useCallback(async (id: string) => {
     if (!user?.id) {
       toast.error('You must be logged in to archive deals');
       return;
     }
-
     try {
       const archivedDeal = await archiveBrandDeal(id);
-      setDealsAndCache(prev => prev.map(d => d.id === id ? archivedDeal : d));
+      setDeals(prev => prev.map(d => d.id === id ? archivedDeal : d));
       toast.success('Deal archived', {
         description: 'You can view archived deals from the Active Deals card',
       });
@@ -158,18 +127,16 @@ export const useBrandDeals = (): UseBrandDealsReturn => {
       toast.error('Failed to archive brand deal');
       throw err;
     }
-  }, [user?.id, setDealsAndCache]);
+  }, [user?.id]);
 
-  // Unarchive a deal
   const unarchiveDeal = useCallback(async (id: string) => {
     if (!user?.id) {
       toast.error('You must be logged in to restore deals');
       return;
     }
-
     try {
       const restoredDeal = await unarchiveBrandDeal(id);
-      setDealsAndCache(prev => prev.map(d => d.id === id ? restoredDeal : d));
+      setDeals(prev => prev.map(d => d.id === id ? restoredDeal : d));
       toast.success('Deal restored');
     } catch (err) {
       console.error('Error restoring brand deal:', err);
@@ -178,20 +145,25 @@ export const useBrandDeals = (): UseBrandDealsReturn => {
     }
   }, [user?.id]);
 
-  // Refresh deals (manual reload)
-  const refreshDeals = useCallback(async () => {
-    await loadDeals();
-  }, [loadDeals]);
+  return (
+    <BrandDealsContext.Provider value={{
+      deals,
+      isLoading,
+      error,
+      addDeal,
+      updateDeal,
+      deleteDeal,
+      archiveDeal,
+      unarchiveDeal,
+      refreshDeals: loadDeals,
+    }}>
+      {children}
+    </BrandDealsContext.Provider>
+  );
+};
 
-  return {
-    deals,
-    isLoading,
-    error,
-    addDeal,
-    updateDeal,
-    deleteDeal,
-    archiveDeal,
-    unarchiveDeal,
-    refreshDeals,
-  };
+export const useBrandDealsContext = () => {
+  const ctx = useContext(BrandDealsContext);
+  if (!ctx) throw new Error('useBrandDealsContext must be used within BrandDealsProvider');
+  return ctx;
 };

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useBrandDeals } from "@/hooks/useBrandDeals";
+import { useBrandDealsContext } from "@/contexts/BrandDealsContext";
 import { EVENTS, emit } from "@/lib/events";
 import { getString } from "@/lib/storage";
 import { toast } from "sonner";
@@ -9,7 +9,7 @@ import { BrandDeal, statusOrder } from "./brandsTypes";
 
 export function useBrandsPage() {
   const { user } = useAuth();
-  const { deals, isLoading: dealsLoading, addDeal, updateDeal, deleteDeal, archiveDeal, unarchiveDeal } = useBrandDeals();
+  const { deals, isLoading: dealsLoading, addDeal, updateDeal, deleteDeal, archiveDeal, unarchiveDeal } = useBrandDealsContext();
   const isReady = !dealsLoading;
   const migrationRanRef = useRef(false);
   const [view, setView] = useState<'table' | 'kanban'>('kanban');
