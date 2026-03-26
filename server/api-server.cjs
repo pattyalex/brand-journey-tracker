@@ -1290,6 +1290,22 @@ app.post('/api/save-onboarding-responses', verifySupabaseAuth, async (req, res) 
   }
 });
 
+// Delete a user's auth account (requires service role)
+app.post('/api/delete-user', verifySupabaseAuth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
+    if (error) {
+      console.error('Error deleting auth user:', error);
+      return res.status(500).json({ error: error.message });
+    }
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error in delete-user endpoint:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });

@@ -356,7 +356,17 @@ export function useMyAccount() {
       }
       Object.keys(localStorage).forEach(k => { if (k.startsWith('sb-') || k.startsWith(user?.id ?? '___')) localStorage.removeItem(k); });
       localStorage.clear();
-      await supabase.auth.admin?.deleteUser?.(user?.id ?? '');
+      const session = await supabase.auth.getSession();
+      const token = session.data.session?.access_token;
+      if (token) {
+        await fetch('/api/delete-user', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+      }
       await supabase.auth.signOut();
       window.location.replace('/login?deleted=true');
     } catch (err) {
