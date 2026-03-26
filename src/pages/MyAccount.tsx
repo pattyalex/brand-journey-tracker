@@ -25,6 +25,7 @@ const MyAccount = () => {
     showDeleteDialog, setShowDeleteDialog,
     deleteEmailInput, setDeleteEmailInput,
     deletingAccount,
+    accountDeleted,
     currentPassword, setCurrentPassword,
     newPassword, setNewPassword,
     confirmPassword, setConfirmPassword,
@@ -137,6 +138,7 @@ const MyAccount = () => {
                     deleteEmailInput={deleteEmailInput}
                     setDeleteEmailInput={setDeleteEmailInput}
                     deletingAccount={deletingAccount}
+                    accountDeleted={accountDeleted}
                     handleDeleteAccount={handleDeleteAccount}
                   />
                 )}

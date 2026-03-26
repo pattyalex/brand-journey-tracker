@@ -20,6 +20,7 @@ export function useMyAccount() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteEmailInput, setDeleteEmailInput] = useState('');
   const [deletingAccount, setDeletingAccount] = useState(false);
+  const [accountDeleted, setAccountDeleted] = useState(false);
 
   // Password change state
   const [currentPassword, setCurrentPassword] = useState('');
@@ -357,11 +358,11 @@ export function useMyAccount() {
       localStorage.clear();
       await supabase.auth.admin?.deleteUser?.(user?.id ?? '');
       await supabase.auth.signOut();
-      window.location.replace('/landing.html');
+      window.location.replace('/login?deleted=true');
     } catch (err) {
       console.error('Error deleting account:', err);
       await supabase.auth.signOut();
-      window.location.replace('/landing.html');
+      window.location.replace('/login?deleted=true');
     }
   };
 
@@ -692,6 +693,7 @@ export function useMyAccount() {
     showDeleteDialog, setShowDeleteDialog,
     deleteEmailInput, setDeleteEmailInput,
     deletingAccount,
+    accountDeleted,
     // Password
     currentPassword, setCurrentPassword,
     newPassword, setNewPassword,

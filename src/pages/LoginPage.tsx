@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
+import { Mail } from 'lucide-react';
 
 const LoginPage: React.FC = () => {
   const { openLoginModal, isAuthenticated, isAuthLoaded, loginOpen, logout } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [hasDecided, setHasDecided] = useState(false);
   const [verifyingSession, setVerifyingSession] = useState(false);
+  const isAccountDeleted = searchParams.get('deleted') === 'true';
 
   useEffect(() => {
     // Wait for auth to load before making any decisions
@@ -49,8 +52,8 @@ const LoginPage: React.FC = () => {
       return;
     }
 
-    // Not authenticated - open the login modal
-    if (!loginOpen && !hasDecided) {
+    // Not authenticated - open the login modal (unless account was just deleted)
+    if (!loginOpen && !hasDecided && !isAccountDeleted) {
       setHasDecided(true);
       openLoginModal();
     }
@@ -104,21 +107,49 @@ const LoginPage: React.FC = () => {
         }}
       />
 
-      {/* Center content - just shows while modal loads */}
+      {/* Center content */}
       <div className="relative z-10 flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          {/* Logo */}
-          <a
-            href="/landing.html"
-            className="inline-flex items-center justify-center w-16 h-16 rounded-2xl text-white font-serif text-2xl mb-6 transition-transform hover:scale-105"
-            style={{
-              background: 'linear-gradient(135deg, #7a3868 0%, #612a4f 50%, #4e2040 100%)',
-              boxShadow: '0 8px 24px rgba(97, 42, 79, 0.3)'
-            }}
-          >
-            M
-          </a>
-        </div>
+        {isAccountDeleted ? (
+          <div className="text-center max-w-md mx-auto px-6">
+            <div className="w-16 h-16 rounded-2xl bg-[#612a4f]/10 flex items-center justify-center mx-auto mb-6">
+              <Mail className="w-7 h-7 text-[#612a4f]" />
+            </div>
+            <h1 className="text-2xl text-[#2d2a26] mb-3" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>
+              Your account has been deleted
+            </h1>
+            <p className="text-sm text-[#8B7082] mb-2" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+              All your data has been permanently removed.
+            </p>
+            <p className="text-sm text-[#8B7082] mb-8" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+              We're sorry to see you go. If you ever want to come back, you're always welcome.
+            </p>
+            <a
+              href="/landing.html"
+              className="inline-block px-6 py-3 rounded-xl text-white text-sm font-medium transition-transform hover:scale-105"
+              style={{
+                background: 'linear-gradient(135deg, #7a3868 0%, #612a4f 50%, #4e2040 100%)',
+                fontFamily: "'DM Sans', sans-serif",
+                boxShadow: '0 4px 16px rgba(97, 42, 79, 0.3)'
+              }}
+            >
+              Back to HeyMeg
+            </a>
+          </div>
+        ) : (
+          <div className="text-center">
+            {/* Logo */}
+            <a
+              href="/landing.html"
+              className="inline-flex items-center justify-center w-16 h-16 rounded-2xl text-white font-serif text-2xl mb-6 transition-transform hover:scale-105"
+              style={{
+                background: 'linear-gradient(135deg, #7a3868 0%, #612a4f 50%, #4e2040 100%)',
+                boxShadow: '0 8px 24px rgba(97, 42, 79, 0.3)'
+              }}
+            >
+              M
+            </a>
+          </div>
+        )}
       </div>
     </div>
   );

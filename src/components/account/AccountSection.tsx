@@ -20,6 +20,7 @@ interface AccountSectionProps {
   deleteEmailInput: string;
   setDeleteEmailInput: (v: string) => void;
   deletingAccount: boolean;
+  accountDeleted: boolean;
   handleDeleteAccount: () => void;
 }
 
@@ -27,7 +28,7 @@ const AccountSection = ({
   name, setName, email, setEmail, avatarUrl, uploadingAvatar, handleAvatarUpload,
   loading, updatingProfile, handleProfileUpdate,
   showDeleteDialog, setShowDeleteDialog, deleteEmailInput, setDeleteEmailInput,
-  deletingAccount, handleDeleteAccount,
+  deletingAccount, accountDeleted, handleDeleteAccount,
 }: AccountSectionProps) => {
   const [sendingResetEmail, setSendingResetEmail] = useState(false);
   const [resetEmailSent, setResetEmailSent] = useState(false);
@@ -259,87 +260,111 @@ const AccountSection = ({
       </div>
 
       {/* Delete Account Confirmation Dialog */}
-      {showDeleteDialog && (
+      {(showDeleteDialog || accountDeleted) && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.5)' }}>
           <div
             className="bg-white rounded-[24px] p-8 w-full max-w-md shadow-2xl"
-            style={{ border: '1px solid rgba(220, 38, 38, 0.15)' }}
+            style={{ border: accountDeleted ? '1px solid rgba(45, 42, 38, 0.1)' : '1px solid rgba(220, 38, 38, 0.15)' }}
           >
-            {/* Header */}
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center flex-shrink-0">
-                <AlertTriangle className="w-6 h-6 text-red-500" />
-              </div>
-              <div>
-                <h2 className="text-lg text-[#2d2a26]" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>
-                  Delete your account?
-                </h2>
-                <p className="text-xs text-red-500 font-medium" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                  This cannot be undone
-                </p>
-              </div>
-            </div>
+            {accountDeleted ? (
+              <>
+                <div className="text-center py-4">
+                  <div className="w-16 h-16 rounded-2xl bg-[#612a4f]/10 flex items-center justify-center mx-auto mb-5">
+                    <Mail className="w-7 h-7 text-[#612a4f]" />
+                  </div>
+                  <h2 className="text-xl text-[#2d2a26] mb-2" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>
+                    Your account has been deleted
+                  </h2>
+                  <p className="text-sm text-[#8B7082] mb-4" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                    All your data has been permanently removed.
+                  </p>
+                  <p className="text-sm text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                    We're sorry to see you go. If you ever want to come back, you're always welcome.
+                  </p>
+                  <p className="text-xs text-[#8B7082]/60 mt-6" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                    Redirecting you shortly...
+                  </p>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Header */}
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center flex-shrink-0">
+                    <AlertTriangle className="w-6 h-6 text-red-500" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg text-[#2d2a26]" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>
+                      Delete your account?
+                    </h2>
+                    <p className="text-xs text-red-500 font-medium" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                      This cannot be undone
+                    </p>
+                  </div>
+                </div>
 
-            {/* Warning box */}
-            <div className="rounded-xl bg-red-50 border border-red-100 p-4 mb-6 space-y-2">
-              <p className="text-sm font-medium text-red-700" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                Everything will be deleted immediately:
-              </p>
-              <ul className="text-sm text-red-600 space-y-1 list-disc list-inside" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                <li>Your profile and account info</li>
-                <li>All your content, ideas, and notes</li>
-                <li>Your calendar and partnerships</li>
-                <li>All settings and preferences</li>
-              </ul>
-            </div>
+                {/* Warning box */}
+                <div className="rounded-xl bg-red-50 border border-red-100 p-4 mb-6 space-y-2">
+                  <p className="text-sm font-medium text-red-700" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                    Everything will be deleted immediately:
+                  </p>
+                  <ul className="text-sm text-red-600 space-y-1 list-disc list-inside" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                    <li>Your profile and account info</li>
+                    <li>All your content, ideas, and notes</li>
+                    <li>Your calendar and partnerships</li>
+                    <li>All settings and preferences</li>
+                  </ul>
+                </div>
 
-            {/* Export nudge */}
-            <div className="rounded-xl bg-[#612a4f]/5 border border-[#612a4f]/10 p-4 mb-6 flex items-start gap-3">
-              <Download className="w-4 h-4 text-[#612a4f] mt-0.5 flex-shrink-0" />
-              <p className="text-sm text-[#612a4f]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                <strong>Export your data first.</strong> Go to the Data section in Settings to download everything before you delete. You won't be able to recover it after.
-              </p>
-            </div>
+                {/* Export nudge */}
+                <div className="rounded-xl bg-[#612a4f]/5 border border-[#612a4f]/10 p-4 mb-6 flex items-start gap-3">
+                  <Download className="w-4 h-4 text-[#612a4f] mt-0.5 flex-shrink-0" />
+                  <p className="text-sm text-[#612a4f]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                    <strong>Export your data first.</strong> Go to the Data section in Settings to download everything before you delete. You won't be able to recover it after.
+                  </p>
+                </div>
 
-            {/* Email confirmation */}
-            <div className="space-y-2 mb-6">
-              <label className="text-sm font-medium text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                Type your email address to confirm
-              </label>
-              <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                {email}
-              </p>
-              <input
-                type="email"
-                value={deleteEmailInput}
-                onChange={(e) => setDeleteEmailInput(e.target.value)}
-                placeholder="Enter your email"
-                className="w-full h-11 px-4 rounded-xl border border-[#E8E4E6] bg-white text-sm focus:border-red-400 focus:ring-2 focus:ring-red-200 outline-none transition-all"
-                style={{ fontFamily: "'DM Sans', sans-serif" }}
-              />
-            </div>
+                {/* Email confirmation */}
+                <div className="space-y-2 mb-6">
+                  <label className="text-sm font-medium text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                    Type your email address to confirm
+                  </label>
+                  <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                    {email}
+                  </p>
+                  <input
+                    type="email"
+                    value={deleteEmailInput}
+                    onChange={(e) => setDeleteEmailInput(e.target.value)}
+                    placeholder="Enter your email"
+                    className="w-full h-11 px-4 rounded-xl border border-[#E8E4E6] bg-white text-sm focus:border-red-400 focus:ring-2 focus:ring-red-200 outline-none transition-all"
+                    style={{ fontFamily: "'DM Sans', sans-serif" }}
+                  />
+                </div>
 
-            {/* Actions */}
-            <div className="flex gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setShowDeleteDialog(false)}
-                className="flex-1 h-11 rounded-xl border-[#8B7082]/30 text-[#8B7082] hover:bg-[#f9f7f5]"
-                style={{ fontFamily: "'DM Sans', sans-serif" }}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="button"
-                onClick={handleDeleteAccount}
-                disabled={deletingAccount || deleteEmailInput.trim().toLowerCase() !== email.trim().toLowerCase()}
-                className="flex-1 h-11 rounded-xl text-white font-medium bg-red-500 hover:bg-red-600 disabled:opacity-40 disabled:cursor-not-allowed"
-                style={{ fontFamily: "'DM Sans', sans-serif" }}
-              >
-                {deletingAccount ? 'Deleting...' : 'Yes, delete my account'}
-              </Button>
-            </div>
+                {/* Actions */}
+                <div className="flex gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowDeleteDialog(false)}
+                    className="flex-1 h-11 rounded-xl border-[#8B7082]/30 text-[#8B7082] hover:bg-[#f9f7f5]"
+                    style={{ fontFamily: "'DM Sans', sans-serif" }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={handleDeleteAccount}
+                    disabled={deletingAccount || deleteEmailInput.trim().toLowerCase() !== email.trim().toLowerCase()}
+                    className="flex-1 h-11 rounded-xl text-white font-medium bg-red-500 hover:bg-red-600 disabled:opacity-40 disabled:cursor-not-allowed"
+                    style={{ fontFamily: "'DM Sans', sans-serif" }}
+                  >
+                    {deletingAccount ? 'Deleting...' : 'Yes, delete my account'}
+                  </Button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
