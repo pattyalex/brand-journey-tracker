@@ -292,7 +292,6 @@ export function useStrategyState() {
     }, 500);
     return () => clearTimeout(timer);
   }, [missionStatement]);
-  }, [contentValues]);
 
   useEffect(() => {
     try {
