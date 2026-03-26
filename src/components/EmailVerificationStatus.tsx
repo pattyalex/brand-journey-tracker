@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Mail, CheckCircle, RefreshCw, AlertCircle, ArrowLeft } from 'lucide-react';
 import { resendVerificationEmail, checkEmailVerification } from '@/auth';
+import { supabase } from '@/lib/supabase';
 
 interface EmailVerificationStatusProps {
   email: string;
@@ -50,6 +51,17 @@ const EmailVerificationStatus: React.FC<EmailVerificationStatusProps> = ({
       if (result.success && result.isVerified) {
         setMessage('Email verified successfully!');
         setMessageType('success');
+
+        // Send welcome email now that email is verified (fire and forget)
+        const apiBase = import.meta.env.DEV ? 'http://localhost:3001' : '';
+        const { data: { user: verifiedUser } } = await supabase.auth.getUser();
+        const userName = verifiedUser?.user_metadata?.full_name || verifiedUser?.user_metadata?.name || '';
+        fetch(`${apiBase}/api/send-welcome-email`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, name: userName }),
+        }).catch(err => console.error('Failed to send welcome email:', err));
+
         setTimeout(() => {
           onVerificationComplete();
         }, 1000);

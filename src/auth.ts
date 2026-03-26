@@ -105,19 +105,15 @@ export async function signUp(email: string, password: string, fullName: string):
     // Do NOT insert from the client — the anon role can't write to profiles,
     // and the trigger runs with SECURITY DEFINER (postgres privileges).
 
-    // Send welcome email to user + admin notification (fire and forget)
+    // Admin notification sent at signup (fire and forget)
     const apiBase = import.meta.env.DEV ? 'http://localhost:3001' : '';
-    fetch(`${apiBase}/api/send-welcome-email`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: userEnteredEmail, name: fullName }),
-    }).catch(err => console.error('Failed to send welcome email:', err));
-
     fetch(`${apiBase}/api/send-signup-admin-notification`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: userEnteredEmail, name: fullName, userId }),
     }).catch(err => console.error('Failed to send signup admin notification:', err));
+
+    // Welcome email is sent AFTER email verification (see EmailVerificationStatus.tsx)
 
     if (!isEmailConfirmed) {
       console.log('📧 Email verification required');

@@ -1345,7 +1345,7 @@ app.post('/api/send-welcome-email', async (req, res) => {
             <li>Set up your brand profile</li>
             <li>Define your content pillars</li>
             <li>Plan your content calendar</li>
-            <li>Track your brand journey</li>
+            <li>Track your partnerships</li>
           </ul>
           <p style="color: #555; font-size: 16px; line-height: 1.6;">
             If you have any questions, just reply to this email — we're here to help!
@@ -1414,7 +1414,7 @@ app.post('/api/send-signup-admin-notification', async (req, res) => {
 
     const { data, error } = await resend.emails.send({
       from: 'HeyMeg <noreply@heymeg.ai>',
-      to: 'contact@heymeg.ai',
+      to: 'patricia.cincora@gmail.com',
       subject: `New User Signup: ${name || 'Unknown'} (${email})`,
       html: `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
