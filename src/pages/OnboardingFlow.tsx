@@ -655,19 +655,40 @@ const OnboardingFlow: React.FC = () => {
               // Store in localStorage as backup
               localStorage.setItem('pending_onboarding_responses', JSON.stringify(onboardingResponses));
 
-              // Save directly to profiles.preferences
+              // Save to profiles.preferences and user_onboarding_responses table
               if (user?.id) {
                 try {
+                  // Save to profiles.preferences
                   const { error } = await supabase
                     .from('profiles')
                     .update({ preferences: { onboarding_responses: onboardingResponses } })
                     .eq('id', user.id);
 
                   if (error) {
-                    console.error('Error saving onboarding responses:', error);
+                    console.error('Error saving onboarding responses to profiles:', error);
                   } else {
                     localStorage.removeItem('pending_onboarding_responses');
                     console.log('✅ Onboarding responses saved to profiles.preferences');
+                  }
+
+                  // Also save to user_onboarding_responses table for easy querying
+                  const { error: tableError } = await supabase
+                    .from('user_onboarding_responses')
+                    .upsert({
+                      user_id: user.id,
+                      post_frequency: onboardingResponses.post_frequency,
+                      ideation_method: onboardingResponses.ideation_method,
+                      team_structure: onboardingResponses.team_structure,
+                      creator_dream: onboardingResponses.creator_dream,
+                      platforms: onboardingResponses.platforms,
+                      stuck_areas: onboardingResponses.stuck_areas,
+                      other_stuck_area: onboardingResponses.other_stuck_area,
+                    }, { onConflict: 'user_id' });
+
+                  if (tableError) {
+                    console.error('Error saving to user_onboarding_responses:', tableError);
+                  } else {
+                    console.log('✅ Onboarding responses saved to user_onboarding_responses table');
                   }
                 } catch (err) {
                   console.error('Failed to save onboarding responses:', err);
