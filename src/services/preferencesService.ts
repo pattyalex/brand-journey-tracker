@@ -25,6 +25,8 @@ export interface UserPreferences {
   editorChecklistItems: Array<{ id: string; text: string; checked: boolean }>;
   hasCompletedOnboarding: boolean;
   hasSeenGoalsOnboarding: boolean;
+  plannerCurrentView?: string;
+  plannerContentDisplayMode?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -51,6 +53,8 @@ interface DbUserPreferences {
   editor_checklist_items: Array<{ id: string; text: string; checked: boolean }>;
   has_completed_onboarding: boolean;
   has_seen_goals_onboarding: boolean;
+  planner_current_view: string | null;
+  planner_content_display_mode: string | null;
 }
 
 // =====================================================
@@ -76,6 +80,8 @@ const dbToUserPreferences = (db: DbUserPreferences): UserPreferences => ({
   editorChecklistItems: db.editor_checklist_items || [],
   hasCompletedOnboarding: db.has_completed_onboarding || false,
   hasSeenGoalsOnboarding: db.has_seen_goals_onboarding || false,
+  plannerCurrentView: db.planner_current_view || undefined,
+  plannerContentDisplayMode: db.planner_content_display_mode || undefined,
   createdAt: db.created_at,
   updatedAt: db.updated_at,
 });
@@ -140,6 +146,8 @@ export const updateUserPreferences = async (
   if (updates.editorChecklistItems !== undefined) dbUpdates.editor_checklist_items = updates.editorChecklistItems;
   if (updates.hasCompletedOnboarding !== undefined) dbUpdates.has_completed_onboarding = updates.hasCompletedOnboarding;
   if (updates.hasSeenGoalsOnboarding !== undefined) dbUpdates.has_seen_goals_onboarding = updates.hasSeenGoalsOnboarding;
+  if (updates.plannerCurrentView !== undefined) dbUpdates.planner_current_view = updates.plannerCurrentView;
+  if (updates.plannerContentDisplayMode !== undefined) dbUpdates.planner_content_display_mode = updates.plannerContentDisplayMode;
 
   const data = await updateOneBy<DbUserPreferences>('user_preferences', 'user_id', userId, dbUpdates);
   return dbToUserPreferences(data);

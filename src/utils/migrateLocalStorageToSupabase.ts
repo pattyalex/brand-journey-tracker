@@ -479,6 +479,18 @@ export const migratePreferences = async (userId: string): Promise<MigrationResul
       result.migratedCount++;
     }
 
+    const plannerCurrentView = getString(StorageKeys.plannerCurrentView);
+    if (plannerCurrentView) {
+      updates.plannerCurrentView = plannerCurrentView;
+      result.migratedCount++;
+    }
+
+    const plannerContentDisplayMode = getString(StorageKeys.plannerContentDisplayMode);
+    if (plannerContentDisplayMode) {
+      updates.plannerContentDisplayMode = plannerContentDisplayMode;
+      result.migratedCount++;
+    }
+
     if (Object.keys(updates).length > 0) {
       await updateUserPreferences(userId, updates as Parameters<typeof updateUserPreferences>[1]);
     }

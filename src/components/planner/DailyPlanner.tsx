@@ -47,8 +47,10 @@ import { usePlannerState } from "./dailyPlanner/hooks/usePlannerState";
 import { getPlannerInitialSettings, usePlannerPersistence } from "./dailyPlanner/hooks/usePlannerPersistence";
 import { usePlannerActions } from "./dailyPlanner/hooks/usePlannerActions";
 import { PlannerProvider } from "@/contexts/PlannerContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 export const DailyPlanner = () => {
+  const { user } = useAuth();
   const initialSettings = getPlannerInitialSettings();
   const { state, setters, refs, derived, helpers } = usePlannerState(initialSettings);
 
@@ -194,6 +196,7 @@ export const DailyPlanner = () => {
     todayScrollPosition: state.todayScrollPosition,
     weeklyScrollPosition: state.weeklyScrollPosition,
     globalTasks: state.globalTasks,
+    userId: user?.id,
     setPlannerData: setters.setPlannerData,
     setGlobalTasks: setters.setGlobalTasks,
     setAllTasks: setters.setAllTasks,
@@ -206,6 +209,15 @@ export const DailyPlanner = () => {
   useEffect(() => {
     persistence.refreshPlannerData();
   }, [state.currentView, state.selectedDate]);
+
+  // Sync currentView and contentDisplayMode to Supabase
+  useEffect(() => {
+    persistence.savePlannerCurrentView(state.currentView);
+  }, [state.currentView]);
+
+  useEffect(() => {
+    persistence.savePlannerContentDisplayMode(state.contentDisplayMode);
+  }, [state.contentDisplayMode]);
 
   const actions = usePlannerActions({
     selectedDate: state.selectedDate,

@@ -3,6 +3,9 @@ import { format } from "date-fns";
 import { EVENTS, on, emit } from "@/lib/events";
 import { StorageKeys, getString, setJSON, setString } from "@/lib/storage";
 import { GlobalPlannerData, PlannerDay, PlannerItem } from "@/types/planner";
+import { updateUserPreferences } from "@/services/preferencesService";
+import { ContentDisplayMode } from "./usePlannerState";
+import { PlannerView } from "../types";
 
 export const getPlannerInitialSettings = () => {
   const selectedTimezone = getString(StorageKeys.selectedTimezone) || 'auto';
@@ -68,6 +71,7 @@ interface UsePlannerPersistenceArgs {
   todayScrollPosition: number;
   weeklyScrollPosition: number;
   globalTasks: string;
+  userId?: string;
   setPlannerData: React.Dispatch<React.SetStateAction<PlannerDay[]>>;
   setGlobalTasks: React.Dispatch<React.SetStateAction<string>>;
   setAllTasks: React.Dispatch<React.SetStateAction<PlannerItem[]>>;
@@ -83,6 +87,7 @@ export const usePlannerPersistence = ({
   todayScrollPosition,
   weeklyScrollPosition,
   globalTasks,
+  userId,
   setPlannerData,
   setGlobalTasks,
   setAllTasks,
@@ -283,6 +288,20 @@ export const usePlannerPersistence = ({
     }
   };
 
+  const savePlannerCurrentView = (view: PlannerView) => {
+    setString(StorageKeys.plannerCurrentView, view);
+    if (userId) {
+      updateUserPreferences(userId, { plannerCurrentView: view }).catch(console.error);
+    }
+  };
+
+  const savePlannerContentDisplayMode = (mode: ContentDisplayMode) => {
+    setString(StorageKeys.plannerContentDisplayMode, mode);
+    if (userId) {
+      updateUserPreferences(userId, { plannerContentDisplayMode: mode }).catch(console.error);
+    }
+  };
+
   return {
     savePlannerData,
     saveAllTasks,
@@ -293,5 +312,7 @@ export const usePlannerPersistence = ({
     saveTodayZoomLevel,
     saveWeeklyZoomLevel,
     refreshPlannerData,
+    savePlannerCurrentView,
+    savePlannerContentDisplayMode,
   };
 };

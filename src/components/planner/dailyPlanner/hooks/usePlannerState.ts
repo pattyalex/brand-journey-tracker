@@ -70,14 +70,31 @@ export const usePlannerState = ({
 }: PlannerInitialSettings) => {
   const [searchParams] = useSearchParams();
 
-  // Get initial view from URL parameter, default to 'today'
+  // Get initial view from URL parameter, then localStorage, default to 'today'
   const getInitialView = (): PlannerView => {
     const viewParam = searchParams.get('view');
     const validViews: PlannerView[] = ['today', 'day', 'week', 'calendar', 'month'];
     if (viewParam && validViews.includes(viewParam as PlannerView)) {
       return viewParam as PlannerView;
     }
+    const saved = getString(StorageKeys.plannerCurrentView);
+    if (saved && validViews.includes(saved as PlannerView)) {
+      return saved as PlannerView;
+    }
     return 'today';
+  };
+
+  // Get initial content display mode from URL parameter, then localStorage, default to 'both'
+  const getInitialContentDisplayMode = (): ContentDisplayMode => {
+    const modeParam = searchParams.get('mode');
+    if (modeParam === 'content' || modeParam === 'tasks' || modeParam === 'both') {
+      return modeParam as ContentDisplayMode;
+    }
+    const saved = getString(StorageKeys.plannerContentDisplayMode);
+    if (saved === 'content' || saved === 'tasks' || saved === 'both') {
+      return saved as ContentDisplayMode;
+    }
+    return 'both';
   };
 
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -90,7 +107,7 @@ export const usePlannerState = ({
   const [calendarFilterMode, setCalendarFilterMode] = useState<'all' | 'content'>('all');
 
   // Content display mode: 'tasks', 'content', or 'both'
-  const [contentDisplayMode, setContentDisplayMode] = useState<ContentDisplayMode>('both');
+  const [contentDisplayMode, setContentDisplayMode] = useState<ContentDisplayMode>(getInitialContentDisplayMode());
 
   // Derived values for convenience
   const showTasks = contentDisplayMode === 'tasks' || contentDisplayMode === 'both';
