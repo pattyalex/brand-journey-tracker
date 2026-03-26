@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { getCurrentUser, updateUserProfile, updateUserPassword, supabase } from '@/lib/supabase';
 import { StorageKeys, getString, setString } from "@/lib/storage";
-import { updateTimezone } from '@/services/preferencesService';
+import { getUserPreferences, updateTimezone } from '@/services/preferencesService';
 
 export function useMyAccount() {
   const navigate = useNavigate();
@@ -279,11 +279,16 @@ export function useMyAccount() {
     }
   };
 
-  const handleTimezoneChange = (timezone: string) => {
+  const handleTimezoneChange = async (timezone: string) => {
     setSelectedTimezone(timezone);
     setString(StorageKeys.selectedTimezone, timezone);
     if (user?.id) {
-      updateTimezone(user.id, timezone).catch(console.error);
+      try {
+        await getUserPreferences(user.id);
+        await updateTimezone(user.id, timezone);
+      } catch (e) {
+        console.error('Failed to save timezone:', e);
+      }
     }
     toast.success('Timezone updated');
   };
