@@ -63,11 +63,7 @@ export function useStrategyState() {
   const [missionStatement, setMissionStatement] = useState(() => getString(StorageKeys.missionStatement) || "");
   const [missionStatementFocused, setMissionStatementFocused] = useState(false);
   const [showMissionExamples, setShowMissionExamples] = useState(true);
-  const [contentValues, setContentValues] = useState(() => getString(StorageKeys.contentValues) || "");
-  const [contentValuesFocused, setContentValuesFocused] = useState(false);
-  const [showValuesExamples, setShowValuesExamples] = useState(true);
   const [showMissionSaved, setShowMissionSaved] = useState(false);
-  const [showValuesSaved, setShowValuesSaved] = useState(false);
   const [additionalNotes, setAdditionalNotes] = useState(() => getString("strategyNotes") || "");
   const [noteLinks, setNoteLinks] = useState<{ url: string; title: string }[]>(() => {
     const saved = getString("strategyNoteLinks");
@@ -296,21 +292,6 @@ export function useStrategyState() {
     }, 500);
     return () => clearTimeout(timer);
   }, [missionStatement]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      try {
-        setString(StorageKeys.contentValues, contentValues);
-        if (contentValues.trim()) {
-          setShowValuesSaved(true);
-          setTimeout(() => setShowValuesSaved(false), 1500);
-        }
-      } catch (error) {
-        console.error('Failed to save content values:', error);
-      }
-      scheduleStrategySave({ contentValues });
-    }, 500);
-    return () => clearTimeout(timer);
   }, [contentValues]);
 
   useEffect(() => {
@@ -408,13 +389,11 @@ export function useStrategyState() {
 
       const isEmptyStrategy =
         !strategy.missionStatement &&
-        !strategy.contentValues &&
         strategy.brandValues.length === 0 &&
         !strategy.strategyNotes;
 
       if (isEmptyStrategy) {
         const localMission = getString(StorageKeys.missionStatement) || '';
-        const localContentValues = getString(StorageKeys.contentValues) || '';
         const localBrandValues = (() => {
           try { return JSON.parse(getString(StorageKeys.brandValues) || '[]'); } catch { return []; }
         })();
@@ -432,10 +411,9 @@ export function useStrategyState() {
         const localPinterestUrl = (() => {
           try { return JSON.parse(getString(StorageKeys.visionBoardData) || '{}').pinterestUrl || ''; } catch { return ''; }
         })();
-        if (localMission || localBrandValues.length > 0 || localContentValues || localNotes) {
+        if (localMission || localBrandValues.length > 0 || localNotes) {
           updateUserStrategy(user.id!, {
             missionStatement: localMission,
-            contentValues: localContentValues,
             brandValues: localBrandValues,
             strategyNotes: localNotes,
             strategyNoteLinks: localNoteLinks,
@@ -449,7 +427,6 @@ export function useStrategyState() {
         }
       } else {
         if (strategy.missionStatement) setMissionStatement(strategy.missionStatement);
-        if (strategy.contentValues) setContentValues(strategy.contentValues);
         if (strategy.brandValues.length > 0) setBrandValues(strategy.brandValues);
         if (strategy.strategyNotes) setAdditionalNotes(strategy.strategyNotes);
         if (strategy.strategyNoteLinks.length > 0) setNoteLinks(strategy.strategyNoteLinks);
@@ -967,7 +944,6 @@ export function useStrategyState() {
     updateUserStrategy(user.id, {
       missionStatement,
       brandValues,
-      contentValues,
       selectedTones,
       audienceAgeRanges,
       audienceStruggles,
@@ -981,7 +957,7 @@ export function useStrategyState() {
         threeYearVision,
       },
     }).catch(console.error);
-  }, [user?.id, missionStatement, brandValues, contentValues, selectedTones, audienceAgeRanges, audienceStruggles, audienceDesires, additionalNotes, noteLinks, noteFiles, visionBoardImages, pinterestUrl, threeYearVision]);
+  }, [user?.id, missionStatement, brandValues, selectedTones, audienceAgeRanges, audienceStruggles, audienceDesires, additionalNotes, noteLinks, noteFiles, visionBoardImages, pinterestUrl, threeYearVision]);
 
   return {
     // Auth
@@ -1004,10 +980,7 @@ export function useStrategyState() {
     missionStatement, setMissionStatement,
     missionStatementFocused, setMissionStatementFocused,
     showMissionExamples, setShowMissionExamples,
-    contentValues, setContentValues,
-    contentValuesFocused, setContentValuesFocused,
-    showValuesExamples, setShowValuesExamples,
-    showMissionSaved, showValuesSaved,
+    showMissionSaved,
     additionalNotes, setAdditionalNotes,
     noteLinks, setNoteLinks,
     noteFiles, setNoteFiles,

@@ -44,7 +44,6 @@ export const StorageKeys = {
   researchItems: "researchItems",
   bankOfIdeas: "bankOfIdeas",
   productionKanban: "productionKanban",
-  contentValues: "contentValues",
   brandValues: "brandValues",
   missionStatement: "missionStatement",
   pinnedContentIdeas: "pinnedContentIdeas",

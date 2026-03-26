@@ -32,7 +32,6 @@ export interface UserStrategy {
   userId: string;
   brandValues: string[];
   missionStatement: string;
-  contentValues: string;
   visionBoardData: {
     images: VisionBoardImage[];
     pinterestUrl: string;
@@ -57,7 +56,6 @@ interface DbUserStrategy {
   updated_at: string;
   brand_values: string[];
   mission_statement: string | null;
-  content_values: string | null;
   vision_board_data: {
     images: VisionBoardImage[];
     pinterestUrl: string;
@@ -95,7 +93,6 @@ const dbToUserStrategy = (db: DbUserStrategy): UserStrategy => ({
   userId: db.user_id,
   brandValues: db.brand_values || [],
   missionStatement: db.mission_statement || '',
-  contentValues: db.content_values || '',
   visionBoardData: db.vision_board_data || { images: [], pinterestUrl: '' },
   strategyNotes: db.strategy_notes || '',
   strategyNoteLinks: db.strategy_note_links || [],
@@ -140,7 +137,6 @@ export const createUserStrategy = async (userId: string): Promise<UserStrategy> 
     user_id: userId,
     brand_values: [],
     mission_statement: '',
-    content_values: '',
     vision_board_data: { images: [], pinterestUrl: '' },
     strategy_notes: '',
     strategy_note_links: [],
@@ -162,7 +158,6 @@ export const updateUserStrategy = async (
 
   if (updates.brandValues !== undefined) dbUpdates.brand_values = updates.brandValues;
   if (updates.missionStatement !== undefined) dbUpdates.mission_statement = updates.missionStatement;
-  if (updates.contentValues !== undefined) dbUpdates.content_values = updates.contentValues;
   if (updates.visionBoardData !== undefined) dbUpdates.vision_board_data = updates.visionBoardData;
   if (updates.strategyNotes !== undefined) dbUpdates.strategy_notes = updates.strategyNotes;
   if (updates.strategyNoteLinks !== undefined) dbUpdates.strategy_note_links = updates.strategyNoteLinks;

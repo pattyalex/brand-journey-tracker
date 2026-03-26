@@ -88,7 +88,6 @@ export const migrateStrategy = async (userId: string): Promise<MigrationResult> 
   try {
     const brandValues = getString(StorageKeys.brandValues);
     const missionStatement = getString(StorageKeys.missionStatement);
-    const contentValues = getString(StorageKeys.contentValues);
     const visionBoardData = getString(StorageKeys.visionBoardData);
     const strategyNotes = getString('strategyNotes');
     const strategyNoteLinks = getString('strategyNoteLinks');
@@ -105,11 +104,6 @@ export const migrateStrategy = async (userId: string): Promise<MigrationResult> 
 
     if (missionStatement) {
       updates.missionStatement = missionStatement;
-      result.migratedCount++;
-    }
-
-    if (contentValues) {
-      updates.contentValues = contentValues;
       result.migratedCount++;
     }
 

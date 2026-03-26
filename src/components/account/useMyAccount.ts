@@ -415,17 +415,12 @@ export function useMyAccount() {
 
       const mission = get('missionStatement');
       const brandVals = get('brandValues');
-      const contentVals = get('contentValues');
-      if (mission || brandVals || contentVals) {
+      if (mission || brandVals) {
         lines.push('\n\ud83d\udccc BRAND STRATEGY\n');
         if (mission) lines.push(`Mission Statement: ${mission}`);
         if (brandVals) {
           const vals = Array.isArray(brandVals) ? brandVals : [];
           if (vals.length) lines.push(`Brand Values: ${vals.join(', ')}`);
-        }
-        if (contentVals) {
-          const vals = Array.isArray(contentVals) ? contentVals : [];
-          if (vals.length) lines.push(`Content Values: ${vals.join(', ')}`);
         }
         lines.push(hr);
       }

@@ -160,7 +160,6 @@ const checkForLocalData = (): boolean => {
     'brandDeals',
     'brandValues',
     'missionStatement',
-    'contentValues',
     'monthlyGoalsData',
     'shortTermGoals',
     'longTermGoals',
