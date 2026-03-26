@@ -126,11 +126,35 @@ export const AllTasksSidebar = ({
           }
         }}
       >
-        <div className="flex items-center gap-2.5 mb-4 ml-2">
+        <div className="flex items-center gap-2.5 mb-5 ml-2">
           <ListTodo className="w-5 h-5 text-gray-900" />
           <h2 className="text-xl text-gray-900" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>All Tasks</h2>
         </div>
-        <div className="max-h-[300px] overflow-y-auto">
+        <div className="flex-1 overflow-y-auto">
+          {emptyWithPlaceholders && !isAddingTask && (
+            visiblePlaceholders.length > 0 ? (
+              placeholderList
+            ) : (
+              <div className="py-12 flex flex-col items-center gap-5 text-center px-4">
+                <div
+                  className="flex items-center justify-center text-white"
+                  style={{
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '14px',
+                    background: 'linear-gradient(145deg, #612A4F 0%, #4d2140 100%)',
+                    boxShadow: '0 8px 24px rgba(97,42,79,0.2)'
+                  }}
+                >
+                  <ClipboardList className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-xl font-semibold text-[#2d2a26] mb-1.5" style={{ fontFamily: "'Playfair Display', serif" }}>No tasks yet</p>
+                  <p className="text-sm text-[#8b7a85]" style={{ fontFamily: "'DM Sans', sans-serif" }}>Start your to-do list</p>
+                </div>
+              </div>
+            )
+          )}
           <PlannerSection
             title=""
             items={allTasks}
@@ -143,6 +167,7 @@ export const AllTasksSidebar = ({
             isAllTasksSection={true}
             onDropTaskFromWeekly={handleDropTaskFromWeeklyToAllTasks}
             onDropTaskFromCalendar={handleDropTaskFromCalendarToAllTasks}
+            onAddingStateChange={setIsAddingTask}
           />
         </div>
       </div>

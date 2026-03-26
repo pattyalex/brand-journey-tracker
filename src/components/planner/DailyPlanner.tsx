@@ -489,7 +489,7 @@ export const DailyPlanner = () => {
               {/* Content wrapper with overflow-hidden to prevent text reflow during transition */}
               <div className="h-full overflow-hidden">
                 <div className={cn(
-                  "p-5 h-full overflow-y-auto w-80 transition-opacity duration-300",
+                  "p-5 h-full flex flex-col overflow-y-auto w-80 transition-opacity duration-300",
                   isAllTasksCollapsed ? "opacity-0" : "opacity-100"
                 )}>
                   {/* All Tasks Section */}
