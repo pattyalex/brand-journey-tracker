@@ -9,9 +9,11 @@ import { Check, Shield, Zap, ChevronLeft } from 'lucide-react';
 interface PaymentSetupStepProps {
   user: {
     id: string;
-    primaryEmailAddress?: { emailAddress: string } | null;
-    fullName?: string | null;
-    firstName?: string | null;
+    email?: string | null;
+    user_metadata?: {
+      full_name?: string;
+      name?: string;
+    };
   };
   showPaymentForm?: boolean;
   onContinueToPayment?: () => void;
@@ -72,8 +74,8 @@ export const PaymentSetupStep: React.FC<PaymentSetupStepProps> = ({
                 onSuccess={onSuccess || (() => {})}
                 onBack={onBack || (() => {})}
                 userId={user.id}
-                userEmail={user.primaryEmailAddress?.emailAddress || ''}
-                userName={user.fullName || user.firstName || 'User'}
+                userEmail={user.email || ''}
+                userName={user.user_metadata?.full_name || user.user_metadata?.name || 'User'}
                 hasUsedTrial={hasUsedTrial}
               />
             </Elements>

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { CardNumberElement, CardExpiryElement, CardCvcElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Lock, ShieldCheck } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -33,6 +33,7 @@ const CARD_ELEMENT_OPTIONS = {
       iconColor: '#ef4444',
     },
   },
+  disableLink: true,
 };
 
 export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
@@ -49,7 +50,7 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
   const { session } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [cardholderName, setCardholderName] = useState(userName || '');
+  const [cardholderName, setCardholderName] = useState('');
 
   const fetchWithTimeout = async (url: string, options: RequestInit, ms = 15000) => {
     const controller = new AbortController();
@@ -348,6 +349,19 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
             hasUsedTrial ? 'Subscribe Now' : 'Start 14-Day Free Trial'
           )}
         </button>
+      </div>
+
+      {/* Security trust bar */}
+      <div className="flex items-center justify-center gap-4 pt-3 pb-1">
+        <div className="flex items-center gap-1.5 text-xs" style={{ color: '#8B7082' }}>
+          <Lock size={13} strokeWidth={2.5} />
+          <span>Encrypted & secure</span>
+        </div>
+        <div className="w-px h-3" style={{ backgroundColor: '#E8E4E6' }} />
+        <div className="flex items-center gap-1.5 text-xs" style={{ color: '#8B7082' }}>
+          <ShieldCheck size={13} strokeWidth={2.5} />
+          <span>PCI-compliant payments</span>
+        </div>
       </div>
     </form>
   );
