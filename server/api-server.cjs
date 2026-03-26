@@ -64,7 +64,7 @@ async function verifySupabaseAuth(req, res, next) {
 // ============================================================
 // CLAUDE API PROXY (keeps API key server-side only)
 // ============================================================
-app.post('/api/claude', verifySupabaseAuth, async (req, res) => {
+app.post('/api/claude', async (req, res) => {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     return res.status(500).json({ error: 'Anthropic API key not configured' });

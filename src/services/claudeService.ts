@@ -4,8 +4,6 @@
  * to keep the API key secure.
  */
 
-import { supabase } from '@/lib/supabase';
-
 const DEFAULT_MODEL = "claude-haiku-4-5-20251001";
 
 export interface ClaudeMessage {
@@ -32,17 +30,10 @@ export interface ClaudeResponse {
  */
 export async function callClaudeAPI(options: ClaudeRequestOptions): Promise<ClaudeResponse> {
   try {
-    // Get the current session token for auth
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      return { ok: false, text: "", error: "Not authenticated" };
-    }
-
     const response = await fetch("http://localhost:3001/api/claude", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${session.access_token}`,
       },
       body: JSON.stringify({
         model: options.model ?? DEFAULT_MODEL,
@@ -79,15 +70,40 @@ export async function callClaudeForJSON<T = unknown>(
     return { ok: false, data: null, error: result.error };
   }
 
+  const regex = pattern === "array" ? /\[[\s\S]*\]/ : /\{[\s\S]*\}/;
+
   try {
-    const regex = pattern === "array" ? /\[[\s\S]*\]/ : /\{[\s\S]*\}/;
     const match = result.text.match(regex);
     if (match) {
       return { ok: true, data: JSON.parse(match[0]) as T };
     }
-    return { ok: false, data: null, error: "No valid JSON found in response" };
   } catch (err) {
-    console.error("JSON parse error:", err);
+    console.error("JSON parse error on first attempt:", err);
+  }
+
+  // Retry once — Claude sometimes returns prose instead of JSON
+  console.warn("[callClaudeForJSON] No valid JSON in response, retrying with stricter prompt...");
+  const retry = await callClaudeAPI({
+    ...options,
+    messages: [
+      ...options.messages,
+      { role: "assistant", content: result.text },
+      { role: "user", content: `That response was not valid JSON. You MUST return ONLY a raw JSON ${pattern} with no explanation, no markdown, no backticks. Just the ${pattern === "array" ? "[ ... ]" : "{ ... }"}.` },
+    ],
+  });
+
+  if (!retry.ok) {
+    return { ok: false, data: null, error: retry.error };
+  }
+
+  try {
+    const retryMatch = retry.text.match(regex);
+    if (retryMatch) {
+      return { ok: true, data: JSON.parse(retryMatch[0]) as T };
+    }
+    return { ok: false, data: null, error: "No valid JSON found in response after retry" };
+  } catch (err) {
+    console.error("JSON parse error on retry:", err);
     return { ok: false, data: null, error: "Failed to parse JSON from response" };
   }
 }

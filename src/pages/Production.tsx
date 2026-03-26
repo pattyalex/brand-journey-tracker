@@ -383,32 +383,25 @@ const Production = () => {
 
   // Helper function to generate content angles using Claude API
   const generateAnglesWithAI = async (ideaText: string, count: number = 10, options?: { direction?: string; alreadyGenerated?: string[] }): Promise<string[]> => {
-    const systemPrompt = `You are a creative content strategist helping creators find unique, SPECIFIC angles for their content.
+    const systemPrompt = `You are a creative content strategist helping creators find unique angles for their content.
 
-BEFORE generating hooks, first analyze what the user wrote:
-1. What specific emotions are they expressing? (not just "lonely" but WHY they felt lonely)
-2. What unique details make their situation different?
-3. What makes their experience different from generic content on this topic?
-4. Who would deeply relate to this specific story?
-
-THEN generate hooks that could ONLY apply to THIS person's story.
-
-QUALITY TEST: If a hook could work for anyone talking about the same general topic, REJECT it and think harder. Each hook must reference or imply something specific from what they wrote.
+Analyze what the user wrote and generate compelling content hooks:
+- If they shared a personal story or experience, make hooks specific to their unique details, emotions, and insights
+- If they shared a broad topic or idea, generate fresh, opinionated, scroll-stopping angles that stand out from generic content on that topic
 
 RULES:
-- Create hooks that feel personal and specific, not templated
-- Reference specific emotions, moments, realizations, or details they mentioned
-- Mix styles: vulnerable confessions, surprising revelations, specific lessons, relatable moments
+- Mix styles: vulnerable confessions, surprising revelations, contrarian takes, specific lessons, relatable moments
 - Write as compelling video/post titles that make people stop scrolling
 - Keep hooks concise (under 15 words)
 - NO emojis
 - NO generic templates like "How to X" or "5 tips for Y"
+- ALWAYS return a JSON array, even for broad topics
 
 Return ONLY a JSON array of strings, nothing else.`;
 
-    let userMessage = `The creator shared this idea: "${ideaText}"
+    let userMessage = `The creator's idea: "${ideaText}"
 
-Generate ${count} highly specific content angles. Each hook should feel like it could ONLY come from this person's unique experience. Don't create generic hooks - create ones that reference the specific emotions, situations, or insights they mentioned.`;
+Generate ${count} compelling content angles for this. Create scroll-stopping hooks that feel fresh and specific — not the same generic takes everyone else makes on this topic.`;
 
     if (options?.direction) {
       userMessage += `\n\n⚠️ CRITICAL INSTRUCTION FROM THE CREATOR — YOU MUST FOLLOW THIS:\n${options.direction}\n\nThis is the creator's feedback on the previous batch of ideas. You MUST adapt your output to match exactly what they're asking for. If they say shorter, make them SHORT. If they say funnier, make them FUNNY. Their direction overrides the default rules above.`;
