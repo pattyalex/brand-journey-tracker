@@ -1,45 +1,111 @@
 import React, { Suspense, lazy } from 'react';
-import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
+import { BrowserRouter, Route, Routes, Navigate, Outlet } from 'react-router-dom';
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "./contexts/AuthContext";
 import LoginModal from "./components/LoginModal";
 import { MobileInterstitialWrapper } from "./components/MobileInterstitial";
+import Layout from "./components/Layout";
+
+// Lazy-load import functions (stored so we can preload on hover)
+const pageImports = {
+  Dashboard: () => import('./pages/Dashboard'),
+  NotFound: () => import('./pages/NotFound'),
+  GetStarted: () => import('./pages/GetStarted'),
+  CollabManagement: () => import('./pages/CollabManagement'),
+  StrategyDemo: () => import('./pages/StrategyDemo'),
+  HomePage: () => import('./pages/HomePage'),
+  OnboardingFlow: () => import('./pages/OnboardingFlow'),
+  LoginPage: () => import('./pages/LoginPage'),
+  ForgotPasswordPage: () => import('./pages/ForgotPasswordPage'),
+  Production: () => import('./pages/Production'),
+  AuthCallback: () => import('./pages/AuthCallback'),
+  StrategyGrowth: () => import('./pages/StrategyGrowth'),
+  TaskBoard: () => import('./pages/TaskBoard'),
+  Brands: () => import('./pages/Brands'),
+  MembershipPage: () => import('./components/MembershipPage').then(m => ({ default: m.MembershipPage })),
+  ContentIdeation: () => import('./pages/ContentIdeation'),
+  ContentPlanning: () => import('./pages/ContentPlanning'),
+  TermsAndConditions: () => import("./pages/TermsAndConditions"),
+  Terms: () => import("./pages/Terms"),
+  Privacy: () => import("./pages/Privacy"),
+  Contact: () => import("./pages/Contact"),
+  Analytics: () => import('./pages/Analytics'),
+  Settings: () => import('./pages/Settings'),
+  MyAccount: () => import('./pages/MyAccount'),
+  Help: () => import('./pages/Help'),
+  WeeklyContentTasks: () => import('./pages/WeeklyContentTasks'),
+  SocialMediaScheduler: () => import('./pages/SocialMediaScheduler'),
+  Index: () => import('./pages/Index'),
+  ResetPasswordPage: () => import('./pages/ResetPasswordPage'),
+  SubscriptionEnded: () => import('./pages/SubscriptionEnded'),
+};
 
 // Lazy load all pages for optimal code splitting
-const Dashboard = lazy(() => import('./pages/Dashboard'));
-const NotFound = lazy(() => import('./pages/NotFound'));
-const GetStarted = lazy(() => import('./pages/GetStarted'));
-const CollabManagement = lazy(() => import('./pages/CollabManagement'));
-const StrategyDemo = lazy(() => import('./pages/StrategyDemo'));
-const HomePage = lazy(() => import('./pages/HomePage'));
-const OnboardingFlow = lazy(() => import('./pages/OnboardingFlow'));
-const LoginPage = lazy(() => import('./pages/LoginPage'));
-const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
-const Production = lazy(() => import('./pages/Production'));
-const AuthCallback = lazy(() => import('./pages/AuthCallback'));
-const StrategyGrowth = lazy(() => import('./pages/StrategyGrowth'));
-const TaskBoard = lazy(() => import('./pages/TaskBoard'));
-const Brands = lazy(() => import('./pages/Brands'));
-const MembershipPage = lazy(() => import('./components/MembershipPage').then(m => ({ default: m.MembershipPage })));
-const ContentIdeation = lazy(() => import('./pages/ContentIdeation'));
-const ContentPlanning = lazy(() => import('./pages/ContentPlanning'));
-const TermsAndConditions = lazy(() => import("./pages/TermsAndConditions"));
-const Terms = lazy(() => import("./pages/Terms"));
-const Privacy = lazy(() => import("./pages/Privacy"));
-const Contact = lazy(() => import("./pages/Contact"));
-const Analytics = lazy(() => import('./pages/Analytics'));
-const Settings = lazy(() => import('./pages/Settings'));
-const MyAccount = lazy(() => import('./pages/MyAccount'));
-const Help = lazy(() => import('./pages/Help'));
-const WeeklyContentTasks = lazy(() => import('./pages/WeeklyContentTasks'));
-const SocialMediaScheduler = lazy(() => import('./pages/SocialMediaScheduler'));
-const Index = lazy(() => import('./pages/Index'));
-const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
-const SubscriptionEnded = lazy(() => import('./pages/SubscriptionEnded'));
+const Dashboard = lazy(pageImports.Dashboard);
+const NotFound = lazy(pageImports.NotFound);
+const GetStarted = lazy(pageImports.GetStarted);
+const CollabManagement = lazy(pageImports.CollabManagement);
+const StrategyDemo = lazy(pageImports.StrategyDemo);
+const HomePage = lazy(pageImports.HomePage);
+const OnboardingFlow = lazy(pageImports.OnboardingFlow);
+const LoginPage = lazy(pageImports.LoginPage);
+const ForgotPasswordPage = lazy(pageImports.ForgotPasswordPage);
+const Production = lazy(pageImports.Production);
+const AuthCallback = lazy(pageImports.AuthCallback);
+const StrategyGrowth = lazy(pageImports.StrategyGrowth);
+const TaskBoard = lazy(pageImports.TaskBoard);
+const Brands = lazy(pageImports.Brands);
+const MembershipPage = lazy(pageImports.MembershipPage);
+const ContentIdeation = lazy(pageImports.ContentIdeation);
+const ContentPlanning = lazy(pageImports.ContentPlanning);
+const TermsAndConditions = lazy(pageImports.TermsAndConditions);
+const Terms = lazy(pageImports.Terms);
+const Privacy = lazy(pageImports.Privacy);
+const Contact = lazy(pageImports.Contact);
+const Analytics = lazy(pageImports.Analytics);
+const Settings = lazy(pageImports.Settings);
+const MyAccount = lazy(pageImports.MyAccount);
+const Help = lazy(pageImports.Help);
+const WeeklyContentTasks = lazy(pageImports.WeeklyContentTasks);
+const SocialMediaScheduler = lazy(pageImports.SocialMediaScheduler);
+const Index = lazy(pageImports.Index);
+const ResetPasswordPage = lazy(pageImports.ResetPasswordPage);
+const SubscriptionEnded = lazy(pageImports.SubscriptionEnded);
 
-// Loading component - invisible to prevent flash during lazy load
-const PageLoader = () => null;
+// Route-to-preload mapping so sidebar can trigger chunk downloads on hover
+const routePreloadMap: Record<string, () => Promise<unknown>> = {
+  '/home-page': pageImports.HomePage,
+  '/dashboard': pageImports.Dashboard,
+  '/app': pageImports.Dashboard,
+  '/task-board': pageImports.TaskBoard,
+  '/production': pageImports.Production,
+  '/brands': pageImports.Brands,
+  '/strategy-growth': pageImports.StrategyGrowth,
+  '/my-account': pageImports.MyAccount,
+  '/settings': pageImports.Settings,
+  '/help': pageImports.Help,
+  '/content-ideation': pageImports.ContentIdeation,
+  '/content-planning': pageImports.ContentPlanning,
+  '/analytics': pageImports.Analytics,
+  '/collab-management': pageImports.CollabManagement,
+  '/weekly-content': pageImports.WeeklyContentTasks,
+  '/social-media-scheduler': pageImports.SocialMediaScheduler,
+  '/get-started': pageImports.GetStarted,
+  '/index': pageImports.Index,
+  '/strategy-demo': pageImports.StrategyDemo,
+};
+
+/** Call this on mouseEnter/focus to preload a route's chunk */
+export function preloadRoute(path: string) {
+  const loader = routePreloadMap[path];
+  if (loader) loader();
+}
+
+// Loading fallback — minimal white placeholder so there's no dark flash
+const PageLoader = () => (
+  <div className="w-full h-full bg-white" />
+);
 
 // Import useAuth hook
 import { useAuth } from "./contexts/AuthContext";
@@ -79,7 +145,16 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   return <>{children}</>;
 };
 
-
+// Shared layout for protected routes — sidebar stays mounted across navigations
+const ProtectedLayout = () => (
+  <ProtectedRoute>
+    <Layout>
+      <Suspense fallback={<PageLoader />}>
+        <Outlet />
+      </Suspense>
+    </Layout>
+  </ProtectedRoute>
+);
 
 // Global error handlers
 window.addEventListener('unhandledrejection', (event) => {
@@ -99,121 +174,46 @@ function App() {
           <AuthProvider>
             <LoginModal />
             <Toaster />
-            <Suspense fallback={<PageLoader />}>
-              <Routes>
-              {/* Public routes */}
-              <Route path="/" element={<LandingRedirect />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-              <Route path="/onboarding" element={<OnboardingFlow />} />
-              <Route path="/auth/callback" element={<AuthCallback />} />
-              <Route path="/reset-password" element={<ResetPasswordPage />} />
-              <Route path="/subscription-ended" element={<SubscriptionEnded />} />
+            <Routes>
+              {/* Public routes (no sidebar, own Suspense) */}
+              <Route path="/" element={<Suspense fallback={<PageLoader />}><LandingRedirect /></Suspense>} />
+              <Route path="/login" element={<Suspense fallback={<PageLoader />}><LoginPage /></Suspense>} />
+              <Route path="/forgot-password" element={<Suspense fallback={<PageLoader />}><ForgotPasswordPage /></Suspense>} />
+              <Route path="/onboarding" element={<Suspense fallback={<PageLoader />}><OnboardingFlow /></Suspense>} />
+              <Route path="/auth/callback" element={<Suspense fallback={<PageLoader />}><AuthCallback /></Suspense>} />
+              <Route path="/reset-password" element={<Suspense fallback={<PageLoader />}><ResetPasswordPage /></Suspense>} />
+              <Route path="/subscription-ended" element={<Suspense fallback={<PageLoader />}><SubscriptionEnded /></Suspense>} />
+              <Route path="/terms-and-conditions" element={<Suspense fallback={<PageLoader />}><TermsAndConditions /></Suspense>} />
+              <Route path="/terms" element={<Suspense fallback={<PageLoader />}><Terms /></Suspense>} />
+              <Route path="/privacy" element={<Suspense fallback={<PageLoader />}><Privacy /></Suspense>} />
+              <Route path="/contact" element={<Suspense fallback={<PageLoader />}><Contact /></Suspense>} />
+              <Route path="/membership" element={<Suspense fallback={<PageLoader />}><MembershipPage /></Suspense>} />
 
-              {/* Protected routes - require authentication */}
-              <Route path="/app" element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              } />
-              <Route path="/dashboard" element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              } />
-              <Route path="/home-page" element={
-                <ProtectedRoute>
-                  <HomePage />
-                </ProtectedRoute>
-              } />
-              <Route path="/content-ideation" element={
-                <ProtectedRoute>
-                  <ContentIdeation />
-                </ProtectedRoute>
-              } />
-              <Route path="/content-planning" element={
-                <ProtectedRoute>
-                  <ContentPlanning />
-                </ProtectedRoute>
-              } />
-              <Route path="/production" element={
-                <ProtectedRoute>
-                  <Production />
-                </ProtectedRoute>
-              } />
-              <Route path="/strategy-growth" element={
-                <ProtectedRoute>
-                  <StrategyGrowth />
-                </ProtectedRoute>
-              } />
-              <Route path="/analytics" element={
-                <ProtectedRoute>
-                  <Analytics />
-                </ProtectedRoute>
-              } />
-              <Route path="/get-started" element={
-                <ProtectedRoute>
-                  <GetStarted />
-                </ProtectedRoute>
-              } />
-              <Route path="/task-board" element={
-                <ProtectedRoute>
-                  <TaskBoard />
-                </ProtectedRoute>
-              } />
-              <Route path="/settings" element={
-                <ProtectedRoute>
-                  <Settings />
-                </ProtectedRoute>
-              } />
-              <Route path="/my-account" element={
-                <ProtectedRoute>
-                  <MyAccount />
-                </ProtectedRoute>
-              } />
-              <Route path="/membership" element={<MembershipPage />} />
-              <Route path="/help" element={
-                <ProtectedRoute>
-                  <Help />
-                </ProtectedRoute>
-              } />
-              <Route path="/weekly-content" element={
-                <ProtectedRoute>
-                  <WeeklyContentTasks />
-                </ProtectedRoute>
-              } />
-              <Route path="/social-media-scheduler" element={
-                <ProtectedRoute>
-                  <SocialMediaScheduler />
-                </ProtectedRoute>
-              } />
-              <Route path="/collab-management" element={
-                <ProtectedRoute>
-                  <CollabManagement />
-                </ProtectedRoute>
-              } />
-              <Route path="/brands" element={
-                <ProtectedRoute>
-                  <Brands />
-                </ProtectedRoute>
-              } />
-              <Route path="/strategy-demo" element={
-                <ProtectedRoute>
-                  <StrategyDemo />
-                </ProtectedRoute>
-              } />
-              <Route path="/index" element={
-                <ProtectedRoute>
-                  <Index />
-                </ProtectedRoute>
-              } />
-                            <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
-          <Route path="/terms" element={<Terms />} />
-          <Route path="/privacy" element={<Privacy />} />
-          <Route path="/contact" element={<Contact />} />
-              <Route path="*" element={<NotFound />} />
+              {/* Protected routes — Layout (sidebar) stays mounted, only page content swaps */}
+              <Route element={<ProtectedLayout />}>
+                <Route path="/app" element={<Dashboard />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/home-page" element={<HomePage />} />
+                <Route path="/content-ideation" element={<ContentIdeation />} />
+                <Route path="/content-planning" element={<ContentPlanning />} />
+                <Route path="/production" element={<Production />} />
+                <Route path="/strategy-growth" element={<StrategyGrowth />} />
+                <Route path="/analytics" element={<Analytics />} />
+                <Route path="/get-started" element={<GetStarted />} />
+                <Route path="/task-board" element={<TaskBoard />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/my-account" element={<MyAccount />} />
+                <Route path="/help" element={<Help />} />
+                <Route path="/weekly-content" element={<WeeklyContentTasks />} />
+                <Route path="/social-media-scheduler" element={<SocialMediaScheduler />} />
+                <Route path="/collab-management" element={<CollabManagement />} />
+                <Route path="/brands" element={<Brands />} />
+                <Route path="/strategy-demo" element={<StrategyDemo />} />
+                <Route path="/index" element={<Index />} />
+              </Route>
+
+              <Route path="*" element={<Suspense fallback={<PageLoader />}><NotFound /></Suspense>} />
             </Routes>
-          </Suspense>
         </AuthProvider>
       </ThemeProvider>
       </ErrorBoundary>

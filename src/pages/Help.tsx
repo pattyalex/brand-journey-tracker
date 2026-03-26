@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import Layout from '@/components/Layout';
+
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
@@ -45,7 +45,6 @@ const Help = () => {
   ];
 
   return (
-    <Layout>
       <ScrollArea className="h-full" style={{ background: '#f9f7f5' }}>
         <div className="min-h-screen" style={{ background: '#f9f7f5' }}>
           <div className="max-w-5xl mx-auto px-6 md:px-8 pt-8 pb-16">
@@ -232,7 +231,6 @@ const Help = () => {
           </div>
         </div>
       </ScrollArea>
-    </Layout>
   );
 };
 

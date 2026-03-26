@@ -8,6 +8,7 @@ import {
 import { MenuItem } from '@/types/sidebar';
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { preloadRoute } from "@/App";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -65,6 +66,7 @@ const SidebarFooterSection = ({ settingsItem, helpItem }: SidebarFooterSectionPr
               <button
                 type="button"
                 onClick={() => navigate('/my-account')}
+                onMouseEnter={() => preloadRoute('/my-account')}
                 className="flex items-center gap-2 w-full hover:bg-[#F9F7F8] p-2 rounded-xl transition-colors"
               >
                 <Avatar className="h-7 w-7 flex-shrink-0">

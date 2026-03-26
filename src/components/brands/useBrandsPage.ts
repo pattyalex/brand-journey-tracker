@@ -10,6 +10,7 @@ import { BrandDeal, statusOrder } from "./brandsTypes";
 export function useBrandsPage() {
   const { user } = useAuth();
   const { deals, isLoading: dealsLoading, addDeal, updateDeal, deleteDeal, archiveDeal, unarchiveDeal } = useBrandDeals();
+  const isReady = !dealsLoading;
   const migrationRanRef = useRef(false);
   const [view, setView] = useState<'table' | 'kanban'>('kanban');
   const [searchQuery, setSearchQuery] = useState('');
@@ -341,6 +342,7 @@ export function useBrandsPage() {
     showArchived,
     setShowArchived,
     // Derived
+    isReady,
     metrics,
     archivedCount,
     filteredDeals,

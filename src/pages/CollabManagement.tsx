@@ -6,7 +6,7 @@ import CollabFilters from "@/components/collab/CollabFilters";
 import BrandsCollabTable from "@/components/collab/BrandsCollabTable";
 import ModernBrandsTable from "@/components/collab/ModernBrandsTable";
 import { useCollabBrands } from "@/hooks/useCollabBrands";
-import Layout from "@/components/Layout";
+
 
 export default function CollabManagement() {
   const navigate = useNavigate();
@@ -44,10 +44,8 @@ export default function CollabManagement() {
   });
 
   return (
-    <Layout>
       <div className="w-full max-w-[1600px] mx-auto px-8 py-8">
         <ModernBrandsTable />
       </div>
-    </Layout>
   );
 }

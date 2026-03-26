@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import Layout from "@/components/Layout";
+
 import { FolderOpen, HandshakeIcon, TrendingUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -9,7 +9,6 @@ const Index = () => {
   const navigate = useNavigate();
 
   return (
-    <Layout>
       <div className="max-w-6xl mx-auto px-6 py-16 space-y-16 fade-in">
         {/* Hero Section */}
         <section className="text-center space-y-6">
@@ -39,7 +38,6 @@ const Index = () => {
           ))}
         </section>
       </div>
-    </Layout>
   );
 };
 

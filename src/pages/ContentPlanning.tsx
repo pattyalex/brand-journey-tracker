@@ -1,5 +1,5 @@
 
-import Layout from "@/components/Layout";
+
 import { useContentPlanning } from "@/hooks/useContentPlanning";
 import SearchBar from "@/components/content/planning/SearchBar";
 import StatusFilter from "@/components/content/planning/StatusFilter";
@@ -20,7 +20,6 @@ const ContentPlanning = () => {
   } = useContentPlanning();
 
   return (
-    <Layout>
       <div className="w-full max-w-[1600px] mx-auto px-8 py-6 space-y-6 fade-in">
         <div className="flex justify-between items-center">
           <div>
@@ -49,7 +48,6 @@ const ContentPlanning = () => {
           handleDelete={handleDelete}
         />
       </div>
-    </Layout>
   );
 };
 

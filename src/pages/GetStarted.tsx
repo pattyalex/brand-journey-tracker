@@ -1,5 +1,5 @@
 
-import Layout from "@/components/Layout";
+
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Database, Calendar, BarChart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -36,7 +36,6 @@ const GetStarted = () => {
   const navigate = useNavigate();
 
   return (
-    <Layout>
       <div className="max-w-7xl mx-auto p-6 space-y-8 fade-in">
         <div className="text-center space-y-2">
           <h1 className="text-4xl font-bold">Choose your starting point</h1>
@@ -58,7 +57,6 @@ const GetStarted = () => {
           ))}
         </div>
       </div>
-    </Layout>
   );
 };
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { callClaudeForJSON } from "@/services/claudeService";
-import Layout from "@/components/Layout";
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, MoreVertical, Trash2, Pencil, Sparkles, Check, Plus, ArrowLeft, Lightbulb, Pin, Clapperboard, Video, Circle, Wrench, CheckCircle2, Camera, CheckSquare, Scissors, PlayCircle, PenLine, CalendarDays, X, Maximize2, PartyPopper, Archive, FolderOpen, ChevronRight, RefreshCw, Compass, TrendingUp, BarChart3, Zap, LayoutGrid, RotateCcw, Image as ImageIcon, Layers } from "lucide-react";
@@ -1967,7 +1967,7 @@ Generate ${count} highly specific content angles. Each hook should feel like it 
 
   if (isMobile) {
     return (
-      <Layout>
+      <>
         <MobileContentView
           columns={columns}
           onAddIdea={handleMobileAddIdea}
@@ -2098,12 +2098,11 @@ Generate ${count} highly specific content angles. Each hook should feel like it 
             }}
           />
         )}
-      </Layout>
+      </>
     );
   }
 
   return (
-    <Layout>
       <div className="w-full h-screen flex flex-col pl-5 pr-3 pt-4" style={{ background: 'linear-gradient(180deg, #FAF7F5 0%, #F0EBE8 100%)' }}>
         <ProductionProvider value={board}>
         <KanbanContainer
@@ -3898,7 +3897,6 @@ Generate ${count} highly specific content angles. Each hook should feel like it 
         />
 
               </div>
-    </Layout>
   );
 };
 

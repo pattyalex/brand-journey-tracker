@@ -1,5 +1,5 @@
 import React from "react";
-import Layout from "@/components/Layout";
+
 import GoalsOnboarding from "@/components/GoalsOnboarding";
 import { Tabs } from "@/components/ui/tabs";
 import StrategyTabsList from "@/components/strategy/StrategyTabsList";
@@ -11,7 +11,7 @@ const StrategyGrowth = () => {
   const state = useStrategyState();
 
   return (
-    <Layout>
+    <>
       <GoalsOnboarding run={state.showOnboarding && state.activeTab === 'growth-goals'} onComplete={state.completeOnboarding} />
       <div className="w-full h-full mx-auto px-8 py-6 bg-gradient-to-br from-[#F7F4F5] via-[#FAFAFA] to-[#FFFDF9] overflow-auto">
         <div className="max-w-[1600px] mx-auto space-y-6">
@@ -118,7 +118,7 @@ const StrategyGrowth = () => {
           </Tabs>
         </div>
       </div>
-    </Layout>
+    </>
   );
 };
 

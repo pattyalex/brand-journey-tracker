@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/sidebar";
 import { getString, setString, sidebarExpanded } from '@/lib/storage';
 import { cn } from '@/lib/utils';
+import { preloadRoute } from '@/App';
 
 interface SidebarMenuItemProps {
   item: MenuItem;
@@ -69,6 +70,7 @@ const SidebarMenuItemComponent = ({ item, onDelete }: SidebarMenuItemProps) => {
               : "hover:bg-[#F9F7F8] text-[#5A4A52]"
           )}
           onClick={handleMenuItemClick}
+          onMouseEnter={() => preloadRoute(item.url)}
         >
           <item.icon size={20} className={cn(
             "transition-colors duration-200 flex-shrink-0",

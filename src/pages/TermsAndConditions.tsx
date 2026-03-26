@@ -1,11 +1,10 @@
 
 import React from 'react';
-import Layout from '@/components/Layout';
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const TermsAndConditions = () => {
   return (
-    <Layout>
       <div className="flex flex-col gap-6">
         <h1 className="text-3xl font-bold">Terms and Conditions</h1>
         
@@ -46,7 +45,6 @@ const TermsAndConditions = () => {
           </CardContent>
         </Card>
       </div>
-    </Layout>
   );
 };
 

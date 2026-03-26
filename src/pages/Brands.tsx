@@ -1,4 +1,4 @@
-import Layout from "@/components/Layout";
+
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { format, isSameMonth, isSameYear, addMonths, subMonths, addYears, subYears } from "date-fns";
@@ -34,6 +34,7 @@ const Brands = () => {
     setIsYearView,
     showArchived,
     setShowArchived,
+    isReady,
     metrics,
     archivedCount,
     filteredDeals,
@@ -49,7 +50,6 @@ const Brands = () => {
   } = useBrandsPage();
 
   return (
-    <Layout>
       <div className="min-h-screen bg-gradient-to-br from-[#F0EAED] via-[#F8F6F6] to-[#FFFAF3]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
         <div className="p-4 sm:p-6 lg:p-10">
             {/* Month Picker / Archive Header */}
@@ -123,7 +123,7 @@ const Brands = () => {
                     {isYearView ? `${format(selectedMonth, "yyyy")} EARNINGS` : `${format(selectedMonth, "MMM").toUpperCase()} EARNINGS`}
                   </p>
                 </div>
-                <p className="text-xl sm:text-[32px] font-normal text-[#612a4f] tracking-[-0.02em] leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>
+                <p className={`text-xl sm:text-[32px] font-normal text-[#612a4f] tracking-[-0.02em] leading-none transition-opacity duration-300 ${isReady ? 'opacity-100' : 'opacity-0'}`} style={{ fontFamily: "'Playfair Display', serif" }}>
                   ${isYearView ? metrics.yearlyEarnings.toLocaleString() : metrics.monthlyEarnings.toLocaleString()}
                 </p>
               </Card>
@@ -134,7 +134,7 @@ const Brands = () => {
                     {isYearView ? "TOTAL DEALS" : `${format(selectedMonth, "yyyy")} EARNINGS`}
                   </p>
                 </div>
-                <p className="text-xl sm:text-[32px] font-normal text-[#612a4f] tracking-[-0.02em] leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>
+                <p className={`text-xl sm:text-[32px] font-normal text-[#612a4f] tracking-[-0.02em] leading-none transition-opacity duration-300 ${isReady ? 'opacity-100' : 'opacity-0'}`} style={{ fontFamily: "'Playfair Display', serif" }}>
                   {isYearView ? filteredDeals.length : `$${metrics.yearlyEarnings.toLocaleString()}`}
                 </p>
               </Card>
@@ -143,14 +143,18 @@ const Brands = () => {
                   <Clock className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-[#8B7082]" strokeWidth={1.5} />
                   <p className="text-[9px] sm:text-[10px] text-[#8B7082] font-medium uppercase tracking-[0.08em] truncate">EXPECTED</p>
                 </div>
-                <p className="text-xl sm:text-[32px] font-normal text-[#612a4f] tracking-[-0.02em] leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>${metrics.pendingAmount.toLocaleString()}</p>
+                <p className={`text-xl sm:text-[32px] font-normal text-[#612a4f] tracking-[-0.02em] leading-none transition-opacity duration-300 ${isReady ? 'opacity-100' : 'opacity-0'}`} style={{ fontFamily: "'Playfair Display', serif" }}>
+                  ${metrics.pendingAmount.toLocaleString()}
+                </p>
               </Card>
               <Card className="group p-4 sm:p-6 bg-white border border-[#D8C8D3] rounded-xl sm:rounded-2xl shadow-none">
                 <div className="flex items-center gap-1.5 sm:gap-2 mb-2 sm:mb-3">
                   <svg className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-[#8B7082]" viewBox="0 0 24 24" fill="currentColor" fillOpacity="0.2" stroke="currentColor" strokeWidth="1.5"><path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" /></svg>
                   <p className="text-[9px] sm:text-[10px] text-[#8B7082] font-medium uppercase tracking-[0.08em] truncate">ACTIVE DEALS</p>
                 </div>
-                <p className="text-xl sm:text-[32px] font-normal text-[#612a4f] tracking-[-0.02em] leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>{metrics.activeDeals}</p>
+                <p className={`text-xl sm:text-[32px] font-normal text-[#612a4f] tracking-[-0.02em] leading-none transition-opacity duration-300 ${isReady ? 'opacity-100' : 'opacity-0'}`} style={{ fontFamily: "'Playfair Display', serif" }}>
+                  {metrics.activeDeals}
+                </p>
               </Card>
             </div>
 
@@ -205,7 +209,6 @@ const Brands = () => {
             />
         </div>
       </div>
-    </Layout>
   );
 };
 

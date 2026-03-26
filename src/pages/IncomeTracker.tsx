@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import Layout from "@/components/Layout";
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -71,7 +71,6 @@ const IncomeTracker = () => {
   };
 
   return (
-    <Layout>
       <div className="w-full max-w-[1600px] mx-auto px-8 py-6 space-y-8 fade-in">
         <div className="flex flex-col space-y-2">
           <h1 className="text-4xl font-bold">Income Tracker</h1>
@@ -218,7 +217,6 @@ const IncomeTracker = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </Layout>
   );
 };
 

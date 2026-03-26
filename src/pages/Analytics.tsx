@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import Layout from "@/components/Layout";
+
 import { toast } from "sonner";
 import { Instagram, Facebook, Twitter, Youtube, Users, BarChart, BarChart2, Percent, Clock, MapPin, ChevronDown, Plus } from "lucide-react";
 import EmptyState from "@/components/ui/EmptyState";
@@ -36,7 +36,6 @@ const Analytics = () => {
   };
 
   return (
-    <Layout>
       <div className="w-full max-w-[1600px] mx-auto px-8 py-6 space-y-8 fade-in">
         <div className="flex flex-col space-y-2">
           <h1 className="text-4xl font-bold">Analytics</h1>
@@ -96,7 +95,6 @@ const Analytics = () => {
           </Card>
         )}
       </div>
-    </Layout>
   );
 };
 

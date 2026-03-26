@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Layout from "@/components/Layout";
+
 import { ContentItem, Platform } from "@/types/content-flow";
 import AddPlatformDialog from "@/components/content/weeklyFlow/AddPlatformDialog";
 import ContentSchedule from "@/components/content/weeklyFlow/ContentSchedule";
@@ -83,7 +83,6 @@ const WeeklyContentTasks = () => {
   };
 
   return (
-    <Layout>
       <div className="w-full max-w-[1600px] mx-auto px-8 py-6">
         <h1 className="text-4xl font-bold mb-2">Weekly View</h1>
         <p className="text-gray-600 text-lg mb-8">
@@ -161,7 +160,6 @@ const WeeklyContentTasks = () => {
           onAdd={addPlatform}
         />
       </div>
-    </Layout>
   );
 };
 

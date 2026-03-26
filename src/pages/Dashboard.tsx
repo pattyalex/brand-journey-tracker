@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import Layout from "@/components/Layout";
+
 import { FolderOpen, Handshake, TrendingUp, CheckCircle, ArrowRight, Activity } from "lucide-react";
 import { StorageKeys, getString } from "@/lib/storage";
 import { KanbanColumn } from "./production/types";
@@ -106,7 +106,6 @@ const Dashboard = () => {
   const totalGoals = currentMonthGoals.length;
 
   return (
-    <Layout>
       <div className="max-w-6xl mx-auto px-6 py-8 fade-in">
         <h1 className="text-3xl font-bold mb-6">Welcome to your Dashboard</h1>
 
@@ -240,7 +239,6 @@ const Dashboard = () => {
           </div>
         </section>
       </div>
-    </Layout>
   );
 };
 

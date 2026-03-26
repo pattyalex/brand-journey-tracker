@@ -1,5 +1,5 @@
 import React from "react";
-import Layout from "@/components/Layout";
+
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useHomePageState } from "./hooks/useHomePageState";
 import WelcomeSection from "@/components/home/WelcomeSection";
@@ -14,7 +14,6 @@ const HomePage = () => {
   const state = useHomePageState();
 
   return (
-      <Layout>
         <ScrollArea className="h-full">
           <div
             className="min-h-full"
@@ -122,7 +121,6 @@ const HomePage = () => {
           </div>
         </ScrollArea>
 
-      </Layout>
   );
 };
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Home, Clapperboard, Calendar, Handshake } from 'lucide-react';
+import { preloadRoute } from '@/App';
 
 const navItems = [
   { label: 'Home', icon: Home, path: '/home-page' },
@@ -33,6 +34,8 @@ const MobileBottomNav: React.FC = () => {
             <button
               key={item.path}
               onClick={() => navigate(item.path)}
+              onMouseEnter={() => preloadRoute(item.path)}
+              onTouchStart={() => preloadRoute(item.path)}
               className="flex flex-col items-center justify-center flex-1 py-2 transition-colors"
               style={{ minWidth: 0 }}
             >

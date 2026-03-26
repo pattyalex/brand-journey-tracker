@@ -1,4 +1,4 @@
-import Layout from '@/components/Layout';
+
 import { cn } from "@/lib/utils";
 import {
   User, Crown, ChevronRight, LogOut,
@@ -54,7 +54,6 @@ const MyAccount = () => {
   ];
 
   return (
-    <Layout>
         <div className="min-h-screen" style={{ background: '#f9f7f5' }}>
           <div className="max-w-5xl mx-auto px-6 md:px-8 pt-8 pb-16">
             {/* Header */}
@@ -178,7 +177,6 @@ const MyAccount = () => {
             </div>
           </div>
         </div>
-    </Layout>
   );
 };
 

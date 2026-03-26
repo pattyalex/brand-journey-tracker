@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import Layout from "@/components/Layout";
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Brain, Lightbulb, Palette, Plus, X, Check, GripVertical, Trash2, FileEdit, Globe, ImageIcon, Upload, Link, Pin } from "lucide-react";
@@ -394,7 +394,6 @@ const ContentIdeation = () => {
   };
 
   return (
-    <Layout>
       <div className="space-y-6 fade-in">
         <div className="flex flex-col space-y-2">
           <h1 className="text-3xl font-bold">X</h1>
@@ -886,7 +885,6 @@ const ContentIdeation = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </Layout>
   );
 };
 
