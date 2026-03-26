@@ -41,6 +41,10 @@ export interface UserStrategy {
   strategyNotes: string;
   strategyNoteLinks: { url: string; title: string }[];
   strategyNoteFiles: { name: string; data: string }[];
+  selectedTones: string[];
+  audienceAgeRanges: string[];
+  audienceStruggles: string;
+  audienceDesires: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -62,6 +66,10 @@ interface DbUserStrategy {
   strategy_notes: string | null;
   strategy_note_links: { url: string; title: string }[] | null;
   strategy_note_files: { name: string; data: string }[] | null;
+  selected_tones: string[] | null;
+  audience_age_ranges: string[] | null;
+  audience_struggles: string | null;
+  audience_desires: string | null;
 }
 
 interface DbUserGoal {
@@ -92,6 +100,10 @@ const dbToUserStrategy = (db: DbUserStrategy): UserStrategy => ({
   strategyNotes: db.strategy_notes || '',
   strategyNoteLinks: db.strategy_note_links || [],
   strategyNoteFiles: db.strategy_note_files || [],
+  selectedTones: db.selected_tones || [],
+  audienceAgeRanges: db.audience_age_ranges || [],
+  audienceStruggles: db.audience_struggles || '',
+  audienceDesires: db.audience_desires || '',
   createdAt: db.created_at,
   updatedAt: db.updated_at,
 });
@@ -133,6 +145,10 @@ export const createUserStrategy = async (userId: string): Promise<UserStrategy> 
     strategy_notes: '',
     strategy_note_links: [],
     strategy_note_files: [],
+    selected_tones: [],
+    audience_age_ranges: [],
+    audience_struggles: '',
+    audience_desires: '',
   });
   return dbToUserStrategy(data);
 };
@@ -151,6 +167,10 @@ export const updateUserStrategy = async (
   if (updates.strategyNotes !== undefined) dbUpdates.strategy_notes = updates.strategyNotes;
   if (updates.strategyNoteLinks !== undefined) dbUpdates.strategy_note_links = updates.strategyNoteLinks;
   if (updates.strategyNoteFiles !== undefined) dbUpdates.strategy_note_files = updates.strategyNoteFiles;
+  if (updates.selectedTones !== undefined) dbUpdates.selected_tones = updates.selectedTones;
+  if (updates.audienceAgeRanges !== undefined) dbUpdates.audience_age_ranges = updates.audienceAgeRanges;
+  if (updates.audienceStruggles !== undefined) dbUpdates.audience_struggles = updates.audienceStruggles;
+  if (updates.audienceDesires !== undefined) dbUpdates.audience_desires = updates.audienceDesires;
 
   const data = await updateOneBy<DbUserStrategy>('user_strategy', 'user_id', userId, dbUpdates);
   return dbToUserStrategy(data);

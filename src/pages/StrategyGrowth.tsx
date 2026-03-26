@@ -68,6 +68,8 @@ const StrategyGrowth = () => {
               setNewLinkTitle={state.setNewLinkTitle}
               showAddLinkForm={state.showAddLinkForm}
               setShowAddLinkForm={state.setShowAddLinkForm}
+              onSaveAll={state.handleSaveAll}
+              showSaveSuccess={state.showSaveSuccess}
             />
 
             {/* Growth Goals Tab */}

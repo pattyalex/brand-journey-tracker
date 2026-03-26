@@ -56,6 +56,8 @@ interface BrandIdentityTabProps {
   setNewLinkTitle: (v: string) => void;
   showAddLinkForm: boolean;
   setShowAddLinkForm: (v: boolean) => void;
+  onSaveAll: () => void;
+  showSaveSuccess: boolean;
 }
 
 const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
@@ -83,6 +85,7 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
     newLinkUrl, setNewLinkUrl,
     newLinkTitle, setNewLinkTitle,
     showAddLinkForm, setShowAddLinkForm,
+    onSaveAll, showSaveSuccess,
   } = props;
 
   return (
@@ -788,6 +791,27 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Save Button */}
+      <div className="flex items-center justify-center gap-3 pt-2 pb-8">
+        <button
+          onClick={onSaveAll}
+          className={`px-8 py-3 rounded-xl text-sm font-semibold transition-all duration-200 shadow-sm ${
+            showSaveSuccess
+              ? "bg-[#EDF3ED] text-[#5a8a5a] border border-[#d0e4d0]"
+              : "bg-gradient-to-b from-[#6d3358] to-[#612A4F] text-white hover:from-[#7a3d64] hover:to-[#6d3358] shadow-[0_2px_8px_rgba(97,42,79,0.3)]"
+          }`}
+        >
+          {showSaveSuccess ? (
+            <span className="flex items-center gap-2">
+              <Check className="w-4 h-4" />
+              Saved!
+            </span>
+          ) : (
+            "Save"
+          )}
+        </button>
+      </div>
     </TabsContent>
   );
 };

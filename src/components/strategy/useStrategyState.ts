@@ -38,10 +38,18 @@ export function useStrategyState() {
   // Brand Identity states
   const [brandKeywords, setBrandKeywords] = useState<string[]>([]);
   const [keywordInput, setKeywordInput] = useState("");
-  const [audienceAgeRanges, setAudienceAgeRanges] = useState<string[]>(["25-34"]);
-  const [audienceStruggles, setAudienceStruggles] = useState("");
-  const [audienceDesires, setAudienceDesires] = useState("");
-  const [selectedTones, setSelectedTones] = useState<string[]>(["relatable"]);
+  const [audienceAgeRanges, setAudienceAgeRanges] = useState<string[]>(() => {
+    const saved = getString("audienceAgeRanges");
+    if (saved) { try { return JSON.parse(saved); } catch { return ["25-34"]; } }
+    return ["25-34"];
+  });
+  const [audienceStruggles, setAudienceStruggles] = useState(() => getString("audienceStruggles") || "");
+  const [audienceDesires, setAudienceDesires] = useState(() => getString("audienceDesires") || "");
+  const [selectedTones, setSelectedTones] = useState<string[]>(() => {
+    const saved = getString("selectedTones");
+    if (saved) { try { return JSON.parse(saved); } catch { return ["relatable"]; } }
+    return ["relatable"];
+  });
   const [brandValues, setBrandValues] = useState<string[]>(() => {
     const saved = getString(StorageKeys.brandValues);
     if (saved) {
@@ -345,6 +353,52 @@ export function useStrategyState() {
     scheduleStrategySave({ strategyNoteFiles: noteFiles });
   }, [noteFiles]);
 
+  // Save selected tones
+  useEffect(() => {
+    try {
+      setString("selectedTones", JSON.stringify(selectedTones));
+    } catch (error) {
+      console.error('Failed to save selected tones:', error);
+    }
+    scheduleStrategySave({ selectedTones });
+  }, [selectedTones]);
+
+  // Save audience age ranges
+  useEffect(() => {
+    try {
+      setString("audienceAgeRanges", JSON.stringify(audienceAgeRanges));
+    } catch (error) {
+      console.error('Failed to save audience age ranges:', error);
+    }
+    scheduleStrategySave({ audienceAgeRanges });
+  }, [audienceAgeRanges]);
+
+  // Save audience struggles
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      try {
+        setString("audienceStruggles", audienceStruggles);
+      } catch (error) {
+        console.error('Failed to save audience struggles:', error);
+      }
+      scheduleStrategySave({ audienceStruggles });
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [audienceStruggles]);
+
+  // Save audience desires
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      try {
+        setString("audienceDesires", audienceDesires);
+      } catch (error) {
+        console.error('Failed to save audience desires:', error);
+      }
+      scheduleStrategySave({ audienceDesires });
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [audienceDesires]);
+
   // Load from Supabase on mount
   useEffect(() => {
     if (!user?.id) return;
@@ -400,6 +454,10 @@ export function useStrategyState() {
         if (strategy.strategyNotes) setAdditionalNotes(strategy.strategyNotes);
         if (strategy.strategyNoteLinks.length > 0) setNoteLinks(strategy.strategyNoteLinks);
         if (strategy.strategyNoteFiles.length > 0) setNoteFiles(strategy.strategyNoteFiles);
+        if (strategy.selectedTones.length > 0) setSelectedTones(strategy.selectedTones);
+        if (strategy.audienceAgeRanges.length > 0) setAudienceAgeRanges(strategy.audienceAgeRanges);
+        if (strategy.audienceStruggles) setAudienceStruggles(strategy.audienceStruggles);
+        if (strategy.audienceDesires) setAudienceDesires(strategy.audienceDesires);
         const vbd = strategy.visionBoardData;
         if (vbd) {
           const imgs = (vbd.images || []).map((img: { type: string; content: string }) => img.content);
@@ -897,6 +955,34 @@ export function useStrategyState() {
     e.target.value = '';
   };
 
+  // Save All button handler
+  const [showSaveSuccess, setShowSaveSuccess] = useState(false);
+  const handleSaveAll = useCallback(() => {
+    if (!user?.id) return;
+    // Clear any pending debounce and save everything immediately
+    if (strategyDebounceRef.current) clearTimeout(strategyDebounceRef.current);
+    updateUserStrategy(user.id, {
+      missionStatement,
+      brandValues,
+      contentValues,
+      selectedTones,
+      audienceAgeRanges,
+      audienceStruggles,
+      audienceDesires,
+      strategyNotes: additionalNotes,
+      strategyNoteLinks: noteLinks,
+      strategyNoteFiles: noteFiles,
+      visionBoardData: {
+        images: visionBoardImages.map(src => ({ type: 'image' as const, content: src })),
+        pinterestUrl,
+        threeYearVision,
+      },
+    }).then(() => {
+      setShowSaveSuccess(true);
+      setTimeout(() => setShowSaveSuccess(false), 2000);
+    }).catch(console.error);
+  }, [user?.id, missionStatement, brandValues, contentValues, selectedTones, audienceAgeRanges, audienceStruggles, audienceDesires, additionalNotes, noteLinks, noteFiles, visionBoardImages, pinterestUrl, threeYearVision]);
+
   return {
     // Auth
     user,
@@ -931,6 +1017,8 @@ export function useStrategyState() {
     strugglesFocused, setStrugglesFocused,
     desiresFocused, setDesiresFocused,
     showPinterestInput, setShowPinterestInput,
+    // Save All
+    handleSaveAll, showSaveSuccess,
     // Vision Board
     visionBoardImages, addVisionBoardImage, removeVisionBoardImage,
     pinterestUrl, updatePinterestUrl,
