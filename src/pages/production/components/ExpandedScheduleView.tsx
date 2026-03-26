@@ -200,7 +200,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = (props) => {
             {!(singleCard && isLeftPanelCollapsed) && (
               <button
                 onClick={() => setIsLeftPanelCollapsed(!isLeftPanelCollapsed)}
-                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-30 p-1.5 bg-white/80 hover:bg-white shadow-md rounded-lg border border-gray-200 transition-colors"
+                className="absolute left-full ml-1 top-1/2 -translate-y-1/2 z-30 p-1.5 bg-white/80 hover:bg-white shadow-md rounded-lg border border-gray-200 transition-colors"
               >
                 <ChevronLeft className={cn("w-5 h-5 text-[#612A4F] transition-transform duration-300", isLeftPanelCollapsed && "rotate-180")} strokeWidth={2.5} />
               </button>

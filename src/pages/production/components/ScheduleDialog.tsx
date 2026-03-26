@@ -407,7 +407,7 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
             {/* Collapse/Expand Button */}
             <button
               onClick={() => setIsLeftPanelCollapsed(!isLeftPanelCollapsed)}
-              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10 w-6 h-12 bg-white border border-gray-200 rounded-r-lg shadow-sm hover:bg-gray-50 flex items-center justify-center transition-colors"
+              className="absolute left-full ml-1 top-1/2 -translate-y-1/2 z-20 w-6 h-12 bg-white border border-gray-200 rounded-r-lg shadow-sm hover:bg-gray-50 flex items-center justify-center transition-colors"
             >
               <ChevronLeft className={cn(
                 "w-4 h-4 text-gray-600 transition-transform duration-300",

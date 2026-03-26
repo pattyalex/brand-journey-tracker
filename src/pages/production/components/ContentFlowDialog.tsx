@@ -5,9 +5,8 @@ import {
 } from "@/components/ui/dialog";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { Video, Image as ImageIcon, X, Sparkles } from "lucide-react";
+import { Video, Image as ImageIcon, X } from "lucide-react";
 import { ContentType, ProductionCard, StageCompletions } from "../types";
-import StageTimeline from "./StageTimeline";
 
 interface ContentFlowDialogProps {
   activeStep: number | null;
@@ -158,7 +157,7 @@ const ContentFlowDialog: React.FC<ContentFlowDialogProps> = ({
 
         {/* Regular step content */}
         {!isTypePickerStep && (
-          <div className="flex flex-1 overflow-hidden">
+          <div className="flex flex-col flex-1 overflow-hidden">
             <AnimatePresence mode="wait" custom={slideDirection}>
               <motion.div
                 key={`${activeStep}-${contentType}`}
@@ -173,15 +172,6 @@ const ContentFlowDialog: React.FC<ContentFlowDialogProps> = ({
                 {children}
               </motion.div>
             </AnimatePresence>
-            {/* Stage Timeline sidebar */}
-            {card && onToggleStage && (
-              <div className="w-[200px] flex-shrink-0 border-l border-[#E8E2E5] p-4 overflow-y-auto bg-[#FDFBFC]">
-                <StageTimeline
-                  card={card}
-                  onToggleStage={onToggleStage}
-                />
-              </div>
-            )}
           </div>
         )}
       </DialogContent>

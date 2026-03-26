@@ -195,7 +195,7 @@ export const PlannerHeader = ({
               <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
             </button>
           </PopoverTrigger>
-          <PopoverContent className="w-44 p-1 bg-white" align="end">
+          <PopoverContent className="w-44 p-1 bg-white z-[300]" align="end">
             <button
               onClick={() => { setContentDisplayMode('both'); setFilterOpen(false); }}
               className={cn(
