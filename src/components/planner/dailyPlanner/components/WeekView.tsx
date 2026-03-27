@@ -163,7 +163,7 @@ export const WeekView = ({
   return (
     <>
       <CardContent className="px-0 h-full flex flex-col">
-        <div className="flex flex-col flex-1 min-h-0 bg-white">
+        <div className="flex flex-col flex-1 min-h-0">
           {/* Fixed header row */}
           <WeekHeader />
 
@@ -171,7 +171,7 @@ export const WeekView = ({
           <div ref={weeklyScrollRef} className="flex-1 min-h-0 overflow-auto">
               <div className="flex">
                 {/* Time column */}
-                <div className="flex-shrink-0 bg-white border-r border-gray-200" style={{ width: '40px' }}>
+                <div className="flex-shrink-0 border-r border-gray-200" style={{ width: '40px' }}>
                   <div
                     data-zoom-container="weekly-time"
                     className="relative"

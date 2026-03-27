@@ -183,7 +183,7 @@ export const AllTasksSidebar = ({
     <div
       className={cn(
         "h-full flex-shrink-0 transition-all duration-300 relative",
-        "bg-gradient-to-br from-[#F0EAED] via-[#F8F6F6] to-[#FAFAFA]",
+        "",
         isAllTasksCollapsed ? 'w-12' : 'w-80'
       )}
       onDragEnter={(e) => { e.preventDefault(); setIsDraggingOverAllTasks(true); setIsDragOver(true); }}

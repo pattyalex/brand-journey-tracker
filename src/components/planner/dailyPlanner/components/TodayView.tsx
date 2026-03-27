@@ -222,11 +222,11 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
   />
 
   <div ref={todayScrollRef} className="flex-1 flex flex-col min-h-0 overflow-hidden">
-    <div className="flex flex-col flex-1 min-h-0 bg-white">
+    <div className="flex flex-col flex-1 min-h-0">
       {/* Fixed header row */}
-      <div className="flex border-b border-gray-200 flex-shrink-0">
+      <div className="flex flex-shrink-0">
         {/* Time column header */}
-        <div className="flex-shrink-0 border-r border-gray-200 h-[60px]" style={{ width: '60px' }}>
+        <div className="flex-shrink-0 h-[60px]" style={{ width: '60px' }}>
         </div>
         {/* Date header */}
         <div className="flex-1 h-[60px] flex items-center justify-between px-4">
@@ -248,7 +248,7 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
       <ScrollArea className="flex-1 min-h-0">
         <div className="flex">
           {/* Time column */}
-          <div className="flex-shrink-0 bg-white border-r border-gray-200" style={{ width: '60px' }}>
+          <div className="flex-shrink-0" style={{ width: '60px' }}>
             <div
               data-zoom-container="time"
               className="relative"
@@ -270,7 +270,7 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
           </div>
 
           {/* Main content area */}
-          <div className="flex-1 relative">
+          <div className="flex-1 relative border-l border-gray-200">
             <div
               data-zoom-container="content"
               className="relative"

@@ -174,7 +174,7 @@ export const ReadyToPostSidebar = ({
   return (
     <div
       className={cn(
-        "h-full flex-shrink-0 bg-gradient-to-br from-[#EDEAE8] via-[#F5F3F2] to-[#FBFBFA] transition-all duration-300 relative",
+        "h-full flex-shrink-0 transition-all duration-300 relative",
         isCollapsed ? "w-12" : "w-80"
       )}
     >

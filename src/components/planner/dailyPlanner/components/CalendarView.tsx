@@ -64,6 +64,7 @@ interface CalendarViewProps {
   onOpenContentDialog?: (content: ProductionCard, type: 'scheduled' | 'planned') => void;
   onOpenContentFlow?: (cardId: string) => void;
   savePlannerData?: (data: PlannerDay[]) => void;
+  activePanel?: 'tasks' | 'content';
 }
 
 export const CalendarView = ({
@@ -99,6 +100,7 @@ export const CalendarView = ({
   onOpenContentDialog,
   onOpenContentFlow,
   savePlannerData,
+  activePanel = 'tasks',
 }: CalendarViewProps) => {
   const navigate = useNavigate();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -660,7 +662,7 @@ export const CalendarView = ({
       {/* Month Calendar Grid */}
       <CardContent className="pl-0 pr-4 flex-1 flex flex-col min-h-0 overflow-hidden">
         {/* Day Headers - Sticky */}
-        <div className="grid grid-cols-7 mb-2 flex-shrink-0 sticky top-0 bg-white z-10">
+        <div className="grid grid-cols-7 mb-2 flex-shrink-0 sticky top-0 bg-transparent z-10">
           {getDayNames('upper').map((day) => (
             <div key={day} className="text-center text-xs text-gray-500 py-2" style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 500 }}>
               {day}
@@ -677,7 +679,7 @@ export const CalendarView = ({
           <div className="grid grid-cols-7 gap-1.5">
             {/* Empty placeholder cells for grid alignment */}
             {Array.from({ length: firstDayOfWeek }).map((_, i) => (
-              <div key={`empty-${i}`} className="h-[120px]" />
+              <div key={`empty-${i}`} className="h-[140px]" />
             ))}
             {allDays.map((day, index) => {
               const dayString = getDateString(day);
@@ -731,10 +733,14 @@ export const CalendarView = ({
                   <div
                     data-day={dayString}
                     className={cn(
-                      "h-[120px] rounded-lg border p-1.5 transition-all cursor-pointer flex flex-col overflow-hidden",
-                      isPast
-                        ? 'bg-[#fafafa] border-gray-200 text-gray-500 hover:bg-gray-100'
-                        : 'bg-white border-gray-200 text-gray-900 hover:bg-gray-50'
+                      "h-[140px] rounded-lg border p-1.5 transition-all cursor-pointer flex flex-col overflow-hidden",
+                      isToday
+                        ? 'bg-white border-[#8B7082]/50 text-gray-900'
+                        : isPast
+                          ? activePanel === 'content'
+                          ? 'bg-gray-50 border-gray-100 text-gray-400'
+                          : 'bg-[#FAF8F9] border-[#F5F3F4] text-gray-400'
+                          : 'bg-white border-gray-200 text-gray-900 hover:bg-gray-50/70'
                     )}
                     onClick={(e) => handleDayClick(day, dayString, e)}
                     onDragOver={(e) => {

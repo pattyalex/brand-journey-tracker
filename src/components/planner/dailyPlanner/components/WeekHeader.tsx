@@ -7,9 +7,9 @@ import { usePlannerContext } from "@/contexts/PlannerContext";
 export const WeekHeader = () => {
   const { selectedDate, contentDisplayMode } = usePlannerContext();
   return (
-    <div className="flex border-b border-gray-200">
+    <div className="flex">
       {/* Time column header */}
-      <div className="flex-shrink-0 bg-white border-r border-gray-200 h-[60px]" style={{ width: '40px' }}>
+      <div className="flex-shrink-0 h-[60px]" style={{ width: '40px' }}>
       </div>
       {/* Day headers */}
       <div className="flex-1 grid grid-cols-7 gap-0">
@@ -25,11 +25,11 @@ export const WeekHeader = () => {
               className={cn(
                 "h-[60px] flex flex-col items-center justify-center transition-colors hover:bg-gray-100",
                 isToday
-                  ? contentDisplayMode === 'tasks' ? 'bg-[#7A909F]/5' : 'bg-gray-50'
-                  : 'bg-gray-50'
+                  ? 'bg-white/50'
+                  : 'bg-white/30'
               )}
               style={{
-                borderRight: index < 6 ? '1px solid #d1d5db' : 'none',
+                borderRight: 'none',
                 opacity: isPast ? 0.5 : 1
               }}
             >

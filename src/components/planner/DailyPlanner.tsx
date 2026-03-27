@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { addDays, addMonths, endOfMonth, endOfWeek, format, startOfMonth, startOfWeek, subDays, subMonths, eachDayOfInterval, isSameDay } from "date-fns";
-import { ChevronLeft, ChevronRight, ChevronDown, Plus, Clock, FileText, Palette, Lightbulb, ListTodo, ArrowRight, Check, X, Trash2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronDown, Plus, Clock, FileText, Palette, Lightbulb, ListTodo, ArrowRight, Check, X, Trash2, Send } from 'lucide-react';
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { getWeekStartsOn, getDayNames, getString, StorageKeys } from "@/lib/storage";
@@ -465,7 +465,18 @@ export const DailyPlanner = () => {
   return (
     <PlannerProvider {...plannerContextValue}>
     <div className="h-full">
-      <div className="flex h-full">
+      <div className={cn(
+        "flex h-full transition-colors duration-300",
+        (currentView === 'today' || currentView === 'week' || currentView === 'calendar') && (
+          contentDisplayMode === 'content'
+            ? "bg-gradient-to-br from-[#E5E8F4] via-white to-[#E5E8F4]"
+            : contentDisplayMode === 'tasks'
+              ? "bg-gradient-to-br from-[#F0EAED] via-white to-[#F0EAED]"
+              : bothPanelTab === 'content'
+                ? "bg-gradient-to-br from-[#E5E8F4] via-white to-[#E5E8F4]"
+                : "bg-gradient-to-br from-[#F0EAED] via-white to-[#F0EAED]"
+        )
+      )}>
         {/* Sidebar - Left Side - Adaptive based on filter mode */}
         {(currentView === 'today' || currentView === 'week' || currentView === 'calendar') && (
           contentDisplayMode === 'content' ? (
@@ -480,10 +491,7 @@ export const DailyPlanner = () => {
             // Both: tabbed sidebar with All Tasks + Ready to Post
             <div
               className={cn(
-                "hidden lg:block h-full flex-shrink-0 transition-all duration-300 relative bg-gradient-to-br",
-                bothPanelTab === 'content'
-                  ? "from-[#EDEAE8] via-[#F5F3F2] to-[#FBFBFA]"
-                  : "from-[#F0EAED] via-[#F8F6F6] to-[#FAFAFA]",
+                "hidden lg:block h-full flex-shrink-0 transition-all duration-300 relative",
                 isAllTasksCollapsed ? "w-12" : "w-80"
               )}
             >
@@ -517,25 +525,27 @@ export const DailyPlanner = () => {
                     <button
                       onClick={() => setBothPanelTab('tasks')}
                       className={cn(
-                        "flex-1 py-2 px-3 text-sm font-medium text-center transition-all rounded-lg",
+                        "flex-1 py-1.5 px-3 text-base font-semibold text-center transition-all rounded-lg flex items-center justify-center gap-1.5 whitespace-nowrap",
                         bothPanelTab === 'tasks'
                           ? "bg-[#A8899A] text-white shadow-sm"
                           : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
                       )}
-                      style={{ fontFamily: "'DM Sans', sans-serif" }}
+                      style={{ fontFamily: "'Playfair Display', serif", letterSpacing: '0.3px' }}
                     >
+                      <ListTodo className="w-4 h-4" />
                       All Tasks
                     </button>
                     <button
                       onClick={() => setBothPanelTab('content')}
                       className={cn(
-                        "flex-1 py-2 px-3 text-sm font-medium text-center transition-all rounded-lg",
+                        "flex-1 py-1.5 px-3 text-base font-semibold text-center transition-all rounded-lg flex items-center justify-center gap-1.5 whitespace-nowrap",
                         bothPanelTab === 'content'
                           ? "bg-[#A8899A] text-white shadow-sm"
                           : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
                       )}
-                      style={{ fontFamily: "'DM Sans', sans-serif" }}
+                      style={{ fontFamily: "'Playfair Display', serif", letterSpacing: '0.3px' }}
                     >
+                      <Send className="w-3.5 h-3.5" />
                       Ready to Post
                     </button>
                   </div>
@@ -591,7 +601,7 @@ export const DailyPlanner = () => {
         )}
 
         {/* Main Planner - Right Side */}
-        <div className="flex-1 pl-0 lg:pl-6 bg-white h-full flex flex-col">
+        <div className="flex-1 pl-0 lg:pl-6 h-full flex flex-col">
             {/* Header with Tabs and Date Navigation */}
             <PlannerHeader
               currentView={currentView}
@@ -803,7 +813,7 @@ export const DailyPlanner = () => {
         )}
 
         {currentView === 'calendar' && (
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 overflow-hidden bg-transparent">
             <CalendarView
               getTimezoneDisplay={getTimezoneDisplay}
               handleTimezoneChange={handleTimezoneChange}
@@ -837,6 +847,7 @@ export const DailyPlanner = () => {
               onOpenContentDialog={handleOpenContentDialog}
               onOpenContentFlow={handleOpenContentFlow}
               savePlannerData={persistence.savePlannerData}
+              activePanel={bothPanelTab}
             />
           </div>
         )}
