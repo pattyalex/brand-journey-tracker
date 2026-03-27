@@ -188,7 +188,7 @@ export const PlannerHeader = ({
           <button
             onClick={() => setContentDisplayMode('both')}
             className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200",
+              "flex items-center gap-1.5 px-[13px] py-[7px] rounded-full text-xs font-medium transition-all duration-200",
               contentDisplayMode === 'both'
                 ? "bg-[#612a4f] text-white shadow-sm"
                 : "bg-white text-gray-500 border border-gray-200 hover:border-gray-300 hover:text-gray-700"
@@ -201,7 +201,7 @@ export const PlannerHeader = ({
           <button
             onClick={() => setContentDisplayMode('tasks')}
             className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200",
+              "flex items-center gap-1.5 px-[13px] py-[7px] rounded-full text-xs font-medium transition-all duration-200",
               contentDisplayMode === 'tasks'
                 ? "bg-[#612a4f] text-white shadow-sm"
                 : "bg-white text-gray-500 border border-gray-200 hover:border-gray-300 hover:text-gray-700"
@@ -214,7 +214,7 @@ export const PlannerHeader = ({
           <button
             onClick={() => setContentDisplayMode('content')}
             className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200",
+              "flex items-center gap-1.5 px-[13px] py-[7px] rounded-full text-xs font-medium transition-all duration-200",
               contentDisplayMode === 'content'
                 ? "bg-[#612a4f] text-white shadow-sm"
                 : "bg-white text-gray-500 border border-gray-200 hover:border-gray-300 hover:text-gray-700"

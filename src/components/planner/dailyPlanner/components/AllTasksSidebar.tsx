@@ -78,7 +78,7 @@ export const AllTasksSidebar = ({
   const visiblePlaceholders = PLACEHOLDER_TASKS.filter(t => !dismissed[t.id]);
 
   const placeholderList = (
-    <div className="mb-2">
+    <div className="pt-[22vh]">
       {/* Empty state illustration */}
       <div className="flex flex-col items-center text-center px-4 pt-4 pb-6 mb-2">
         <div className="w-10 h-10 rounded-full flex items-center justify-center mb-3" style={{ background: 'rgba(97,42,79,0.07)' }}>
@@ -94,10 +94,10 @@ export const AllTasksSidebar = ({
       {visiblePlaceholders.map((task) => (
         <div
           key={task.id}
-          className="group flex items-center gap-2 px-2 py-2 rounded-lg opacity-55 hover:opacity-75 transition-opacity"
+          className="group flex items-center gap-2 px-2 py-2 rounded-lg opacity-85 hover:opacity-100 transition-opacity"
         >
-          <GripVertical className="w-3.5 h-3.5 flex-shrink-0 text-gray-400" />
-          <span className="flex-1 text-[13px] text-gray-400 truncate" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+          <GripVertical className="w-3.5 h-3.5 flex-shrink-0 text-gray-500" />
+          <span className="flex-1 text-[13px] text-gray-500 truncate" style={{ fontFamily: "'DM Sans', sans-serif" }}>
             {task.text}
           </span>
         </div>

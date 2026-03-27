@@ -479,7 +479,7 @@ export const PlannerSection = ({
             ) : (
               <button
                 onClick={() => setIsAddingItem(true)}
-                className={`flex items-center justify-center w-full py-2.5 text-[#612a4f] font-medium hover:bg-[#612a4f]/10 rounded-lg transition-colors text-sm ${items.length > 0 ? 'mt-3' : 'mt-0'}`}
+                className={`flex items-center justify-center text-[#612a4f] font-medium hover:bg-[#612a4f]/10 rounded-lg transition-colors ${items.length > 0 ? 'w-full py-2.5 text-sm mt-3' : 'mx-auto px-4 py-1.5 text-xs font-semibold bg-[#612a4f]/10 hover:bg-[#612a4f]/15 mt-0'}`}
               >
                 <Plus size={16} strokeWidth={2} className="mr-1" />
                 <span>Add</span>

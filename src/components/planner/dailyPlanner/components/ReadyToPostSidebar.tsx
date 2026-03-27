@@ -96,20 +96,26 @@ export const ReadyToPostSidebar = ({
 
       {/* Cards list */}
       {readyCards.length === 0 ? (
-        <div className="flex-1 flex flex-col items-center justify-center text-center px-4 py-8">
-          <div className="w-12 h-12 rounded-full bg-[#612a4f]/5 flex items-center justify-center mb-3">
-            <Calendar className="w-5 h-5 text-[#8B7082]" />
+        <div className="pt-[22vh]">
+          <div className="flex flex-col items-center text-center px-4 pt-4 pb-6 mb-2">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center mb-3" style={{ background: 'rgba(97,42,79,0.07)' }}>
+              <Send className="w-5 h-5 text-[#612a4f]" />
+            </div>
+            <p className="text-[13px] font-medium text-gray-700 mb-1" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+              Produce content in the Content Hub.
+            </p>
+            <p className="text-[13px] font-medium text-gray-700" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+              Once it's ready, it'll appear here for you to drag onto a date to schedule.
+            </p>
           </div>
-          <p className="text-sm font-medium text-gray-700 mb-1">No content scheduled yet</p>
-          <p className="text-xs text-gray-400 mb-4">
-            Schedule content in the Content Hub and it will appear here
-          </p>
-          <button
-            onClick={() => navigate('/production')}
-            className="text-xs font-semibold text-[#612a4f] bg-[#612a4f]/10 hover:bg-[#612a4f]/15 px-3 py-1.5 rounded-lg transition-colors"
-          >
-            Go to Content Hub →
-          </button>
+          <div className="flex justify-center">
+            <button
+              onClick={() => navigate('/production')}
+              className="text-xs font-semibold text-[#612a4f] bg-[#612a4f]/10 hover:bg-[#612a4f]/15 px-3 py-1.5 rounded-lg transition-colors"
+            >
+              Go to Content Hub →
+            </button>
+          </div>
         </div>
       ) : (
         <div className="flex-1 overflow-y-auto space-y-2 -mx-1 px-1">
