@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { PartyPopper, ArrowRight, ArrowLeft, Save, Send, CalendarDays, X } from "lucide-react";
+import { ArrowRight, ArrowLeft, Save, Send, CalendarDays, X } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import ContentFlowProgress from "./ContentFlowProgress";
 import { ContentType } from "../types";
@@ -92,7 +92,7 @@ const ReadyToPostStep: React.FC<ReadyToPostStepProps> = ({
               <div className="flex gap-3 w-full max-w-xs">
                 <button
                   onClick={() => setView("not-ready")}
-                  className="flex-1 px-5 py-3 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-600 hover:border-gray-300 hover:bg-gray-50 transition-all duration-200"
+                  className="flex-1 px-5 py-3 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-600 hover:border-gray-300 hover:bg-gray-100 transition-all duration-200"
                 >
                   Not yet
                 </button>
@@ -146,12 +146,12 @@ const ReadyToPostStep: React.FC<ReadyToPostStepProps> = ({
               <div className="flex flex-col gap-3 w-full max-w-xs">
                 <button
                   onClick={onSaveAndExit}
-                  className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-600 hover:border-gray-300 hover:bg-gray-50 transition-all duration-200"
+                  className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-600 hover:border-gray-300 hover:bg-gray-100 transition-all duration-200"
                 >
                   Save and come back later
                 </button>
                 <button
-                  onClick={() => setView("question")}
+                  onClick={handleYes}
                   className="w-full px-5 py-3 rounded-xl text-sm font-medium text-[#612A4F] hover:bg-[#612A4F]/5 transition-all duration-200"
                 >
                   Actually, I think it's ready
@@ -169,82 +169,73 @@ const ReadyToPostStep: React.FC<ReadyToPostStepProps> = ({
               transition={{ duration: 0.5, ease: "easeOut" }}
               className="flex flex-col items-center text-center max-w-md"
             >
-              {/* Animated celebration icon */}
-              <motion.div
-                initial={{ scale: 0, rotate: -20 }}
-                animate={{ scale: 1, rotate: 0 }}
-                transition={{
-                  type: "spring",
-                  stiffness: 200,
-                  damping: 12,
-                  delay: 0.15,
-                }}
-                className="w-24 h-24 rounded-full bg-gradient-to-br from-amber-100 via-yellow-50 to-orange-100 flex items-center justify-center mb-8 shadow-[0_0_40px_rgba(251,191,36,0.2)]"
-              >
-                <PartyPopper className="w-11 h-11 text-amber-600" />
-              </motion.div>
-
-              {/* Floating sparkle accents */}
-              <motion.div
-                className="absolute"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.4 }}
-              >
-                {[
-                  { x: -120, y: -60, delay: 0.5, size: "w-2 h-2" },
-                  { x: 130, y: -40, delay: 0.6, size: "w-1.5 h-1.5" },
-                  { x: -80, y: 30, delay: 0.7, size: "w-1.5 h-1.5" },
-                  { x: 100, y: 50, delay: 0.55, size: "w-2 h-2" },
-                  { x: -140, y: 10, delay: 0.65, size: "w-1 h-1" },
-                  { x: 150, y: -10, delay: 0.75, size: "w-1 h-1" },
-                ].map((spark, i) => (
-                  <motion.div
-                    key={i}
-                    className={`absolute ${spark.size} rounded-full bg-gradient-to-br from-amber-300 to-yellow-400`}
-                    style={{ left: spark.x, top: spark.y }}
-                    initial={{ opacity: 0, scale: 0 }}
-                    animate={{
-                      opacity: [0, 1, 0],
-                      scale: [0, 1.2, 0],
-                    }}
-                    transition={{
-                      duration: 2,
-                      delay: spark.delay,
-                      repeat: Infinity,
-                      repeatDelay: 1.5,
-                    }}
+              {/* Animated checkmark circle */}
+              <div className="w-16 h-16 mb-8 relative">
+                <svg viewBox="0 0 52 52" className="w-full h-full">
+                  {/* Circle */}
+                  <motion.circle
+                    cx="26"
+                    cy="26"
+                    r="23"
+                    fill="none"
+                    stroke="#612A4F"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    initial={{ pathLength: 0 }}
+                    animate={{ pathLength: 1 }}
+                    transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
                   />
-                ))}
-              </motion.div>
+                  {/* Checkmark */}
+                  <motion.path
+                    d="M16 27 L22.5 33.5 L36 19"
+                    fill="none"
+                    stroke="#612A4F"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    initial={{ pathLength: 0 }}
+                    animate={{ pathLength: 1 }}
+                    transition={{ duration: 0.4, ease: "easeOut", delay: 0.6 }}
+                  />
+                </svg>
+              </div>
 
-              <motion.h2
+              <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="text-2xl font-semibold text-gray-900 mb-2"
-                style={{ fontFamily: "'Playfair Display', serif" }}
+                className="flex items-center justify-center mb-5"
               >
-                You did it!
-              </motion.h2>
-
-              <motion.p
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-                className="text-sm text-gray-500 mb-2 leading-relaxed"
-              >
-                This content has been moved to{" "}
-                <span className="font-semibold text-[#612A4F]">Ready to Post</span>.
-              </motion.p>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => setView("question")}
+                        className="p-1.5 mr-2 rounded-full text-gray-300 hover:text-[#612A4F] hover:bg-[#612A4F]/5 transition-all duration-200"
+                      >
+                        <ArrowLeft className="w-5 h-5" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" sideOffset={6} className="bg-gray-500 text-white">
+                      <p>Back to question</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <h2
+                  className="text-2xl font-semibold text-gray-900"
+                  style={{ fontFamily: "'Playfair Display', serif" }}
+                >
+                  You did it!
+                </h2>
+              </motion.div>
 
               <motion.p
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
-                className="text-sm text-gray-500 mb-10 leading-relaxed max-w-sm"
+                className="text-sm text-gray-500 mb-6 leading-relaxed max-w-sm"
               >
-                Head over to the Planner & Calendar to pick the perfect date and time to publish.
+                Ready to schedule? Head over to the Planner & Calendar to pick the date and time to publish
               </motion.p>
 
               <motion.div
@@ -256,7 +247,7 @@ const ReadyToPostStep: React.FC<ReadyToPostStepProps> = ({
                 <button
                   onClick={() => {
                     onClose();
-                    navigate("/content-planning");
+                    navigate("/task-board");
                   }}
                   className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#612A4F] text-sm font-medium text-white hover:bg-[#4A1F3D] transition-all duration-200 shadow-[0_2px_12px_rgba(97,42,79,0.25)] hover:shadow-[0_4px_20px_rgba(97,42,79,0.35)]"
                 >
@@ -266,9 +257,9 @@ const ReadyToPostStep: React.FC<ReadyToPostStepProps> = ({
                 </button>
                 <button
                   onClick={onClose}
-                  className="w-full px-5 py-3 rounded-xl text-sm font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition-all duration-200"
+                  className="w-full px-5 py-3 rounded-xl text-sm font-medium text-gray-500 hover:text-[#612A4F] hover:bg-[#8B7082]/10 transition-all duration-200"
                 >
-                  Stay here for now
+                  Stay in Content Hub for now
                 </button>
               </motion.div>
             </motion.div>
