@@ -7,11 +7,12 @@ import {
 } from "@/components/ui/dialog";
 import { motion, AnimatePresence } from "framer-motion";
 import ContentFlowProgress from "./ContentFlowProgress";
+import StepCompleteFooter from "./StepCompleteFooter";
 import { Textarea } from "@/components/ui/textarea";
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
 import {
-  MoreHorizontal, X, MapPin, Shirt, Boxes, Plus, ArrowLeft, ArrowRight, ChevronDown, ChevronUp,
+  MoreHorizontal, X, MapPin, Shirt, Boxes, Plus, ArrowLeft, ArrowRight, Check, ChevronDown, ChevronUp,
   Sparkles, Send, Bot, User, Upload, Link2, Image as ImageIcon, Layers, Video,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -924,16 +925,7 @@ Guidelines:
         )}
       </AnimatePresence>
 
-      {/* Bottom bar with Next button */}
-      <div className="px-6 py-4 border-t border-gray-100 flex justify-end flex-shrink-0">
-        <Button
-          size="sm"
-          onClick={() => onNavigateToStep?.(3)}
-          className="bg-[#612A4F] hover:bg-[#4A1F3D] text-white text-sm"
-        >
-          Next <ArrowRight className="w-3 h-3 ml-1" />
-        </Button>
-      </div>
+      <StepCompleteFooter stepNumber={2} completedSteps={completedSteps} onToggleComplete={onToggleComplete} />
     </div>
   );
 

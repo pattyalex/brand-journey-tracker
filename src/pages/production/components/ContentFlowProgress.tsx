@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -75,15 +75,6 @@ const ContentFlowProgress: React.FC<ContentFlowProgressProps> = ({
   onStepClick,
   onToggleComplete,
 }) => {
-  const [justUnchecked, setJustUnchecked] = useState<number | null>(null);
-
-  useEffect(() => {
-    if (justUnchecked !== null) {
-      const timer = setTimeout(() => setJustUnchecked(null), 1200);
-      return () => clearTimeout(timer);
-    }
-  }, [justUnchecked]);
-
   const steps = contentType === 'image' ? IMAGE_STEPS : VIDEO_STEPS;
   const totalSteps = steps.length;
   const maxStepIndex = totalSteps - 1;
@@ -137,52 +128,31 @@ const ContentFlowProgress: React.FC<ContentFlowProgressProps> = ({
           const isVisited = stepNumber < currentStep;
           const isPending = !allCompleted && stepNumber > currentStep;
           const canNavigate = onStepClick && stepNumber !== currentStep;
-          const canToggle = !!onToggleComplete;
 
           return (
             <React.Fragment key={step.label}>
               <div className="flex flex-col items-center relative z-10 flex-1">
-                {/* Circle indicator */}
-                <TooltipProvider delayDuration={0}>
-                  <Tooltip open={justUnchecked === stepNumber && stepNumber !== 1 ? true : undefined}>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={(e) => {
-                          if (canToggle) {
-                            e.stopPropagation();
-                            if (isActuallyCompleted) {
-                              setJustUnchecked(stepNumber);
-                            } else {
-                              setJustUnchecked(null);
-                            }
-                            onToggleComplete(stepNumber);
-                          } else if (canNavigate) {
-                            onStepClick(stepNumber);
-                          }
-                        }}
-                        className={cn(
-                          "rounded-full flex items-center justify-center font-semibold transition-all duration-300 focus:outline-none",
-                          isActuallyCompleted && !isCurrent && "w-5 h-5 bg-[#612A4F] border-[1.5px] border-[#612A4F] text-white cursor-pointer hover:ring-2 hover:ring-offset-1 hover:ring-[#612A4F]/30",
-                          !isActuallyCompleted && isVisited && "w-5 h-5 bg-white border-[1.5px] border-[#612A4F] cursor-pointer hover:ring-2 hover:ring-offset-1 hover:ring-[#612A4F]/30",
-                          isCurrent && "w-9 h-9 bg-white border-[2px] border-[#612A4F] text-[#612A4F] shadow-sm cursor-pointer hover:ring-2 hover:ring-offset-1 hover:ring-[#612A4F]/30",
-                          isPending && !isActuallyCompleted && "w-5 h-5 bg-gray-100 border-[1.5px] border-gray-300 cursor-pointer hover:ring-2 hover:ring-offset-1 hover:ring-[#612A4F]/30",
-                        )}
-                      >
-                        {isActuallyCompleted && !isCurrent && (
-                          <Check className="w-2.5 h-2.5" strokeWidth={3} />
-                        )}
-                        {isCurrent && isActuallyCompleted && (
-                          <Check className="w-4 h-4" strokeWidth={3} />
-                        )}
-                      </button>
-                    </TooltipTrigger>
-                    {canToggle && (justUnchecked === stepNumber || !isActuallyCompleted) && (
-                      <TooltipContent side="top" sideOffset={6} className="bg-gray-500 text-white">
-                        <p>{justUnchecked === stepNumber ? 'Incomplete step' : 'Mark as complete'}</p>
-                      </TooltipContent>
-                    )}
-                  </Tooltip>
-                </TooltipProvider>
+                {/* Circle indicator - read-only status, click to navigate */}
+                <button
+                  onClick={() => canNavigate && onStepClick(stepNumber)}
+                  disabled={!canNavigate}
+                  className={cn(
+                    "rounded-full flex items-center justify-center font-semibold transition-all duration-300 focus:outline-none",
+                    isActuallyCompleted && !isCurrent && "w-5 h-5 bg-[#612A4F] border-[1.5px] border-[#612A4F] text-white",
+                    !isActuallyCompleted && isVisited && "w-5 h-5 bg-white border-[1.5px] border-[#612A4F]",
+                    isCurrent && "w-9 h-9 bg-white border-[2px] border-[#612A4F] text-[#612A4F] shadow-sm",
+                    isPending && !isActuallyCompleted && "w-5 h-5 bg-gray-100 border-[1.5px] border-gray-300",
+                    canNavigate && "cursor-pointer hover:ring-2 hover:ring-offset-1 hover:ring-[#612A4F]/30",
+                    !canNavigate && "cursor-default",
+                  )}
+                >
+                  {isActuallyCompleted && !isCurrent && (
+                    <Check className="w-2.5 h-2.5" strokeWidth={3} />
+                  )}
+                  {isCurrent && isActuallyCompleted && (
+                    <Check className="w-4 h-4" strokeWidth={3} />
+                  )}
+                </button>
 
                 {/* Step label - clickable to navigate */}
                 <button

@@ -61,6 +61,7 @@ import { generateStoryboardFromScript, convertToStoryboardScenes } from "../util
 import { toast } from "sonner";
 import ShotLibraryDialog, { variantImages } from "./ShotLibraryDialog";
 import ContentFlowProgress from "./ContentFlowProgress";
+import StepCompleteFooter from "./StepCompleteFooter";
 
 // Shot illustrations - import all 10 images for each shot type
 import wideShotIllustration from "@/assets/shot-illustrations/wide-shot.png";
@@ -1159,16 +1160,7 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
           </div>
 
         </div>
-      {/* Bottom bar with Next button */}
-      <div className="px-6 py-4 border-t border-gray-100 flex justify-end flex-shrink-0">
-        <Button
-          size="sm"
-          onClick={() => handleNavigateWithSave(4)}
-          className="bg-[#612A4F] hover:bg-[#4A1F3D] text-white text-sm"
-        >
-          Next <ArrowRight className="w-3 h-3 ml-1" />
-        </Button>
-      </div>
+      <StepCompleteFooter stepNumber={3} completedSteps={completedSteps} onToggleComplete={onToggleComplete} />
     </>
   );
 

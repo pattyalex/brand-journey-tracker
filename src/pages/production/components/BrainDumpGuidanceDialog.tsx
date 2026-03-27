@@ -9,9 +9,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { ArrowRight, X, Video, Image as ImageIcon, ChevronDown } from "lucide-react";
+import { ArrowRight, Check, X, Video, Image as ImageIcon, ChevronDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import ContentFlowProgress from "./ContentFlowProgress";
+import StepCompleteFooter from "./StepCompleteFooter";
 import { ContentType } from "../types";
 
 interface BrainDumpGuidanceDialogProps {
@@ -168,16 +170,7 @@ const BrainDumpGuidanceDialog: React.FC<BrainDumpGuidanceDialogProps> = ({
         </div>
       </div>
 
-      {/* Bottom bar with Save & Move button */}
-      <div className="px-6 py-4 border-t border-gray-100 flex justify-end flex-shrink-0">
-        <Button
-          size="sm"
-          onClick={() => onNavigateToStep?.(2)}
-          className="bg-[#612A4F] hover:bg-[#4A1F3D] text-white text-sm"
-        >
-          Next <ArrowRight className="w-3 h-3 ml-1" />
-        </Button>
-      </div>
+      <StepCompleteFooter stepNumber={1} completedSteps={completedSteps} onToggleComplete={onToggleComplete} />
     </>
   );
 

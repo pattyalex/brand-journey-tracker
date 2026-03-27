@@ -5,6 +5,7 @@ import {
   DialogContent,
 } from "@/components/ui/dialog";
 import ContentFlowProgress from "./ContentFlowProgress";
+import StepCompleteFooter from "./StepCompleteFooter";
 import StageTimeline from "./StageTimeline";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -519,16 +520,7 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
           </div>
         </div>
 
-      {/* Bottom bar with Next button */}
-      <div className="px-6 py-4 border-t border-gray-100 flex justify-end flex-shrink-0">
-        <Button
-          size="sm"
-          onClick={() => handleNavigateWithSave(scheduleStepNumber)}
-          className="bg-[#612A4F] hover:bg-[#4A1F3D] text-white text-sm"
-        >
-          Next <ArrowRight className="w-3 h-3 ml-1" />
-        </Button>
-      </div>
+      <StepCompleteFooter stepNumber={editStepNumber} completedSteps={completedSteps} onToggleComplete={onToggleComplete} />
     </>
   );
 

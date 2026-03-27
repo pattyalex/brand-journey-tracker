@@ -1160,6 +1160,38 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
     }
     // Steps 3/4/5: child dialogs save via their unmount cleanup — no action needed here
 
+    // Move card to the furthest completed column based on stageCompletions
+    const completedSteps = getCompletedSteps(contentFlowCard);
+    if (completedSteps.length > 0) {
+      const furthestStep = Math.max(...completedSteps);
+      const targetColumnId = stepToColumn[furthestStep];
+      if (targetColumnId) {
+        setColumns((prev) => {
+          let sourceColumnId: string | undefined;
+          for (const col of prev) {
+            if (col.cards.find(c => c.id === contentFlowCard.id)) {
+              sourceColumnId = col.id;
+              break;
+            }
+          }
+          if (sourceColumnId === targetColumnId) return prev;
+          if (!sourceColumnId) return prev;
+          const card = prev.find(c => c.id === sourceColumnId)?.cards.find(c => c.id === contentFlowCard.id);
+          if (!card) return prev;
+          const updatedCard = { ...card, columnId: targetColumnId };
+          return prev.map((col) => {
+            if (col.id === sourceColumnId) {
+              return { ...col, cards: col.cards.filter(c => c.id !== contentFlowCard.id) };
+            }
+            if (col.id === targetColumnId) {
+              return { ...col, cards: [...col.cards, updatedCard] };
+            }
+            return col;
+          });
+        });
+      }
+    }
+
     // Reset dialog state — note: editingStoryboardCard and editingEditCard are NOT
     // reset here because their child dialogs need them during unmount cleanup saves.
     // They get re-initialized when the next dialog opens via handleOpenContentFlowForCard.
