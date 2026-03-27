@@ -480,7 +480,10 @@ export const DailyPlanner = () => {
             // Both: tabbed sidebar with All Tasks + Ready to Post
             <div
               className={cn(
-                "hidden lg:block h-full flex-shrink-0 transition-all duration-300 relative bg-gradient-to-br from-[#F0EAED] via-[#F8F6F6] to-[#FAFAFA]",
+                "hidden lg:block h-full flex-shrink-0 transition-all duration-300 relative bg-gradient-to-br",
+                bothPanelTab === 'content'
+                  ? "from-[#EDEAE8] via-[#F5F3F2] to-[#FBFBFA]"
+                  : "from-[#F0EAED] via-[#F8F6F6] to-[#FAFAFA]",
                 isAllTasksCollapsed ? "w-12" : "w-80"
               )}
             >
@@ -510,14 +513,14 @@ export const DailyPlanner = () => {
                   isAllTasksCollapsed ? "opacity-0" : "opacity-100"
                 )}>
                   {/* Tab switcher */}
-                  <div className="flex border-b border-gray-200 px-3 pt-4 pb-0 flex-shrink-0">
+                  <div className="flex gap-2 px-3 pt-4 pb-3 flex-shrink-0">
                     <button
                       onClick={() => setBothPanelTab('tasks')}
                       className={cn(
-                        "flex-1 pb-2.5 text-sm font-medium text-center transition-all border-b-2",
+                        "flex-1 py-2 px-3 text-sm font-medium text-center transition-all rounded-lg",
                         bothPanelTab === 'tasks'
-                          ? "text-[#612a4f] border-[#612a4f]"
-                          : "text-gray-400 border-transparent hover:text-gray-600"
+                          ? "bg-[#A8899A] text-white shadow-sm"
+                          : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
                       )}
                       style={{ fontFamily: "'DM Sans', sans-serif" }}
                     >
@@ -526,10 +529,10 @@ export const DailyPlanner = () => {
                     <button
                       onClick={() => setBothPanelTab('content')}
                       className={cn(
-                        "flex-1 pb-2.5 text-sm font-medium text-center transition-all border-b-2",
+                        "flex-1 py-2 px-3 text-sm font-medium text-center transition-all rounded-lg",
                         bothPanelTab === 'content'
-                          ? "text-[#612a4f] border-[#612a4f]"
-                          : "text-gray-400 border-transparent hover:text-gray-600"
+                          ? "bg-[#A8899A] text-white shadow-sm"
+                          : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
                       )}
                       style={{ fontFamily: "'DM Sans', sans-serif" }}
                     >
