@@ -34,7 +34,7 @@ const ProgressDots: React.FC<ProgressDotsProps> = ({ stageCompletions }) => {
           sideOffset={6}
           className="bg-[#2D2D2D] text-white border-0 px-3 py-2 rounded-lg shadow-lg max-w-[200px]"
         >
-          <p className="text-[11px] font-semibold mb-1">Stage progress ({completedCount}/5)</p>
+          <p className="text-[11px] font-semibold mb-1">Stage progress ({completedCount}/{STAGE_ORDER.length})</p>
           <p className="text-[10px] text-gray-300 leading-relaxed">
             Each dot represents a step in your content workflow. Open the card to mark stages as complete.
           </p>

@@ -2,7 +2,7 @@ import React from "react";
 import { cn } from "@/lib/utils";
 import { AnimatePresence } from "framer-motion";
 import {
-  Lightbulb, PenLine, Video, Scissors, CalendarDays, Plus, Zap,
+  Lightbulb, PenLine, Video, Scissors, CalendarDays, Plus, Zap, Send,
 } from "lucide-react";
 import { KanbanColumn as KanbanColumnType, ProductionCard } from "../types";
 import { columnColors, columnAccentColors } from "../utils/productionConstants";
@@ -16,6 +16,7 @@ const columnHeaderIcons: Record<string, React.FC<{ className?: string; style?: R
   "shape-ideas": PenLine,
   "to-film": Video,
   "to-edit": Scissors,
+  "ready-to-post": Send,
   "to-schedule": CalendarDays,
 };
 
@@ -25,6 +26,7 @@ const emptyStateIconComponents: Record<string, React.FC<{ className?: string; st
   "shape-ideas": PenLine,
   "to-film": Video,
   "to-edit": Scissors,
+  "ready-to-post": Send,
   "to-schedule": CalendarDays,
 };
 
@@ -149,6 +151,7 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
             {column.id === 'shape-ideas' && <PenLine className="w-5 h-5 text-[#612A4F]" style={{ strokeWidth: 1.5 }} />}
             {column.id === 'to-film' && <Video className="w-5 h-5 text-[#612A4F]" style={{ strokeWidth: 1.5 }} />}
             {column.id === 'to-edit' && <Scissors className="w-5 h-5 text-[#612A4F]" style={{ strokeWidth: 1.5 }} />}
+            {column.id === 'ready-to-post' && <Send className="w-5 h-5 text-[#612A4F]" style={{ strokeWidth: 1.5 }} />}
             {column.id === 'to-schedule' && <CalendarDays className="w-5 h-5 text-[#612A4F]" style={{ strokeWidth: 1.5 }} />}
             <h2 className="text-[18px] tracking-[0.02em] text-[#612A4F]" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>
               {column.title}

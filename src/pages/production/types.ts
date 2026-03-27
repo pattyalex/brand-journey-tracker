@@ -64,6 +64,7 @@ export interface StageCompletions {
   scriptAndConcept: boolean;
   toFilm: boolean;
   toEdit: boolean;
+  readyToPost: boolean;
   toSchedule: boolean;
 }
 

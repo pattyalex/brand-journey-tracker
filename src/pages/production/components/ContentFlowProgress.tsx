@@ -13,6 +13,7 @@ const VIDEO_STEPS: Step[] = [
   { label: "Script and Concept", shortLabel: "Script" },
   { label: "Film", shortLabel: "Film" },
   { label: "To Edit", shortLabel: "Edit" },
+  { label: "Ready to Post", shortLabel: "Ready" },
   { label: "To Schedule", shortLabel: "Schedule" },
 ];
 
@@ -20,6 +21,7 @@ const IMAGE_STEPS: Step[] = [
   { label: "Bank of Ideas", shortLabel: "Ideas" },
   { label: "Concept", shortLabel: "Concept" },
   { label: "To Edit", shortLabel: "Edit" },
+  { label: "Ready to Post", shortLabel: "Ready" },
   { label: "To Schedule", shortLabel: "Schedule" },
 ];
 
@@ -58,9 +60,14 @@ export const getCompletedSteps = (card: ProductionCard | null | undefined): numb
       completed.push(3);
     }
 
-    // Step 4 - Schedule: has scheduled date
-    if (card.scheduledDate) {
+    // Step 4 - Ready to Post: card is in ready-to-post column or beyond
+    if (card.columnId === 'ready-to-post' || card.columnId === 'to-schedule' || card.scheduledDate) {
       completed.push(4);
+    }
+
+    // Step 5 - Schedule: has scheduled date
+    if (card.scheduledDate) {
+      completed.push(5);
     }
 
     return completed;
@@ -97,9 +104,14 @@ export const getCompletedSteps = (card: ProductionCard | null | undefined): numb
     completed.push(4);
   }
 
-  // Step 5 - Schedule: has scheduled date
-  if (card.scheduledDate) {
+  // Step 5 - Ready to Post: card is in ready-to-post column or beyond
+  if (card.columnId === 'ready-to-post' || card.columnId === 'to-schedule' || card.scheduledDate) {
     completed.push(5);
+  }
+
+  // Step 6 - Schedule: has scheduled date
+  if (card.scheduledDate) {
+    completed.push(6);
   }
 
   return completed;

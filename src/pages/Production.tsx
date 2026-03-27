@@ -1041,7 +1041,8 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
     'shape-ideas': 2,
     'to-film': 3,
     'to-edit': 4,
-    'to-schedule': 5,
+    'ready-to-post': 5,
+    'to-schedule': 6,
   };
 
   const stepToColumn: Record<number, string> = {
@@ -1049,7 +1050,8 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
     2: 'shape-ideas',
     3: 'to-film',
     4: 'to-edit',
-    5: 'to-schedule',
+    5: 'ready-to-post',
+    6: 'to-schedule',
   };
 
   // Determine appropriate column based on card content

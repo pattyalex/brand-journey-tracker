@@ -39,7 +39,8 @@ const backfillStageCompletions = (card: ProductionCard): ProductionCard => {
       scriptAndConcept: colIdx >= 1,
       toFilm: colIdx >= 2,
       toEdit: colIdx >= 3,
-      toSchedule: colIdx >= 4 || !!card.scheduledDate,
+      readyToPost: colIdx >= 4,
+      toSchedule: colIdx >= 5 || !!card.scheduledDate,
     },
   };
 };
