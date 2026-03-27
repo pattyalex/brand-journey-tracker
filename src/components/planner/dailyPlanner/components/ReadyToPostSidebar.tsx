@@ -105,7 +105,7 @@ export const ReadyToPostSidebar = ({
               Produce content in the Content Hub.
             </p>
             <p className="text-[13px] font-medium text-gray-700" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-              Once it's ready, it'll appear here for you to drag onto a date to schedule.
+              Once it's ready, it'll appear here for you to drag onto a date to schedule
             </p>
           </div>
           <div className="flex justify-center">
