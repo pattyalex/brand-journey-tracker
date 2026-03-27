@@ -52,6 +52,7 @@ interface ConceptEditorDialogProps {
   completedSteps?: number[];
   contentType?: 'video' | 'image';
   onContentTypeChange?: (type: 'video' | 'image') => void;
+  onToggleComplete?: (step: number) => void;
 }
 
 const ConceptEditorDialog: React.FC<ConceptEditorDialogProps> = ({
@@ -86,6 +87,7 @@ const ConceptEditorDialog: React.FC<ConceptEditorDialogProps> = ({
   completedSteps = [],
   contentType = 'image',
   onContentTypeChange,
+  onToggleComplete,
 }) => {
   const [shakeButton, setShakeButton] = useState(false);
   const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
@@ -270,15 +272,6 @@ Guidelines:
 
   const dialogContent = (
     <div onClick={() => isMegAIOpen && setIsMegAIOpen(false)} className="flex flex-col h-full">
-      {/* Back Button - top left */}
-      <button
-        onClick={() => onNavigateToStep?.(1)}
-        className="absolute top-8 left-4 flex items-center gap-1 text-sm text-gray-400 hover:text-gray-600 transition-colors z-10"
-      >
-        <ArrowLeft className="w-3.5 h-3.5" />
-        Back
-      </button>
-
       {/* Close Button */}
       <button
         onClick={() => onOpenChange(false)}
@@ -289,7 +282,7 @@ Guidelines:
 
       {/* Step Progress Indicator */}
       <div className="flex justify-center pt-2 pb-12 flex-shrink-0">
-        <ContentFlowProgress currentStep={2} contentType={contentType} className="w-[550px]" onStepClick={onNavigateToStep} completedSteps={completedSteps} />
+        <ContentFlowProgress currentStep={2} contentType={contentType} className="w-[550px]" onStepClick={onNavigateToStep} completedSteps={completedSteps} onToggleComplete={onToggleComplete} />
       </div>
 
       <div className="flex-1 overflow-y-auto px-6 -mt-1 pb-1">

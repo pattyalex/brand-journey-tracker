@@ -121,6 +121,7 @@ interface StoryboardEditorDialogProps {
   contentType?: 'video' | 'image';
   onContentTypeChange?: (type: 'video' | 'image') => void;
   onToggleStage?: (stage: keyof import("../types").StageCompletions) => void;
+  onToggleComplete?: (step: number) => void;
 }
 
 // Sortable Scene Card Component
@@ -321,6 +322,7 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
   contentType = 'video',
   onContentTypeChange,
   onToggleStage,
+  onToggleComplete,
 }) => {
   const [shakeButton, setShakeButton] = useState(false);
   const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
@@ -797,15 +799,6 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
 
   const dialogContent = (
     <>
-      {/* Back Button - top left */}
-      <button
-        onClick={() => handleNavigateWithSave(2)}
-        className="absolute top-8 left-4 flex items-center gap-1 text-sm text-gray-400 hover:text-gray-600 transition-colors z-10"
-      >
-        <ArrowLeft className="w-3.5 h-3.5" />
-        Back
-      </button>
-
       {/* Close Button */}
       <button
         onClick={() => onOpenChange(false)}
@@ -816,7 +809,7 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
 
       {/* Step Progress Row - Centered */}
       <div className="flex justify-center pt-4 pb-2 bg-transparent">
-        <ContentFlowProgress currentStep={3} className="w-[550px]" onStepClick={handleNavigateWithSave} completedSteps={completedSteps} />
+        <ContentFlowProgress currentStep={3} className="w-[550px]" onStepClick={handleNavigateWithSave} completedSteps={completedSteps} onToggleComplete={onToggleComplete} />
       </div>
         {/* Main content - side by side layout */}
         <div

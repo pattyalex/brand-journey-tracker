@@ -63,6 +63,7 @@ export interface ExpandedScheduleViewProps {
   onMoveToScheduleColumn?: (card: ProductionCard) => void;
   completedSteps?: number[];
   onOpenContentFlow?: (card: ProductionCard) => void;
+  onToggleComplete?: (step: number) => void;
 }
 
 export function useScheduleState(props: ExpandedScheduleViewProps) {

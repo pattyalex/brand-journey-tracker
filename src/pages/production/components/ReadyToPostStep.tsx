@@ -15,6 +15,7 @@ interface ReadyToPostStepProps {
   onSaveAndExit: () => void;
   completedSteps?: number[];
   contentType?: ContentType;
+  onToggleComplete?: (step: number) => void;
 }
 
 const ReadyToPostStep: React.FC<ReadyToPostStepProps> = ({
@@ -24,6 +25,7 @@ const ReadyToPostStep: React.FC<ReadyToPostStepProps> = ({
   onSaveAndExit,
   completedSteps = [],
   contentType = "video",
+  onToggleComplete,
 }) => {
   const navigate = useNavigate();
   const [view, setView] = useState<StepView>("question");
@@ -43,25 +45,15 @@ const ReadyToPostStep: React.FC<ReadyToPostStepProps> = ({
         <X className="w-5 h-5" />
       </button>
 
-      {/* Stepper Progress + Back button */}
-      <div className="pt-6 pb-4 flex items-start px-6">
-        <button
-          onClick={() => onNavigateToStep?.(4)}
-          className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-600 transition-colors pt-3"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          Back
-        </button>
-        <div className="flex-1">
-          <ContentFlowProgress
-            currentStep={5}
-            contentType={contentType}
-            onStepClick={onNavigateToStep}
-            completedSteps={completedSteps}
-          />
-        </div>
-        {/* Spacer to keep stepper centered */}
-        <div className="w-[52px]" />
+      {/* Stepper Progress */}
+      <div className="pt-6 pb-4">
+        <ContentFlowProgress
+          currentStep={5}
+          contentType={contentType}
+          onStepClick={onNavigateToStep}
+          completedSteps={completedSteps}
+          onToggleComplete={onToggleComplete}
+        />
       </div>
 
       {/* Content Area */}
@@ -235,7 +227,7 @@ const ReadyToPostStep: React.FC<ReadyToPostStepProps> = ({
                 transition={{ delay: 0.5 }}
                 className="text-sm text-gray-500 mb-6 leading-relaxed max-w-sm"
               >
-                Ready to schedule? Head over to the Planner & Calendar to pick the date and time to publish
+                Head over to the Planner & Calendar to pick the date and time to publish
               </motion.p>
 
               <motion.div

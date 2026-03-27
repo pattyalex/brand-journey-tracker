@@ -32,6 +32,7 @@ interface BrainDumpGuidanceDialogProps {
   onContentTypeChange?: (type: ContentType) => void;
   card?: import("../types").ProductionCard | null;
   onToggleStage?: (stage: keyof import("../types").StageCompletions) => void;
+  onToggleComplete?: (step: number) => void;
 }
 
 const BrainDumpGuidanceDialog: React.FC<BrainDumpGuidanceDialogProps> = ({
@@ -52,6 +53,7 @@ const BrainDumpGuidanceDialog: React.FC<BrainDumpGuidanceDialogProps> = ({
   onContentTypeChange,
   card,
   onToggleStage,
+  onToggleComplete,
 }) => {
   const [shakeButton, setShakeButton] = useState(false);
   const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
@@ -89,7 +91,7 @@ const BrainDumpGuidanceDialog: React.FC<BrainDumpGuidanceDialogProps> = ({
 
       {/* Stepper Progress */}
       <div className="pt-6 pb-8">
-        <ContentFlowProgress currentStep={1} contentType={contentType} onStepClick={onNavigateToStep} completedSteps={completedSteps} />
+        <ContentFlowProgress currentStep={1} contentType={contentType} onStepClick={onNavigateToStep} completedSteps={completedSteps} onToggleComplete={onToggleComplete} />
       </div>
 
       {/* Content Area */}

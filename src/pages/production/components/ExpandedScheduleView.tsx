@@ -73,16 +73,6 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = (props) => {
   // Content component - shared between modal and embedded modes
   const content = (
     <div className="flex flex-col h-full overflow-hidden relative">
-      {/* Back Button - top left */}
-      {onNavigateToStep && singleCard && (
-        <button
-          onClick={() => onNavigateToStep(singleCard.contentType === 'image' ? 3 : 5)}
-          className="absolute top-8 left-4 flex items-center gap-1 text-sm text-gray-400 hover:text-gray-600 transition-colors z-10"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          Back
-        </button>
-      )}
 
       {/* Expand button when collapsed - hidden in single card mode */}
 
@@ -109,6 +99,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = (props) => {
               onStepClick={onNavigateToStep ? (step) => { if (step !== (singleCard?.contentType === 'image' ? 4 : 6)) onNavigateToStep(step); } : undefined}
               className="w-[400px]"
               completedSteps={completedSteps}
+              onToggleComplete={props.onToggleComplete}
             />
           </div>
         </div>
@@ -133,7 +124,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = (props) => {
             </div>
           </motion.div>
           <div className="flex-1 flex justify-center">
-            <ContentFlowProgress currentStep={singleCard?.contentType === 'image' ? 4 : 6} contentType={singleCard?.contentType || 'video'} onStepClick={onNavigateToStep ? (step) => { if (step !== (singleCard?.contentType === 'image' ? 4 : 6)) onNavigateToStep(step); } : undefined} className="w-[400px]" completedSteps={completedSteps} />
+            <ContentFlowProgress currentStep={singleCard?.contentType === 'image' ? 4 : 6} contentType={singleCard?.contentType || 'video'} onStepClick={onNavigateToStep ? (step) => { if (step !== (singleCard?.contentType === 'image' ? 4 : 6)) onNavigateToStep(step); } : undefined} className="w-[400px]" completedSteps={completedSteps} onToggleComplete={props.onToggleComplete} />
           </div>
           {onClose && (
             <button onClick={onClose} className="px-6 py-2 text-sm font-medium bg-gradient-to-r from-[#8B7082] to-[#612A4F] hover:from-[#7A6073] hover:to-[#4E2240] text-white rounded-lg shadow-[0_2px_8px_rgba(97,42,79,0.3)] transition-all flex-shrink-0">Done</button>
@@ -153,7 +144,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = (props) => {
         {!planningMode && singleCard && !isLeftPanelCollapsed && (
           <div className="col-span-2 flex-shrink-0 pt-3 pb-2 flex items-center justify-between px-4">
             <div className="w-[160px]" />
-            <ContentFlowProgress currentStep={singleCard?.contentType === 'image' ? 4 : 6} contentType={singleCard?.contentType || 'video'} onStepClick={onNavigateToStep ? (step) => { if (step !== (singleCard?.contentType === 'image' ? 4 : 6)) onNavigateToStep(step); } : undefined} completedSteps={completedSteps} />
+            <ContentFlowProgress currentStep={singleCard?.contentType === 'image' ? 4 : 6} contentType={singleCard?.contentType || 'video'} onStepClick={onNavigateToStep ? (step) => { if (step !== (singleCard?.contentType === 'image' ? 4 : 6)) onNavigateToStep(step); } : undefined} completedSteps={completedSteps} onToggleComplete={props.onToggleComplete} />
             <div className="w-[160px]" />
             {onClose && (
               <button onClick={onClose} className="absolute top-3 right-3 p-2 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors z-10" aria-label="Close">

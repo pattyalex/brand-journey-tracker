@@ -79,6 +79,7 @@ interface EditChecklistDialogProps {
   contentType?: ContentType;
   onContentTypeChange?: (type: 'video' | 'image') => void;
   onToggleStage?: (stage: keyof import("../types").StageCompletions) => void;
+  onToggleComplete?: (step: number) => void;
 }
 
 // Default example items for the global checklist (video)
@@ -139,6 +140,7 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
   contentType = 'video',
   onContentTypeChange,
   onToggleStage,
+  onToggleComplete,
 }) => {
   const [shakeButton, setShakeButton] = useState(false);
   const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
@@ -280,15 +282,6 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
 
   const dialogContent = (
     <>
-      {/* Back Button - top left */}
-      <button
-        onClick={() => handleNavigateWithSave(editStepNumber - 1)}
-        className="absolute top-8 left-4 flex items-center gap-1 text-sm text-gray-400 hover:text-gray-600 transition-colors z-10"
-      >
-        <ArrowLeft className="w-3.5 h-3.5" />
-        Back
-      </button>
-
       {/* Close Button */}
       <button
         onClick={() => onOpenChange(false)}
@@ -304,6 +297,7 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
         className="flex-shrink-0 pt-4 pb-6"
         onStepClick={handleNavigateWithSave}
         completedSteps={completedSteps}
+        onToggleComplete={onToggleComplete}
       />
         {/* Headers row */}
         <div className="flex border-b border-[#8B7082]/30">

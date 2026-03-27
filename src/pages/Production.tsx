@@ -61,7 +61,7 @@ import ArchiveDialog from "./production/components/ArchiveDialog";
 import MobileContentView from "./production/components/MobileContentView";
 import MobileCardEditor from "./production/components/MobileCardEditor";
 import MobileStoryboardView from "./production/components/MobileStoryboardView";
-import { columnColors, cardColors, columnAccentColors, columnIcons, emptyStateIcons, DEFAULT_STAGE_COMPLETIONS } from "./production/utils/productionConstants";
+import { columnColors, cardColors, columnAccentColors, columnIcons, emptyStateIcons, DEFAULT_STAGE_COMPLETIONS, VIDEO_STEP_TO_STAGE, IMAGE_STEP_TO_STAGE } from "./production/utils/productionConstants";
 import SkipColumnDialog from "./production/components/SkipColumnDialog";
 import { getFormatColors, getPlatformColors } from "./production/utils/productionHelpers";
 import { useSidebar } from "@/components/ui/sidebar";
@@ -718,6 +718,14 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
     );
     if (contentFlowCard?.id === card.id) {
       setContentFlowCard(prev => prev ? { ...prev, stageCompletions: updated } : prev);
+    }
+  };
+
+  const handleToggleStepComplete = (stepNumber: number) => {
+    const stepToStage = contentType === 'image' ? IMAGE_STEP_TO_STAGE : VIDEO_STEP_TO_STAGE;
+    const stage = stepToStage[stepNumber];
+    if (stage) {
+      handleToggleStage(stage);
     }
   };
 
@@ -3453,6 +3461,7 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
           setCaption={setCaption}
           card={editingScriptCard}
           onToggleStage={handleToggleStage}
+          onToggleComplete={handleToggleStepComplete}
         />
 
         <BrainDumpGuidanceDialog
@@ -3470,6 +3479,7 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
           completedSteps={getCompletedSteps(editingIdeateCard)}
           card={editingIdeateCard}
           onToggleStage={handleToggleStage}
+          onToggleComplete={handleToggleStepComplete}
         />
 
         <StoryboardEditorDialog
@@ -3481,6 +3491,7 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
           slideDirection={slideDirection}
           completedSteps={getCompletedSteps(editingStoryboardCard)}
           onToggleStage={handleToggleStage}
+          onToggleComplete={handleToggleStepComplete}
         />
 
         <EditChecklistDialog
@@ -3492,6 +3503,7 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
           slideDirection={slideDirection}
           completedSteps={getCompletedSteps(editingEditCard)}
           onToggleStage={handleToggleStage}
+          onToggleComplete={handleToggleStepComplete}
         />
 
         {/* Unified Content Flow Dialog - seamless transitions between steps */}
@@ -3527,6 +3539,7 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
               completedSteps={getCompletedSteps(contentFlowCard)}
               contentType={contentType}
               onContentTypeChange={handleContentTypeChange}
+              onToggleComplete={handleToggleStepComplete}
             />
           )}
 
@@ -3597,6 +3610,7 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
               onContentTypeChange={handleContentTypeChange}
               caption={caption}
               setCaption={setCaption}
+              onToggleComplete={handleToggleStepComplete}
             />
           )}
           {activeContentFlowStep === 2 && contentFlowCard && contentType === 'image' && (
@@ -3636,6 +3650,7 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
               completedSteps={getCompletedSteps(contentFlowCard)}
               contentType={contentType}
               onContentTypeChange={handleContentTypeChange}
+              onToggleComplete={handleToggleStepComplete}
             />
           )}
 
@@ -3656,6 +3671,7 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
               completedSteps={getCompletedSteps(contentFlowCard)}
               contentType={contentType}
               onContentTypeChange={handleContentTypeChange}
+              onToggleComplete={handleToggleStepComplete}
             />
           )}
           {activeContentFlowStep === 3 && contentFlowCard && contentType === 'image' && (
@@ -3674,6 +3690,7 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
               completedSteps={getCompletedSteps(contentFlowCard)}
               contentType="image"
               onContentTypeChange={handleContentTypeChange}
+              onToggleComplete={handleToggleStepComplete}
             />
           )}
 
@@ -3694,6 +3711,7 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
               completedSteps={getCompletedSteps(contentFlowCard)}
               contentType="video"
               onContentTypeChange={handleContentTypeChange}
+              onToggleComplete={handleToggleStepComplete}
             />
           )}
           {/* Step 5: Ready to Post (video only) */}
@@ -3738,6 +3756,7 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
               onSaveAndExit={handleCloseContentFlowDialog}
               completedSteps={getCompletedSteps(contentFlowCard)}
               contentType={contentType}
+              onToggleComplete={handleToggleStepComplete}
             />
           )}
           {/* Step 6: Schedule (video) — or step 4 for image is handled above */}
@@ -3794,6 +3813,7 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
               }}
               completedSteps={getCompletedSteps(contentFlowCard)}
               onOpenContentFlow={handleOpenContentFlowForCard}
+              onToggleComplete={handleToggleStepComplete}
             />
           )}
         </ContentFlowDialog>
@@ -3869,6 +3889,7 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
               setSchedulingCard(null);
             }}
             completedSteps={getCompletedSteps(schedulingCard)}
+            onToggleComplete={handleToggleStepComplete}
           />
         )}
 

@@ -94,6 +94,25 @@ export const COLUMN_TO_STAGE: Record<string, keyof StageCompletions> = {
 
 export const COLUMN_ORDER = ['ideate', 'shape-ideas', 'to-film', 'to-edit', 'ready-to-post', 'to-schedule'];
 
+// Maps video step numbers (1-6) to stage completion keys
+export const VIDEO_STEP_TO_STAGE: Record<number, keyof StageCompletions> = {
+  1: 'ideate',
+  2: 'scriptAndConcept',
+  3: 'toFilm',
+  4: 'toEdit',
+  5: 'readyToPost',
+  6: 'toSchedule',
+};
+
+// Maps image step numbers (1-5) to stage completion keys
+export const IMAGE_STEP_TO_STAGE: Record<number, keyof StageCompletions> = {
+  1: 'ideate',
+  2: 'scriptAndConcept',
+  3: 'toEdit',
+  4: 'readyToPost',
+  5: 'toSchedule',
+};
+
 export const defaultColumns: KanbanColumn[] = [
   { id: "ideate", title: "Bank of Ideas", cards: [] },
   { id: "shape-ideas", title: "Script and Concept", cards: [] },

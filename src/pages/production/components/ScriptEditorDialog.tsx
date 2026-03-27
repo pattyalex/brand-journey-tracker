@@ -117,6 +117,7 @@ interface ScriptEditorDialogProps {
   setCaption?: (value: string) => void;
   card?: import("../types").ProductionCard | null;
   onToggleStage?: (stage: keyof import("../types").StageCompletions) => void;
+  onToggleComplete?: (step: number) => void;
 }
 
 const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
@@ -177,6 +178,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
   setCaption,
   card,
   onToggleStage,
+  onToggleComplete,
 }) => {
   // Internal refs for shooting plan navigation (fallback when external refs not provided)
   const internalTitleRef = useRef<HTMLInputElement>(null);
@@ -327,15 +329,6 @@ Guidelines:
   // Content that's shared between embedded and standalone modes
   const dialogContent = (
     <div onClick={() => isMegAIOpen && setIsMegAIOpen(false)} className="flex flex-col h-full">
-      {/* Back Button - top left */}
-      <button
-        onClick={() => onNavigateToStep?.(1)}
-        className="absolute top-8 left-4 flex items-center gap-1 text-sm text-gray-400 hover:text-gray-600 transition-colors z-10"
-      >
-        <ArrowLeft className="w-3.5 h-3.5" />
-        Back
-      </button>
-
       {/* Close Button */}
       <button
         onClick={() => onOpenChange(false)}
@@ -346,7 +339,7 @@ Guidelines:
 
       {/* Step Progress Indicator - Centered */}
       <div className="flex justify-center pt-2 pb-4 flex-shrink-0">
-        <ContentFlowProgress currentStep={2} className="w-[550px]" onStepClick={onNavigateToStep} completedSteps={completedSteps} />
+        <ContentFlowProgress currentStep={2} className="w-[550px]" onStepClick={onNavigateToStep} completedSteps={completedSteps} onToggleComplete={onToggleComplete} />
       </div>
       <div className="flex-1 overflow-y-auto px-6 pb-1">
         {/* Content Type Dropdown + Title */}

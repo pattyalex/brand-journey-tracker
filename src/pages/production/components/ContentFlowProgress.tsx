@@ -1,7 +1,9 @@
-import React from "react";
-import { Check } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ProductionCard, ContentType } from "../types";
+import { VIDEO_STEP_TO_STAGE, IMAGE_STEP_TO_STAGE, DEFAULT_STAGE_COMPLETIONS } from "../utils/productionConstants";
 
 interface Step {
   label: string;
@@ -34,87 +36,23 @@ export const getCompletedSteps = (card: ProductionCard | null | undefined): numb
   if (!card) return [];
 
   const contentType = card.contentType || 'video';
+  const stageCompletions = card.stageCompletions || DEFAULT_STAGE_COMPLETIONS;
+  const stepToStage = contentType === 'image' ? IMAGE_STEP_TO_STAGE : VIDEO_STEP_TO_STAGE;
 
-  if (contentType === 'image') {
-    const completed: number[] = [];
+  const completed = new Set<number>();
 
-    // Step 1 - Ideate: has hook or title
-    if (card.hook?.trim() || card.title?.trim()) {
-      completed.push(1);
+  // Step 1 (Ideas) is always complete if a card exists
+  completed.add(1);
+
+  // Add steps marked complete via stageCompletions (manual toggle)
+  for (const [stepStr, stage] of Object.entries(stepToStage)) {
+    const step = Number(stepStr);
+    if (stageCompletions[stage]) {
+      completed.add(step);
     }
-
-    // Step 2 - Concept: has caption, slides, or visual references
-    const hasConceptContent =
-      card.caption?.trim() ||
-      (card.slides && card.slides.length > 0 && card.slides.some(s => s.content?.trim())) ||
-      (card.visualReferences && card.visualReferences.length > 0) ||
-      (card.linkPreviews && card.linkPreviews.length > 0);
-    if (hasConceptContent) {
-      completed.push(2);
-    }
-
-    // Step 3 - Edit: all checklist items are checked
-    const editItems = card.editingChecklist?.items || [];
-    const allItemsChecked = editItems.length > 0 && editItems.every(item => item.checked);
-    if (allItemsChecked) {
-      completed.push(3);
-    }
-
-    // Step 4 - Ready to Post: card is in ready-to-post column or beyond
-    if (card.columnId === 'ready-to-post' || card.columnId === 'to-schedule' || card.scheduledDate) {
-      completed.push(4);
-    }
-
-    // Step 5 - Schedule: has scheduled date
-    if (card.scheduledDate) {
-      completed.push(5);
-    }
-
-    return completed;
   }
 
-  // Video (default) - existing logic
-  const completed: number[] = [];
-
-  // Step 1 - Ideate: has hook or title
-  if (card.hook?.trim() || card.title?.trim()) {
-    completed.push(1);
-  }
-
-  // Step 2 - Script: has script content
-  if (card.script?.trim()) {
-    completed.push(2);
-  }
-
-  // Step 3 - Film: has filming notes, storyboard, or any checklist items
-  const hasFilmingContent =
-    card.filmingNotes?.trim() ||
-    (card.storyboard && card.storyboard.length > 0) ||
-    card.locationChecked ||
-    card.outfitChecked ||
-    card.propsChecked;
-  if (hasFilmingContent) {
-    completed.push(3);
-  }
-
-  // Step 4 - Edit: all checklist items are checked (notes are optional)
-  const editItems = card.editingChecklist?.items || [];
-  const allItemsChecked = editItems.length > 0 && editItems.every(item => item.checked);
-  if (allItemsChecked) {
-    completed.push(4);
-  }
-
-  // Step 5 - Ready to Post: card is in ready-to-post column or beyond
-  if (card.columnId === 'ready-to-post' || card.columnId === 'to-schedule' || card.scheduledDate) {
-    completed.push(5);
-  }
-
-  // Step 6 - Schedule: has scheduled date
-  if (card.scheduledDate) {
-    completed.push(6);
-  }
-
-  return completed;
+  return Array.from(completed).sort((a, b) => a - b);
 };
 
 interface ContentFlowProgressProps {
@@ -125,6 +63,7 @@ interface ContentFlowProgressProps {
   completedSteps?: number[];
   className?: string;
   onStepClick?: (step: number) => void;
+  onToggleComplete?: (step: number) => void;
 }
 
 const ContentFlowProgress: React.FC<ContentFlowProgressProps> = ({
@@ -134,14 +73,47 @@ const ContentFlowProgress: React.FC<ContentFlowProgressProps> = ({
   completedSteps = [],
   className,
   onStepClick,
+  onToggleComplete,
 }) => {
+  const [justUnchecked, setJustUnchecked] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (justUnchecked !== null) {
+      const timer = setTimeout(() => setJustUnchecked(null), 1200);
+      return () => clearTimeout(timer);
+    }
+  }, [justUnchecked]);
+
   const steps = contentType === 'image' ? IMAGE_STEPS : VIDEO_STEPS;
   const totalSteps = steps.length;
   const maxStepIndex = totalSteps - 1;
 
   return (
     <div className={cn("w-full px-4 py-1", className)}>
-      <div className="flex items-center justify-between relative max-w-md mx-auto">
+      <div className="flex items-center gap-3 max-w-lg mx-auto">
+
+      {/* Previous step arrow */}
+      {onStepClick && currentStep > 1 ? (
+        <TooltipProvider delayDuration={0}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => onStepClick(currentStep - 1)}
+                className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-[#8B7082] hover:text-[#612A4F] hover:bg-[#612A4F]/10 transition-all duration-200 mt-[-12px]"
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="top" sideOffset={6} className="bg-gray-500 text-white">
+              <p>Previous step</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      ) : (
+        <div className="w-7 flex-shrink-0" />
+      )}
+
+      <div className="flex items-center justify-between relative flex-1 max-w-md">
         {/* Connecting line background */}
         <div className="absolute top-[14px] left-6 right-6 h-[1.5px] bg-gray-200" />
 
@@ -161,54 +133,97 @@ const ContentFlowProgress: React.FC<ContentFlowProgressProps> = ({
         {steps.map((step, index) => {
           const stepNumber = index + 1;
           const isActuallyCompleted = allCompleted || completedSteps.includes(stepNumber);
-          const isVisited = stepNumber < currentStep;
           const isCurrent = !allCompleted && stepNumber === currentStep;
+          const isVisited = stepNumber < currentStep;
           const isPending = !allCompleted && stepNumber > currentStep;
-          const isClickable = onStepClick && stepNumber !== currentStep;
+          const canNavigate = onStepClick && stepNumber !== currentStep;
+          const canToggle = !!onToggleComplete;
 
           return (
             <React.Fragment key={step.label}>
-              <button
-                onClick={() => isClickable && onStepClick(stepNumber)}
-                disabled={!isClickable}
-                className={cn(
-                  "flex flex-col items-center relative z-10 flex-1 transition-transform focus:outline-none",
-                  isClickable && "cursor-pointer hover:scale-110",
-                  !isClickable && "cursor-default"
-                )}
-              >
+              <div className="flex flex-col items-center relative z-10 flex-1">
                 {/* Circle indicator */}
-                <div
+                <TooltipProvider delayDuration={0}>
+                  <Tooltip open={justUnchecked === stepNumber && stepNumber !== 1 ? true : undefined}>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={(e) => {
+                          if (canToggle) {
+                            e.stopPropagation();
+                            if (isActuallyCompleted) {
+                              setJustUnchecked(stepNumber);
+                            } else {
+                              setJustUnchecked(null);
+                            }
+                            onToggleComplete(stepNumber);
+                          } else if (canNavigate) {
+                            onStepClick(stepNumber);
+                          }
+                        }}
+                        className={cn(
+                          "rounded-full flex items-center justify-center font-semibold transition-all duration-300 focus:outline-none",
+                          isActuallyCompleted && !isCurrent && "w-5 h-5 bg-[#612A4F] border-[1.5px] border-[#612A4F] text-white cursor-pointer hover:ring-2 hover:ring-offset-1 hover:ring-[#612A4F]/30",
+                          !isActuallyCompleted && isVisited && "w-5 h-5 bg-white border-[1.5px] border-[#612A4F] cursor-pointer hover:ring-2 hover:ring-offset-1 hover:ring-[#612A4F]/30",
+                          isCurrent && "w-9 h-9 bg-white border-[2px] border-[#612A4F] text-[#612A4F] shadow-sm cursor-pointer hover:ring-2 hover:ring-offset-1 hover:ring-[#612A4F]/30",
+                          isPending && !isActuallyCompleted && "w-5 h-5 bg-gray-100 border-[1.5px] border-gray-300 cursor-pointer hover:ring-2 hover:ring-offset-1 hover:ring-[#612A4F]/30",
+                        )}
+                      >
+                        {isActuallyCompleted && !isCurrent && (
+                          <Check className="w-2.5 h-2.5" strokeWidth={3} />
+                        )}
+                        {isCurrent && isActuallyCompleted && (
+                          <Check className="w-4 h-4" strokeWidth={3} />
+                        )}
+                      </button>
+                    </TooltipTrigger>
+                    {canToggle && (justUnchecked === stepNumber || !isActuallyCompleted) && (
+                      <TooltipContent side="top" sideOffset={6} className="bg-gray-500 text-white">
+                        <p>{justUnchecked === stepNumber ? 'Incomplete step' : 'Mark as complete'}</p>
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
+                </TooltipProvider>
+
+                {/* Step label - clickable to navigate */}
+                <button
+                  onClick={() => canNavigate && onStepClick(stepNumber)}
+                  disabled={!canNavigate}
                   className={cn(
-                    "rounded-full flex items-center justify-center font-semibold transition-all duration-300",
-                    isActuallyCompleted && "w-5 h-5 text-[10px] bg-[#612A4F] border-[1.5px] border-[#612A4F] text-white",
-                    !isActuallyCompleted && isVisited && "w-5 h-5 text-[10px] bg-white border-[1.5px] border-[#612A4F] text-[#612A4F]",
-                    isCurrent && "w-9 h-9 text-sm bg-[#612A4F] border-[2px] border-[#612A4F] text-white shadow-sm",
-                    isPending && "w-5 h-5 text-[10px] bg-gray-100 border-[1.5px] border-gray-300 text-gray-400",
-                    isClickable && "hover:ring-2 hover:ring-offset-1 hover:ring-[#612A4F]/30"
+                    "font-medium mt-2 text-center leading-tight focus:outline-none",
+                    canNavigate && "cursor-pointer hover:underline",
+                    !canNavigate && "cursor-default",
+                    (isActuallyCompleted || isVisited) && "text-[11px] text-[#612A4F]",
+                    isCurrent && "text-xs text-[#612A4F]",
+                    isPending && !isActuallyCompleted && "text-[11px] text-gray-400"
                   )}
                 >
-                  {isActuallyCompleted ? (
-                    <Check className="w-2.5 h-2.5" strokeWidth={3} />
-                  ) : (
-                    <span>{stepNumber}</span>
-                  )}
-                </div>
-
-                {/* Step label */}
-                <p className={cn(
-                  "font-medium mt-2 text-center leading-tight",
-                  (isActuallyCompleted || isVisited) && "text-[11px] text-[#612A4F]",
-                  isCurrent && "text-xs text-[#612A4F]",
-                  isPending && "text-[11px] text-gray-400"
-                )}>
                   {step.shortLabel}
-                </p>
-              </button>
+                </button>
+              </div>
 
             </React.Fragment>
           );
         })}
+      </div>
+
+      {/* Next step arrow */}
+      {onStepClick && currentStep < totalSteps && (
+        <TooltipProvider delayDuration={0}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => onStepClick(currentStep + 1)}
+                className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-[#8B7082] hover:text-[#612A4F] hover:bg-[#612A4F]/10 transition-all duration-200 mt-[-12px]"
+              >
+                <ChevronRight className="w-6 h-6" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="top" sideOffset={6} className="bg-gray-500 text-white">
+              <p>Next step</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
       </div>
     </div>
   );
