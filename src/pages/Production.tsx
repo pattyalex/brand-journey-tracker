@@ -56,6 +56,7 @@ import StoryboardEditorDialog from "./production/components/StoryboardEditorDial
 import ConceptEditorDialog from "./production/components/ConceptEditorDialog";
 import EditChecklistDialog from "./production/components/EditChecklistDialog";
 import ExpandedScheduleView from "./production/components/ExpandedScheduleView";
+import ReadyToPostStep from "./production/components/ReadyToPostStep";
 import ArchiveDialog from "./production/components/ArchiveDialog";
 import MobileContentView from "./production/components/MobileContentView";
 import MobileCardEditor from "./production/components/MobileCardEditor";
@@ -897,7 +898,7 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
 
     // Determine which step to start on based on what's completed
     const completedSteps = getCompletedSteps(card);
-    const maxStep = cardContentType === 'image' ? 4 : 5;
+    const maxStep = cardContentType === 'image' ? 4 : 6;
     let step = startStep || 1;
 
     // If no startStep provided, start at first incomplete step or step 1
@@ -906,6 +907,7 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
       else if (!completedSteps.includes(2)) step = 2;
       else if (!completedSteps.includes(3)) step = 3;
       else if (!completedSteps.includes(4)) step = 4;
+      else if (cardContentType === 'video' && !completedSteps.includes(5)) step = 5;
       else step = maxStep;
     }
 
@@ -1342,7 +1344,7 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
 
     // Get the current step we're LEAVING (this determines which form data to save)
     const currentStep = activeContentFlowStep ||
-      (isIdeateCardEditorOpen ? 1 : isScriptEditorOpen ? 2 : isStoryboardDialogOpen ? 3 : isEditChecklistDialogOpen ? 4 : isScheduleColumnExpanded ? 5 : 1);
+      (isIdeateCardEditorOpen ? 1 : isScriptEditorOpen ? 2 : isStoryboardDialogOpen ? 3 : isEditChecklistDialogOpen ? 4 : isScheduleColumnExpanded ? 6 : 1);
 
     // Build form data based on CURRENT step only - don't mix form data from different steps
     const currentFormData: Partial<ProductionCard> = {};
@@ -1422,18 +1424,18 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
       2: 'Script',
       3: 'Film',
       4: 'Edit',
-      5: 'Schedule',
-      6: 'Posted',
+      5: 'Ready',
+      6: 'Schedule',
     };
 
     const currentWorkflowStep = cardColumnId ? columnToStep[cardColumnId] || 1 : 1;
 
     // Determine slide direction based on step comparison
-    const currentDialogStep = activeContentFlowStep || (isIdeateCardEditorOpen ? 1 : isScriptEditorOpen ? 2 : isStoryboardDialogOpen ? 3 : isEditChecklistDialogOpen ? 4 : isScheduleColumnExpanded ? 5 : 5);
+    const currentDialogStep = activeContentFlowStep || (isIdeateCardEditorOpen ? 1 : isScriptEditorOpen ? 2 : isStoryboardDialogOpen ? 3 : isEditChecklistDialogOpen ? 4 : isScheduleColumnExpanded ? 6 : 6);
     setSlideDirection(step > currentDialogStep ? 'left' : 'right');
 
     // If we're in the unified content flow dialog, just update the step (no blink!)
-    const maxStep = contentType === 'image' ? 4 : 5;
+    const maxStep = contentType === 'image' ? 4 : 6;
     if (activeContentFlowStep !== null && step >= 1 && step <= maxStep) {
       // Initialize state for the target step
       if (contentType === 'image') {
@@ -1519,7 +1521,9 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
           case 4: // Edit
             setEditingEditCard(latestCard!);
             break;
-          case 5: // Schedule
+          case 5: // Ready
+            break;
+          case 6: // Schedule
             setSchedulingCard(latestCard!);
             break;
         }
@@ -3692,8 +3696,52 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
               onContentTypeChange={handleContentTypeChange}
             />
           )}
-          {/* Step 5: Schedule (video) — or step 4 for image is handled above */}
-          {((activeContentFlowStep === 5 && contentType === 'video') || (activeContentFlowStep === 4 && contentType === 'image')) && contentFlowCard && (
+          {/* Step 5: Ready to Post (video only) */}
+          {activeContentFlowStep === 5 && contentType === 'video' && contentFlowCard && (
+            <ReadyToPostStep
+              onNavigateToStep={handleNavigateToStep}
+              onClose={handleCloseContentFlowDialog}
+              onConfirmReady={() => {
+                // Move card to ready-to-post column
+                setColumns((prev) => {
+                  let sourceColumnId: string | undefined;
+                  for (const col of prev) {
+                    if (col.cards.find(c => c.id === contentFlowCard.id)) {
+                      sourceColumnId = col.id;
+                      break;
+                    }
+                  }
+                  if (sourceColumnId === 'ready-to-post') {
+                    // Already in ready-to-post, no move needed
+                    return prev;
+                  }
+                  const updatedCard: ProductionCard = {
+                    ...contentFlowCard,
+                    columnId: 'ready-to-post',
+                  };
+                  if (sourceColumnId) {
+                    return prev.map((col) => {
+                      if (col.id === sourceColumnId) {
+                        return { ...col, cards: col.cards.filter(c => c.id !== contentFlowCard.id) };
+                      }
+                      if (col.id === 'ready-to-post') {
+                        return { ...col, cards: [...col.cards, updatedCard] };
+                      }
+                      return col;
+                    });
+                  }
+                  return prev;
+                });
+                // Update the content flow card reference
+                setContentFlowCard({ ...contentFlowCard, columnId: 'ready-to-post' });
+              }}
+              onSaveAndExit={handleCloseContentFlowDialog}
+              completedSteps={getCompletedSteps(contentFlowCard)}
+              contentType={contentType}
+            />
+          )}
+          {/* Step 6: Schedule (video) — or step 4 for image is handled above */}
+          {((activeContentFlowStep === 6 && contentType === 'video') || (activeContentFlowStep === 4 && contentType === 'image')) && contentFlowCard && (
             <ExpandedScheduleView
               embedded={true}
               singleCard={contentFlowCard}

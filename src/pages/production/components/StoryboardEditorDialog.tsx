@@ -51,6 +51,7 @@ import {
   Image as ImageIcon,
   ChevronDown,
 } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ProductionCard, StoryboardScene } from "../types";
 import { shotTemplates, getShotTemplateById, ShotTemplate } from "../utils/shotTemplates";
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";

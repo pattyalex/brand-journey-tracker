@@ -33,7 +33,7 @@ const ContentFlowDialog: React.FC<ContentFlowDialogProps> = ({
 }) => {
 
   // Background colors for each step — keyed by step number
-  // For video: 1=Ideate, 2=Script, 3=Film, 4=Edit, 5=Schedule
+  // For video: 1=Ideate, 2=Script, 3=Film, 4=Edit, 5=Ready, 6=Schedule
   // For image: 1=Ideate, 2=Concept, 3=Edit, 4=Schedule
   const videoBackgrounds: Record<number, string> = {
     0: "bg-gradient-to-b from-[#8B7082]/10 via-white to-white",
@@ -42,6 +42,7 @@ const ContentFlowDialog: React.FC<ContentFlowDialogProps> = ({
     3: "bg-gradient-to-br from-[#FFF9EE] via-white to-[#FFF9EE]/30",
     4: "bg-gradient-to-br from-[#F5EEF2] via-white to-[#F5EEF2]/30",
     5: "bg-gradient-to-br from-[#E5E8F4] via-white to-[#E5E8F4]",
+    6: "bg-gradient-to-br from-[#E5E8F4] via-white to-[#E5E8F4]",
   };
 
   const imageBackgrounds: Record<number, string> = {
@@ -58,7 +59,8 @@ const ContentFlowDialog: React.FC<ContentFlowDialogProps> = ({
     2: "sm:max-w-[900px]",
     3: "sm:max-w-[1100px]",
     4: "sm:max-w-[950px]",
-    5: "sm:max-w-[1200px]",
+    5: "sm:max-w-[950px]",
+    6: "sm:max-w-[1200px]",
   };
 
   const imageMaxWidths: Record<number, string> = {

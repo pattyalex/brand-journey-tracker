@@ -9,6 +9,7 @@ import StageTimeline from "./StageTimeline";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Plus,
   Trash2,
@@ -174,7 +175,7 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
   const [isEditing, setIsEditing] = useState(false);
 
   const isImage = contentType === 'image';
-  // For image: Edit is step 3, Schedule is step 4; for video: Edit is step 4, Schedule is step 5
+  // For image: Edit is step 3, next is Schedule (step 4); for video: Edit is step 4, next is Ready (step 5)
   const editStepNumber = isImage ? 3 : 4;
   const scheduleStepNumber = isImage ? 4 : 5;
 
