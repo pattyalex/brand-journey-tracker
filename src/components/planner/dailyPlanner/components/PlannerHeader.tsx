@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { addMonths, addWeeks, endOfWeek, format, startOfWeek, subWeeks } from "date-fns";
-import { CalendarIcon, ChevronLeft, ChevronRight, ChevronDown, Filter } from "lucide-react";
+import { CalendarIcon, ChevronLeft, ChevronRight, ChevronDown, Filter, LayoutGrid, ListTodo, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -49,7 +49,6 @@ export const PlannerHeader = ({
   contentDisplayMode,
   setContentDisplayMode,
 }: PlannerHeaderProps) => {
-  const [filterOpen, setFilterOpen] = useState(false);
   return (
     <div className="pt-4 pb-2">
       {/* Top Row: Date Navigation (centered) */}
@@ -148,11 +147,11 @@ export const PlannerHeader = ({
 
       {/* Bottom Row: View Tabs + Filter */}
       <div className="flex items-center justify-between pr-8">
-        <div className="inline-flex items-center gap-0 bg-white rounded-lg shadow-sm border border-gray-200 p-0.5">
+        <div className="inline-flex items-center gap-0 bg-white rounded-xl shadow-sm border border-gray-200 p-0.5">
           <button
             onClick={() => setCurrentView('today')}
             className={cn(
-              "px-4 py-1.5 rounded-md text-sm font-medium transition-all duration-200 border-2",
+              "px-3 py-1.5 rounded-xl text-xs font-medium transition-all duration-200 border-2",
               currentView === 'today'
                 ? "bg-white text-[#612a4f] border-[#612a4f]/60 shadow-[0_2px_8px_rgba(139,112,130,0.4)]"
                 : "text-gray-600 hover:text-gray-900 hover:bg-gray-50 border-transparent"
@@ -163,7 +162,7 @@ export const PlannerHeader = ({
           <button
             onClick={() => setCurrentView('week')}
             className={cn(
-              "px-4 py-1.5 rounded-md text-sm font-medium transition-all duration-200 border-2",
+              "px-3 py-1.5 rounded-xl text-xs font-medium transition-all duration-200 border-2",
               currentView === 'week'
                 ? "bg-white text-[#612a4f] border-[#612a4f]/60 shadow-[0_2px_8px_rgba(139,112,130,0.4)]"
                 : "text-gray-600 hover:text-gray-900 hover:bg-gray-50 border-transparent"
@@ -174,7 +173,7 @@ export const PlannerHeader = ({
           <button
             onClick={() => setCurrentView('calendar')}
             className={cn(
-              "px-4 py-1.5 rounded-md text-sm font-medium transition-all duration-200 border-2",
+              "px-3 py-1.5 rounded-xl text-xs font-medium transition-all duration-200 border-2",
               currentView === 'calendar'
                 ? "bg-white text-[#612a4f] border-[#612a4f]/60 shadow-[0_2px_8px_rgba(139,112,130,0.4)]"
                 : "text-gray-600 hover:text-gray-900 hover:bg-gray-50 border-transparent"
@@ -184,50 +183,48 @@ export const PlannerHeader = ({
           </button>
         </div>
 
-        {/* Right: Filter */}
-        <Popover open={filterOpen} onOpenChange={setFilterOpen}>
-          <PopoverTrigger asChild>
-            <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition-colors text-sm text-gray-700 shadow-sm">
-              <Filter className="w-3.5 h-3.5 text-gray-400" />
-              <span style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                {contentDisplayMode === 'both' ? 'All' : contentDisplayMode === 'tasks' ? 'Tasks only' : 'Content only'}
-              </span>
-              <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
-            </button>
-          </PopoverTrigger>
-          <PopoverContent className="w-44 p-1 bg-white z-[300]" align="end">
-            <button
-              onClick={() => { setContentDisplayMode('both'); setFilterOpen(false); }}
-              className={cn(
-                "w-full text-left px-3 py-2 rounded-md text-sm transition-colors",
-                contentDisplayMode === 'both' ? "bg-[#612a4f]/10 text-[#612a4f] font-medium" : "text-gray-700 hover:bg-gray-100"
-              )}
-              style={{ fontFamily: "'DM Sans', sans-serif" }}
-            >
-              See all
-            </button>
-            <button
-              onClick={() => { setContentDisplayMode('tasks'); setFilterOpen(false); }}
-              className={cn(
-                "w-full text-left px-3 py-2 rounded-md text-sm transition-colors",
-                contentDisplayMode === 'tasks' ? "bg-[#612a4f]/10 text-[#612a4f] font-medium" : "text-gray-700 hover:bg-gray-100"
-              )}
-              style={{ fontFamily: "'DM Sans', sans-serif" }}
-            >
-              See tasks only
-            </button>
-            <button
-              onClick={() => { setContentDisplayMode('content'); setFilterOpen(false); }}
-              className={cn(
-                "w-full text-left px-3 py-2 rounded-md text-sm transition-colors",
-                contentDisplayMode === 'content' ? "bg-[#612a4f]/10 text-[#612a4f] font-medium" : "text-gray-700 hover:bg-gray-100"
-              )}
-              style={{ fontFamily: "'DM Sans', sans-serif" }}
-            >
-              See content only
-            </button>
-          </PopoverContent>
-        </Popover>
+        {/* Right: Filter Pills */}
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => setContentDisplayMode('both')}
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200",
+              contentDisplayMode === 'both'
+                ? "bg-[#612a4f] text-white shadow-sm"
+                : "bg-white text-gray-500 border border-gray-200 hover:border-gray-300 hover:text-gray-700"
+            )}
+            style={{ fontFamily: "'DM Sans', sans-serif" }}
+          >
+            <LayoutGrid className="w-3 h-3" />
+            All
+          </button>
+          <button
+            onClick={() => setContentDisplayMode('tasks')}
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200",
+              contentDisplayMode === 'tasks'
+                ? "bg-[#612a4f] text-white shadow-sm"
+                : "bg-white text-gray-500 border border-gray-200 hover:border-gray-300 hover:text-gray-700"
+            )}
+            style={{ fontFamily: "'DM Sans', sans-serif" }}
+          >
+            <ListTodo className="w-3 h-3" />
+            Tasks
+          </button>
+          <button
+            onClick={() => setContentDisplayMode('content')}
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200",
+              contentDisplayMode === 'content'
+                ? "bg-[#612a4f] text-white shadow-sm"
+                : "bg-white text-gray-500 border border-gray-200 hover:border-gray-300 hover:text-gray-700"
+            )}
+            style={{ fontFamily: "'DM Sans', sans-serif" }}
+          >
+            <Send className="w-3 h-3" />
+            Content
+          </button>
+        </div>
       </div>
     </div>
   );

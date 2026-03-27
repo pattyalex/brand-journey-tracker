@@ -3,7 +3,7 @@ import { addDays, addMonths, endOfMonth, endOfWeek, format, startOfMonth, startO
 import { ChevronLeft, ChevronRight, ChevronDown, Plus, Clock, FileText, Palette, Lightbulb, ListTodo, ArrowRight, Check, X, Trash2 } from 'lucide-react';
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
-import { getWeekStartsOn, getDayNames } from "@/lib/storage";
+import { getWeekStartsOn, getDayNames, getString, StorageKeys } from "@/lib/storage";
 import { toast } from "sonner";
 import { PlannerItem } from "@/types/planner";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,6 +12,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { TIMEZONES, getDateString } from "./dailyPlanner/utils/plannerUtils";
 import { AllTasksSidebar } from "./dailyPlanner/components/AllTasksSidebar";
 import { ContentOverviewSidebar } from "./dailyPlanner/components/ContentOverviewSidebar";
+import { ReadyToPostSidebar } from "./dailyPlanner/components/ReadyToPostSidebar";
 import { PlannerHeader } from "./dailyPlanner/components/PlannerHeader";
 import { TodayView } from "./dailyPlanner/components/TodayView";
 import { WeekView } from "./dailyPlanner/components/WeekView";
@@ -87,6 +88,12 @@ export const DailyPlanner = () => {
 
   // State for mobile tasks accordion
   const [mobileTasksExpanded, setMobileTasksExpanded] = useState(false);
+
+  // State for "both" mode panel tab — persisted
+  const [bothPanelTab, setBothPanelTabState] = useState<'tasks' | 'content'>(() => {
+    const saved = getString(StorageKeys.plannerBothPanelTab);
+    return saved === 'content' ? 'content' : 'tasks';
+  });
 
   // Monthly dialog form state
   const [monthlyTaskTitle, setMonthlyTaskTitle] = useState("");
@@ -218,6 +225,12 @@ export const DailyPlanner = () => {
   useEffect(() => {
     persistence.savePlannerContentDisplayMode(state.contentDisplayMode);
   }, [state.contentDisplayMode]);
+
+  // Persist both-panel tab
+  const setBothPanelTab = (tab: 'tasks' | 'content') => {
+    setBothPanelTabState(tab);
+    persistence.savePlannerBothPanelTab(tab);
+  };
 
   const actions = usePlannerActions({
     selectedDate: state.selectedDate,
@@ -453,26 +466,18 @@ export const DailyPlanner = () => {
     <PlannerProvider {...plannerContextValue}>
     <div className="h-full">
       <div className="flex h-full">
-        {/* Sidebar - Left Side - Visible in Today, This Week, and Calendar views - Hidden on mobile */}
+        {/* Sidebar - Left Side - Adaptive based on filter mode */}
         {(currentView === 'today' || currentView === 'week' || currentView === 'calendar') && (
           contentDisplayMode === 'content' ? (
+            // Content only: show Ready to Post panel
             <div className="hidden lg:block">
-              <AllTasksSidebar
-                isAllTasksCollapsed={isAllTasksCollapsed}
-                setIsAllTasksCollapsed={setIsAllTasksCollapsed}
-                setIsDraggingOverAllTasks={setIsDraggingOverAllTasks}
-                allTasks={allTasks}
-                handleToggleAllTask={handleToggleAllTask}
-                handleDeleteAllTask={handleDeleteAllTask}
-                handleEditAllTask={handleEditAllTask}
-                handleAddAllTask={handleAddAllTask}
-                handleReorderAllTasks={handleReorderAllTasks}
-                handleDropTaskFromWeeklyToAllTasks={handleDropTaskFromWeeklyToAllTasks}
-                handleDropTaskFromCalendarToAllTasks={handleDropTaskFromCalendarToAllTasks}
+              <ReadyToPostSidebar
+                isCollapsed={isAllTasksCollapsed}
+                setIsCollapsed={setIsAllTasksCollapsed}
               />
             </div>
           ) : contentDisplayMode === 'both' ? (
-            // Combined sidebar for "Both" view - show All Tasks + Content Overview
+            // Both: tabbed sidebar with All Tasks + Ready to Post
             <div
               className={cn(
                 "hidden lg:block h-full flex-shrink-0 transition-all duration-300 relative bg-gradient-to-br from-[#F0EAED] via-[#F8F6F6] to-[#FAFAFA]",
@@ -494,35 +499,76 @@ export const DailyPlanner = () => {
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" sideOffset={8}>
-                  {isAllTasksCollapsed ? "Collapse calendar" : "Expand calendar"}
+                  {isAllTasksCollapsed ? "Expand panel" : "Collapse panel"}
                 </TooltipContent>
               </Tooltip>
 
-              {/* Content wrapper with overflow-hidden to prevent text reflow during transition */}
+              {/* Content wrapper */}
               <div className="h-full overflow-hidden">
                 <div className={cn(
-                  "p-5 h-full flex flex-col overflow-y-auto w-80 transition-opacity duration-300",
+                  "h-full flex flex-col w-80 transition-opacity duration-300",
                   isAllTasksCollapsed ? "opacity-0" : "opacity-100"
                 )}>
-                  {/* All Tasks Section */}
-                  <AllTasksSidebar
-                    isAllTasksCollapsed={false}
-                    setIsAllTasksCollapsed={() => {}}
-                    setIsDraggingOverAllTasks={setIsDraggingOverAllTasks}
-                    allTasks={allTasks}
-                    handleToggleAllTask={handleToggleAllTask}
-                    handleDeleteAllTask={handleDeleteAllTask}
-                    handleEditAllTask={handleEditAllTask}
-                    handleAddAllTask={handleAddAllTask}
-                    handleReorderAllTasks={handleReorderAllTasks}
-                    handleDropTaskFromWeeklyToAllTasks={handleDropTaskFromWeeklyToAllTasks}
-                    handleDropTaskFromCalendarToAllTasks={handleDropTaskFromCalendarToAllTasks}
-                    embedded={true}
-                  />
+                  {/* Tab switcher */}
+                  <div className="flex border-b border-gray-200 px-3 pt-4 pb-0 flex-shrink-0">
+                    <button
+                      onClick={() => setBothPanelTab('tasks')}
+                      className={cn(
+                        "flex-1 pb-2.5 text-sm font-medium text-center transition-all border-b-2",
+                        bothPanelTab === 'tasks'
+                          ? "text-[#612a4f] border-[#612a4f]"
+                          : "text-gray-400 border-transparent hover:text-gray-600"
+                      )}
+                      style={{ fontFamily: "'DM Sans', sans-serif" }}
+                    >
+                      All Tasks
+                    </button>
+                    <button
+                      onClick={() => setBothPanelTab('content')}
+                      className={cn(
+                        "flex-1 pb-2.5 text-sm font-medium text-center transition-all border-b-2",
+                        bothPanelTab === 'content'
+                          ? "text-[#612a4f] border-[#612a4f]"
+                          : "text-gray-400 border-transparent hover:text-gray-600"
+                      )}
+                      style={{ fontFamily: "'DM Sans', sans-serif" }}
+                    >
+                      Ready to Post
+                    </button>
+                  </div>
+
+                  {/* Tab content */}
+                  <div className="flex-1 overflow-y-auto p-5">
+                    {bothPanelTab === 'tasks' ? (
+                      <AllTasksSidebar
+                        isAllTasksCollapsed={false}
+                        setIsAllTasksCollapsed={() => {}}
+                        setIsDraggingOverAllTasks={setIsDraggingOverAllTasks}
+                        allTasks={allTasks}
+                        handleToggleAllTask={handleToggleAllTask}
+                        handleDeleteAllTask={handleDeleteAllTask}
+                        handleEditAllTask={handleEditAllTask}
+                        handleAddAllTask={handleAddAllTask}
+                        handleReorderAllTasks={handleReorderAllTasks}
+                        handleDropTaskFromWeeklyToAllTasks={handleDropTaskFromWeeklyToAllTasks}
+                        handleDropTaskFromCalendarToAllTasks={handleDropTaskFromCalendarToAllTasks}
+                        embedded={true}
+                        hideHeader={true}
+                      />
+                    ) : (
+                      <ReadyToPostSidebar
+                        isCollapsed={false}
+                        setIsCollapsed={() => {}}
+                        embedded={true}
+                        hideHeader={true}
+                      />
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
           ) : (
+            // Tasks only: show All Tasks panel (unchanged)
             <div className="hidden lg:block">
               <AllTasksSidebar
                 isAllTasksCollapsed={isAllTasksCollapsed}

@@ -28,6 +28,8 @@ interface AllTasksSidebarProps {
   handleDropTaskFromCalendarToAllTasks: (taskId: string, fromDate: string, targetIndex: number) => void;
   /** When true, renders just the content without outer wrapper (for combined sidebar) */
   embedded?: boolean;
+  /** When true, hides the header (icon + title) — used when tabs already provide context */
+  hideHeader?: boolean;
 }
 
 const PLACEHOLDER_TASKS = [
@@ -49,6 +51,7 @@ export const AllTasksSidebar = ({
   handleDropTaskFromWeeklyToAllTasks,
   handleDropTaskFromCalendarToAllTasks,
   embedded = false,
+  hideHeader = false,
 }: AllTasksSidebarProps) => {
   const { state: sidebarState } = useSidebar();
   const isSidebarCollapsed = sidebarState === 'collapsed';
@@ -126,10 +129,12 @@ export const AllTasksSidebar = ({
           }
         }}
       >
-        <div className="flex items-center gap-2.5 mb-5 ml-2">
-          <ListTodo className="w-5 h-5 text-gray-900" />
-          <h2 className="text-xl text-gray-900" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>All Tasks</h2>
-        </div>
+        {!hideHeader && (
+          <div className="flex items-center gap-2.5 mb-5 ml-2">
+            <ListTodo className="w-5 h-5 text-gray-900" />
+            <h2 className="text-xl text-gray-900" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>All Tasks</h2>
+          </div>
+        )}
         <div className="flex-1 overflow-y-auto">
           {emptyWithPlaceholders && !isAddingTask && (
             visiblePlaceholders.length > 0 ? (

@@ -302,6 +302,13 @@ export const usePlannerPersistence = ({
     }
   };
 
+  const savePlannerBothPanelTab = (tab: string) => {
+    setString(StorageKeys.plannerBothPanelTab, tab);
+    if (userId) {
+      updateUserPreferences(userId, { plannerBothPanelTab: tab }).catch(console.error);
+    }
+  };
+
   return {
     savePlannerData,
     saveAllTasks,
@@ -314,5 +321,6 @@ export const usePlannerPersistence = ({
     refreshPlannerData,
     savePlannerCurrentView,
     savePlannerContentDisplayMode,
+    savePlannerBothPanelTab,
   };
 };

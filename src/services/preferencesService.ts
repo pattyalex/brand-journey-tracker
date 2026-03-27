@@ -27,6 +27,7 @@ export interface UserPreferences {
   hasSeenGoalsOnboarding: boolean;
   plannerCurrentView?: string;
   plannerContentDisplayMode?: string;
+  plannerBothPanelTab?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -55,6 +56,7 @@ interface DbUserPreferences {
   has_seen_goals_onboarding: boolean;
   planner_current_view: string | null;
   planner_content_display_mode: string | null;
+  planner_both_panel_tab: string | null;
 }
 
 // =====================================================
@@ -82,6 +84,7 @@ const dbToUserPreferences = (db: DbUserPreferences): UserPreferences => ({
   hasSeenGoalsOnboarding: db.has_seen_goals_onboarding || false,
   plannerCurrentView: db.planner_current_view || undefined,
   plannerContentDisplayMode: db.planner_content_display_mode || undefined,
+  plannerBothPanelTab: db.planner_both_panel_tab || undefined,
   createdAt: db.created_at,
   updatedAt: db.updated_at,
 });
@@ -148,6 +151,7 @@ export const updateUserPreferences = async (
   if (updates.hasSeenGoalsOnboarding !== undefined) dbUpdates.has_seen_goals_onboarding = updates.hasSeenGoalsOnboarding;
   if (updates.plannerCurrentView !== undefined) dbUpdates.planner_current_view = updates.plannerCurrentView;
   if (updates.plannerContentDisplayMode !== undefined) dbUpdates.planner_content_display_mode = updates.plannerContentDisplayMode;
+  if (updates.plannerBothPanelTab !== undefined) dbUpdates.planner_both_panel_tab = updates.plannerBothPanelTab;
 
   const data = await updateOneBy<DbUserPreferences>('user_preferences', 'user_id', userId, dbUpdates);
   return dbToUserPreferences(data);
