@@ -39,11 +39,12 @@ const ReadyToPostStep: React.FC<ReadyToPostStepProps> = ({
     <>
       {/* Close Button */}
       <TooltipProvider delayDuration={0}>
-        <Tooltip>
+        <Tooltip disableHoverableContent>
           <TooltipTrigger asChild>
             <button
               onClick={onClose}
-              className="absolute top-7 right-4 p-1.5 rounded-full hover:bg-[#612A4F]/10 text-gray-400 hover:text-[#612A4F] transition-colors z-10"
+              className="absolute top-7 right-4 p-1.5 rounded-full hover:bg-[#612A4F]/10 text-gray-400 hover:text-[#612A4F] transition-colors z-10 focus:outline-none"
+              tabIndex={-1}
             >
               <X className="w-5 h-5" />
             </button>

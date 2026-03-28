@@ -86,11 +86,12 @@ const ContentFlowProgress: React.FC<ContentFlowProgressProps> = ({
       {/* Previous step arrow */}
       {onStepClick && currentStep > 1 ? (
         <TooltipProvider delayDuration={0}>
-          <Tooltip>
+          <Tooltip disableHoverableContent>
             <TooltipTrigger asChild>
               <button
                 onClick={() => onStepClick(currentStep - 1)}
-                className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-[#8B7082] hover:text-[#612A4F] hover:bg-[#612A4F]/10 transition-all duration-200 mt-[-12px]"
+                className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-[#8B7082] hover:text-[#612A4F] hover:bg-[#612A4F]/10 transition-all duration-200 mt-[-12px] focus:outline-none"
+                tabIndex={-1}
               >
                 <ChevronLeft className="w-6 h-6" />
               </button>
@@ -180,11 +181,12 @@ const ContentFlowProgress: React.FC<ContentFlowProgressProps> = ({
       {/* Next step arrow */}
       {onStepClick && currentStep < totalSteps && (
         <TooltipProvider delayDuration={0}>
-          <Tooltip>
+          <Tooltip disableHoverableContent>
             <TooltipTrigger asChild>
               <button
                 onClick={() => onStepClick(currentStep + 1)}
-                className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-[#8B7082] hover:text-[#612A4F] hover:bg-[#612A4F]/10 transition-all duration-200 mt-[-12px]"
+                className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-[#8B7082] hover:text-[#612A4F] hover:bg-[#612A4F]/10 transition-all duration-200 mt-[-12px] focus:outline-none"
+                tabIndex={-1}
               >
                 <ChevronRight className="w-6 h-6" />
               </button>
