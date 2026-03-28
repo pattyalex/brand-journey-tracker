@@ -311,44 +311,24 @@ const ProductionCardItem: React.FC<ProductionCardItemProps> = ({
             </h3>
           )}
           <div className="flex flex-row gap-2 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-            {/* Plan button removed - scheduling handled via content flow dialog */}
-            {columnId === "shape-ideas" && (
+            {columnId !== "posted" && (
               <Button
                 size="sm"
                 variant="ghost"
-                className="h-3.5 w-3.5 p-0 rounded hover:bg-blue-50"
+                className="h-3.5 w-3.5 p-0 rounded hover:bg-[#612A4F]/10"
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleOpenScriptEditor(card);
+                  if (columnId === "shape-ideas") handleOpenScriptEditor(card);
+                  else if (columnId === "to-film") handleOpenStoryboard(card);
+                  else if (columnId === "ideate") handleOpenIdeateCardEditor(card);
+                  else if (columnId === "to-edit") handleOpenEditChecklist(card);
+                  else if (columnId === "to-schedule") {
+                    setSchedulingCard(card);
+                    setIsScheduleColumnExpanded(true);
+                  }
                 }}
               >
-                <PenLine className="h-2.5 w-2.5 text-gray-400 hover:text-blue-600" />
-              </Button>
-            )}
-            {columnId === "to-film" && (
-              <Button
-                size="sm"
-                variant="ghost"
-                className="h-3.5 w-3.5 p-0 rounded hover:bg-amber-50"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleOpenStoryboard(card);
-                }}
-              >
-                <Clapperboard className="h-2.5 w-2.5 text-gray-400 hover:text-amber-600" />
-              </Button>
-            )}
-            {columnId === "to-edit" && (
-              <Button
-                size="sm"
-                variant="ghost"
-                className="h-3.5 w-3.5 p-0 rounded hover:bg-rose-50"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleOpenEditChecklist(card);
-                }}
-              >
-                <Scissors className="h-2.5 w-2.5 text-gray-400 hover:text-rose-600" />
+                <PenLine className="h-2.5 w-2.5 text-gray-400 hover:text-[#612A4F]" />
               </Button>
             )}
             <Button

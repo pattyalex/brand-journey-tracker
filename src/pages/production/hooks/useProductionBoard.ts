@@ -828,7 +828,7 @@ export function useProductionBoard(
         return { ...column, cards: column.cards.filter((c) => c.id !== card.id) };
       } else if (column.id === targetColId) {
         const filtered = column.cards.filter(filterCard);
-        let cardToAdd = { ...card, columnId: column.id, lastUpdated: new Date().toISOString() };
+        let cardToAdd = { ...card, columnId: column.id, lastUpdated: new Date().toISOString(), manualColumnOverride: true };
 
         if (column.id === 'shape-ideas' && !card.status) {
           cardToAdd = { ...cardToAdd, status: 'to-start' as const };

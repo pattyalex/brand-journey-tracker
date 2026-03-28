@@ -274,12 +274,21 @@ Guidelines:
   const dialogContent = (
     <div onClick={() => isMegAIOpen && setIsMegAIOpen(false)} className="flex flex-col h-full">
       {/* Close Button */}
-      <button
-        onClick={() => onOpenChange(false)}
-        className="absolute top-7 right-4 p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors z-10"
-      >
-        <X className="w-5 h-5" />
-      </button>
+      <TooltipProvider delayDuration={0}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={() => onOpenChange(false)}
+              className="absolute top-7 right-4 p-1.5 rounded-full hover:bg-[#612A4F]/10 text-gray-400 hover:text-[#612A4F] transition-colors z-10"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="top" sideOffset={4} className="bg-gray-500 text-white">
+            <p>Save & Exit</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
 
       {/* Step Progress Indicator */}
       <div className="flex justify-center pt-2 pb-12 flex-shrink-0">

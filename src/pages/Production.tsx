@@ -1161,8 +1161,9 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
     // Steps 3/4/5: child dialogs save via their unmount cleanup — no action needed here
 
     // Move card to the furthest completed column based on stageCompletions
+    // Skip if the user manually dragged the card to a specific column
     const completedSteps = getCompletedSteps(contentFlowCard);
-    if (completedSteps.length > 0) {
+    if (!contentFlowCard.manualColumnOverride && completedSteps.length > 0) {
       const furthestStep = Math.max(...completedSteps);
       const targetColumnId = stepToColumn[furthestStep];
       if (targetColumnId) {

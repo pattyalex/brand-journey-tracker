@@ -113,6 +113,7 @@ export interface ProductionCard {
   imageMode?: 'image' | 'carousel'; // Image content: single image or carousel
   lastUpdated?: string; // ISO timestamp of last edit
   stageCompletions?: StageCompletions; // User-controlled stage completion tracking
+  manualColumnOverride?: boolean; // When true, auto-move on step completion is disabled (set by drag-and-drop)
 }
 
 export interface KanbanColumn {
