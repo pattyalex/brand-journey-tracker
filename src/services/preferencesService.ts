@@ -33,6 +33,7 @@ export interface UserPreferences {
   pillarCascadeIdeas: string[];
   pillarSelectedTheme: string;
   pillarSelectedSubCategory: string;
+  pillarIdeasMap: Record<string, string[]>;
   createdAt: string;
   updatedAt: string;
 }
@@ -67,6 +68,7 @@ interface DbUserPreferences {
   pillar_cascade_ideas: string[] | null;
   pillar_selected_theme: string | null;
   pillar_selected_sub_category: string | null;
+  pillar_ideas_map: Record<string, string[]> | null;
 }
 
 // =====================================================
@@ -100,6 +102,7 @@ const dbToUserPreferences = (db: DbUserPreferences): UserPreferences => ({
   pillarCascadeIdeas: db.pillar_cascade_ideas || [],
   pillarSelectedTheme: db.pillar_selected_theme || '',
   pillarSelectedSubCategory: db.pillar_selected_sub_category || '',
+  pillarIdeasMap: db.pillar_ideas_map || {},
   createdAt: db.created_at,
   updatedAt: db.updated_at,
 });
@@ -172,6 +175,7 @@ export const updateUserPreferences = async (
   if (updates.pillarCascadeIdeas !== undefined) dbUpdates.pillar_cascade_ideas = updates.pillarCascadeIdeas;
   if (updates.pillarSelectedTheme !== undefined) dbUpdates.pillar_selected_theme = updates.pillarSelectedTheme;
   if (updates.pillarSelectedSubCategory !== undefined) dbUpdates.pillar_selected_sub_category = updates.pillarSelectedSubCategory;
+  if (updates.pillarIdeasMap !== undefined) dbUpdates.pillar_ideas_map = updates.pillarIdeasMap;
 
   const data = await updateOneBy<DbUserPreferences>('user_preferences', 'user_id', userId, dbUpdates);
   return dbToUserPreferences(data);

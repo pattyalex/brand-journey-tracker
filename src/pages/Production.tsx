@@ -9,6 +9,7 @@ import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-
 import { RiTwitterXLine, RiThreadsLine, RiPushpinFill } from "react-icons/ri";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import { StorageKeys, getString, setString, setJSON, getJSON, remove } from "@/lib/storage";
 import { getUserPreferences, updateUserPreferences } from "@/services/preferencesService";
@@ -319,10 +320,12 @@ const Production = () => {
   const [isGeneratingSubCategories, setIsGeneratingSubCategories] = useState(false);
   const [selectedSubCategory, setSelectedSubCategory] = useState<string>(() => getString(StorageKeys.pillarSelectedSubCategory) || "");
   const [cascadeIdeas, setCascadeIdeas] = useState<string[]>(() => getJSON<string[]>(StorageKeys.pillarCascadeIdeas, []));
+  const [pillarIdeasMap, setPillarIdeasMap] = useState<Record<string, string[]>>(() => getJSON<Record<string, string[]>>(StorageKeys.pillarIdeasMap, {}));
   const [isGeneratingCascadeIdeas, setIsGeneratingCascadeIdeas] = useState(false);
   const [newPillarIndex, setNewPillarIndex] = useState<number | null>(null);
   const [newSubCategoryIndex, setNewSubCategoryIndex] = useState<number | null>(null);
   const [generateMoreCount, setGenerateMoreCount] = useState<Record<string, number>>({});
+  const [editingIdeaIndex, setEditingIdeaIndex] = useState<number | null>(null);
 
   // Persist pillars data to localStorage + Supabase
   const pillarSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -336,15 +339,28 @@ const Production = () => {
         pillarCascadeIdeas: cascadeIdeas,
         pillarSelectedTheme: selectedUserPillar || '',
         pillarSelectedSubCategory: selectedSubCategory || '',
+        pillarIdeasMap: pillarIdeasMap,
       }).catch(() => {});
     }, 1000);
-  }, [user?.id, userPillars, pillarSubCategories, cascadeIdeas, selectedUserPillar, selectedSubCategory]);
+  }, [user?.id, userPillars, pillarSubCategories, cascadeIdeas, selectedUserPillar, selectedSubCategory, pillarIdeasMap]);
 
   useEffect(() => { setJSON(StorageKeys.pillarThemes, userPillars); savePillarsToSupabase(); }, [userPillars]);
   useEffect(() => { setJSON(StorageKeys.pillarSubCategories, pillarSubCategories); savePillarsToSupabase(); }, [pillarSubCategories]);
   useEffect(() => { setJSON(StorageKeys.pillarCascadeIdeas, cascadeIdeas); savePillarsToSupabase(); }, [cascadeIdeas]);
+  useEffect(() => { setJSON(StorageKeys.pillarIdeasMap, pillarIdeasMap); }, [pillarIdeasMap]);
   useEffect(() => { setString(StorageKeys.pillarSelectedTheme, selectedUserPillar || ""); savePillarsToSupabase(); }, [selectedUserPillar]);
   useEffect(() => { setString(StorageKeys.pillarSelectedSubCategory, selectedSubCategory || ""); savePillarsToSupabase(); }, [selectedSubCategory]);
+
+  // Restore cascadeIdeas from pillarIdeasMap if they're empty but a selection exists
+  useEffect(() => {
+    if (cascadeIdeas.length === 0 && selectedUserPillar && selectedSubCategory) {
+      const cacheKey = `${selectedUserPillar}::${selectedSubCategory}`;
+      const cached = pillarIdeasMap[cacheKey];
+      if (cached && cached.length > 0) {
+        setCascadeIdeas(cached);
+      }
+    }
+  }, []); // Only on mount
 
   // Load pillars from Supabase on mount (overrides localStorage if Supabase has data)
   useEffect(() => {
@@ -354,6 +370,7 @@ const Production = () => {
         setUserPillars(prefs.pillarThemes);
         setPillarSubCategories(prefs.pillarSubCategories || {});
         setCascadeIdeas(prefs.pillarCascadeIdeas || []);
+        if (prefs.pillarIdeasMap) setPillarIdeasMap(prefs.pillarIdeasMap);
         setSelectedUserPillar(prefs.pillarSelectedTheme || '');
         setSelectedSubCategory(prefs.pillarSelectedSubCategory || '');
       }
@@ -2850,9 +2867,8 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
           if (!open) {
             // Close both Pillars dialog and Content Ideation dialog
             setIsIdeateDialogOpen(false);
-            setSelectedUserPillar("");
-            setSelectedSubCategory("");
-            setCascadeIdeas([]);
+            // Keep selectedUserPillar, selectedSubCategory, and cascadeIdeas
+            // so the user finds everything exactly where they left off
           }
         }}>
           <DialogContent className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[900px] border-0 shadow-2xl overflow-hidden flex flex-col bg-gradient-to-br from-[#F0F7F4] via-[#F7FAF8] to-[#E8F3EE]">
@@ -3071,17 +3087,23 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
                               }
 
                               setSelectedSubCategory(subCat);
-                              setCascadeIdeas([]);
-                              setIsGeneratingCascadeIdeas(true);
-
-                              try {
-                                const ideas = await generateContentIdeasWithAI(selectedUserPillar, subCat);
-                                setCascadeIdeas(ideas);
-                              } catch (error) {
-                                console.error('Error generating content ideas:', error);
+                              const cacheKey = `${selectedUserPillar}::${subCat}`;
+                              const cached = pillarIdeasMap[cacheKey];
+                              if (cached && cached.length > 0) {
+                                setCascadeIdeas(cached);
+                              } else {
                                 setCascadeIdeas([]);
-                              } finally {
-                                setIsGeneratingCascadeIdeas(false);
+                                setIsGeneratingCascadeIdeas(true);
+                                try {
+                                  const ideas = await generateContentIdeasWithAI(selectedUserPillar, subCat);
+                                  setCascadeIdeas(ideas);
+                                  setPillarIdeasMap(prev => ({ ...prev, [cacheKey]: ideas }));
+                                } catch (error) {
+                                  console.error('Error generating content ideas:', error);
+                                  setCascadeIdeas([]);
+                                } finally {
+                                  setIsGeneratingCascadeIdeas(false);
+                                }
                               }
                             }}
                             className={cn(
@@ -3122,16 +3144,23 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
                                   }
                                   // Select it and generate ideas
                                   setSelectedSubCategory(name);
-                                  setCascadeIdeas([]);
-                                  setIsGeneratingCascadeIdeas(true);
-                                  try {
-                                    const ideas = await generateContentIdeasWithAI(selectedUserPillar, name);
-                                    setCascadeIdeas(ideas);
-                                  } catch (error) {
-                                    console.error('Error generating content ideas:', error);
+                                  const cacheKey = `${selectedUserPillar}::${name}`;
+                                  const cached = pillarIdeasMap[cacheKey];
+                                  if (cached && cached.length > 0) {
+                                    setCascadeIdeas(cached);
+                                  } else {
                                     setCascadeIdeas([]);
-                                  } finally {
-                                    setIsGeneratingCascadeIdeas(false);
+                                    setIsGeneratingCascadeIdeas(true);
+                                    try {
+                                      const ideas = await generateContentIdeasWithAI(selectedUserPillar, name);
+                                      setCascadeIdeas(ideas);
+                                      setPillarIdeasMap(prev => ({ ...prev, [cacheKey]: ideas }));
+                                    } catch (error) {
+                                      console.error('Error generating content ideas:', error);
+                                      setCascadeIdeas([]);
+                                    } finally {
+                                      setIsGeneratingCascadeIdeas(false);
+                                    }
                                   }
                                 }}
                                 autoFocus
@@ -3210,7 +3239,7 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
                       <AnimatePresence initial={false}>
                         {cascadeIdeas.map((idea, index) => (
                           <motion.div
-                            key={idea}
+                            key={`idea-${index}`}
                             layout
                             initial={{ opacity: 0, x: -20 }}
                             animate={{
@@ -3236,7 +3265,34 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
                                 : "bg-white border-gray-200 hover:border-[#9AC0B3] hover:shadow-md"
                             )}
                           >
-                            <span className="text-sm text-gray-800 font-medium flex-1">{idea}</span>
+                            <input
+                              type="text"
+                              value={idea}
+                              onChange={(e) => {
+                                const newValue = e.target.value;
+                                setCascadeIdeas((prev) => {
+                                  const updated = prev.map((i, idx) => idx === index ? newValue : i);
+                                  const cacheKey = `${selectedUserPillar}::${selectedSubCategory}`;
+                                  setPillarIdeasMap(p => ({ ...p, [cacheKey]: updated }));
+                                  return updated;
+                                });
+                                setEditingIdeaIndex(index);
+                              }}
+                              onFocus={() => setEditingIdeaIndex(index)}
+                              onBlur={() => setTimeout(() => setEditingIdeaIndex(null), 150)}
+                              className="text-sm text-gray-800 font-medium flex-1 bg-transparent border-none outline-none"
+                            />
+                            {editingIdeaIndex === index && (
+                              <button
+                                onClick={() => {
+                                  setEditingIdeaIndex(null);
+                                  toast.success("Idea saved!");
+                                }}
+                                className="p-1.5 rounded-lg bg-[#7BA393] hover:bg-[#6B9080] text-white transition-colors"
+                              >
+                                <Check className="w-3.5 h-3.5" />
+                              </button>
+                            )}
                             <Button
                               size="sm"
                               onClick={() => {
@@ -3267,14 +3323,32 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
                                 setAddedIdeaText(idea);
                                 setTimeout(() => {
                                   // Remove the idea from the list (triggers exit animation)
-                                  setCascadeIdeas((prev) => prev.filter((i) => i !== idea));
+                                  setCascadeIdeas((prev) => {
+                                    const updated = prev.filter((i) => i !== idea);
+                                    const cacheKey = `${selectedUserPillar}::${selectedSubCategory}`;
+                                    setPillarIdeasMap(p => ({ ...p, [cacheKey]: updated }));
+                                    return updated;
+                                  });
                                   setAddedIdeaText(null);
                                 }, 500);
                               }}
-                              className="opacity-0 group-hover:opacity-100 transition-opacity bg-[#7BA393] hover:bg-[#6B9080] text-white text-xs px-3 py-1.5 h-auto whitespace-nowrap"
+                              className="opacity-0 group-hover:opacity-100 transition-opacity bg-[#B8D4CA] hover:bg-[#7BA393] text-white text-xs px-3 py-1.5 h-auto whitespace-nowrap"
                             >
                               Add to Bank of Ideas
                             </Button>
+                            <button
+                              onClick={() => {
+                                setCascadeIdeas((prev) => {
+                                  const updated = prev.filter((i) => i !== idea);
+                                  const cacheKey = `${selectedUserPillar}::${selectedSubCategory}`;
+                                  setPillarIdeasMap(p => ({ ...p, [cacheKey]: updated }));
+                                  return updated;
+                                });
+                              }}
+                              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded border border-transparent hover:border-gray-300 text-gray-300 hover:text-gray-500 hover:bg-gray-50"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
                           </motion.div>
                         ))}
                       </AnimatePresence>
@@ -3288,7 +3362,10 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
                               const newIdeas = await generateContentIdeasWithAI(selectedUserPillar, selectedSubCategory);
                               // Filter out ideas already shown
                               const filteredIdeas = newIdeas.filter(idea => !cascadeIdeas.includes(idea));
-                              setCascadeIdeas([...cascadeIdeas, ...filteredIdeas]);
+                              const merged = [...cascadeIdeas, ...filteredIdeas];
+                              setCascadeIdeas(merged);
+                              const cacheKey = `${selectedUserPillar}::${selectedSubCategory}`;
+                              setPillarIdeasMap(prev => ({ ...prev, [cacheKey]: merged }));
                             } catch (error) {
                               console.error('Error generating more ideas:', error);
                             } finally {

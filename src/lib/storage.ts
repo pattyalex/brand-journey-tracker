@@ -55,6 +55,7 @@ export const StorageKeys = {
   pillarThemes: "pillarThemes",
   pillarSubCategories: "pillarSubCategories",
   pillarCascadeIdeas: "pillarCascadeIdeas",
+  pillarIdeasMap: "pillarIdeasMap",
   pillarSelectedTheme: "pillarSelectedTheme",
   pillarSelectedSubCategory: "pillarSelectedSubCategory",
   ideaExpanderText: "ideaExpanderText",
