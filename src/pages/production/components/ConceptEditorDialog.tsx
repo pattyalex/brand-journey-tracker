@@ -197,13 +197,13 @@ const ConceptEditorDialog: React.FC<ConceptEditorDialogProps> = ({
     setLinkPreviews(linkPreviews.filter(l => l.id !== linkId));
   };
 
-  // MegAI for caption
-  const getSystemPrompt = () => `You are MegAI, a helpful caption writing assistant for social media content creators. You help write engaging captions, suggest hashtags, and improve post copy.
+  // MegAI for script
+  const getSystemPrompt = () => `You are MegAI, a helpful script writing assistant for social media content creators. You help write engaging scripts, improve talking points, and make content more compelling.
 
-${caption ? `The user is working on a caption titled "${cardHook || cardTitle || 'Untitled'}":
+${scriptContent ? `The user is working on a script titled "${cardHook || cardTitle || 'Untitled'}":
 ---
-${caption}
----` : `The user is starting a new caption${(cardHook || cardTitle) ? ` titled "${cardHook || cardTitle}"` : ''}.`}
+${scriptContent}
+---` : `The user is starting a new script${(cardHook || cardTitle) ? ` titled "${cardHook || cardTitle}"` : ''}.`}
 
 ${platformTags.length > 0 ? `Target platforms: ${platformTags.join(', ')}` : ''}
 
@@ -493,13 +493,36 @@ Guidelines:
                 <label className="text-[12px] font-medium text-[#612A4F] uppercase tracking-wider">
                   Script
                 </label>
-                <Textarea
-                  value={scriptContent}
-                  onChange={(e) => setScriptContent?.(e.target.value)}
-                  onClick={(e) => e.stopPropagation()}
-                  placeholder="Write your script or talking points here..."
-                  className="min-h-[120px] resize-none border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#612A4F] focus:border-[#612A4F] transition-all text-sm leading-relaxed bg-white placeholder:text-gray-400 shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
-                />
+                <div className="relative">
+                  <Textarea
+                    value={scriptContent}
+                    onChange={(e) => setScriptContent?.(e.target.value)}
+                    onClick={(e) => e.stopPropagation()}
+                    placeholder="Write your script or talking points here..."
+                    className="min-h-[120px] resize-none border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#612A4F] focus:border-[#612A4F] transition-all text-sm leading-relaxed bg-white placeholder:text-gray-400 shadow-[0_1px_3px_rgba(0,0,0,0.06)] pr-12"
+                  />
+                  {/* MegAI Button */}
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={() => setIsMegAIOpen(!isMegAIOpen)}
+                          className={cn(
+                            "absolute bottom-3 right-3 w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-lg",
+                            isMegAIOpen
+                              ? "bg-[#612A4F] text-white"
+                              : "bg-gradient-to-br from-[#8B7082] to-[#612A4F] text-white hover:scale-105"
+                          )}
+                        >
+                          <Sparkles className="w-4 h-4" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="left">
+                        <p>Ask MegAI for help</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
               </div>
             )}
 
@@ -508,37 +531,13 @@ Guidelines:
               <label className="text-[12px] font-medium text-[#612A4F] uppercase tracking-wider">
                 Caption
               </label>
-
-              <div className="relative">
-                <Textarea
-                  value={caption}
-                  onChange={(e) => setCaption(e.target.value)}
-                  onClick={(e) => e.stopPropagation()}
-                  placeholder="Write your post caption here..."
-                  className="min-h-[200px] resize-none border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#612A4F] focus:border-[#612A4F] transition-all text-sm leading-relaxed bg-white placeholder:text-gray-400 shadow-[0_1px_3px_rgba(0,0,0,0.06)] pr-12"
-                />
-                {/* MegAI Button */}
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={() => setIsMegAIOpen(!isMegAIOpen)}
-                        className={cn(
-                          "absolute bottom-3 right-3 w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-lg",
-                          isMegAIOpen
-                            ? "bg-[#612A4F] text-white"
-                            : "bg-gradient-to-br from-[#8B7082] to-[#612A4F] text-white hover:scale-105"
-                        )}
-                      >
-                        <Sparkles className="w-4 h-4" />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="left">
-                      <p>Ask MegAI for help</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
+              <Textarea
+                value={caption}
+                onChange={(e) => setCaption(e.target.value)}
+                onClick={(e) => e.stopPropagation()}
+                placeholder="Write your post caption here..."
+                className="min-h-[200px] resize-none border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#612A4F] focus:border-[#612A4F] transition-all text-sm leading-relaxed bg-white placeholder:text-gray-400 shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
+              />
             </div>
           </div>
 
@@ -580,9 +579,9 @@ Guidelines:
                         <Bot className="w-6 h-6 text-[#612A4F]" />
                       </div>
                       <p className="text-base font-medium text-gray-700 mb-1">How can I help?</p>
-                      <p className="text-sm text-gray-500 mb-4">Ask me to write a caption, suggest hashtags, or improve your copy.</p>
+                      <p className="text-sm text-gray-500 mb-4">Ask me to write a script, improve your talking points, or brainstorm ideas.</p>
                       <div className="space-y-2">
-                        {["Write a caption for this", "Suggest relevant hashtags"].map((suggestion) => (
+                        {["Write a script for this", "Improve my talking points"].map((suggestion) => (
                           <button
                             key={suggestion}
                             onClick={() => handleMegAISend(suggestion)}
@@ -753,13 +752,14 @@ Guidelines:
                         />
 
                         {/* Per-slide shooting details */}
-                        <div className="rounded-lg overflow-hidden">
+                        <div className="rounded-lg overflow-hidden" data-slide-fields>
                           <div className="flex items-center gap-3 py-2 px-3 bg-[#8B7082]/[0.05] cursor-text">
                             <MapPin className="w-3.5 h-3.5 text-[#8B7082] flex-shrink-0" />
                             <input
                               type="text"
                               value={slide.location}
                               onChange={(e) => handleUpdateSlide(slide.id, 'location', e.target.value)}
+                              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const inputs = e.currentTarget.closest('[data-slide-fields]')?.querySelectorAll('input'); const idx = Array.from(inputs || []).indexOf(e.currentTarget); inputs?.[idx + 1]?.focus(); } }}
                               placeholder="Where to shoot this slide..."
                               className="flex-1 text-xs text-gray-700 bg-transparent border-none outline-none placeholder:text-gray-400"
                             />
@@ -770,6 +770,7 @@ Guidelines:
                               type="text"
                               value={slide.outfit}
                               onChange={(e) => handleUpdateSlide(slide.id, 'outfit', e.target.value)}
+                              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const inputs = e.currentTarget.closest('[data-slide-fields]')?.querySelectorAll('input'); const idx = Array.from(inputs || []).indexOf(e.currentTarget); inputs?.[idx + 1]?.focus(); } }}
                               placeholder="What to wear..."
                               className="flex-1 text-xs text-gray-700 bg-transparent border-none outline-none placeholder:text-gray-400"
                             />
@@ -780,6 +781,7 @@ Guidelines:
                               type="text"
                               value={slide.props}
                               onChange={(e) => handleUpdateSlide(slide.id, 'props', e.target.value)}
+                              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const inputs = e.currentTarget.closest('[data-slide-fields]')?.querySelectorAll('input'); const idx = Array.from(inputs || []).indexOf(e.currentTarget); inputs?.[idx + 1]?.focus(); } }}
                               placeholder="Any props needed..."
                               className="flex-1 text-xs text-gray-700 bg-transparent border-none outline-none placeholder:text-gray-400"
                             />
@@ -790,6 +792,7 @@ Guidelines:
                               type="text"
                               value={slide.notes || ''}
                               onChange={(e) => handleUpdateSlide(slide.id, 'notes', e.target.value)}
+                              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); e.currentTarget.blur(); } }}
                               placeholder="Notes..."
                               className="flex-1 text-xs text-gray-700 bg-transparent border-none outline-none placeholder:text-gray-400"
                             />

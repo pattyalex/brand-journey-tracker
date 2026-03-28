@@ -418,10 +418,10 @@ Guidelines:
 
         {/* Two Column Layout */}
         <div className="grid grid-cols-[1fr,280px] gap-6 items-start relative">
-          {/* Left Column - Talking Points */}
+          {/* Left Column - Script */}
           <div className="space-y-3">
             <label className="text-[12px] font-medium text-[#612A4F] uppercase tracking-wider">
-              Talking Points
+              Script
             </label>
 
             {/* Brain Dump Suggestion Block */}

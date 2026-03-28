@@ -876,6 +876,12 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
                 className="h-full overflow-y-auto p-4"
                 ref={scriptRef}
               >
+              {/* Content type indicator */}
+              <div className="flex items-center gap-1.5 mb-3">
+                <Video className="w-3.5 h-3.5 text-[#8B7082]" />
+                <span className="text-[11px] text-[#8B7082] font-medium">Video</span>
+              </div>
+
               {/* Hook section */}
               <div className="mb-4">
                 <div className="flex items-center justify-between mb-1">

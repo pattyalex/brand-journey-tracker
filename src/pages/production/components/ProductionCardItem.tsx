@@ -272,8 +272,8 @@ const ProductionCardItem: React.FC<ProductionCardItemProps> = ({
                 <TooltipTrigger asChild>
                   <GripVertical className="w-4 h-4 text-gray-300 flex-shrink-0 cursor-grab active:cursor-grabbing" />
                 </TooltipTrigger>
-                <TooltipContent side="left" sideOffset={6}>
-                  <p>Drag to move between columns</p>
+                <TooltipContent side="top" sideOffset={6} className="bg-gray-500 text-white">
+                  <p>Drag</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -316,37 +316,55 @@ const ProductionCardItem: React.FC<ProductionCardItemProps> = ({
           )}
           <div className="flex flex-row gap-2 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
             {columnId !== "posted" && (
-              <Button
-                size="sm"
-                variant="ghost"
-                className="h-3.5 w-3.5 p-0 rounded hover:bg-[#612A4F]/10"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (columnId === "shape-ideas") handleOpenScriptEditor(card);
-                  else if (columnId === "to-film") handleOpenStoryboard(card);
-                  else if (columnId === "ideate") handleOpenIdeateCardEditor(card);
-                  else if (columnId === "to-edit") handleOpenEditChecklist(card);
-                  else if (columnId === "ready-to-post") handleOpenContentFlow(card, 5);
-                  else if (columnId === "to-schedule") {
-                    setSchedulingCard(card);
-                    setIsScheduleColumnExpanded(true);
-                  }
-                }}
-              >
-                <PenLine className="h-2.5 w-2.5 text-gray-400 hover:text-[#612A4F]" />
-              </Button>
+              <TooltipProvider delayDuration={100}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-5 w-5 p-0 rounded-md border border-transparent hover:border-gray-200 hover:bg-gray-50 transition-all"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (columnId === "shape-ideas") handleOpenScriptEditor(card);
+                        else if (columnId === "to-film") handleOpenStoryboard(card);
+                        else if (columnId === "ideate") handleOpenIdeateCardEditor(card);
+                        else if (columnId === "to-edit") handleOpenEditChecklist(card);
+                        else if (columnId === "ready-to-post") handleOpenContentFlow(card, 5);
+                        else if (columnId === "to-schedule") {
+                          setSchedulingCard(card);
+                          setIsScheduleColumnExpanded(true);
+                        }
+                      }}
+                    >
+                      <PenLine className="h-2.5 w-2.5 text-gray-400 hover:text-[#612A4F]" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" sideOffset={6} className="bg-gray-500 text-white">
+                    <p>Edit</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             )}
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-3.5 w-3.5 p-0 rounded hover:bg-red-50"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDeleteCard(card.id);
-              }}
-            >
-              <Trash2 className="h-2.5 w-2.5 text-gray-400 hover:text-red-600" />
-            </Button>
+            <TooltipProvider delayDuration={100}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-5 w-5 p-0 rounded-md border border-transparent hover:border-gray-200 hover:bg-gray-50 transition-all"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteCard(card.id);
+                    }}
+                  >
+                    <Trash2 className="h-2.5 w-2.5 text-gray-400 hover:text-red-600" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top" sideOffset={6} className="bg-gray-500 text-white">
+                  <p>Delete</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </div>
         {/* Tags for cards with metadata */}

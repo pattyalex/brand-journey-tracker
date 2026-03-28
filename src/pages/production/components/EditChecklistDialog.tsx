@@ -36,6 +36,7 @@ import {
   ExternalLink,
   Laptop,
   Scissors,
+  Layers,
 } from "lucide-react";
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
@@ -345,6 +346,20 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
           <div className="w-[320px] flex-shrink-0 bg-white/40 relative overflow-y-auto">
             <div className="absolute right-0 top-0 bottom-0 w-px bg-[#8B7082]/30"></div>
             <div className="h-full p-4">
+              {/* Content type indicator */}
+              <div className="flex items-center gap-1.5 mb-3">
+                {contentType === 'video' ? (
+                  <Video className="w-3.5 h-3.5 text-[#8B7082]" />
+                ) : card?.imageMode === 'carousel' ? (
+                  <Layers className="w-3.5 h-3.5 text-[#8B7082]" />
+                ) : (
+                  <ImageIcon className="w-3.5 h-3.5 text-[#8B7082]" />
+                )}
+                <span className="text-[11px] text-[#8B7082] font-medium">
+                  {contentType === 'video' ? 'Video' : card?.imageMode === 'carousel' ? 'Carousel' : 'Image'}
+                </span>
+              </div>
+
               {/* Hook section */}
               <div className="mb-4">
                 <div className="flex items-center justify-between mb-1">
