@@ -657,7 +657,8 @@ Return JSON array only.`
 // Generate content ideas for a pillar + sub-category
 app.post('/api/generate-content-ideas', async (req, res) => {
   try {
-    const { pillarName, subCategory } = req.body;
+    const { pillarName, subCategory, count, direction } = req.body;
+    const ideaCount = count || 7;
     const apiKey = process.env.ANTHROPIC_API_KEY;
 
     if (!apiKey || apiKey === 'your_anthropic_api_key') {
@@ -698,10 +699,10 @@ RULES:
 - Each idea should spark curiosity or emotion
 - Keep titles concise (under 15 words)
 
-Return ONLY a JSON array of 10 strings, nothing else.`,
+Return ONLY a JSON array of ${ideaCount} strings, nothing else.`,
         messages: [{
           role: 'user',
-          content: `Generate 10 content ideas for a creator focused on "${pillarName}", specifically about "${subCategory}".
+          content: `Generate ${ideaCount} content ideas for a creator focused on "${pillarName}", specifically about "${subCategory}".${direction ? `\n\nIMPORTANT DIRECTION: The ideas should have a "${direction}" tone/angle. Lean heavily into this direction.` : ''}
 
 Create ideas that feel personal and specific - like real stories a creator would tell, not generic advice anyone could give. Think: vulnerable moments, specific realizations, relatable struggles, surprising perspectives.
 

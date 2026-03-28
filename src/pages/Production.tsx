@@ -402,6 +402,8 @@ const Production = () => {
   const [wwAnalysisComplete, setWwAnalysisComplete] = useState(false);
   const [isGeneratingMoreIdeas, setIsGeneratingMoreIdeas] = useState(false);
   const [addedIdeaText, setAddedIdeaText] = useState<string | null>(null);
+  const [ideaDirection, setIdeaDirection] = useState<string>("");
+  const [ideaCustomPrompt, setIdeaCustomPrompt] = useState<string>("");
 
   // Helper function to generate sub-categories using server API (key stays hidden)
   const generateSubCategoriesWithAI = async (pillarName: string, existingCategories?: string[]): Promise<string[]> => {
@@ -421,12 +423,12 @@ const Production = () => {
   };
 
   // Helper function to generate content ideas using server API (key stays hidden)
-  const generateContentIdeasWithAI = async (pillarName: string, subCategory: string): Promise<string[]> => {
+  const generateContentIdeasWithAI = async (pillarName: string, subCategory: string, count?: number, direction?: string): Promise<string[]> => {
     try {
       const response = await fetch('http://localhost:3001/api/generate-content-ideas', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pillarName, subCategory }),
+        body: JSON.stringify({ pillarName, subCategory, count, direction }),
       });
       if (!response.ok) return [];
       const data = await response.json();
@@ -2887,8 +2889,8 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
                   What are the core themes your content revolves around?
                 </DialogTitle>
               </div>
-              <DialogDescription className="sr-only">
-                Content pillars selection
+              <DialogDescription className="text-sm text-gray-500">
+                Choose 3–5 themes for a focused content strategy
               </DialogDescription>
             </DialogHeader>
 
@@ -3033,7 +3035,7 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
                 >
                   <div className="flex items-center justify-between mb-4">
                     <h4 className="text-sm font-semibold text-gray-700 uppercase">
-                      {selectedUserPillar} Categories
+                      {selectedUserPillar} Topics
                     </h4>
                     {(pillarSubCategories[selectedUserPillar]?.length > 0) && (generateMoreCount[selectedUserPillar] || 0) < 3 && (
                       <button
@@ -3226,7 +3228,7 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
                   animate={{ opacity: 1, y: 0 }}
                   className="mb-8"
                 >
-                  <h4 className="text-sm font-semibold text-gray-700 mb-4">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-4 uppercase">
                     Content Ideas for {selectedSubCategory}
                   </h4>
                   {isGeneratingCascadeIdeas ? (
@@ -3280,7 +3282,7 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
                               }}
                               onFocus={() => setEditingIdeaIndex(index)}
                               onBlur={() => setTimeout(() => setEditingIdeaIndex(null), 150)}
-                              className="text-sm text-gray-800 font-medium flex-1 bg-transparent border-none outline-none"
+                              className="text-sm text-gray-800 font-medium flex-1 bg-transparent border-none outline-none cursor-text hover:bg-[#F0F7F4] rounded px-2 py-1 -mx-2 -my-1 transition-colors"
                             />
                             {editingIdeaIndex === index && (
                               <button
@@ -3353,37 +3355,69 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
                         ))}
                       </AnimatePresence>
 
-                      {/* Generate More Ideas Button */}
+                      {/* Direction selector + Generate More */}
                       {cascadeIdeas.length > 0 && (
-                        <button
-                          onClick={async () => {
-                            setIsGeneratingMoreIdeas(true);
-                            try {
-                              const newIdeas = await generateContentIdeasWithAI(selectedUserPillar, selectedSubCategory);
-                              // Filter out ideas already shown
-                              const filteredIdeas = newIdeas.filter(idea => !cascadeIdeas.includes(idea));
-                              const merged = [...cascadeIdeas, ...filteredIdeas];
-                              setCascadeIdeas(merged);
-                              const cacheKey = `${selectedUserPillar}::${selectedSubCategory}`;
-                              setPillarIdeasMap(prev => ({ ...prev, [cacheKey]: merged }));
-                            } catch (error) {
-                              console.error('Error generating more ideas:', error);
-                            } finally {
-                              setIsGeneratingMoreIdeas(false);
-                            }
-                          }}
-                          disabled={isGeneratingMoreIdeas}
-                          className="w-full mt-4 px-4 py-3 rounded-lg text-sm font-medium bg-[#F0F7F4] text-[#5D8A7A] hover:bg-[#E8F3EF] transition-all border-2 border-dashed border-[#B8D4CA] disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {isGeneratingMoreIdeas ? (
-                            <span className="flex items-center justify-center">
-                              <div className="animate-spin rounded-full h-4 w-4 border-2 border-[#C8DED5] border-t-[#7BA393] mr-2"></div>
-                              Generating...
-                            </span>
-                          ) : (
-                            "+ Generate 10 More Ideas"
-                          )}
-                        </button>
+                        <div className="mt-8 pt-6 border-t border-[#D8EDE4] space-y-4">
+                          <div className="rounded-xl bg-gradient-to-br from-[#F0F7F4] to-[#E8F3EE] p-5 space-y-4 shadow-sm">
+                            <div className="flex items-center gap-2">
+                              <Sparkles className="w-4 h-4 text-[#5D8A7A]" />
+                              <span className="text-sm font-bold text-gray-900">What direction would you like MegAI to explore?</span>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {["More fun & playful", "More storytelling", "More vulnerable", "More educational", "More controversial"].map((dir) => (
+                                <button
+                                  key={dir}
+                                  onClick={() => setIdeaDirection(ideaDirection === dir ? "" : dir)}
+                                  className={cn(
+                                    "px-3.5 py-2 rounded-xl text-xs font-semibold transition-all border shadow-sm",
+                                    ideaDirection === dir
+                                      ? "bg-[#7BA393] text-white border-[#6B9080] shadow-md"
+                                      : "bg-white/80 text-gray-600 border-[#D0E0D8] hover:border-[#9AC0B3] hover:bg-white hover:shadow-md"
+                                  )}
+                                >
+                                  {dir}
+                                </button>
+                              ))}
+                            </div>
+                            <textarea
+                              value={ideaCustomPrompt}
+                              onChange={(e) => setIdeaCustomPrompt(e.target.value)}
+                              placeholder="Or tell me exactly what you're looking for..."
+                              rows={3}
+                              className="w-full px-4 py-3 rounded-xl border border-[#D0E0D8] bg-white/70 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:border-[#7BA393] focus:bg-white focus:shadow-sm transition-all resize-none shadow-inner"
+                            />
+                          </div>
+                          <button
+                            onClick={async () => {
+                              setIsGeneratingMoreIdeas(true);
+                              try {
+                                const parts = [ideaDirection, ideaCustomPrompt.trim()].filter(Boolean);
+                                const directionText = parts.length > 0 ? parts.join(". Also: ") : undefined;
+                                const newIdeas = await generateContentIdeasWithAI(selectedUserPillar, selectedSubCategory, 5, directionText);
+                                const filteredIdeas = newIdeas.filter(idea => !cascadeIdeas.includes(idea));
+                                const merged = [...cascadeIdeas, ...filteredIdeas];
+                                setCascadeIdeas(merged);
+                                const cacheKey = `${selectedUserPillar}::${selectedSubCategory}`;
+                                setPillarIdeasMap(prev => ({ ...prev, [cacheKey]: merged }));
+                              } catch (error) {
+                                console.error('Error generating more ideas:', error);
+                              } finally {
+                                setIsGeneratingMoreIdeas(false);
+                              }
+                            }}
+                            disabled={isGeneratingMoreIdeas}
+                            className="w-full px-4 py-3 rounded-xl text-sm font-medium bg-[#7BA393] text-white hover:bg-[#6B9080] transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {isGeneratingMoreIdeas ? (
+                              <span className="flex items-center justify-center">
+                                <div className="animate-spin rounded-full h-4 w-4 border-2 border-[#C8DED5] border-t-[#7BA393] mr-2"></div>
+                                Generating...
+                              </span>
+                            ) : (
+                              "+ Generate more ideas"
+                            )}
+                          </button>
+                        </div>
                       )}
                     </div>
                   )}
