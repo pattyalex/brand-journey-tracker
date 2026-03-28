@@ -578,7 +578,7 @@ app.post('/api/generate-ideas', async (req, res) => {
 // Generate sub-categories for a content pillar
 app.post('/api/generate-subcategories', async (req, res) => {
   try {
-    const { pillarName } = req.body;
+    const { pillarName, existingCategories } = req.body;
     const apiKey = process.env.ANTHROPIC_API_KEY;
 
     if (!apiKey || apiKey === 'your_anthropic_api_key') {
@@ -621,7 +621,7 @@ Return ONLY a JSON array.`,
           content: `Content pillar: "${pillarName}"
 
 Generate 5-7 sub-categories. Each must be 1-2 words only (like folder names).
-
+${existingCategories && existingCategories.length > 0 ? `\nDO NOT include any of these already existing categories: ${JSON.stringify(existingCategories)}\nGenerate DIFFERENT ones only.\n` : ''}
 Example: For "Fitness" → ["Workouts", "Nutrition", "Recovery", "Mindset", "Equipment"]
 
 Return JSON array only.`

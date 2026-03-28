@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { callClaudeForJSON } from "@/services/claudeService";
 
@@ -10,7 +10,8 @@ import { RiTwitterXLine, RiThreadsLine, RiPushpinFill } from "react-icons/ri";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { StorageKeys, getString, setString, remove } from "@/lib/storage";
+import { StorageKeys, getString, setString, setJSON, getJSON, remove } from "@/lib/storage";
+import { getUserPreferences, updateUserPreferences } from "@/services/preferencesService";
 import { EVENTS, on } from "@/lib/events";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProductionBoard } from "./production/hooks/useProductionBoard";
@@ -311,16 +312,53 @@ const Production = () => {
 
   // Pillars × Formats new functionality
   const [isPillarsDialogOpen, setIsPillarsDialogOpen] = useState(false);
-  const [userPillars, setUserPillars] = useState<string[]>([]);
+  const [userPillars, setUserPillars] = useState<string[]>(() => getJSON<string[]>(StorageKeys.pillarThemes, []));
   const [hasSeenPillarsExample, setHasSeenPillarsExample] = useState(false);
-  const [selectedUserPillar, setSelectedUserPillar] = useState<string>("");
-  const [pillarSubCategories, setPillarSubCategories] = useState<Record<string, string[]>>({});
+  const [selectedUserPillar, setSelectedUserPillar] = useState<string>(() => getString(StorageKeys.pillarSelectedTheme) || "");
+  const [pillarSubCategories, setPillarSubCategories] = useState<Record<string, string[]>>(() => getJSON<Record<string, string[]>>(StorageKeys.pillarSubCategories, {}));
   const [isGeneratingSubCategories, setIsGeneratingSubCategories] = useState(false);
-  const [selectedSubCategory, setSelectedSubCategory] = useState<string>("");
-  const [cascadeIdeas, setCascadeIdeas] = useState<string[]>([]);
+  const [selectedSubCategory, setSelectedSubCategory] = useState<string>(() => getString(StorageKeys.pillarSelectedSubCategory) || "");
+  const [cascadeIdeas, setCascadeIdeas] = useState<string[]>(() => getJSON<string[]>(StorageKeys.pillarCascadeIdeas, []));
   const [isGeneratingCascadeIdeas, setIsGeneratingCascadeIdeas] = useState(false);
   const [newPillarIndex, setNewPillarIndex] = useState<number | null>(null);
   const [newSubCategoryIndex, setNewSubCategoryIndex] = useState<number | null>(null);
+  const [generateMoreCount, setGenerateMoreCount] = useState<Record<string, number>>({});
+
+  // Persist pillars data to localStorage + Supabase
+  const pillarSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const savePillarsToSupabase = useCallback(() => {
+    if (!user?.id) return;
+    if (pillarSaveTimerRef.current) clearTimeout(pillarSaveTimerRef.current);
+    pillarSaveTimerRef.current = setTimeout(() => {
+      updateUserPreferences(user.id, {
+        pillarThemes: userPillars,
+        pillarSubCategories,
+        pillarCascadeIdeas: cascadeIdeas,
+        pillarSelectedTheme: selectedUserPillar || '',
+        pillarSelectedSubCategory: selectedSubCategory || '',
+      }).catch(() => {});
+    }, 1000);
+  }, [user?.id, userPillars, pillarSubCategories, cascadeIdeas, selectedUserPillar, selectedSubCategory]);
+
+  useEffect(() => { setJSON(StorageKeys.pillarThemes, userPillars); savePillarsToSupabase(); }, [userPillars]);
+  useEffect(() => { setJSON(StorageKeys.pillarSubCategories, pillarSubCategories); savePillarsToSupabase(); }, [pillarSubCategories]);
+  useEffect(() => { setJSON(StorageKeys.pillarCascadeIdeas, cascadeIdeas); savePillarsToSupabase(); }, [cascadeIdeas]);
+  useEffect(() => { setString(StorageKeys.pillarSelectedTheme, selectedUserPillar || ""); savePillarsToSupabase(); }, [selectedUserPillar]);
+  useEffect(() => { setString(StorageKeys.pillarSelectedSubCategory, selectedSubCategory || ""); savePillarsToSupabase(); }, [selectedSubCategory]);
+
+  // Load pillars from Supabase on mount (overrides localStorage if Supabase has data)
+  useEffect(() => {
+    if (!user?.id) return;
+    getUserPreferences(user.id).then((prefs) => {
+      if (prefs.pillarThemes && prefs.pillarThemes.length > 0) {
+        setUserPillars(prefs.pillarThemes);
+        setPillarSubCategories(prefs.pillarSubCategories || {});
+        setCascadeIdeas(prefs.pillarCascadeIdeas || []);
+        setSelectedUserPillar(prefs.pillarSelectedTheme || '');
+        setSelectedSubCategory(prefs.pillarSelectedSubCategory || '');
+      }
+    }).catch(() => {});
+  }, [user?.id]);
 
   // What Worked → What's Next functionality
   const [isWhatWorkedDialogOpen, setIsWhatWorkedDialogOpen] = useState(false);
@@ -349,12 +387,12 @@ const Production = () => {
   const [addedIdeaText, setAddedIdeaText] = useState<string | null>(null);
 
   // Helper function to generate sub-categories using server API (key stays hidden)
-  const generateSubCategoriesWithAI = async (pillarName: string): Promise<string[]> => {
+  const generateSubCategoriesWithAI = async (pillarName: string, existingCategories?: string[]): Promise<string[]> => {
     try {
       const response = await fetch('http://localhost:3001/api/generate-subcategories', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pillarName }),
+        body: JSON.stringify({ pillarName, existingCategories }),
       });
       if (!response.ok) return [];
       const data = await response.json();
@@ -2446,7 +2484,8 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
                     {/* 1. Start With Your Pillars - Green */}
                     <button
                       onClick={() => setIsPillarsDialogOpen(true)}
-                      className="group relative overflow-hidden bg-gradient-to-br from-[#F0FDF6] to-[#E6FAF0] border-l-4 border-l-[#2D9D70] border-y border-r border-[#D1EDE0] hover:border-[#2D9D70] rounded-2xl p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_-4px_rgba(45,157,112,0.3)]"
+                      tabIndex={-1}
+                      className="group relative overflow-hidden bg-gradient-to-br from-[#F0FDF6] to-[#E6FAF0] border-l-4 border-l-[#2D9D70] border-y border-r border-[#D1EDE0] hover:border-[#2D9D70] rounded-2xl p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_-4px_rgba(45,157,112,0.3)] focus:outline-none"
                     >
                       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-[#2D9D70]/10 to-transparent rounded-bl-full" />
                       <div className="relative flex flex-col items-center text-center space-y-5">
@@ -2463,7 +2502,8 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
                     {/* 2. Trending Hooks - Coral */}
                     <button
                       onClick={() => setShowHooksDialog(true)}
-                      className="group relative overflow-hidden bg-gradient-to-br from-[#FEF6F4] to-[#FDEEEA] border-l-4 border-l-[#E07A5F] border-y border-r border-[#F5D5CD] hover:border-[#E07A5F] rounded-2xl p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_-4px_rgba(224,122,95,0.3)]"
+                      tabIndex={-1}
+                      className="group relative overflow-hidden bg-gradient-to-br from-[#FEF6F4] to-[#FDEEEA] border-l-4 border-l-[#E07A5F] border-y border-r border-[#F5D5CD] hover:border-[#E07A5F] rounded-2xl p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_-4px_rgba(224,122,95,0.3)] focus:outline-none"
                     >
                       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-[#E07A5F]/10 to-transparent rounded-bl-full" />
                       <div className="relative flex flex-col items-center text-center space-y-5">
@@ -2480,7 +2520,8 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
                     {/* 3. Idea Expander - Muted Purple */}
                     <button
                       onClick={() => setIsIdeaExpanderOpen(true)}
-                      className="group relative overflow-hidden bg-gradient-to-br from-[#F8F6FB] to-[#F0EDF6] border-l-4 border-l-[#9B8AB8] border-y border-r border-[#DDD6E8] hover:border-[#9B8AB8] rounded-2xl p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_-4px_rgba(155,138,184,0.3)]"
+                      tabIndex={-1}
+                      className="group relative overflow-hidden bg-gradient-to-br from-[#F8F6FB] to-[#F0EDF6] border-l-4 border-l-[#9B8AB8] border-y border-r border-[#DDD6E8] hover:border-[#9B8AB8] rounded-2xl p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_-4px_rgba(155,138,184,0.3)] focus:outline-none"
                     >
                       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-[#9B8AB8]/10 to-transparent rounded-bl-full" />
                       <div className="relative flex flex-col items-center text-center space-y-5">
@@ -2827,18 +2868,17 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
 
               <div className="mb-2">
                 <DialogTitle className="text-2xl font-semibold text-gray-900" style={{ fontFamily: "'Playfair Display', serif" }}>
-                  Content Pillars
+                  What are the core themes your content revolves around?
                 </DialogTitle>
               </div>
-              <DialogDescription className="text-gray-500 text-sm">
-                List the core themes your content revolves around
+              <DialogDescription className="sr-only">
+                Content pillars selection
               </DialogDescription>
             </DialogHeader>
 
             <div className="overflow-y-auto flex-1 px-8 py-6">
               {/* Step 1: Pillars */}
               <div className="mb-8">
-                <h4 className="text-sm font-semibold text-gray-700 mb-4">Your Content Pillars</h4>
                 <div className="flex flex-wrap gap-3 mb-4">
                   {/* Show example pillars when user hasn't added any */}
                   {userPillars.length === 0 && !hasSeenPillarsExample && (
@@ -2929,24 +2969,25 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
                           }}
                           autoFocus={newPillarIndex === index}
                           className={cn(
-                            "bg-transparent border-none outline-none text-center min-w-[80px] max-w-[200px] cursor-pointer",
+                            "bg-transparent border-none outline-none text-center min-w-[80px] max-w-[200px] cursor-pointer uppercase",
                             selectedUserPillar === pillar ? "text-white placeholder:text-white/70" : "text-gray-800 placeholder:text-gray-400"
                           )}
-                          placeholder="Type..."
+                          placeholder=""
                           size={pillar.length || 10}
                         />
                       </div>
-                      {userPillars.length > 1 && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setUserPillars(userPillars.filter((_, i) => i !== index));
-                          }}
-                          className="absolute -top-1 -right-1 w-4 h-4 bg-gray-400 hover:bg-gray-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all text-xs flex items-center justify-center"
-                        >
-                          ×
-                        </button>
-                      )}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (selectedUserPillar === pillar) {
+                            setSelectedUserPillar(null);
+                          }
+                          setUserPillars(userPillars.filter((_, i) => i !== index));
+                        }}
+                        className="absolute -top-1 -right-1 w-4 h-4 bg-white border border-gray-400 hover:border-gray-600 text-gray-500 hover:text-gray-700 rounded-full opacity-0 group-hover:opacity-100 transition-all text-xs flex items-center justify-center"
+                      >
+                        ×
+                      </button>
                     </div>
                   ))}
                   <button
@@ -2962,7 +3003,7 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
                     }}
                     className="px-6 py-3 rounded-xl font-medium bg-white/60 text-[#5D8A7A] hover:bg-white/80 hover:shadow-sm transition-all border-2 border-dashed border-[#B8D4CA] hover:border-[#7BA393]"
                   >
-                    + Add Pillar
+                    + Add Theme
                   </button>
                 </div>
               </div>
@@ -2975,20 +3016,21 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
                   className="mb-8"
                 >
                   <div className="flex items-center justify-between mb-4">
-                    <h4 className="text-sm font-semibold text-gray-700">
-                      {selectedUserPillar} Sub-Categories
+                    <h4 className="text-sm font-semibold text-gray-700 uppercase">
+                      {selectedUserPillar} Categories
                     </h4>
-                    {(pillarSubCategories[selectedUserPillar]?.length > 0) && (
+                    {(pillarSubCategories[selectedUserPillar]?.length > 0) && (generateMoreCount[selectedUserPillar] || 0) < 3 && (
                       <button
                         onClick={async () => {
                           setIsGeneratingSubCategories(true);
                           try {
-                            const subCats = await generateSubCategoriesWithAI(selectedUserPillar);
-                            setPillarSubCategories(prev => ({ ...prev, [selectedUserPillar]: subCats }));
-                            setSelectedSubCategory("");
-                            setCascadeIdeas([]);
+                            const existing = pillarSubCategories[selectedUserPillar] || [];
+                            const newSubCats = await generateSubCategoriesWithAI(selectedUserPillar, existing);
+                            const merged = [...existing, ...newSubCats.filter(s => !existing.some(e => e.toLowerCase() === s.toLowerCase()))];
+                            setPillarSubCategories(prev => ({ ...prev, [selectedUserPillar]: merged }));
+                            setGenerateMoreCount(prev => ({ ...prev, [selectedUserPillar]: (prev[selectedUserPillar] || 0) + 1 }));
                           } catch (error) {
-                            console.error('Error regenerating subcategories:', error);
+                            console.error('Error generating more subcategories:', error);
                           } finally {
                             setIsGeneratingSubCategories(false);
                           }
@@ -2996,14 +3038,14 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
                         disabled={isGeneratingSubCategories}
                         className="text-xs text-[#7BA393] hover:text-[#5D8A7A] font-medium disabled:opacity-50"
                       >
-                        ↻ Regenerate
+                        + Generate more
                       </button>
                     )}
                   </div>
-                  {isGeneratingSubCategories ? (
+                  {isGeneratingSubCategories && (pillarSubCategories[selectedUserPillar] || []).length === 0 ? (
                     <div className="flex items-center justify-center py-8">
                       <div className="animate-spin rounded-full h-8 w-8 border-4 border-[#C8DED5] border-t-[#7BA393]"></div>
-                      <span className="ml-3 text-gray-600">Generating sub-categories...</span>
+                      <span className="ml-3 text-gray-600">Generating categories...</span>
                     </div>
                   ) : (
                     <div className="flex flex-wrap gap-2">
@@ -3093,8 +3135,8 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
                                   }
                                 }}
                                 autoFocus
-                                className="bg-transparent border-none outline-none text-center min-w-[60px] max-w-[150px] text-gray-700 placeholder:text-gray-400"
-                                placeholder="Type..."
+                                className="bg-transparent border-none outline-none text-center min-w-[60px] max-w-[150px] text-white placeholder:text-white/70"
+                                placeholder=""
                                 size={subCat.length || 6}
                                 onClick={(e) => e.stopPropagation()}
                               />
@@ -3116,7 +3158,7 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
                                   setCascadeIdeas([]);
                                 }
                               }}
-                              className="absolute -top-1 -right-1 w-4 h-4 bg-gray-400 hover:bg-gray-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all text-xs flex items-center justify-center"
+                              className="absolute -top-1 -right-1 w-4 h-4 bg-white border border-gray-400 hover:border-gray-600 text-gray-500 hover:text-gray-700 rounded-full opacity-0 group-hover:opacity-100 transition-all text-xs flex items-center justify-center"
                             >
                               ×
                             </button>
@@ -3135,8 +3177,14 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
                         }}
                         className="px-4 py-2 rounded-lg text-sm font-medium bg-[#E8F3EF] text-[#5D8A7A] hover:bg-[#D8EBE4] transition-all border-2 border-dashed border-[#B8D4CA]"
                       >
-                        + Add Sub-Category
+                        + Add
                       </button>
+                      {isGeneratingSubCategories && (
+                        <div className="flex items-center gap-2 px-3 py-2">
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-[#C8DED5] border-t-[#7BA393]"></div>
+                          <span className="text-xs text-gray-500">Generating more...</span>
+                        </div>
+                      )}
                     </div>
                   )}
                 </motion.div>

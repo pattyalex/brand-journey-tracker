@@ -28,6 +28,11 @@ export interface UserPreferences {
   plannerCurrentView?: string;
   plannerContentDisplayMode?: string;
   plannerBothPanelTab?: string;
+  pillarThemes: string[];
+  pillarSubCategories: Record<string, string[]>;
+  pillarCascadeIdeas: string[];
+  pillarSelectedTheme: string;
+  pillarSelectedSubCategory: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -57,6 +62,11 @@ interface DbUserPreferences {
   planner_current_view: string | null;
   planner_content_display_mode: string | null;
   planner_both_panel_tab: string | null;
+  pillar_themes: string[] | null;
+  pillar_sub_categories: Record<string, string[]> | null;
+  pillar_cascade_ideas: string[] | null;
+  pillar_selected_theme: string | null;
+  pillar_selected_sub_category: string | null;
 }
 
 // =====================================================
@@ -85,6 +95,11 @@ const dbToUserPreferences = (db: DbUserPreferences): UserPreferences => ({
   plannerCurrentView: db.planner_current_view || undefined,
   plannerContentDisplayMode: db.planner_content_display_mode || undefined,
   plannerBothPanelTab: db.planner_both_panel_tab || undefined,
+  pillarThemes: db.pillar_themes || [],
+  pillarSubCategories: db.pillar_sub_categories || {},
+  pillarCascadeIdeas: db.pillar_cascade_ideas || [],
+  pillarSelectedTheme: db.pillar_selected_theme || '',
+  pillarSelectedSubCategory: db.pillar_selected_sub_category || '',
   createdAt: db.created_at,
   updatedAt: db.updated_at,
 });
@@ -152,6 +167,11 @@ export const updateUserPreferences = async (
   if (updates.plannerCurrentView !== undefined) dbUpdates.planner_current_view = updates.plannerCurrentView;
   if (updates.plannerContentDisplayMode !== undefined) dbUpdates.planner_content_display_mode = updates.plannerContentDisplayMode;
   if (updates.plannerBothPanelTab !== undefined) dbUpdates.planner_both_panel_tab = updates.plannerBothPanelTab;
+  if (updates.pillarThemes !== undefined) dbUpdates.pillar_themes = updates.pillarThemes;
+  if (updates.pillarSubCategories !== undefined) dbUpdates.pillar_sub_categories = updates.pillarSubCategories;
+  if (updates.pillarCascadeIdeas !== undefined) dbUpdates.pillar_cascade_ideas = updates.pillarCascadeIdeas;
+  if (updates.pillarSelectedTheme !== undefined) dbUpdates.pillar_selected_theme = updates.pillarSelectedTheme;
+  if (updates.pillarSelectedSubCategory !== undefined) dbUpdates.pillar_selected_sub_category = updates.pillarSelectedSubCategory;
 
   const data = await updateOneBy<DbUserPreferences>('user_preferences', 'user_id', userId, dbUpdates);
   return dbToUserPreferences(data);
