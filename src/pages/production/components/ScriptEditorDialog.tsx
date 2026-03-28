@@ -336,7 +336,7 @@ Guidelines:
           <TooltipTrigger asChild>
             <button
               onClick={() => onOpenChange(false)}
-              className="absolute top-7 right-4 p-1.5 rounded-full hover:bg-[#612A4F]/10 text-gray-400 hover:text-[#612A4F] transition-colors z-10 focus:outline-none"
+              className="absolute top-7 right-4 p-1.5 rounded-full hover:bg-[#612A4F]/10 text-gray-400 hover:text-[#612A4F] transition-colors z-30 focus:outline-none"
               tabIndex={-1}
             >
               <X className="w-5 h-5" />
@@ -404,7 +404,7 @@ Guidelines:
                   tabIndex={-1}
                   autoComplete="off"
                   placeholder="Enter content title..."
-                  className="w-2/3 px-0 py-1 text-xl font-semibold bg-transparent border-0 focus:outline-none focus:ring-0 placeholder:text-[#A0A0A0] truncate"
+                  className="flex-1 px-0 py-1 text-xl font-semibold bg-transparent border-0 focus:outline-none focus:ring-0 placeholder:text-[#A0A0A0]"
                 />
               </TooltipTrigger>
               {(cardHook || cardTitle) && (cardHook || cardTitle).length > 30 && (

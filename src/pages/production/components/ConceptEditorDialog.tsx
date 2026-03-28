@@ -13,7 +13,7 @@ import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-
 import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
 import {
   MoreHorizontal, X, MapPin, Shirt, Boxes, Plus, ArrowLeft, ArrowRight, Check, ChevronDown, ChevronUp,
-  Sparkles, Send, Bot, User, Upload, Link2, Image as ImageIcon, Layers, Video,
+  Sparkles, Send, Bot, User, Upload, Link2, Image as ImageIcon, Layers, Video, NotebookPen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -51,6 +51,8 @@ interface ConceptEditorDialogProps {
   onNavigateToStep?: (step: number) => void;
   slideDirection?: 'left' | 'right';
   completedSteps?: number[];
+  scriptContent?: string;
+  setScriptContent?: (value: string) => void;
   contentType?: 'video' | 'image';
   onContentTypeChange?: (type: 'video' | 'image') => void;
   onToggleComplete?: (step: number) => void;
@@ -86,6 +88,8 @@ const ConceptEditorDialog: React.FC<ConceptEditorDialogProps> = ({
   onNavigateToStep,
   slideDirection = 'right',
   completedSteps = [],
+  scriptContent = '',
+  setScriptContent,
   contentType = 'image',
   onContentTypeChange,
   onToggleComplete,
@@ -123,6 +127,7 @@ const ConceptEditorDialog: React.FC<ConceptEditorDialogProps> = ({
         location: '',
         outfit: '',
         props: '',
+        notes: '',
       };
       setSlides([defaultSlide]);
       setExpandedSlideId(defaultSlide.id);
@@ -139,6 +144,7 @@ const ConceptEditorDialog: React.FC<ConceptEditorDialogProps> = ({
       location: '',
       outfit: '',
       props: '',
+      notes: '',
     };
     setSlides([...slides, newSlide]);
     setExpandedSlideId(newSlide.id);
@@ -279,7 +285,7 @@ Guidelines:
           <TooltipTrigger asChild>
             <button
               onClick={() => onOpenChange(false)}
-              className="absolute top-7 right-4 p-1.5 rounded-full hover:bg-[#612A4F]/10 text-gray-400 hover:text-[#612A4F] transition-colors z-10 focus:outline-none"
+              className="absolute top-7 right-4 p-1.5 rounded-full hover:bg-[#612A4F]/10 text-gray-400 hover:text-[#612A4F] transition-colors z-30 focus:outline-none"
               tabIndex={-1}
             >
               <X className="w-5 h-5" />
@@ -480,6 +486,22 @@ Guidelines:
                 </div>
               )}
             </div>
+
+            {/* Script (transferred from video or written for image) */}
+            {(scriptContent || setScriptContent) && (
+              <div className="space-y-3">
+                <label className="text-[12px] font-medium text-[#612A4F] uppercase tracking-wider">
+                  Script
+                </label>
+                <Textarea
+                  value={scriptContent}
+                  onChange={(e) => setScriptContent?.(e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                  placeholder="Write your script or talking points here..."
+                  className="min-h-[120px] resize-none border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#612A4F] focus:border-[#612A4F] transition-all text-sm leading-relaxed bg-white placeholder:text-gray-400 shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
+                />
+              </div>
+            )}
 
             {/* Caption */}
             <div className="space-y-3">
@@ -759,6 +781,16 @@ Guidelines:
                               value={slide.props}
                               onChange={(e) => handleUpdateSlide(slide.id, 'props', e.target.value)}
                               placeholder="Any props needed..."
+                              className="flex-1 text-xs text-gray-700 bg-transparent border-none outline-none placeholder:text-gray-400"
+                            />
+                          </div>
+                          <div className="flex items-center gap-3 py-2 px-3 bg-[#8B7082]/[0.06] cursor-text">
+                            <NotebookPen className="w-3.5 h-3.5 text-[#8B7082] flex-shrink-0" />
+                            <input
+                              type="text"
+                              value={slide.notes || ''}
+                              onChange={(e) => handleUpdateSlide(slide.id, 'notes', e.target.value)}
+                              placeholder="Notes..."
                               className="flex-1 text-xs text-gray-700 bg-transparent border-none outline-none placeholder:text-gray-400"
                             />
                           </div>

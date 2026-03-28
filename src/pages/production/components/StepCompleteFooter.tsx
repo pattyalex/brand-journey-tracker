@@ -7,12 +7,14 @@ interface StepCompleteFooterProps {
   stepNumber: number;
   completedSteps: number[];
   onToggleComplete?: (step: number) => void;
+  hideTooltip?: boolean;
 }
 
 const StepCompleteFooter: React.FC<StepCompleteFooterProps> = ({
   stepNumber,
   completedSteps,
   onToggleComplete,
+  hideTooltip = false,
 }) => {
   const isCompleted = completedSteps.includes(stepNumber);
   const [justUnchecked, setJustUnchecked] = useState(false);
@@ -38,7 +40,7 @@ const StepCompleteFooter: React.FC<StepCompleteFooterProps> = ({
       <div className="flex items-center gap-2">
         <span className="text-sm text-gray-500">Step Complete</span>
         <TooltipProvider delayDuration={0}>
-          <Tooltip open={justUnchecked ? true : undefined}>
+          <Tooltip open={!hideTooltip && justUnchecked ? true : undefined}>
             <TooltipTrigger asChild>
               <button
                 onClick={handleClick}
@@ -52,7 +54,7 @@ const StepCompleteFooter: React.FC<StepCompleteFooterProps> = ({
                 {isCompleted && <Check className="w-3 h-3" strokeWidth={3} />}
               </button>
             </TooltipTrigger>
-            {(!isCompleted || justUnchecked) && (
+            {!hideTooltip && (!isCompleted || justUnchecked) && (
               <TooltipContent side="top" sideOffset={6} className="bg-gray-500 text-white">
                 <p>{justUnchecked ? "Incomplete Step" : "Mark as Complete"}</p>
               </TooltipContent>

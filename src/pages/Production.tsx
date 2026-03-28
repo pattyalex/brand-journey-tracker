@@ -1205,16 +1205,65 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
 
   // Handle content type toggle (Video <-> Image)
   const handleContentTypeChange = (newType: ContentType) => {
+    const oldType = contentType;
     setContentType(newType);
-    // Reset to step 1 when switching content type
-    setActiveContentFlowStep(1);
-    // Update the card's content type in columns
+    // Stay on the same step when switching content type
+
+    // Build card updates to persist transferred data
+    const cardUpdates: Partial<ProductionCard> = { contentType: newType };
+
+    // Transfer data between video and image to preserve user's work
+    if (oldType === 'video' && newType === 'image') {
+      // Script (talking points) stays in scriptContent state
+      // Caption stays in caption state
+      // Location/Outfit/Props/Notes → Slide 1
+      const newSlides = slides.length > 0
+        ? [{ ...slides[0], location: locationText || slides[0].location, outfit: outfitText || slides[0].outfit, props: propsText || slides[0].props, notes: filmingNotes || slides[0].notes }, ...slides.slice(1)]
+        : [{
+            id: crypto.randomUUID(),
+            content: '',
+            location: locationText,
+            outfit: outfitText,
+            props: propsText,
+            notes: filmingNotes,
+          }];
+      setSlides(newSlides);
+
+      // Persist to card so step 2 navigation loads it
+      cardUpdates.script = scriptContent;
+      cardUpdates.caption = caption;
+      cardUpdates.platforms = platformTags;
+      cardUpdates.slides = newSlides;
+      cardUpdates.locationText = locationText;
+      cardUpdates.outfitText = outfitText;
+      cardUpdates.propsText = propsText;
+      cardUpdates.filmingNotes = filmingNotes;
+    } else if (oldType === 'image' && newType === 'video') {
+      // Slide 1 → shooting plan
+      const slide1 = slides[0];
+      if (slide1) {
+        if (slide1.location) setLocationText(slide1.location);
+        if (slide1.outfit) setOutfitText(slide1.outfit);
+        if (slide1.props) setPropsText(slide1.props);
+        if (slide1.notes) setFilmingNotes(slide1.notes);
+        cardUpdates.locationText = slide1.location || locationText;
+        cardUpdates.outfitText = slide1.outfit || outfitText;
+        cardUpdates.propsText = slide1.props || propsText;
+        cardUpdates.filmingNotes = slide1.notes || filmingNotes;
+      }
+      // Persist to card
+      cardUpdates.script = scriptContent;
+      cardUpdates.caption = caption;
+      cardUpdates.platforms = platformTags;
+    }
+
+    // Save transferred data to the card so navigating to step 2 loads it
     if (contentFlowCard) {
       setColumns((prev) =>
         prev.map((col) => ({
           ...col,
           cards: col.cards.map((card) =>
-            card.id === contentFlowCard.id ? { ...card, contentType: newType } : card
+            card.id === contentFlowCard.id ? { ...card, ...cardUpdates } : card
           ),
         }))
       );
@@ -1495,6 +1544,7 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
             setCardTitle(latestCard!.title || "");
             setCardHook(conceptTitle);
             setIdeateCardTitle(conceptTitle);
+            setScriptContent(latestCard!.script || "");
             setCaption(latestCard!.caption || "");
             setVisualReferences(latestCard!.visualReferences || []);
             setLinkPreviews(latestCard!.linkPreviews || []);
@@ -3660,6 +3710,8 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
               setCardTitle={setCardTitle}
               cardHook={cardHook}
               setCardHook={setCardHook}
+              scriptContent={scriptContent}
+              setScriptContent={setScriptContent}
               caption={caption}
               setCaption={setCaption}
               visualReferences={visualReferences}

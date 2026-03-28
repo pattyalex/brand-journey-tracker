@@ -41,9 +41,6 @@ export const getCompletedSteps = (card: ProductionCard | null | undefined): numb
 
   const completed = new Set<number>();
 
-  // Step 1 (Ideas) is always complete if a card exists
-  completed.add(1);
-
   // Add steps marked complete via stageCompletions (manual toggle)
   for (const [stepStr, stage] of Object.entries(stepToStage)) {
     const step = Number(stepStr);

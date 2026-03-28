@@ -39,6 +39,7 @@ export interface ImageSlide {
   location: string;
   outfit: string;
   props: string;
+  notes: string;
 }
 
 export interface VisualReference {
