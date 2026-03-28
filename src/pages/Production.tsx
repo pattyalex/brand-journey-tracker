@@ -2510,8 +2510,8 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
                           <Compass className="w-7 h-7 text-white" />
                         </div>
                         <div>
-                          <h4 className="text-base font-semibold text-black mb-2">Start With Your Pillars</h4>
-                          <p className="text-sm text-gray-600 leading-relaxed">Create content using a structured framework</p>
+                          <h4 className="text-base font-semibold text-black mb-2">Pick Your<br />Desired Themes</h4>
+                          <p className="text-sm text-gray-600 leading-relaxed">Generate ideas based on the themes you care about</p>
                         </div>
                       </div>
                     </button>

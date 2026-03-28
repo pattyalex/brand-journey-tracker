@@ -2,7 +2,7 @@ import React from "react";
 import { cn } from "@/lib/utils";
 import { AnimatePresence } from "framer-motion";
 import {
-  Lightbulb, PenLine, Video, Scissors, CalendarDays, Plus, Zap, Send,
+  Lightbulb, PenLine, Video, Scissors, CalendarDays, Plus, Sparkles, Zap, Send,
 } from "lucide-react";
 import { KanbanColumn as KanbanColumnType, ProductionCard } from "../types";
 import { columnColors, columnAccentColors } from "../utils/productionConstants";
@@ -309,28 +309,7 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
                             )}
                             <button
                               onClick={() => setAddingToColumn('ideate')}
-                              className="w-full flex items-center justify-center gap-2 py-3 rounded-[12px] text-[13px] font-medium transition-all duration-200"
-                              style={{
-                                border: '1.5px dashed rgba(180, 168, 175, 0.5)',
-                                color: '#9B8A8F',
-                                backgroundColor: 'transparent',
-                              }}
-                              onMouseEnter={(e) => {
-                                e.currentTarget.style.backgroundColor = 'rgba(139, 122, 130, 0.05)';
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.backgroundColor = 'transparent';
-                              }}
-                            >
-                              <Plus className="w-3.5 h-3.5" style={{ strokeWidth: 2 }} />
-                              Add new
-                            </button>
-                            <button
-                              onClick={() => {
-                                setSelectedIdeateCard(null);
-                                setIsIdeateDialogOpen(true);
-                              }}
-                              className="w-full flex items-center justify-center gap-2 py-3 rounded-[12px] text-[13px] font-medium transition-all duration-200 mt-2"
+                              className="group/btn w-full flex items-center justify-center gap-2 py-2.5 rounded-[12px] text-[14px] font-medium transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
                               style={{
                                 backgroundColor: '#8B7082',
                                 color: 'white',
@@ -342,8 +321,30 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
                                 e.currentTarget.style.backgroundColor = '#8B7082';
                               }}
                             >
-                              <Zap className="w-3.5 h-3.5" style={{ strokeWidth: 2 }} />
-                              Generate with AI
+                              <Plus className="w-4 h-4 group-hover/btn:rotate-90 transition-transform duration-200" />
+                              Add idea
+                            </button>
+                            <button
+                              onClick={() => {
+                                setSelectedIdeateCard(null);
+                                setIsIdeateDialogOpen(true);
+                              }}
+                              className="w-full flex items-center justify-center gap-2 py-3 rounded-[12px] text-[13px] font-medium transition-all duration-200 mt-2"
+                              style={{
+                                color: '#8B7082',
+                                backgroundColor: 'transparent',
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = 'rgba(139, 112, 130, 0.1)';
+                                e.currentTarget.style.color = '#5A3D52';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = 'transparent';
+                                e.currentTarget.style.color = '#6B4F63';
+                              }}
+                            >
+                              <Sparkles className="w-3.5 h-3.5" style={{ strokeWidth: 2 }} />
+                              Brainstorm with MegAI
                             </button>
                           </>
                         )}
@@ -454,6 +455,25 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
                         onCancel={handleCancelAddingCard}
                       />
                     </div>
+                  ) : column.id === 'ideate' ? (
+                    <button
+                      key={`add-button-${column.id}`}
+                      onClick={() => setAddingToColumn('ideate')}
+                      className="group/btn w-full flex items-center justify-center gap-2 py-2.5 rounded-[12px] text-[14px] font-medium transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
+                      style={{
+                        backgroundColor: '#8B7082',
+                        color: 'white',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = '#7A6272';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = '#8B7082';
+                      }}
+                    >
+                      <Plus className="w-4 h-4 group-hover/btn:rotate-90 transition-transform duration-200" />
+                      Add idea
+                    </button>
                   ) : column.id !== 'to-schedule' ? (
                     <div
                       key={`add-button-${column.id}`}
@@ -510,7 +530,7 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
                       <div className="flex items-center justify-center gap-2 text-[#8B7082]">
                         <Plus className="h-4 w-4 group-hover/btn:rotate-90 transition-transform duration-200" />
                         <span className="text-sm font-medium">
-                          {column.id === 'ideate' ? 'Add quick idea' : 'Add new'}
+                          Add new
                         </span>
                       </div>
                     </div>
@@ -529,22 +549,30 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
                     </div>
                   )}
 
-                  {/* Help me generate ideas button - only for ideate column */}
+                  {/* Brainstorm with MegAI button - only for ideate column */}
                   {column.id === 'ideate' && (
-                    <div className="group/btn px-4 py-2.5 rounded-xl transition-all duration-200 cursor-pointer w-full hover:-translate-y-0.5 active:scale-[0.98] bg-[#8B7082] hover:bg-[#7A6272] shadow-sm hover:shadow-md"
+                    <button
                       onClick={() => {
                         setSelectedIdeateCard(null);
                         setIsIdeateDialogOpen(true);
                       }}
+                      className="w-full flex items-center justify-center gap-2 py-3 rounded-[12px] text-[13px] font-medium transition-all duration-200"
+                      style={{
+                        color: '#8B7082',
+                        backgroundColor: 'transparent',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = 'rgba(139, 112, 130, 0.1)';
+                        e.currentTarget.style.color = '#5A3D52';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                        e.currentTarget.style.color = '#8B7082';
+                      }}
                     >
-                      <div className="flex items-center justify-center gap-2 text-white">
-                        <Zap className="h-4 w-4 group-hover/btn:animate-pulse" />
-                        <div className="flex flex-col">
-                          <span className="text-xs font-semibold leading-tight">Need inspiration?</span>
-                          <span className="text-[10px] opacity-80 leading-tight">Brainstorm with MegAI</span>
-                        </div>
-                      </div>
-                    </div>
+                      <Sparkles className="w-3.5 h-3.5" style={{ strokeWidth: 2 }} />
+                      Brainstorm with MegAI
+                    </button>
                   )}
                 </div>
               )}
