@@ -2168,6 +2168,7 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
               handleOpenStoryboard={handleOpenStoryboard}
               handleOpenIdeateCardEditor={handleOpenIdeateCardEditor}
               handleOpenEditChecklist={handleOpenEditChecklist}
+              handleOpenContentFlow={handleOpenContentFlowForCard}
               handleStartEditingCard={handleStartEditingCard}
               handleSaveCardEdit={handleSaveCardEdit}
               handleCreateInlineCard={handleCreateInlineCard}

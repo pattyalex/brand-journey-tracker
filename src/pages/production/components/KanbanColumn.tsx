@@ -51,6 +51,7 @@ export interface KanbanColumnProps {
   handleOpenStoryboard: (card: ProductionCard) => void;
   handleOpenIdeateCardEditor: (card: ProductionCard) => void;
   handleOpenEditChecklist: (card: ProductionCard) => void;
+  handleOpenContentFlow: (card: ProductionCard, startStep?: number) => void;
   handleStartEditingCard: (cardId: string, columnId: string, trigger: 'click' | 'doubleclick', clickEvent?: React.MouseEvent) => void;
   handleSaveCardEdit: (cardId: string, newValue: string) => void;
   handleCreateInlineCard: (columnId: string, title: string) => void;
@@ -83,6 +84,7 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
   handleOpenStoryboard,
   handleOpenIdeateCardEditor,
   handleOpenEditChecklist,
+  handleOpenContentFlow,
   handleStartEditingCard,
   handleSaveCardEdit,
   handleCreateInlineCard,
@@ -411,6 +413,7 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
                         handleOpenStoryboard={handleOpenStoryboard}
                         handleOpenIdeateCardEditor={handleOpenIdeateCardEditor}
                         handleOpenEditChecklist={handleOpenEditChecklist}
+                        handleOpenContentFlow={handleOpenContentFlow}
                         handleStartEditingCard={handleStartEditingCard}
                         handleSaveCardEdit={handleSaveCardEdit}
                         setEditingCardId={setEditingCardId}

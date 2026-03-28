@@ -31,6 +31,11 @@ import {
   X,
   Image as ImageIcon,
   ChevronDown,
+  Link,
+  PenLine,
+  ExternalLink,
+  Laptop,
+  Scissors,
 } from "lucide-react";
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
@@ -171,6 +176,9 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
   const [globalItems, setGlobalItems] = useState<EditingChecklistItem[]>(() => loadGlobalChecklist(contentType));
   // Per-card notes and status
   const [notes, setNotes] = useState("");
+  const [externalLinks, setExternalLinks] = useState<Array<{ id: string; label: string; url: string }>>([]);
+  const [showNotesEditor, setShowNotesEditor] = useState(false);
+  const notesRef = useRef<HTMLTextAreaElement>(null);
   const [status, setStatus] = useState<EditingStatus | null>(null);
   const [title, setTitle] = useState("");
   const [hook, setHook] = useState("");
@@ -183,10 +191,10 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
   const scheduleStepNumber = isImage ? 4 : 5;
 
   // Track latest data in a ref so unmount cleanup can access it
-  const latestDataRef = useRef({ globalItems, notes, status, title, hook, script });
+  const latestDataRef = useRef({ globalItems, notes, externalLinks, status, title, hook, script });
   useEffect(() => {
-    latestDataRef.current = { globalItems, notes, status, title, hook, script };
-  }, [globalItems, notes, status, title, hook, script]);
+    latestDataRef.current = { globalItems, notes, externalLinks, status, title, hook, script };
+  }, [globalItems, notes, externalLinks, status, title, hook, script]);
 
   // Save on unmount (when parent dialog closes via X button)
   const onSaveRef = useRef(onSave);
@@ -200,7 +208,7 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
         const checklist: EditingChecklist = {
           items: d.globalItems,
           notes: d.notes,
-          externalLinks: [],
+          externalLinks: d.externalLinks,
           status: d.status,
         };
         onSaveRef.current(checklist, d.title, d.hook, d.script);
@@ -214,6 +222,8 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
     setGlobalItems(loadGlobalChecklist(contentType));
     // Load per-card notes and status
     setNotes(card?.editingChecklist?.notes || "");
+    setShowNotesEditor(!!(card?.editingChecklist?.notes));
+    setExternalLinks(card?.editingChecklist?.externalLinks || []);
     setStatus(card?.editingChecklist?.status || null);
     setTitle(card?.hook || card?.title || "");
     setHook(card?.hook || card?.title || "");
@@ -245,7 +255,7 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
     const checklist: EditingChecklist = {
       items: globalItems,
       notes,
-      externalLinks: [],
+      externalLinks,
       status,
     };
     onSave(checklist, title, hook, script);
@@ -257,7 +267,7 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
     const checklist: EditingChecklist = {
       items: globalItems,
       notes,
-      externalLinks: [],
+      externalLinks,
       status,
     };
     // Pass saved data directly to navigation handler to avoid async state timing issues
@@ -323,7 +333,7 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
           {/* Checklist Header */}
           <div className="flex-1 px-4 py-3 bg-transparent flex items-center">
             <h3 className="font-semibold text-[#612A4F] flex items-center gap-2 text-base">
-              <MessageSquare className="w-5 h-5" />
+              <Scissors className="w-5 h-5" />
               Editing Notes
             </h3>
           </div>
@@ -513,20 +523,89 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
 
           {/* Right Column - Editing Notes */}
           <div className="flex-1 bg-white/30 py-4 pl-8 pr-4 flex flex-col">
-            {/* Notes Header */}
-            <div className="flex items-center gap-2 mb-3">
-              <MessageSquare className="w-4 h-4 text-[#8B7082]" />
-              <h3 className="text-sm font-semibold text-[#612A4F]">Editing Notes</h3>
-            </div>
-            <p className="text-xs text-gray-400 mb-4">
-              Jot down reminders for your edit — pacing, music, transitions, text overlays, color grading, or anything else you want to remember.
+            <p className="text-xs text-gray-400 mb-3">
+              Write down reminders for your edit — pacing, music, transitions, text overlays, color grading, or anything else you want to remember.
             </p>
-            <Textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder={isImage ? "Color grading notes, font choices, brand consistency, layout ideas..." : "Pacing, music choices, transitions, text overlays, color grading, sound effects..."}
-              className="flex-1 min-h-[300px] border border-gray-200 bg-white rounded-xl focus:ring-1 focus:ring-[#8B7082]/30 focus:border-[#8B7082]/30 resize-none overflow-y-auto placeholder:text-gray-300 text-sm text-gray-700 p-4 leading-relaxed"
-            />
+
+            {/* Notes textarea */}
+            {showNotesEditor ? (
+              <Textarea
+                ref={notesRef}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder={isImage ? "Color grading notes, font choices, brand consistency, layout ideas..." : "Pacing, music choices, transitions, text overlays, color grading, sound effects..."}
+                className="flex-1 min-h-[200px] border border-[#E8E2E5] bg-white rounded-xl shadow-sm focus:ring-1 focus:ring-[#8B7082]/30 focus:border-[#8B7082]/40 resize-none overflow-y-auto placeholder:text-gray-300 text-sm text-gray-700 p-4 leading-relaxed"
+                autoFocus
+              />
+            ) : (
+              <div
+                className="flex-1 min-h-[200px] border border-dashed border-[#D4C8D0] bg-white/60 rounded-xl flex flex-col items-center justify-center cursor-text group hover:border-[#8B7082]/50 hover:bg-white/80 transition-all"
+                onClick={() => setShowNotesEditor(true)}
+              >
+                <PenLine className="w-6 h-6 text-[#C4B5BE] group-hover:text-[#8B7082] transition-colors mb-2" />
+                <p className="text-sm text-[#B0A3AA] group-hover:text-[#8B7082] transition-colors font-medium">Click to add notes</p>
+                <p className="text-xs text-[#C4B5BE] mt-1">
+                  {isImage ? "Color grading, fonts, layout..." : "Pacing, music, transitions..."}
+                </p>
+              </div>
+            )}
+
+            {/* External Links */}
+            <div className="mt-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-[#8B7082]">Reference Links</span>
+              </div>
+
+              {externalLinks.map((link) => (
+                <div key={link.id} className="flex items-center gap-2 mb-2 group/link">
+                  <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-lg bg-white border border-[#E8E2E5] shadow-sm">
+                    <ExternalLink className="w-3.5 h-3.5 text-[#8B7082] flex-shrink-0" />
+                    <input
+                      type="text"
+                      value={link.label}
+                      onChange={(e) => {
+                        setExternalLinks(prev => prev.map(l =>
+                          l.id === link.id ? { ...l, label: e.target.value } : l
+                        ));
+                      }}
+                      placeholder="Label (optional)"
+                      className="flex-1 text-xs text-gray-600 bg-transparent border-none outline-none placeholder:text-gray-300 min-w-0"
+                    />
+                    <input
+                      type="text"
+                      value={link.url}
+                      onChange={(e) => {
+                        setExternalLinks(prev => prev.map(l =>
+                          l.id === link.id ? { ...l, url: e.target.value } : l
+                        ));
+                      }}
+                      placeholder="Paste URL..."
+                      className="flex-1 text-xs text-[#8B7082] bg-transparent border-none outline-none placeholder:text-gray-300 min-w-0"
+                    />
+                  </div>
+                  <button
+                    onClick={() => setExternalLinks(prev => prev.filter(l => l.id !== link.id))}
+                    className="opacity-0 group-hover/link:opacity-100 p-1 rounded hover:bg-red-50 text-gray-300 hover:text-red-400 transition-all"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
+
+              <button
+                onClick={() => {
+                  setExternalLinks(prev => [...prev, {
+                    id: crypto.randomUUID(),
+                    label: "",
+                    url: "",
+                  }]);
+                }}
+                className="flex items-center gap-1.5 text-xs text-[#8B7082] hover:text-[#612A4F] transition-colors py-1.5 px-2 rounded-lg hover:bg-[#612A4F]/5"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Add link
+              </button>
+            </div>
           </div>
         </div>
 

@@ -53,6 +53,7 @@ export interface ProductionCardItemProps {
   handleOpenStoryboard: (card: ProductionCard) => void;
   handleOpenIdeateCardEditor: (card: ProductionCard) => void;
   handleOpenEditChecklist: (card: ProductionCard) => void;
+  handleOpenContentFlow: (card: ProductionCard, startStep?: number) => void;
   handleStartEditingCard: (cardId: string, columnId: string, trigger: 'click' | 'doubleclick', clickEvent?: React.MouseEvent) => void;
   handleSaveCardEdit: (cardId: string, newValue: string) => void;
   setEditingCardId: (id: string | null) => void;
@@ -79,6 +80,7 @@ const ProductionCardItem: React.FC<ProductionCardItemProps> = ({
   handleOpenStoryboard,
   handleOpenIdeateCardEditor,
   handleOpenEditChecklist,
+  handleOpenContentFlow,
   handleStartEditingCard,
   handleSaveCardEdit,
   setEditingCardId,
@@ -123,7 +125,7 @@ const ProductionCardItem: React.FC<ProductionCardItemProps> = ({
         onDragOver={(e) => handleCardDragOver(e, columnId, cardIndex)}
         onClick={(e) => {
           // Open edit modal for Shape Ideas, Ideate, To Film, To Edit, and To Schedule cards on single click (with delay to detect double-click)
-          if ((columnId === "shape-ideas" || columnId === "ideate" || columnId === "to-film" || columnId === "to-edit" || columnId === "to-schedule") && !isEditing) {
+          if ((columnId === "shape-ideas" || columnId === "ideate" || columnId === "to-film" || columnId === "to-edit" || columnId === "ready-to-post" || columnId === "to-schedule") && !isEditing) {
             e.stopPropagation();
             // Clear any existing timeout
             if (clickTimeoutRef.current) {
@@ -139,6 +141,8 @@ const ProductionCardItem: React.FC<ProductionCardItemProps> = ({
                 handleOpenIdeateCardEditor(card);
               } else if (columnId === "to-edit") {
                 handleOpenEditChecklist(card);
+              } else if (columnId === "ready-to-post") {
+                handleOpenContentFlow(card, 5);
               } else if (columnId === "to-schedule") {
                 setSchedulingCard(card);
                 setIsScheduleColumnExpanded(true);
@@ -155,7 +159,7 @@ const ProductionCardItem: React.FC<ProductionCardItemProps> = ({
           "hover:-translate-y-[3px]",
           "transition-all duration-200",
           columnId === "ideate" ? "py-4 px-3" : "p-3",
-          (columnId === "shape-ideas" || columnId === "ideate" || columnId === "to-film" || columnId === "to-edit" || columnId === "to-schedule") && !isEditing ? "cursor-pointer" : (!isEditing && "cursor-grab active:cursor-grabbing"),
+          (columnId === "shape-ideas" || columnId === "ideate" || columnId === "to-film" || columnId === "to-edit" || columnId === "ready-to-post" || columnId === "to-schedule") && !isEditing ? "cursor-pointer" : (!isEditing && "cursor-grab active:cursor-grabbing"),
           isThisCardDragged ? "opacity-40 scale-[0.98]" : "",
           card.isCompleted && "opacity-60",
           recentlyRepurposedCardId === card.id && "ring-2 ring-emerald-500 ring-offset-2",
@@ -322,6 +326,7 @@ const ProductionCardItem: React.FC<ProductionCardItemProps> = ({
                   else if (columnId === "to-film") handleOpenStoryboard(card);
                   else if (columnId === "ideate") handleOpenIdeateCardEditor(card);
                   else if (columnId === "to-edit") handleOpenEditChecklist(card);
+                  else if (columnId === "ready-to-post") handleOpenContentFlow(card, 5);
                   else if (columnId === "to-schedule") {
                     setSchedulingCard(card);
                     setIsScheduleColumnExpanded(true);
