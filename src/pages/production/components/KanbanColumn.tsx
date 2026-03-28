@@ -1,8 +1,9 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { AnimatePresence } from "framer-motion";
 import {
-  Lightbulb, PenLine, Video, Scissors, CalendarDays, Plus, Sparkles, Zap, Send,
+  Lightbulb, PenLine, Brain, Camera, Scissors, CalendarDays, Plus, Sparkles, Zap, Send,
 } from "lucide-react";
 import { KanbanColumn as KanbanColumnType, ProductionCard } from "../types";
 import { columnColors, columnAccentColors } from "../utils/productionConstants";
@@ -14,7 +15,7 @@ import ProductionCardItem from "./ProductionCardItem";
 const columnHeaderIcons: Record<string, React.FC<{ className?: string; style?: React.CSSProperties }>> = {
   ideate: Lightbulb,
   "shape-ideas": PenLine,
-  "to-film": Video,
+  "to-film": Camera,
   "to-edit": Scissors,
   "ready-to-post": Send,
   "to-schedule": CalendarDays,
@@ -24,7 +25,7 @@ const columnHeaderIcons: Record<string, React.FC<{ className?: string; style?: R
 const emptyStateIconComponents: Record<string, React.FC<{ className?: string; style?: React.CSSProperties }>> = {
   ideate: Lightbulb,
   "shape-ideas": PenLine,
-  "to-film": Video,
+  "to-film": Camera,
   "to-edit": Scissors,
   "ready-to-post": Send,
   "to-schedule": CalendarDays,
@@ -98,6 +99,7 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
   setIsIdeateDialogOpen,
   setAddingToColumn,
 }) => {
+  const navigate = useNavigate();
   // Board-level state from context (eliminates prop drilling)
   const {
     columns,
@@ -151,12 +153,19 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
             {/* Column Icon - same color as header text */}
             {column.id === 'ideate' && <Lightbulb className="w-5 h-5 text-[#612A4F]" style={{ strokeWidth: 1.5 }} />}
             {column.id === 'shape-ideas' && <PenLine className="w-5 h-5 text-[#612A4F]" style={{ strokeWidth: 1.5 }} />}
-            {column.id === 'to-film' && <Video className="w-5 h-5 text-[#612A4F]" style={{ strokeWidth: 1.5 }} />}
+            {column.id === 'to-film' && <Camera className="w-5 h-5 text-[#612A4F]" style={{ strokeWidth: 1.5 }} />}
             {column.id === 'to-edit' && <Scissors className="w-5 h-5 text-[#612A4F]" style={{ strokeWidth: 1.5 }} />}
             {column.id === 'ready-to-post' && <Send className="w-5 h-5 text-[#612A4F]" style={{ strokeWidth: 1.5 }} />}
             {column.id === 'to-schedule' && <CalendarDays className="w-5 h-5 text-[#612A4F]" style={{ strokeWidth: 1.5 }} />}
             <h2 className="text-[18px] tracking-[0.02em] text-[#612A4F]" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>
-              {column.title}
+              {column.title.includes('&')
+                ? column.title.split('&').map((part, i, arr) => (
+                    <React.Fragment key={i}>
+                      {part}
+                      {i < arr.length - 1 && <span style={{ fontFamily: "'Georgia', serif", fontStyle: 'italic', fontWeight: 400 }}>&amp;</span>}
+                    </React.Fragment>
+                  ))
+                : column.title}
             </h2>
           </div>
         </div>
@@ -224,6 +233,27 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
                               </p>
                             </div>
                           </>
+                        )}
+
+                        {/* Ready to Post — Go to Calendar button */}
+                        {column.id === 'ready-to-post' && (
+                          <button
+                            onClick={() => navigate('/task-board?view=month&mode=content')}
+                            className="group/btn w-full flex items-center justify-center gap-2 py-2.5 rounded-[12px] text-[14px] font-medium transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
+                            style={{
+                              backgroundColor: '#8B7082',
+                              color: 'white',
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = '#7A6272';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = '#8B7082';
+                            }}
+                          >
+                            <CalendarDays className="w-4 h-4" />
+                            Schedule on Calendar
+                          </button>
                         )}
 
                         {/* Ideate buttons - Add idea and Brainstorm with MegAI */}

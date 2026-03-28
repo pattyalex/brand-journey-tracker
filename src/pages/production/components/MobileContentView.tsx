@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Lightbulb, PenLine, Clapperboard, Scissors, CalendarDays, CalendarCheck, Archive, ChevronDown } from 'lucide-react';
+import { Plus, Lightbulb, PenLine, Camera, Scissors, CalendarDays, CalendarCheck, Archive, ChevronDown } from 'lucide-react';
 import { KanbanColumn, ProductionCard } from '../types';
 
 interface MobileContentViewProps {
@@ -10,8 +10,8 @@ interface MobileContentViewProps {
 
 const columnConfig: Record<string, { icon: React.ElementType; color: string; gradient: string; label: string }> = {
   'ideate': { icon: Lightbulb, color: '#612a4f', gradient: 'linear-gradient(135deg, rgba(97, 42, 79, 0.1) 0%, rgba(139, 112, 130, 0.05) 100%)', label: 'Bank of Ideas' },
-  'shape-ideas': { icon: PenLine, color: '#612a4f', gradient: 'linear-gradient(135deg, rgba(97, 42, 79, 0.1) 0%, rgba(139, 112, 130, 0.05) 100%)', label: 'Script and Concept' },
-  'to-film': { icon: Clapperboard, color: '#612a4f', gradient: 'linear-gradient(135deg, rgba(97, 42, 79, 0.1) 0%, rgba(139, 112, 130, 0.05) 100%)', label: 'To Film' },
+  'shape-ideas': { icon: PenLine, color: '#612a4f', gradient: 'linear-gradient(135deg, rgba(97, 42, 79, 0.1) 0%, rgba(139, 112, 130, 0.05) 100%)', label: 'Script & Concept' },
+  'to-film': { icon: Camera, color: '#612a4f', gradient: 'linear-gradient(135deg, rgba(97, 42, 79, 0.1) 0%, rgba(139, 112, 130, 0.05) 100%)', label: 'To Shoot' },
   'to-edit': { icon: Scissors, color: '#612a4f', gradient: 'linear-gradient(135deg, rgba(97, 42, 79, 0.1) 0%, rgba(139, 112, 130, 0.05) 100%)', label: 'To Edit' },
   'to-schedule': { icon: CalendarDays, color: '#612a4f', gradient: 'linear-gradient(135deg, rgba(97, 42, 79, 0.1) 0%, rgba(139, 112, 130, 0.05) 100%)', label: 'To Schedule' },
   'scheduled': { icon: CalendarCheck, color: '#10b981', gradient: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(5, 150, 105, 0.06) 100%)', label: 'Scheduled' },

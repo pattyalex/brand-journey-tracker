@@ -12,7 +12,7 @@ interface Step {
 
 const VIDEO_STEPS: Step[] = [
   { label: "Bank of Ideas", shortLabel: "Ideas" },
-  { label: "Script and Concept", shortLabel: "Script" },
+  { label: "Script & Concept", shortLabel: "Script" },
   { label: "Film", shortLabel: "Film" },
   { label: "To Edit", shortLabel: "Edit" },
   { label: "Ready to Post", shortLabel: "Ready" },

@@ -77,7 +77,7 @@ export const STAGE_ORDER: (keyof StageCompletions)[] = [
 export const STAGE_LABELS: Record<keyof StageCompletions, string> = {
   ideate: 'Bank of Ideas',
   scriptAndConcept: 'Script & Concept',
-  toFilm: 'To Film',
+  toFilm: 'To Shoot',
   toEdit: 'To Edit',
   readyToPost: 'Ready to Post',
   toSchedule: 'To Schedule',
@@ -115,8 +115,8 @@ export const IMAGE_STEP_TO_STAGE: Record<number, keyof StageCompletions> = {
 
 export const defaultColumns: KanbanColumn[] = [
   { id: "ideate", title: "Bank of Ideas", cards: [] },
-  { id: "shape-ideas", title: "Script and Concept", cards: [] },
-  { id: "to-film", title: "To Film", cards: [] },
+  { id: "shape-ideas", title: "Script & Concept", cards: [] },
+  { id: "to-film", title: "To Shoot", cards: [] },
   { id: "to-edit", title: "To Edit", cards: [] },
   { id: "ready-to-post", title: "Ready to Post", cards: [] },
   { id: "to-schedule", title: "To Schedule", cards: [] },

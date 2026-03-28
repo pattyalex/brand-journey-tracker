@@ -33,8 +33,8 @@ const shotIllustrations: Record<string, string> = {
 
 const columnLabels: Record<string, string> = {
   'ideate': 'Bank of Ideas',
-  'shape-ideas': 'Script and Concept',
-  'to-film': 'To Film',
+  'shape-ideas': 'Script & Concept',
+  'to-film': 'To Shoot',
   'to-edit': 'To Edit',
   'to-schedule': 'To Schedule',
   'scheduled': 'Scheduled',
