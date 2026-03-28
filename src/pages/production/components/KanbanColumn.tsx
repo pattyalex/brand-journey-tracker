@@ -139,7 +139,7 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
           highlightedColumn === column.id ? "shadow-xl scale-[1.02]" : ""
         )}
         style={{
-          ...(draggedOverColumn === column.id && draggedCard && !(column.id === "ideate" && columns.find(col => col.cards.some(c => c.id === draggedCard.id))?.id !== "ideate") ? {
+          ...(draggedOverColumn === column.id && draggedCard ? {
             background: 'rgba(139, 112, 130, 0.08)',
             boxShadow: '0 0 40px rgba(139, 112, 130, 0.2), inset 0 0 0 1px rgba(139, 112, 130, 0.15)',
           } : {}),
@@ -167,16 +167,6 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
           return (
             <div className="flex-1 overflow-y-auto px-3 pt-3 pb-3 space-y-3 hide-scrollbar hover:hide-scrollbar relative rounded-[16px]" style={{ minHeight: 'calc(100vh - 120px)', border: hasCards ? '1.5px solid rgba(180, 168, 175, 0.2)' : '1.5px dashed rgba(180, 168, 175, 0.25)', backgroundColor: hasCards ? 'rgba(255, 252, 250, 0.7)' : 'rgba(255, 255, 255, 0.1)' }}>
               {/* Not Allowed Overlay for Ideate Column */}
-              {column.id === "ideate" && draggedCard && draggedOverColumn === column.id &&
-               columns.find(col => col.cards.some(c => c.id === draggedCard.id))?.id !== "ideate" && (
-                <div className="absolute inset-0 bg-red-50/90 backdrop-blur-sm rounded-lg z-20 flex items-center justify-center pointer-events-none">
-                  <div className="text-center px-6">
-                    <div className="text-4xl mb-3">🚫</div>
-                    <p className="text-sm font-semibold text-red-700 mb-1">Cannot Move Back</p>
-                    <p className="text-xs text-red-600">Content flows forward only</p>
-                  </div>
-                </div>
-              )}
               <AnimatePresence>
                 {(() => {
                   // Compute filtered and sorted cards
@@ -209,93 +199,34 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
                         {/* Icon and text - hidden for ideate when input is showing */}
                         {!(column.id === 'ideate' && addingToColumn === 'ideate') && (
                           <>
-                            {/* Icon in rounded square - uses column accent color */}
-                            <div
-                              className="w-[56px] h-[56px] rounded-[14px] flex items-center justify-center mb-4"
-                              style={{ backgroundColor: columnAccentColors[column.id]?.accentBg || 'rgba(139, 112, 130, 0.08)' }}
-                            >
-                              <IconComponent
-                                className="w-5 h-5"
-                                style={{ color: columnAccentColors[column.id]?.accent || '#8B7082', strokeWidth: 1.5 }}
-                              />
-                            </div>
+                            {/* Minimal empty state — icon + styled text */}
+                            <div className="flex flex-col items-center text-center px-3 mb-4">
+                              <div
+                                className="w-11 h-11 rounded-xl flex items-center justify-center mb-4"
+                                style={{
+                                  backgroundColor: columnAccentColors[column.id]?.accentBg || 'rgba(139, 112, 130, 0.08)',
+                                }}
+                              >
+                                <IconComponent
+                                  className="w-5 h-5"
+                                  style={{ color: columnAccentColors[column.id]?.accent || '#8B7082', strokeWidth: 1.5 }}
+                                />
+                              </div>
 
-                            {/* Text content - muted colors, smaller size */}
-                            <p className="text-[13px] font-medium mb-0.5" style={{ color: '#9B8A8F' }}>
-                              No items yet
-                            </p>
-                            <p className="text-[11px] text-center mb-6" style={{ color: '#B8ACB0' }}>
-                              {column.id === 'ideate' ? 'Click below to start creating' : 'Drag ideas here or click below'}
-                            </p>
+                              <p className="text-[13px] leading-[1.9]" style={{ color: '#9B8F94' }}>
+                                {column.id === 'ideate' ? <>Your starting point <span className="font-bold text-[15px]" style={{ color: '#4A3D45', fontFamily: "'Playfair Display', serif" }}>Add ideas</span> or let <span className="font-bold text-[15px]" style={{ color: columnAccentColors[column.id]?.accent, fontFamily: "'Playfair Display', serif" }}>MegAI brainstorm</span> for you</> :
+                                 column.id === 'shape-ideas' ? <>Drag ideas here when<br />they need a <span className="font-bold text-[15px]" style={{ color: '#4A3D45', fontFamily: "'Playfair Display', serif" }}>script</span> or <span className="font-bold text-[15px]" style={{ color: '#4A3D45', fontFamily: "'Playfair Display', serif" }}>concept</span></> :
+                                 column.id === 'to-film' ? <>Drag content here when it's scripted and <span className="font-bold text-[15px]" style={{ color: '#4A3D45', fontFamily: "'Playfair Display', serif" }}>ready to film</span> or <span className="font-bold text-[15px]" style={{ color: '#4A3D45', fontFamily: "'Playfair Display', serif" }}>photograph</span></> :
+                                 column.id === 'to-edit' ? <>Drag content here once it's been filmed and <span className="font-bold text-[15px]" style={{ color: '#4A3D45', fontFamily: "'Playfair Display', serif" }}>needs editing</span></> :
+                                 column.id === 'to-schedule' ? <>Drag finished content here to <span className="font-bold text-[15px]" style={{ color: '#4A3D45', fontFamily: "'Playfair Display', serif" }}>pick a posting date</span></> :
+                                 column.id === 'ready-to-post' ? <>Content that's fully done and <span className="font-bold text-[15px]" style={{ color: '#4A3D45', fontFamily: "'Playfair Display', serif" }}>ready to be scheduled</span> and <span className="font-bold text-[15px]" style={{ color: '#4A3D45', fontFamily: "'Playfair Display', serif" }}>go live</span></> :
+                                 'Drag content here when ready.'}
+                              </p>
+                            </div>
                           </>
                         )}
 
-                        {/* Add new button - dashed border (for non-ideate columns) */}
-                        {column.id !== 'ideate' && (
-                          <button
-                            onClick={() => {
-                              if (column.id === 'shape-ideas') {
-                                const newCard: ProductionCard = {
-                                  id: `card-${Date.now()}`,
-                                  title: '',
-                                  columnId: 'shape-ideas',
-                                  isCompleted: false,
-                                };
-                                setColumns((prev) =>
-                                  prev.map((col) =>
-                                    col.id === 'shape-ideas' ? { ...col, cards: [...col.cards, newCard] } : col
-                                  )
-                                );
-                                handleOpenScriptEditor(newCard);
-                              } else if (column.id === 'to-film') {
-                                const newCard: ProductionCard = {
-                                  id: `card-${Date.now()}`,
-                                  title: '',
-                                  columnId: 'to-film',
-                                  isCompleted: false,
-                                };
-                                setColumns((prev) =>
-                                  prev.map((col) =>
-                                    col.id === 'to-film' ? { ...col, cards: [...col.cards, newCard] } : col
-                                  )
-                                );
-                                handleOpenStoryboard(newCard);
-                              } else if (column.id === 'to-edit') {
-                                const newCard: ProductionCard = {
-                                  id: `card-${Date.now()}`,
-                                  title: '',
-                                  columnId: 'to-edit',
-                                  isCompleted: false,
-                                };
-                                setColumns((prev) =>
-                                  prev.map((col) =>
-                                    col.id === 'to-edit' ? { ...col, cards: [...col.cards, newCard] } : col
-                                  )
-                                );
-                                handleOpenEditChecklist(newCard);
-                              } else {
-                                setAddingToColumn(column.id);
-                              }
-                            }}
-                            className="w-full flex items-center justify-center gap-2 py-3 rounded-[12px] text-[13px] font-medium transition-all duration-200"
-                            style={{
-                              border: '1.5px dashed rgba(180, 168, 175, 0.5)',
-                              color: '#9B8A8F',
-                              backgroundColor: 'transparent',
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.backgroundColor = 'rgba(139, 122, 130, 0.05)';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.backgroundColor = 'transparent';
-                            }}
-                          >
-                            <Plus className="w-3.5 h-3.5" style={{ strokeWidth: 2 }} />
-                            Add new
-                          </button>
-                        )}
-
-                        {/* Ideate buttons - Add new and Generate with AI */}
+                        {/* Ideate buttons - Add idea and Brainstorm with MegAI */}
                         {column.id === 'ideate' && (
                           <>
                             {/* Inline input when adding - above buttons */}
@@ -427,7 +358,7 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
                 })()}
 
                 {/* Drop indicator at the end of the column - only show during active drag */}
-                {column.id !== "ideate" && draggedCard && isDraggingRef.current && (() => {
+                {draggedCard && isDraggingRef.current && (() => {
                   const filteredCards = column.cards.filter(card => card.title && card.title.trim() && !card.title.toLowerCase().includes('add quick idea'));
                   const draggedCardIndex = filteredCards.findIndex(c => c.id === draggedCard.id);
                   const isLastCard = draggedCardIndex !== -1 && draggedCardIndex === filteredCards.length - 1;
@@ -474,66 +405,6 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
                       <Plus className="w-4 h-4 group-hover/btn:rotate-90 transition-transform duration-200" />
                       Add idea
                     </button>
-                  ) : column.id !== 'to-schedule' ? (
-                    <div
-                      key={`add-button-${column.id}`}
-                      className={cn(
-                        "group/btn px-4 py-2.5 transition-all duration-200 cursor-pointer active:scale-[0.98]",
-                        "w-full rounded-xl bg-transparent hover:bg-white/50 hover:-translate-y-0.5"
-                      )}
-                      style={{ border: '1.5px dashed rgba(180, 168, 175, 0.5)' }}
-                      onClick={() => {
-                        if (column.id === 'shape-ideas') {
-                          const newCard: ProductionCard = {
-                            id: `card-${Date.now()}`,
-                            title: '',
-                            columnId: 'shape-ideas',
-                            isCompleted: false,
-                          };
-                          setColumns((prev) =>
-                            prev.map((col) =>
-                              col.id === 'shape-ideas' ? { ...col, cards: [...col.cards, newCard] } : col
-                            )
-                          );
-                          handleOpenScriptEditor(newCard);
-                        } else if (column.id === 'to-film') {
-                          const newCard: ProductionCard = {
-                            id: `card-${Date.now()}`,
-                            title: '',
-                            columnId: 'to-film',
-                            isCompleted: false,
-                          };
-                          setColumns((prev) =>
-                            prev.map((col) =>
-                              col.id === 'to-film' ? { ...col, cards: [...col.cards, newCard] } : col
-                            )
-                          );
-                          handleOpenStoryboard(newCard);
-                        } else if (column.id === 'to-edit') {
-                          const newCard: ProductionCard = {
-                            id: `card-${Date.now()}`,
-                            title: '',
-                            columnId: 'to-edit',
-                            isCompleted: false,
-                          };
-                          setColumns((prev) =>
-                            prev.map((col) =>
-                              col.id === 'to-edit' ? { ...col, cards: [...col.cards, newCard] } : col
-                            )
-                          );
-                          handleOpenEditChecklist(newCard);
-                        } else {
-                          handleStartAddingCard(column.id);
-                        }
-                      }}
-                    >
-                      <div className="flex items-center justify-center gap-2 text-[#8B7082]">
-                        <Plus className="h-4 w-4 group-hover/btn:rotate-90 transition-transform duration-200" />
-                        <span className="text-sm font-medium">
-                          Add new
-                        </span>
-                      </div>
-                    </div>
                   ) : null}
 
                   {/* Batch Schedule button - only for to-schedule column */}

@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { callClaudeForJSON } from "@/services/claudeService";
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, MoreVertical, Trash2, Pencil, Sparkles, Check, Plus, ArrowLeft, Lightbulb, Pin, Clapperboard, Video, Circle, Wrench, CheckCircle2, Camera, CheckSquare, Scissors, PlayCircle, PenLine, CalendarDays, X, Maximize2, PartyPopper, Archive, FolderOpen, ChevronRight, RefreshCw, Compass, TrendingUp, BarChart3, Zap, LayoutGrid, RotateCcw, Image as ImageIcon, Layers } from "lucide-react";
+import { PlusCircle, MoreVertical, Trash2, Pencil, Sparkles, Check, Plus, ArrowLeft, Lightbulb, Pin, Clapperboard, Video, Circle, Wrench, CheckCircle2, Camera, CheckSquare, Scissors, PlayCircle, PenLine, CalendarDays, X, Maximize2, PartyPopper, Archive, FolderOpen, ChevronRight, RefreshCw, Compass, TrendingUp, BarChart3, Zap, LayoutGrid, Image as ImageIcon, Layers } from "lucide-react";
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine, RiPushpinFill } from "react-icons/ri";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -213,28 +211,6 @@ const Production = () => {
   const [ideateMode, setIdeateMode] = useState<'brainstorm' | 'guidance' | 'pillarsformats' | null>(null);
   const [brainstormText, setBrainstormText] = useState("");
   const [showHooksDialog, setShowHooksDialog] = useState(false);
-  const [isIdeaExpanderOpen, setIsIdeaExpanderOpen] = useState(false);
-  const [ideaExpanderText, setIdeaExpanderText] = useState(() => {
-    return getString(StorageKeys.ideaExpanderText) || "";
-  });
-  const [expandedAngles, setExpandedAngles] = useState<string[]>(() => {
-    const saved = getString(StorageKeys.ideaExpanderAngles);
-    return saved ? JSON.parse(saved) : [];
-  });
-  const [isGeneratingAngles, setIsGeneratingAngles] = useState(false);
-  const [showAngleFeedback, setShowAngleFeedback] = useState(false);
-  const [angleFeedbackText, setAngleFeedbackText] = useState("");
-  const [selectedAngleDirection, setSelectedAngleDirection] = useState<string | null>(null);
-
-  // Persist Idea Expander state
-  useEffect(() => {
-    setString(StorageKeys.ideaExpanderText, ideaExpanderText);
-  }, [ideaExpanderText]);
-
-  useEffect(() => {
-    setString(StorageKeys.ideaExpanderAngles, JSON.stringify(expandedAngles));
-  }, [expandedAngles]);
-
   // Script editor modal state
   const [isScriptEditorOpen, setIsScriptEditorOpen] = useState(false);
   const [editingScriptCard, setEditingScriptCard] = useState<ProductionCard | null>(null);
@@ -296,7 +272,6 @@ const Production = () => {
   const outfitInputRef = useRef<HTMLTextAreaElement>(null);
   const propsInputRef = useRef<HTMLTextAreaElement>(null);
   const notesInputRef = useRef<HTMLTextAreaElement>(null);
-  const [addedAngleText, setAddedAngleText] = useState<string | null>(null);
   const [bankIdeas, setBankIdeas] = useState<Array<{ id: string; text: string; isPlaceholder?: boolean }>>([]);
   const [newBankIdeaText, setNewBankIdeaText] = useState("");
   const [addedBankIdeaId, setAddedBankIdeaId] = useState<string | null>(null);
@@ -437,47 +412,6 @@ const Production = () => {
       console.error('Error generating content ideas:', error);
       return [];
     }
-  };
-
-  // Helper function to generate content angles using Claude API
-  const generateAnglesWithAI = async (ideaText: string, count: number = 10, options?: { direction?: string; alreadyGenerated?: string[] }): Promise<string[]> => {
-    const systemPrompt = `You are a creative content strategist helping creators find unique angles for their content.
-
-Analyze what the user wrote and generate compelling content hooks:
-- If they shared a personal story or experience, make hooks specific to their unique details, emotions, and insights
-- If they shared a broad topic or idea, generate fresh, opinionated, scroll-stopping angles that stand out from generic content on that topic
-
-RULES:
-- Mix styles: vulnerable confessions, surprising revelations, contrarian takes, specific lessons, relatable moments
-- Write as compelling video/post titles that make people stop scrolling
-- Keep hooks concise (under 15 words)
-- NO emojis
-- NO generic templates like "How to X" or "5 tips for Y"
-- ALWAYS return a JSON array, even for broad topics
-
-Return ONLY a JSON array of strings, nothing else.`;
-
-    let userMessage = `The creator's idea: "${ideaText}"
-
-Generate ${count} compelling content angles for this. Create scroll-stopping hooks that feel fresh and specific — not the same generic takes everyone else makes on this topic.`;
-
-    if (options?.direction) {
-      userMessage += `\n\n⚠️ CRITICAL INSTRUCTION FROM THE CREATOR — YOU MUST FOLLOW THIS:\n${options.direction}\n\nThis is the creator's feedback on the previous batch of ideas. You MUST adapt your output to match exactly what they're asking for. If they say shorter, make them SHORT. If they say funnier, make them FUNNY. Their direction overrides the default rules above.`;
-    }
-
-    if (options?.alreadyGenerated && options.alreadyGenerated.length > 0) {
-      userMessage += `\n\nAlready generated (do NOT repeat these, create completely different ones): ${options.alreadyGenerated.join(" | ")}`;
-    }
-
-    userMessage += `\n\nReturn only a JSON array of ${count} strings.`;
-
-    const result = await callClaudeForJSON<string[]>({
-      system: systemPrompt,
-      messages: [{ role: "user", content: userMessage }],
-      maxTokens: 800,
-    }, "array");
-
-    return result.ok && result.data ? result.data : [];
   };
 
   // Re-process embeds when content changes
@@ -1906,94 +1840,6 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
     return str.charAt(0).toUpperCase() + str.slice(1);
   };
 
-  const handleGenerateAngles = async () => {
-    if (!ideaExpanderText.trim()) return;
-
-    setIsGeneratingAngles(true);
-    setShowAngleFeedback(false);
-    setAngleFeedbackText("");
-    setSelectedAngleDirection(null);
-
-    try {
-      const angles = await generateAnglesWithAI(ideaExpanderText, 7);
-      if (angles.length > 0) {
-        setExpandedAngles(angles);
-        setShowAngleFeedback(true); // Show feedback UI after first batch
-      } else {
-        toast.error("Could not generate angles. Please check your API key in Settings.");
-      }
-    } catch (error) {
-      console.error("Error generating angles:", error);
-      toast.error("Failed to generate angles. Please try again.");
-    } finally {
-      setIsGeneratingAngles(false);
-    }
-  };
-
-  const handleGenerateMoreAngles = async (direction?: string) => {
-    const feedbackDirection = direction || selectedAngleDirection || angleFeedbackText;
-
-    setIsGeneratingAngles(true);
-
-    try {
-      const moreAngles = await generateAnglesWithAI(ideaExpanderText, 7, {
-        direction: feedbackDirection || undefined,
-        alreadyGenerated: expandedAngles.length > 0 ? expandedAngles : undefined,
-      });
-      if (moreAngles.length > 0) {
-        setExpandedAngles([...expandedAngles, ...moreAngles]);
-        // Keep feedback section visible so user can keep refining direction
-        setAngleFeedbackText("");
-        setSelectedAngleDirection(null);
-      }
-    } catch (error) {
-      console.error("Error generating more angles:", error);
-      toast.error("Failed to generate more angles. Please try again.");
-    } finally {
-      setIsGeneratingAngles(false);
-    }
-  };
-
-  const handleSelectAngle = (angle: string) => {
-    // Create new card in Ideate column with the selected angle
-    const newCard: ProductionCard = {
-      id: `card-${Date.now()}`,
-      title: angle,
-      description: `Expanded from: ${ideaExpanderText}`,
-      columnId: 'ideate',
-      isCompleted: false,
-      isNew: true,
-      addedFrom: 'idea-expander',
-      stageCompletions: { ...DEFAULT_STAGE_COMPLETIONS, ideate: true },
-    };
-
-    setColumns((prev) =>
-      prev.map((col) =>
-        col.id === 'ideate' ? { ...col, cards: [...col.cards, newCard] } : col
-      )
-    );
-
-    toast.success("Added to Bank of Ideas!", {
-      action: {
-        label: "View",
-        onClick: () => {
-          setIsIdeaExpanderOpen(false);
-          setIsIdeateDialogOpen(false);
-        },
-      },
-    });
-
-    // Show success state briefly before removing
-    setAddedAngleText(angle);
-    setTimeout(() => {
-      // Remove the angle from the list (triggers exit animation)
-      setExpandedAngles((prev) => prev.filter((a) => a !== angle));
-      setAddedAngleText(null);
-    }, 500);
-
-    // Don't close dialog - user may want to add more angles
-  };
-
   const handleSaveCardEdit = (cardId: string, newValue: string) => {
     if (!newValue.trim()) return;
 
@@ -2499,8 +2345,8 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
                     <p className="text-sm text-[#612A4F]/70">Select a method to guide your content ideation process</p>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-6 max-w-4xl mx-auto">
-                    {/* 1. Start With Your Pillars - Green */}
+                  <div className="grid grid-cols-2 gap-6 max-w-3xl mx-auto">
+                    {/* 1. Start With Your Themes - Green */}
                     <button
                       onClick={() => setIsPillarsDialogOpen(true)}
                       tabIndex={-1}
@@ -2512,7 +2358,7 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
                           <Compass className="w-7 h-7 text-white" />
                         </div>
                         <div>
-                          <h4 className="text-base font-semibold text-black mb-2">Pick Your<br />Desired Themes</h4>
+                          <h4 className="text-base font-semibold text-black mb-2">Pick Your Desired Themes</h4>
                           <p className="text-sm text-gray-600 leading-relaxed">Generate ideas based on the themes you care about</p>
                         </div>
                       </div>
@@ -2536,23 +2382,6 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
                       </div>
                     </button>
 
-                    {/* 3. Idea Expander - Muted Purple */}
-                    <button
-                      onClick={() => setIsIdeaExpanderOpen(true)}
-                      tabIndex={-1}
-                      className="group relative overflow-hidden bg-gradient-to-br from-[#F8F6FB] to-[#F0EDF6] border-l-4 border-l-[#9B8AB8] border-y border-r border-[#DDD6E8] hover:border-[#9B8AB8] rounded-2xl p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_-4px_rgba(155,138,184,0.3)] focus:outline-none"
-                    >
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-[#9B8AB8]/10 to-transparent rounded-bl-full" />
-                      <div className="relative flex flex-col items-center text-center space-y-5">
-                        <div className="w-16 h-16 bg-gradient-to-br from-[#9B8AB8] to-[#7A6A94] rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-                          <Sparkles className="w-7 h-7 text-white" />
-                        </div>
-                        <div>
-                          <h4 className="text-base font-semibold text-black mb-2">Idea Expander</h4>
-                          <p className="text-sm text-gray-600 leading-relaxed">Take one idea and explore multiple angles</p>
-                        </div>
-                      </div>
-                    </button>
                   </div>
                 </div>
               )}
@@ -3433,221 +3262,6 @@ Generate ${count} compelling content angles for this. Create scroll-stopping hoo
           externalOpen={showHooksDialog}
           onExternalOpenChange={setShowHooksDialog}
         />
-
-        {/* Idea Expander Dialog */}
-        <Dialog open={isIdeaExpanderOpen} onOpenChange={(open) => {
-          setIsIdeaExpanderOpen(open);
-          if (!open) {
-            // Close both Idea Expander and Content Ideation dialogs
-            setIsIdeateDialogOpen(false);
-            // Keep ideaExpanderText and expandedAngles - they're persisted
-            setShowAngleFeedback(false);
-            setAngleFeedbackText("");
-            setSelectedAngleDirection(null);
-          }
-        }}>
-          <DialogContent className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[900px] overflow-hidden border-0 shadow-2xl flex flex-col bg-gradient-to-br from-[#F5F0F8] via-[#FAF7FC] to-[#EDE5F3]">
-            <DialogHeader className="flex-shrink-0 px-8 pt-6">
-              {/* Back Button */}
-              <button
-                onClick={() => setIsIdeaExpanderOpen(false)}
-                className="flex items-center gap-2 text-gray-400 hover:text-[#9B8AB8] transition-colors mb-6"
-              >
-                <ArrowLeft className="w-5 h-5" />
-                <span className="text-sm font-medium">Back</span>
-              </button>
-
-              <div className="flex items-center justify-between mb-2">
-                <DialogTitle className="text-2xl font-semibold text-gray-900" style={{ fontFamily: "'Playfair Display', serif" }}>
-                  Idea Expander
-                </DialogTitle>
-                {(ideaExpanderText.trim() || expandedAngles.length > 0) && (
-                  <button
-                    onClick={() => {
-                      setIdeaExpanderText("");
-                      setExpandedAngles([]);
-                      setShowAngleFeedback(false);
-                      setAngleFeedbackText("");
-                      setSelectedAngleDirection(null);
-                    }}
-                    className="text-xs text-gray-400 hover:text-[#9B8AB8] transition-colors flex items-center gap-1"
-                  >
-                    <RotateCcw className="w-3 h-3" />
-                    Start fresh
-                  </button>
-                )}
-              </div>
-              <DialogDescription className="text-gray-500 text-sm">
-                Enter your idea and get multiple content angles to explore
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="overflow-y-auto flex-1 px-8 py-6">
-              <div className="space-y-6">
-                {/* User Input Section */}
-                <div className="space-y-4">
-                  <Textarea
-                    value={ideaExpanderText}
-                    onChange={(e) => setIdeaExpanderText(e.target.value)}
-                    placeholder="Enter your content idea here... For example: 'morning routine for productivity', 'sustainable fashion tips', 'home workout guide'"
-                    className="min-h-[140px] border border-[#E8E2EA] focus:border-[#9B8AB8] focus:ring-2 focus:ring-[#9B8AB8]/20 rounded-xl resize-none text-base p-5 bg-white/80 shadow-sm"
-                  />
-                  <Button
-                    onClick={handleGenerateAngles}
-                    disabled={!ideaExpanderText.trim() || isGeneratingAngles}
-                    className="w-full bg-gradient-to-r from-[#9B8AB8] to-[#7A6A94] hover:from-[#8A7AA8] hover:to-[#695A84] text-white rounded-xl shadow-md py-6 text-base font-medium"
-                  >
-                    {isGeneratingAngles ? (
-                      <div className="flex items-center gap-2">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                        Generating Angles...
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <Sparkles className="h-4 w-4" />
-                        Generate Ideas
-                      </div>
-                    )}
-                  </Button>
-                </div>
-
-                {/* AI Generated Angles Section */}
-                {expandedAngles.length > 0 && (
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-1 h-6 bg-gradient-to-b from-[#9B8AB8] to-[#7A6A94] rounded-full"></div>
-                      <h3 className="text-lg font-semibold text-gray-800">Different Angles</h3>
-                    </div>
-                    <div className="grid grid-cols-1 gap-3">
-                      <AnimatePresence initial={false}>
-                        {expandedAngles.map((angle) => (
-                          <motion.div
-                            key={angle}
-                            layout
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{
-                              opacity: 1,
-                              x: 0,
-                              scale: addedAngleText === angle ? 1.02 : 1
-                            }}
-                            exit={{
-                              opacity: 0,
-                              x: 400,
-                              scale: 0.8,
-                              rotate: 5,
-                              transition: { duration: 0.6, ease: "easeOut" }
-                            }}
-                            transition={{
-                              duration: 0.3,
-                              layout: { duration: 0.4, ease: "easeInOut" }
-                            }}
-                            className={cn(
-                              "relative group text-left p-4 border-2 rounded-xl flex items-center justify-between gap-3",
-                              addedAngleText === angle
-                                ? "bg-purple-100 border-[#9B8AB8] shadow-lg"
-                                : "bg-gradient-to-r from-[#F8F5FB] to-[#F3EFF8] border-[#D4C9E0] hover:border-[#9B8AB8] hover:shadow-md"
-                            )}
-                          >
-                            <p className="text-sm text-gray-700 font-medium flex-1">
-                              {angle}
-                            </p>
-                            <Button
-                              size="sm"
-                              onClick={() => handleSelectAngle(angle)}
-                              className="opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-r from-[#9B8AB8] to-[#7A6A94] hover:from-[#8A7AA8] hover:to-[#695A84] text-white text-xs px-3 py-1.5 h-auto whitespace-nowrap rounded-lg"
-                            >
-                              Add to Bank of Ideas
-                            </Button>
-                          </motion.div>
-                        ))}
-                      </AnimatePresence>
-                    </div>
-
-                    {/* AI Feedback Section */}
-                    {showAngleFeedback && expandedAngles.length > 0 && expandedAngles.length < 30 && (
-                      <div className="mt-6 p-5 bg-white/80 rounded-xl border border-[#D4C9E0]">
-                        <div className="flex items-center gap-2 mb-4">
-                          <Sparkles className="h-4 w-4 text-[#9B8AB8]" />
-                          <p className="text-sm font-medium text-gray-700">What direction would you like MegAI to explore?</p>
-                        </div>
-
-                        {/* Quick Direction Options */}
-                        <div className="flex flex-wrap gap-2 mb-4">
-                          {[
-                            { label: "More fun & playful", value: "Make them more fun, playful, and entertaining - less serious" },
-                            { label: "More storytelling", value: "Make them sound more like personal stories and narratives I could tell" },
-                            { label: "More vulnerable", value: "Make them more vulnerable and emotionally honest - real struggles and feelings" }
-                          ].map((option) => (
-                            <button
-                              key={option.label}
-                              onClick={() => setSelectedAngleDirection(
-                                selectedAngleDirection === option.value ? null : option.value
-                              )}
-                              className={cn(
-                                "px-3 py-2 text-xs font-medium rounded-lg transition-all",
-                                selectedAngleDirection === option.value
-                                  ? "bg-[#9B8AB8] text-white"
-                                  : "bg-[#F8F5FB] text-[#7A6A94] hover:bg-[#EDE5F3] border border-[#D4C9E0]"
-                              )}
-                            >
-                              {option.label}
-                            </button>
-                          ))}
-                        </div>
-
-                        {/* Custom Feedback Input */}
-                        <div className="mb-4">
-                          <textarea
-                            value={angleFeedbackText}
-                            onChange={(e) => setAngleFeedbackText(e.target.value)}
-                            placeholder="Or tell me exactly what you're looking for..."
-                            className="w-full px-3 py-2 text-sm border border-[#D4C9E0] rounded-lg focus:border-[#9B8AB8] focus:ring-1 focus:ring-[#9B8AB8]/20 outline-none resize-none bg-white/60"
-                            rows={2}
-                          />
-                        </div>
-
-                        {/* Generate Button */}
-                        <Button
-                          onClick={() => handleGenerateMoreAngles()}
-                          disabled={isGeneratingAngles || (!selectedAngleDirection && !angleFeedbackText.trim())}
-                          className="w-full bg-gradient-to-r from-[#9B8AB8] to-[#7A6A94] hover:from-[#8A7AA8] hover:to-[#695A84] text-white rounded-lg disabled:opacity-50"
-                        >
-                          {isGeneratingAngles ? (
-                            <div className="flex items-center gap-2">
-                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                              Generating...
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-2">
-                              <Sparkles className="h-4 w-4" />
-                              Generate 7 More Ideas
-                            </div>
-                          )}
-                        </Button>
-                      </div>
-                    )}
-
-                    {/* Simple More Ideas Button (after feedback has been used) */}
-                    {!showAngleFeedback && expandedAngles.length > 0 && expandedAngles.length < 30 && (
-                      <Button
-                        onClick={() => setShowAngleFeedback(true)}
-                        disabled={isGeneratingAngles}
-                        className="w-full mt-4 bg-white hover:bg-[#F8F5FB] text-gray-900 border-2 border-[#D4C9E0] hover:border-[#9B8AB8] rounded-xl"
-                        variant="outline"
-                      >
-                        <div className="flex items-center gap-2">
-                          <Plus className="h-4 w-4" />
-                          Generate More Ideas
-                        </div>
-                      </Button>
-                    )}
-                  </div>
-                )}
-
-                              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
 
         <ScriptEditorDialog
           isOpen={isScriptEditorOpen}

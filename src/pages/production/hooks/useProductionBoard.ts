@@ -31,17 +31,9 @@ export interface UseProductionBoardCallbacks {
 
 const backfillStageCompletions = (card: ProductionCard): ProductionCard => {
   if (card.stageCompletions) return card;
-  const colIdx = COLUMN_ORDER.indexOf(card.columnId);
   return {
     ...card,
-    stageCompletions: {
-      ideate: true,
-      scriptAndConcept: colIdx >= 1,
-      toFilm: colIdx >= 2,
-      toEdit: colIdx >= 3,
-      readyToPost: colIdx >= 4,
-      toSchedule: colIdx >= 5 || !!card.scheduledDate,
-    },
+    stageCompletions: { ...DEFAULT_STAGE_COMPLETIONS },
   };
 };
 
@@ -732,14 +724,7 @@ export function useProductionBoard(
       return;
     }
 
-    // Prevent moving cards back to Ideate from other columns
-    if (actualTargetColumnId === "ideate" && sourceColumnId !== "ideate") {
-      toast.error("Content cannot be moved back to Ideation", {
-        description: "Once content moves forward in your workflow, it stays on that path. Start fresh with a new idea instead.",
-      });
-      setDraggedCard(null);
-      return;
-    }
+
 
     // Check if moving a card with planned date to "to-schedule" column
     if (actualTargetColumnId === "to-schedule" && draggedCard.plannedDate && sourceColumnId !== "to-schedule") {

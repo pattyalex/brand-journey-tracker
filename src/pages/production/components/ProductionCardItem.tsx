@@ -8,7 +8,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import {
-  CalendarDays, X, Trash2, PenLine, Clapperboard, Scissors,
+  CalendarDays, X, Trash2, PenLine, Maximize2, Clapperboard, Scissors,
   Video, Camera, Sparkles, Check, PartyPopper, Layers, Image as ImageIcon, GripVertical,
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -336,11 +336,11 @@ const ProductionCardItem: React.FC<ProductionCardItemProps> = ({
                         }
                       }}
                     >
-                      <PenLine className="h-2.5 w-2.5 text-gray-400 hover:text-[#612A4F]" />
+                      <Maximize2 className="h-2.5 w-2.5 text-gray-400 hover:text-[#612A4F]" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent side="top" sideOffset={6} className="bg-gray-500 text-white">
-                    <p>Edit</p>
+                    <p>Open card &amp; create</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
