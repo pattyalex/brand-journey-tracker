@@ -80,7 +80,7 @@ const ContentFlowProgress: React.FC<ContentFlowProgressProps> = ({
   const maxStepIndex = totalSteps - 1;
 
   return (
-    <div className={cn("w-full px-4 py-1", className)}>
+    <div className={cn("w-full px-4 py-1 relative z-20", className)}>
       <div className="flex items-center gap-3 max-w-lg mx-auto">
 
       {/* Previous step arrow */}
@@ -90,7 +90,7 @@ const ContentFlowProgress: React.FC<ContentFlowProgressProps> = ({
             <TooltipTrigger asChild>
               <button
                 onClick={() => onStepClick(currentStep - 1)}
-                className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-[#8B7082] hover:text-[#612A4F] hover:bg-[#612A4F]/10 transition-all duration-200 mt-[-12px]"
+                className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-[#8B7082] hover:text-[#612A4F] hover:bg-[#612A4F]/10 transition-all duration-200 mt-[-12px]"
               >
                 <ChevronLeft className="w-6 h-6" />
               </button>
@@ -140,7 +140,8 @@ const ContentFlowProgress: React.FC<ContentFlowProgressProps> = ({
                     "rounded-full flex items-center justify-center font-semibold transition-all duration-300 focus:outline-none",
                     isActuallyCompleted && !isCurrent && "w-5 h-5 bg-[#612A4F] border-[1.5px] border-[#612A4F] text-white",
                     !isActuallyCompleted && isVisited && "w-5 h-5 bg-white border-[1.5px] border-[#612A4F]",
-                    isCurrent && "w-9 h-9 bg-white border-[2px] border-[#612A4F] text-[#612A4F] shadow-sm",
+                    isCurrent && isActuallyCompleted && "w-9 h-9 bg-[#612A4F] border-[2px] border-[#612A4F] text-white shadow-sm",
+                    isCurrent && !isActuallyCompleted && "w-9 h-9 bg-white border-[2px] border-[#612A4F] text-[#612A4F] shadow-sm",
                     isPending && !isActuallyCompleted && "w-5 h-5 bg-gray-100 border-[1.5px] border-gray-300",
                     canNavigate && "cursor-pointer hover:ring-2 hover:ring-offset-1 hover:ring-[#612A4F]/30",
                     !canNavigate && "cursor-default",
@@ -183,7 +184,7 @@ const ContentFlowProgress: React.FC<ContentFlowProgressProps> = ({
             <TooltipTrigger asChild>
               <button
                 onClick={() => onStepClick(currentStep + 1)}
-                className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-[#8B7082] hover:text-[#612A4F] hover:bg-[#612A4F]/10 transition-all duration-200 mt-[-12px]"
+                className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-[#8B7082] hover:text-[#612A4F] hover:bg-[#612A4F]/10 transition-all duration-200 mt-[-12px]"
               >
                 <ChevronRight className="w-6 h-6" />
               </button>

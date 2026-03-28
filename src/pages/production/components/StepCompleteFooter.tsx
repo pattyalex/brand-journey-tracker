@@ -43,7 +43,7 @@ const StepCompleteFooter: React.FC<StepCompleteFooterProps> = ({
               <button
                 onClick={handleClick}
                 className={cn(
-                  "w-6 h-6 rounded-full border-[1.5px] flex items-center justify-center transition-all duration-300",
+                  "w-8 h-8 rounded-full border-[2px] flex items-center justify-center transition-all duration-300",
                   isCompleted
                     ? "bg-[#612A4F] border-[#612A4F] text-white"
                     : "border-gray-300 bg-white hover:border-[#612A4F]/50"

@@ -40,7 +40,7 @@ const ReadyToPostStep: React.FC<ReadyToPostStepProps> = ({
       {/* Close Button */}
       <button
         onClick={onClose}
-        className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors z-10"
+        className="absolute top-7 right-4 p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors z-10"
       >
         <X className="w-5 h-5" />
       </button>

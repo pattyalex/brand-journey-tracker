@@ -311,50 +311,7 @@ const ProductionCardItem: React.FC<ProductionCardItemProps> = ({
             </h3>
           )}
           <div className="flex flex-row gap-2 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-            {/* Plan button */}
-            {columnId !== "posted" && columnId !== "to-schedule" && !card.plannedDate && (
-              <Popover
-                open={planningCardId === card.id}
-                onOpenChange={(open) => {
-                  if (open) {
-                    setPlanningCardId(card.id);
-                  } else {
-                    setPlanningCardId(null);
-                  }
-                }}
-              >
-                <PopoverTrigger asChild>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-3.5 w-3.5 p-0 rounded hover:bg-violet-50"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                    }}
-                    title="Plan on calendar"
-                  >
-                    <CalendarDays className="h-2.5 w-2.5 text-gray-400 hover:text-violet-600" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent
-                  className="w-auto p-0 border-0 shadow-2xl"
-                  align="center"
-                  side="right"
-                  sideOffset={8}
-                  collisionPadding={16}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <ExpandedScheduleView
-                    planningMode={true}
-                    planningCard={card}
-                    onPlanDate={(cardId, date) => {
-                      handleSetPlannedDate(cardId, date);
-                    }}
-                    onClose={() => setPlanningCardId(null)}
-                  />
-                </PopoverContent>
-              </Popover>
-            )}
+            {/* Plan button removed - scheduling handled via content flow dialog */}
             {columnId === "shape-ideas" && (
               <Button
                 size="sm"
@@ -519,7 +476,7 @@ const ProductionCardItem: React.FC<ProductionCardItemProps> = ({
         })()}
         {/* Stage completion progress dots */}
         <div className="mt-2 pt-2 border-t border-[#E8E2E5]">
-          <ProgressDots stageCompletions={card.stageCompletions} />
+          <ProgressDots stageCompletions={card.stageCompletions} hasContentType={!!card.contentType} />
         </div>
         {/* Just added message at bottom */}
         {card.isNew && (

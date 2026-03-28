@@ -4,10 +4,15 @@ import { STAGE_ORDER, DEFAULT_STAGE_COMPLETIONS } from "../utils/productionConst
 
 interface ProgressDotsProps {
   stageCompletions?: StageCompletions;
+  hasContentType?: boolean;
 }
 
-const ProgressDots: React.FC<ProgressDotsProps> = ({ stageCompletions }) => {
-  const completions = stageCompletions || DEFAULT_STAGE_COMPLETIONS;
+const ProgressDots: React.FC<ProgressDotsProps> = ({ stageCompletions, hasContentType = false }) => {
+  const completions = { ...(stageCompletions || DEFAULT_STAGE_COMPLETIONS) };
+  // First dot (ideate) is filled once the user has picked a content type
+  if (hasContentType) {
+    completions.ideate = true;
+  }
 
   return (
     <div className="flex items-center gap-1.5">
