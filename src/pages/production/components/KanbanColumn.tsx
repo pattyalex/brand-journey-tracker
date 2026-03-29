@@ -156,7 +156,7 @@ const TourDemoCard: React.FC<{
 const AnatomyLabel: React.FC<{ text: string; className?: string }> = ({ text, className = "" }) => (
   <span
     className={`text-[12px] font-semibold px-2.5 py-1 rounded-md ${className}`}
-    style={{ backgroundColor: "#EDE3E8", color: "#612A4F" }}
+    style={{ backgroundColor: "#EDE3E8", color: "#612A4F", border: "1px solid #C4B5C9" }}
   >
     {text}
   </span>
@@ -220,7 +220,7 @@ const TourAnatomyCard: React.FC = () => (
     </div>
 
     {/* Platforms — below right */}
-    <div className="absolute flex flex-col items-center gap-0" style={{ bottom: -70, right: -45 }}>
+    <div className="absolute flex flex-col items-center gap-0" style={{ bottom: -93, right: -45 }}>
       <div className="w-0 h-0 border-l-[3px] border-l-transparent border-r-[3px] border-r-transparent border-b-[6px] border-b-[#C4B5C9]" />
       <div className="w-px bg-[#C4B5C9]" style={{ height: 60 }} />
       <AnatomyLabel text="Platforms where you'll post the content" className="max-w-[150px] text-center" />

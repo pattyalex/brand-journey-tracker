@@ -332,7 +332,7 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
     {run && stepIndex === 3 && createPortal(
       <div
         className="fixed left-0 right-0 flex justify-center"
-        style={{ zIndex: 10004, bottom: 60 }}
+        style={{ zIndex: 10004, bottom: 160, paddingLeft: 550 }}
       >
         <div
           className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-white"
