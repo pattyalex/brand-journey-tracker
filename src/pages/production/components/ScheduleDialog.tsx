@@ -394,6 +394,25 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
     <>
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] sm:max-w-[1100px] border-0 shadow-2xl p-0 overflow-hidden flex flex-col bg-white">
+        {/* Back button */}
+        {onNavigateToStep && (
+          <TooltipProvider delayDuration={0}>
+            <Tooltip disableHoverableContent>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => onNavigateToStep(4)}
+                  className="absolute top-3 left-4 p-2 rounded-full hover:bg-[#612A4F]/10 text-gray-400 hover:text-[#612A4F] transition-colors z-30 focus:outline-none"
+                  tabIndex={-1}
+                >
+                  <ChevronLeft className="w-6 h-6" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="top" sideOffset={4} className="bg-gray-500 text-white">
+                <p>Previous step</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
         {/* Step Progress Indicator */}
         <ContentFlowProgress currentStep={5} className="border-b border-gray-100 flex-shrink-0 pt-4" onStepClick={onNavigateToStep} completedSteps={completedSteps} />
 

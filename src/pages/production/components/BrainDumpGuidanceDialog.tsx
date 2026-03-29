@@ -180,7 +180,7 @@ const BrainDumpGuidanceDialog: React.FC<BrainDumpGuidanceDialogProps> = ({
         </div>
       </div>
 
-      <StepCompleteFooter stepNumber={1} completedSteps={completedSteps} onToggleComplete={onToggleComplete} />
+      <StepCompleteFooter stepNumber={1} completedSteps={completedSteps} onToggleComplete={onToggleComplete} showNextStep={!!onNavigateToStep} onNextStep={onNavigateToStep ? () => onNavigateToStep(2) : undefined} />
     </>
   );
 

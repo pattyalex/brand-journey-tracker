@@ -58,6 +58,7 @@ export const StorageKeys = {
   pillarIdeasMap: "pillarIdeasMap",
   pillarSelectedTheme: "pillarSelectedTheme",
   pillarSelectedSubCategory: "pillarSelectedSubCategory",
+  pillarLastSubCategoryMap: "pillarLastSubCategoryMap",
   ideaExpanderText: "ideaExpanderText",
   ideaExpanderAngles: "ideaExpanderAngles",
   googleCalendarTokens: "google_calendar_tokens",

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Check } from "lucide-react";
+import { Check, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -8,6 +8,8 @@ interface StepCompleteFooterProps {
   completedSteps: number[];
   onToggleComplete?: (step: number) => void;
   hideTooltip?: boolean;
+  onNextStep?: () => void;
+  showNextStep?: boolean;
 }
 
 const StepCompleteFooter: React.FC<StepCompleteFooterProps> = ({
@@ -15,6 +17,8 @@ const StepCompleteFooter: React.FC<StepCompleteFooterProps> = ({
   completedSteps,
   onToggleComplete,
   hideTooltip = false,
+  onNextStep,
+  showNextStep = false,
 }) => {
   const isCompleted = completedSteps.includes(stepNumber);
   const [justUnchecked, setJustUnchecked] = useState(false);
@@ -61,6 +65,24 @@ const StepCompleteFooter: React.FC<StepCompleteFooterProps> = ({
             )}
           </Tooltip>
         </TooltipProvider>
+        {showNextStep && onNextStep && (
+          <TooltipProvider delayDuration={0}>
+            <Tooltip disableHoverableContent>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={onNextStep}
+                  className="ml-2 w-9 h-9 rounded-full flex items-center justify-center text-[#8B7082] hover:text-[#612A4F] hover:bg-[#612A4F]/10 transition-all duration-200 focus:outline-none"
+                  tabIndex={-1}
+                >
+                  <ChevronRight className="w-6 h-6" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="top" sideOffset={6} className="bg-gray-500 text-white">
+                <p>Next step</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
       </div>
     </div>
   );

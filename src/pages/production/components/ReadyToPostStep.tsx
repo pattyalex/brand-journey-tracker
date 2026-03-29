@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, ArrowLeft, Save, Send, CalendarDays, X } from "lucide-react";
+import { ArrowRight, ArrowLeft, Save, Send, CalendarDays, X, ChevronLeft } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import ContentFlowProgress from "./ContentFlowProgress";
 import { ContentType } from "../types";
@@ -37,7 +37,25 @@ const ReadyToPostStep: React.FC<ReadyToPostStepProps> = ({
 
   return (
     <>
-      {/* Close Button */}
+      {/* Top bar: Back button (left) and Close button (right) */}
+      {onNavigateToStep && (
+        <TooltipProvider delayDuration={0}>
+          <Tooltip disableHoverableContent>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => onNavigateToStep(contentType === 'image' ? 3 : 4)}
+                className="absolute top-6 left-4 p-2 rounded-full hover:bg-[#612A4F]/10 text-gray-400 hover:text-[#612A4F] transition-colors z-30 focus:outline-none"
+                tabIndex={-1}
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="top" sideOffset={4} className="bg-gray-500 text-white">
+              <p>Previous step</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
       <TooltipProvider delayDuration={0}>
         <Tooltip disableHoverableContent>
           <TooltipTrigger asChild>

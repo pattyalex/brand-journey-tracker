@@ -23,7 +23,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { getFormatColors, getPlatformColors } from "../utils/productionHelpers";
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
-import { MoreHorizontal, Video, Camera, ChevronDown, X, Circle, Wrench, CheckCircle2, MapPin, Shirt, Boxes, NotebookPen, PenLine, Check, Plus, ArrowLeft, ArrowRight, ArrowDown, Sparkles, Send, Bot, User, AlertCircle, Image as ImageIcon } from "lucide-react";
+import { MoreHorizontal, Video, Camera, ChevronDown, ChevronLeft, X, Circle, Wrench, CheckCircle2, MapPin, Shirt, Boxes, NotebookPen, PenLine, Check, Plus, ArrowLeft, ArrowRight, ArrowDown, Sparkles, Send, Bot, User, AlertCircle, Image as ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "sonner";
@@ -330,7 +330,25 @@ Guidelines:
   // Content that's shared between embedded and standalone modes
   const dialogContent = (
     <div onClick={() => isMegAIOpen && setIsMegAIOpen(false)} className="flex flex-col h-full">
-      {/* Close Button */}
+      {/* Top bar: Back button (left) and Close button (right) */}
+      {onNavigateToStep && (
+        <TooltipProvider delayDuration={0}>
+          <Tooltip disableHoverableContent>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => onNavigateToStep(1)}
+                className="absolute top-6 left-4 p-2 rounded-full hover:bg-[#612A4F]/10 text-gray-400 hover:text-[#612A4F] transition-colors z-30 focus:outline-none"
+                tabIndex={-1}
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="top" sideOffset={4} className="bg-gray-500 text-white">
+              <p>Previous step</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
       <TooltipProvider delayDuration={0}>
         <Tooltip disableHoverableContent>
           <TooltipTrigger asChild>
@@ -975,7 +993,7 @@ Guidelines:
           </div>
         </div>
       </div>
-      <StepCompleteFooter stepNumber={2} completedSteps={completedSteps} onToggleComplete={onToggleComplete} />
+      <StepCompleteFooter stepNumber={2} completedSteps={completedSteps} onToggleComplete={onToggleComplete} showNextStep={!!onNavigateToStep} onNextStep={onNavigateToStep ? () => onNavigateToStep(3) : undefined} />
     </div>
   );
 

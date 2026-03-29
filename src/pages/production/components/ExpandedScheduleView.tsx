@@ -146,6 +146,11 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = (props) => {
             <div className="w-[160px]" />
             <ContentFlowProgress currentStep={singleCard?.contentType === 'image' ? 4 : 6} contentType={singleCard?.contentType || 'video'} onStepClick={onNavigateToStep ? (step) => { if (step !== (singleCard?.contentType === 'image' ? 4 : 6)) onNavigateToStep(step); } : undefined} completedSteps={completedSteps} onToggleComplete={props.onToggleComplete} />
             <div className="w-[160px]" />
+            {onNavigateToStep && (
+              <button onClick={() => onNavigateToStep(singleCard?.contentType === 'image' ? 3 : 5)} className="absolute top-3 left-3 p-2 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors z-10" aria-label="Previous step">
+                <ChevronLeft className="w-6 h-6" />
+              </button>
+            )}
             {onClose && (
               <button onClick={onClose} className="absolute top-3 right-3 p-2 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors z-10" aria-label="Close">
                 <X className="w-5 h-5" />

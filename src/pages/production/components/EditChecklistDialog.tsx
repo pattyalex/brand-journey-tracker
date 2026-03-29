@@ -29,6 +29,7 @@ import {
   ArrowLeft,
   ArrowRight,
   X,
+  ChevronLeft,
   Image as ImageIcon,
   ChevronDown,
   Link,
@@ -294,7 +295,25 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
 
   const dialogContent = (
     <>
-      {/* Close Button */}
+      {/* Top bar: Back button (left) and Close button (right) */}
+      {onNavigateToStep && (
+        <TooltipProvider delayDuration={0}>
+          <Tooltip disableHoverableContent>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => handleNavigateWithSave(editStepNumber - 1)}
+                className="absolute top-6 left-4 p-2 rounded-full hover:bg-[#612A4F]/10 text-gray-400 hover:text-[#612A4F] transition-colors z-30 focus:outline-none"
+                tabIndex={-1}
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="top" sideOffset={4} className="bg-gray-500 text-white">
+              <p>Previous step</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
       <TooltipProvider delayDuration={0}>
         <Tooltip disableHoverableContent>
           <TooltipTrigger asChild>
@@ -624,7 +643,7 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
           </div>
         </div>
 
-      <StepCompleteFooter stepNumber={editStepNumber} completedSteps={completedSteps} onToggleComplete={onToggleComplete} />
+      <StepCompleteFooter stepNumber={editStepNumber} completedSteps={completedSteps} onToggleComplete={onToggleComplete} showNextStep={!!onNavigateToStep} onNextStep={onNavigateToStep ? () => handleNavigateWithSave(editStepNumber + 1) : undefined} />
     </>
   );
 

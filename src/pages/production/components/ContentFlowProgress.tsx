@@ -1,7 +1,7 @@
 import React from "react";
-import { Check, ChevronLeft, ChevronRight } from "lucide-react";
+import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
 import { ProductionCard, ContentType } from "../types";
 import { VIDEO_STEP_TO_STAGE, IMAGE_STEP_TO_STAGE, DEFAULT_STAGE_COMPLETIONS } from "../utils/productionConstants";
 
@@ -79,29 +79,6 @@ const ContentFlowProgress: React.FC<ContentFlowProgressProps> = ({
   return (
     <div className={cn("w-full px-4 py-1 relative z-20", className)}>
       <div className="flex items-center gap-3 max-w-lg mx-auto">
-
-      {/* Previous step arrow */}
-      {onStepClick && currentStep > 1 ? (
-        <TooltipProvider delayDuration={0}>
-          <Tooltip disableHoverableContent>
-            <TooltipTrigger asChild>
-              <button
-                onClick={() => onStepClick(currentStep - 1)}
-                className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-[#8B7082] hover:text-[#612A4F] hover:bg-[#612A4F]/10 transition-all duration-200 mt-[-12px] focus:outline-none"
-                tabIndex={-1}
-              >
-                <ChevronLeft className="w-6 h-6" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="top" sideOffset={6} className="bg-gray-500 text-white">
-              <p>Previous step</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      ) : (
-        <div className="w-7 flex-shrink-0" />
-      )}
-
       <div className="flex items-center justify-between relative flex-1 max-w-md">
         {/* Connecting line background */}
         <div className="absolute top-[14px] left-6 right-6 h-[1.5px] bg-gray-200" />
@@ -175,28 +152,12 @@ const ContentFlowProgress: React.FC<ContentFlowProgressProps> = ({
         })}
       </div>
 
-      {/* Next step arrow */}
-      {onStepClick && currentStep < totalSteps && (
-        <TooltipProvider delayDuration={0}>
-          <Tooltip disableHoverableContent>
-            <TooltipTrigger asChild>
-              <button
-                onClick={() => onStepClick(currentStep + 1)}
-                className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-[#8B7082] hover:text-[#612A4F] hover:bg-[#612A4F]/10 transition-all duration-200 mt-[-12px] focus:outline-none"
-                tabIndex={-1}
-              >
-                <ChevronRight className="w-6 h-6" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="top" sideOffset={6} className="bg-gray-500 text-white">
-              <p>Next step</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      )}
       </div>
     </div>
   );
 };
+
+export const getStepCount = (contentType: ContentType = 'video') =>
+  contentType === 'image' ? IMAGE_STEPS.length : VIDEO_STEPS.length;
 
 export default ContentFlowProgress;

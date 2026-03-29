@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
 import {
-  MoreHorizontal, X, MapPin, Shirt, Boxes, Plus, ArrowLeft, ArrowRight, Check, ChevronDown, ChevronUp,
+  MoreHorizontal, X, ChevronLeft, MapPin, Shirt, Boxes, Plus, ArrowLeft, ArrowRight, Check, ChevronDown, ChevronUp,
   Sparkles, Send, Bot, User, Upload, Link2, Image as ImageIcon, Layers, Video, NotebookPen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -279,7 +279,25 @@ Guidelines:
 
   const dialogContent = (
     <div onClick={() => isMegAIOpen && setIsMegAIOpen(false)} className="flex flex-col h-full">
-      {/* Close Button */}
+      {/* Top bar: Back button (left) and Close button (right) */}
+      {onNavigateToStep && (
+        <TooltipProvider delayDuration={0}>
+          <Tooltip disableHoverableContent>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => onNavigateToStep(1)}
+                className="absolute top-6 left-4 p-2 rounded-full hover:bg-[#612A4F]/10 text-gray-400 hover:text-[#612A4F] transition-colors z-30 focus:outline-none"
+                tabIndex={-1}
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="top" sideOffset={4} className="bg-gray-500 text-white">
+              <p>Previous step</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
       <TooltipProvider delayDuration={0}>
         <Tooltip disableHoverableContent>
           <TooltipTrigger asChild>
@@ -970,7 +988,7 @@ Guidelines:
         )}
       </AnimatePresence>
 
-      <StepCompleteFooter stepNumber={2} completedSteps={completedSteps} onToggleComplete={onToggleComplete} />
+      <StepCompleteFooter stepNumber={2} completedSteps={completedSteps} onToggleComplete={onToggleComplete} showNextStep={!!onNavigateToStep} onNextStep={onNavigateToStep ? () => onNavigateToStep(3) : undefined} />
     </div>
   );
 
