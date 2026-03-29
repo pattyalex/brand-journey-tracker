@@ -146,7 +146,7 @@ const TourIdeateDemoCards: React.FC = () => (
   </>
 );
 
-const TourShapeDemoCards: React.FC<{ isActive: boolean }> = ({ isActive }) => (
+const TourShapeDemoCards: React.FC<{ isActive: boolean; showStatic: boolean }> = ({ isActive, showStatic }) => (
   <div className="overflow-visible">
     {/* First card — fully inside the column */}
     <TourDemoCard
@@ -155,28 +155,41 @@ const TourShapeDemoCards: React.FC<{ isActive: boolean }> = ({ isActive }) => (
       format={TOUR_SHAPE_CARDS[0].format}
       platforms={TOUR_SHAPE_CARDS[0].platforms}
     />
-    {/* Second card — loops sliding in from the left when this step is active */}
-    <motion.div
-      className="relative mt-3"
-      animate={isActive ? {
-        x: [-180, -60, -60, -180],
-        opacity: [0, 1, 1, 0],
-      } : { x: -180, opacity: 0 }}
-      transition={isActive ? {
-        duration: 3,
-        times: [0, 0.3, 0.7, 1],
-        ease: "easeInOut",
-        repeat: Infinity,
-        repeatDelay: 0.5,
-      } : { duration: 0 }}
-    >
-      <TourDemoCard
-        title={TOUR_SHAPE_CARDS[1].title}
-        filled={TOUR_SHAPE_CARDS[1].filled}
-        format={TOUR_SHAPE_CARDS[1].format}
-        platforms={TOUR_SHAPE_CARDS[1].platforms}
-      />
-    </motion.div>
+    {/* Second card */}
+    {showStatic ? (
+      /* Static version — visible for the "open card" step */
+      <div className="mt-3" data-tour="shape-card-2">
+        <TourDemoCard
+          title={TOUR_SHAPE_CARDS[1].title}
+          filled={TOUR_SHAPE_CARDS[1].filled}
+          format={TOUR_SHAPE_CARDS[1].format}
+          platforms={TOUR_SHAPE_CARDS[1].platforms}
+        />
+      </div>
+    ) : (
+      /* Animated version — loops sliding in from the left */
+      <motion.div
+        className="relative mt-3"
+        animate={isActive ? {
+          x: [-180, -60, -60, -180],
+          opacity: [0, 1, 1, 0],
+        } : { x: -180, opacity: 0 }}
+        transition={isActive ? {
+          duration: 3,
+          times: [0, 0.3, 0.7, 1],
+          ease: "easeInOut",
+          repeat: Infinity,
+          repeatDelay: 0.5,
+        } : { duration: 0 }}
+      >
+        <TourDemoCard
+          title={TOUR_SHAPE_CARDS[1].title}
+          filled={TOUR_SHAPE_CARDS[1].filled}
+          format={TOUR_SHAPE_CARDS[1].format}
+          platforms={TOUR_SHAPE_CARDS[1].platforms}
+        />
+      </motion.div>
+    )}
   </div>
 );
 
@@ -320,14 +333,14 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
                   });
 
                   // Hide all cards, empty states, and buttons on anatomy step (step 3)
-                  if (isTourActive && tourStepIndex === 3) {
+                  if (isTourActive && (tourStepIndex === 1 || tourStepIndex === 5)) {
                     return <div />;
                   }
                   if (isTourActive && column.id === 'ideate') {
                     return <TourIdeateDemoCards />;
                   }
                   if (isTourActive && column.id === 'shape-ideas') {
-                    return <TourShapeDemoCards isActive={tourStepIndex === 2} />;
+                    return <TourShapeDemoCards isActive={tourStepIndex === 4} showStatic={tourStepIndex === 2} />;
                   }
 
                   // Show empty state if no cards
@@ -538,7 +551,7 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
               </AnimatePresence>
 
               {/* Buttons Area - right below cards (hidden on anatomy step) */}
-              {!(isTourActive && tourStepIndex === 3) && column.cards.filter(c => c.title && c.title.trim() && !c.title.toLowerCase().includes('add quick idea')).length > 0 && (
+              {!(isTourActive && (tourStepIndex === 1 || tourStepIndex === 5)) && column.cards.filter(c => c.title && c.title.trim() && !c.title.toLowerCase().includes('add quick idea')).length > 0 && (
                 <div className="px-1 pt-2 space-y-2">
                   {addingToColumn === column.id ? (
                     <div key={`inline-input-${column.id}`}>

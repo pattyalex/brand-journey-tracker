@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { createPortal } from "react-dom";
 import Joyride, { CallBackProps, EVENTS, STATUS, Step, TooltipRenderProps } from "react-joyride";
-import { GripVertical, Video, ArrowRight, Maximize2 } from "lucide-react";
+import { GripVertical, Video, ArrowRight, Maximize2, Lightbulb, PenLine, Camera, Scissors, Send } from "lucide-react";
 import { SiInstagram, SiTiktok } from "react-icons/si";
 
 interface ContentHubTourProps {
@@ -23,7 +23,7 @@ const TourTooltip: React.FC<TooltipRenderProps> = ({
   tooltipProps,
 }) => {
   // Hide tooltip on the floating card step (index 3)
-  if (index === 3) {
+  if (index === 1 || index === 5) {
     return <div {...tooltipProps} style={{ display: "none" }} />;
   }
 
@@ -235,6 +235,122 @@ const FloatingAnnotatedCard: React.FC<{
     document.body
   );
 
+// Mini card for the board illustration
+const MiniCard: React.FC<{ width?: string }> = ({ width = "100%" }) => (
+  <div
+    className="rounded-[4px] bg-white border border-[rgba(93,63,90,0.1)] px-2 py-1.5"
+    style={{ width }}
+  >
+    <div className="h-[5px] w-[80%] rounded-full bg-[#E8E2E5] mb-1" />
+    <div className="flex items-center gap-1">
+      <div className="h-[4px] w-[40%] rounded-full bg-[#F0EBE8]" />
+    </div>
+    <div className="flex items-center gap-[2px] mt-1">
+      {[...Array(6)].map((_, i) => (
+        <div
+          key={i}
+          className="w-[3px] h-[3px] rounded-full"
+          style={i < 2 ? { backgroundColor: "#612A4F" } : { backgroundColor: "transparent", border: "1px solid #C4B5C9" }}
+        />
+      ))}
+    </div>
+  </div>
+);
+
+// Floating big picture view — board vs card
+const FloatingBigPicture: React.FC<{
+  onNext: () => void;
+  onBack: () => void;
+  stepIndex: number;
+  totalSteps: number;
+}> = ({ onNext, onBack, stepIndex, totalSteps }) => {
+  const columns = [
+    { name: "Bank of Ideas", icon: Lightbulb, cards: 3 },
+    { name: "Script & Concept", icon: PenLine, cards: 2 },
+    { name: "To Shoot", icon: Camera, cards: 1 },
+    { name: "To Edit", icon: Scissors, cards: 1 },
+    { name: "Ready to Post", icon: Send, cards: 2 },
+  ];
+
+  return createPortal(
+    <>
+    {/* Solid background */}
+    {document.querySelector("main") && createPortal(
+      <div
+        className="absolute inset-0"
+        style={{ zIndex: 10003, backgroundColor: "#FAF7F5" }}
+      />,
+      document.querySelector("main")!
+    )}
+    <div
+      className="fixed flex flex-col items-center"
+      style={{
+        zIndex: 10004,
+        top: "50%",
+        left: "50%",
+        transform: "translate(-50%, -50%)",
+      }}
+    >
+      <h3
+        className="text-[18px] mb-3 text-[#612A4F]"
+        style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
+      >
+        Columns = Big picture view of all your content ideas and their progress
+      </h3>
+      <div className="mb-4" />
+
+      {/* Board illustration — free-standing columns */}
+      <div className="flex gap-3 mt-6">
+        {columns.map((col) => {
+          const Icon = col.icon;
+          return (
+            <div key={col.name} className="w-[145px]">
+              <div
+                className="min-h-[220px] rounded-xl p-3"
+                style={{
+                  border: "1.5px solid rgba(180, 168, 175, 0.25)",
+                  backgroundColor: "rgba(255, 252, 250, 0.7)",
+                }}
+              >
+                <div className="flex items-center gap-1.5 mb-2 px-0.5">
+                  <Icon className="w-3.5 h-3.5 text-[#612A4F] flex-shrink-0" style={{ strokeWidth: 1.5 }} />
+                  <span className="text-[10px] font-semibold text-[#612A4F] truncate">{col.name}</span>
+                </div>
+                <div className="space-y-2">
+                  {[...Array(col.cards)].map((_, i) => (
+                    <MiniCard key={i} />
+                  ))}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Navigation */}
+      <div className="flex items-center justify-end w-full mt-8">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onBack}
+            className="px-3 py-1.5 text-[13px] font-medium text-[#8B7082] hover:text-[#612A4F] transition-colors outline-none"
+          >
+            Back
+          </button>
+          <button
+            onClick={onNext}
+            className="px-4 py-2 rounded-xl text-[13px] font-semibold text-white outline-none transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
+            style={{ backgroundColor: "#612A4F" }}
+          >
+            Next
+          </button>
+        </div>
+      </div>
+    </div>
+    </>,
+    document.body
+  );
+};
+
 const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStepChange }) => {
   // Lift spotlighted targets above the overlay so their content is visible
   const [currentTarget, setCurrentTarget] = useState<string | null>(null);
@@ -264,6 +380,25 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
         </p>
       ),
       placement: "center" as const,
+      disableBeacon: true,
+    },
+    {
+      target: '[data-tour="kanban-board"]',
+      title: "",
+      content: (<></>),
+      placement: "center" as const,
+      disableBeacon: true,
+    },
+    {
+      target: '[data-tour="shape-card-2"]',
+      title: "Opening a card",
+      content: (
+        <p>
+          Opening a card = deep dive into one piece of content. Click any card to
+          open it — that's where the creation process happens.
+        </p>
+      ),
+      placement: "left" as const,
       disableBeacon: true,
     },
     {
@@ -357,11 +492,19 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
 
   return (
     <>
-    {run && stepIndex === 3 && (
+    {run && stepIndex === 1 && (
+      <FloatingBigPicture
+        onNext={() => goToStep(2)}
+        onBack={() => goToStep(0)}
+        stepIndex={1}
+        totalSteps={steps.length}
+      />
+    )}
+    {run && stepIndex === 5 && (
       <FloatingAnnotatedCard
-        onNext={() => goToStep(4)}
-        onBack={() => goToStep(2)}
-        stepIndex={3}
+        onNext={() => goToStep(6)}
+        onBack={() => goToStep(4)}
+        stepIndex={5}
         totalSteps={steps.length}
       />
     )}
