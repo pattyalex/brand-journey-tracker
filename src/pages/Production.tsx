@@ -75,8 +75,9 @@ import ContentHubTour from "./production/components/ContentHubTour";
 const KanbanContainer: React.FC<{
   horizontalScrollRef: React.RefObject<HTMLDivElement>;
   setScrollProgress: (progress: number) => void;
+  isTourAnatomyStep?: boolean;
   children: React.ReactNode;
-}> = ({ horizontalScrollRef, setScrollProgress, children }) => {
+}> = ({ horizontalScrollRef, setScrollProgress, isTourAnatomyStep, children }) => {
   const { state: sidebarState } = useSidebar();
   const isSidebarCollapsed = sidebarState === 'collapsed';
 
@@ -84,7 +85,7 @@ const KanbanContainer: React.FC<{
     <div
       ref={horizontalScrollRef}
       data-tour="kanban-board"
-      className="flex gap-5 flex-1 overflow-x-auto overflow-y-visible ml-[-34px] pl-[34px] mt-[-16px] pt-[16px] hide-scrollbar items-start"
+      className={`flex gap-5 flex-1 ${isTourAnatomyStep ? 'overflow-visible' : 'overflow-x-auto'} overflow-y-visible ml-[-34px] pl-[34px] mt-[-16px] pt-[16px] hide-scrollbar items-start`}
       onScroll={(e) => {
         const target = e.currentTarget;
         const maxScroll = target.scrollWidth - target.clientWidth;
@@ -2124,6 +2125,7 @@ const Production = () => {
         <KanbanContainer
           horizontalScrollRef={horizontalScrollRef}
           setScrollProgress={setScrollProgress}
+          isTourAnatomyStep={runTour && tourStepIndex === 3}
         >
           {columns.map((column, index) => (
             <KanbanColumnComponent

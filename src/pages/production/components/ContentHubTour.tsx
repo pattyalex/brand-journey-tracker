@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { createPortal } from "react-dom";
 import Joyride, { CallBackProps, EVENTS, STATUS, Step, TooltipRenderProps } from "react-joyride";
-import { GripVertical, Video, ArrowRight, Maximize2, Lightbulb, PenLine, Camera, Scissors, Send } from "lucide-react";
-import { SiInstagram, SiTiktok } from "react-icons/si";
+import { ArrowRight } from "lucide-react";
 
 interface ContentHubTourProps {
   run: boolean;
@@ -22,8 +21,8 @@ const TourTooltip: React.FC<TooltipRenderProps> = ({
   isLastStep,
   tooltipProps,
 }) => {
-  // Hide tooltip on the floating card step (index 3)
-  if (index === 1 || index === 5) {
+  // Hide tooltip on floating steps (big picture = 1, anatomy = 5)
+  if (index === 1 || index === 3) {
     return <div {...tooltipProps} style={{ display: "none" }} />;
   }
 
@@ -45,10 +44,10 @@ const TourTooltip: React.FC<TooltipRenderProps> = ({
       {step.content}
     </div>
 
-    {/* Step dots */}
+    {/* Step dots + navigation */}
     <div className="flex items-center justify-between mt-5">
       <div className="flex gap-1.5">
-        {Array.from({ length: size }).map((_, i) => (
+        {index !== 2 && Array.from({ length: size }).map((_, i) => (
           <div
             key={i}
             className="w-[6px] h-[6px] rounded-full transition-colors duration-200"
@@ -93,271 +92,65 @@ const TourTooltip: React.FC<TooltipRenderProps> = ({
   );
 };
 
-// Annotation label
-const Label: React.FC<{ text: string; className?: string }> = ({ text, className = "" }) => (
-  <span
-    className={`text-[12px] font-semibold px-2.5 py-1 rounded-md ${className}`}
-    style={{ backgroundColor: "#EDE3E8", color: "#612A4F" }}
-  >
-    {text}
-  </span>
-);
-
-// Floating annotated card rendered directly on the page
-const FloatingAnnotatedCard: React.FC<{
+// Banner card for the big picture step — matches popup design
+const BigPictureBanner: React.FC<{
   onNext: () => void;
   onBack: () => void;
-  stepIndex: number;
-  totalSteps: number;
-}> = ({ onNext, onBack, stepIndex, totalSteps }) =>
+}> = ({ onNext, onBack }) =>
   createPortal(
     <>
-    <div
-      className="fixed flex flex-col items-center"
-      style={{
-        zIndex: 10004,
-        top: "50%",
-        left: "50%",
-        transform: "translate(-50%, -55%)",
-      }}
-    >
-      {/* Title */}
-      <h3
-        className="text-[18px] mb-3 text-[#612A4F]"
-        style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
-      >
-        Each card represents a piece of content
-      </h3>
-      <p className="text-[14px] text-[#4A3D45] mb-16 text-center max-w-[340px]">
-        Here's what each part means:
-      </p>
-
-      {/* The card */}
+      {/* Banner card */}
       <div
-        className="relative rounded-[14px] bg-white border border-[rgba(93,63,90,0.08)] p-4 w-[340px] overflow-visible"
-        style={{ boxShadow: "0 8px 40px rgba(93,63,90,0.15)" }}
+        className="fixed left-0 right-0 flex justify-center"
+        style={{ zIndex: 10004, bottom: 160 }}
       >
-        {/* Row 1: Grip + Title */}
-        <div className="flex items-start gap-2.5">
-          <GripVertical className="w-4 h-4 text-gray-300 flex-shrink-0 mt-1" />
-          <h4 className="font-medium text-[15px] text-gray-800 leading-[1.4] flex-1">
-            3 books that changed how I think about money
-          </h4>
-          <Maximize2 className="w-3.5 h-3.5 text-gray-400 flex-shrink-0 mt-1" />
-        </div>
-
-        {/* Row 2: Format + Platforms */}
-        <div className="flex items-center justify-between mt-3">
-          <span className="inline-flex items-center gap-1 text-[12px] text-gray-500/80 font-normal">
-            <Video className="w-3 h-3" />
-            Voice-over
-          </span>
-          <div className="flex gap-1.5 items-center">
-            <SiInstagram className="w-3.5 h-3.5 text-[#8B7082]" />
-            <SiTiktok className="w-3.5 h-3.5 text-[#8B7082]" />
-          </div>
-        </div>
-
-        {/* Row 3: Progress dots */}
-        <div className="mt-3 pt-2.5 border-t border-[#E8E2E5]">
-          <div className="flex items-center gap-1.5">
-            {[true, true, false, false, false, false].map((filled, i) => (
-              <div
-                key={i}
-                className="w-[6px] h-[6px] rounded-full"
-                style={
-                  filled
-                    ? { backgroundColor: "#612A4F" }
-                    : { backgroundColor: "transparent", border: "1.5px solid #C4B5C9" }
-                }
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Labels positioned absolutely around the card */}
-        {/* Drag label — left of grip, line stops right before grip icon */}
-        <div className="absolute flex items-center gap-0" style={{ top: 15, left: -90 }}>
-          <Label text="Drag" />
-          <div style={{ width: 50 }} className="h-px bg-[#C4B5C9]" />
-          <div className="w-0 h-0 border-t-[3px] border-t-transparent border-b-[3px] border-b-transparent border-l-[6px] border-l-[#C4B5C9]" />
-        </div>
-
-        {/* Click to open label — right of card */}
-        <div className="absolute flex items-center gap-0" style={{ top: -2, right: -260 }}>
-          <div className="w-0 h-0 border-t-[3px] border-t-transparent border-b-[3px] border-b-transparent border-r-[6px] border-r-[#C4B5C9]" />
-          <div style={{ width: 48 }} className="h-px bg-[#C4B5C9]" />
-          <Label text="Click any card to open it — that's where the creation process happens" className="max-w-[220px]" />
-        </div>
-
-        {/* Format label — left side, arrow points right into video icon */}
-        <div className="absolute flex items-center gap-0" style={{ bottom: 42, left: -160 }}>
-          <Label text="Content format" />
-          <div style={{ width: 56 }} className="h-px bg-[#C4B5C9]" />
-          <div className="w-0 h-0 border-t-[3px] border-t-transparent border-b-[3px] border-b-transparent border-l-[6px] border-l-[#C4B5C9]" />
-        </div>
-
-        {/* Platforms label — below card, arrow points up to platform icons */}
-        <div className="absolute flex flex-col items-center gap-0" style={{ bottom: -70, right: -45 }}>
-          <div className="w-0 h-0 border-l-[3px] border-l-transparent border-r-[3px] border-r-transparent border-b-[6px] border-b-[#C4B5C9]" />
-          <div className="w-px bg-[#C4B5C9]" style={{ height: 60 }} />
-          <Label text="Platforms where you'll post the content" className="max-w-[150px] text-center" />
-        </div>
-
-        {/* Progress label — below left, arrow points up to dots */}
-        <div className="absolute flex flex-col items-center gap-0" style={{ bottom: -95, left: -15 }}>
-          <div className="w-0 h-0 border-l-[3px] border-l-transparent border-r-[3px] border-r-transparent border-b-[6px] border-b-[#C4B5C9]" />
-          <div className="w-px bg-[#C4B5C9]" style={{ height: 38 }} />
-          <Label text="Steps completed in the creation process" className="max-w-[120px] text-center" />
-        </div>
-      </div>
-
-      {/* Navigation */}
-      <div className="flex items-center justify-end w-[340px] mt-32">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={onBack}
-            className="px-3 py-1.5 text-[13px] font-medium text-[#8B7082] hover:text-[#612A4F] transition-colors outline-none"
-          >
-            Back
-          </button>
-          <button
-            onClick={onNext}
-            className="px-4 py-2 rounded-xl text-[13px] font-semibold text-white outline-none transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
-            style={{ backgroundColor: "#612A4F" }}
-          >
-            Next
-          </button>
-        </div>
-      </div>
-    </div>
-    </>,
-    document.body
-  );
-
-// Mini card for the board illustration
-const MiniCard: React.FC<{ width?: string }> = ({ width = "100%" }) => (
-  <div
-    className="rounded-[4px] bg-white border border-[rgba(93,63,90,0.1)] px-2 py-1.5"
-    style={{ width }}
-  >
-    <div className="h-[5px] w-[80%] rounded-full bg-[#E8E2E5] mb-1" />
-    <div className="flex items-center gap-1">
-      <div className="h-[4px] w-[40%] rounded-full bg-[#F0EBE8]" />
-    </div>
-    <div className="flex items-center gap-[2px] mt-1">
-      {[...Array(6)].map((_, i) => (
         <div
-          key={i}
-          className="w-[3px] h-[3px] rounded-full"
-          style={i < 2 ? { backgroundColor: "#612A4F" } : { backgroundColor: "transparent", border: "1px solid #C4B5C9" }}
-        />
-      ))}
-    </div>
-  </div>
-);
-
-// Floating big picture view — board vs card
-const FloatingBigPicture: React.FC<{
-  onNext: () => void;
-  onBack: () => void;
-  stepIndex: number;
-  totalSteps: number;
-}> = ({ onNext, onBack, stepIndex, totalSteps }) => {
-  const columns = [
-    { name: "Bank of Ideas", icon: Lightbulb, cards: 3 },
-    { name: "Script & Concept", icon: PenLine, cards: 2 },
-    { name: "To Shoot", icon: Camera, cards: 1 },
-    { name: "To Edit", icon: Scissors, cards: 1 },
-    { name: "Ready to Post", icon: Send, cards: 2 },
-  ];
-
-  return createPortal(
-    <>
-    {/* Solid background */}
-    {document.querySelector("main") && createPortal(
-      <div
-        className="absolute inset-0"
-        style={{ zIndex: 10003, backgroundColor: "#FAF7F5" }}
-      />,
-      document.querySelector("main")!
-    )}
-    <div
-      className="fixed flex flex-col items-center"
-      style={{
-        zIndex: 10004,
-        top: "50%",
-        left: "50%",
-        transform: "translate(-50%, -50%)",
-      }}
-    >
-      <h3
-        className="text-[18px] mb-3 text-[#612A4F]"
-        style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
-      >
-        Columns = Big picture view of all your content ideas and their progress
-      </h3>
-      <div className="mb-4" />
-
-      {/* Board illustration — free-standing columns */}
-      <div className="flex gap-3 mt-6">
-        {columns.map((col) => {
-          const Icon = col.icon;
-          return (
-            <div key={col.name} className="w-[145px]">
-              <div
-                className="min-h-[220px] rounded-xl p-3"
-                style={{
-                  border: "1.5px solid rgba(180, 168, 175, 0.25)",
-                  backgroundColor: "rgba(255, 252, 250, 0.7)",
-                }}
-              >
-                <div className="flex items-center gap-1.5 mb-2 px-0.5">
-                  <Icon className="w-3.5 h-3.5 text-[#612A4F] flex-shrink-0" style={{ strokeWidth: 1.5 }} />
-                  <span className="text-[10px] font-semibold text-[#612A4F] truncate">{col.name}</span>
-                </div>
-                <div className="space-y-2">
-                  {[...Array(col.cards)].map((_, i) => (
-                    <MiniCard key={i} />
-                  ))}
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Navigation */}
-      <div className="flex items-center justify-end w-full mt-8">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={onBack}
-            className="px-3 py-1.5 text-[13px] font-medium text-[#8B7082] hover:text-[#612A4F] transition-colors outline-none"
+          className="rounded-2xl bg-white p-6"
+          style={{
+            boxShadow: "0 8px 30px rgba(93,63,90,0.12)",
+            border: "1px solid rgba(93,63,90,0.08)",
+            maxWidth: 500,
+          }}
+        >
+          <h3
+            className="text-[18px] text-[#612A4F] mb-2"
+            style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
           >
-            Back
-          </button>
-          <button
-            onClick={onNext}
-            className="px-4 py-2 rounded-xl text-[13px] font-semibold text-white outline-none transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
-            style={{ backgroundColor: "#612A4F" }}
-          >
-            Next
-          </button>
+            Columns = Big picture view
+          </h3>
+          <p className="text-[14px] leading-relaxed text-[#4A3D45]">
+            See all your content ideas and their progress at a glance.
+          </p>
+          <div className="flex items-center justify-end mt-5 gap-2">
+            <button
+              onClick={onBack}
+              title=""
+              className="px-3 py-1.5 text-[13px] font-medium text-[#8B7082] hover:text-[#612A4F] transition-colors outline-none focus:outline-none"
+            >
+              Back
+            </button>
+            <button
+              onClick={onNext}
+              title=""
+              className="px-4 py-2 rounded-xl text-[13px] font-semibold text-white outline-none focus:outline-none transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
+              style={{ backgroundColor: "#612A4F" }}
+            >
+              Next
+            </button>
+          </div>
         </div>
       </div>
-    </div>
     </>,
     document.body
   );
-};
 
 const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStepChange }) => {
   // Lift spotlighted targets above the overlay so their content is visible
   const [currentTarget, setCurrentTarget] = useState<string | null>(null);
   const [stepIndex, setStepIndex] = useState(0);
 
+  // Elevate individual column targets above the overlay
   React.useEffect(() => {
-    // Only elevate individual column targets, not the whole board
     if (!currentTarget || currentTarget === '[data-tour="kanban-board"]') return;
     const el = document.querySelector(currentTarget) as HTMLElement | null;
     if (el) {
@@ -369,6 +162,30 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
       };
     }
   }, [currentTarget]);
+
+  // On steps 1-2 (big picture + open card), elevate ALL columns above the overlay
+  // On step 3 (anatomy), give shape-ideas column a higher z-index so its overflow labels show above neighboring columns
+  React.useEffect(() => {
+    if (stepIndex !== 1 && stepIndex !== 2 && stepIndex !== 3) return;
+    const cols = document.querySelectorAll<HTMLElement>('[data-tour^="column-"]');
+    cols.forEach((el) => {
+      el.style.position = "relative";
+      el.style.zIndex = "10001";
+    });
+    if (stepIndex === 3) {
+      const anatomyCol = document.querySelector<HTMLElement>('[data-tour="column-shape-ideas"]');
+      if (anatomyCol) {
+        anatomyCol.style.zIndex = "10002";
+      }
+    }
+    return () => {
+      cols.forEach((el) => {
+        el.style.position = "";
+        el.style.zIndex = "";
+      });
+    };
+  }, [stepIndex]);
+
   const [steps] = useState<Step[]>([
     {
       target: '[data-tour="kanban-board"]',
@@ -390,15 +207,36 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
       disableBeacon: true,
     },
     {
-      target: '[data-tour="shape-card-2"]',
-      title: "Opening a card",
+      target: '[data-tour="ideate-card-2"]',
+      title: "Click on a card to open it",
       content: (
-        <p>
-          Opening a card = deep dive into one piece of content. Click any card to
-          open it — that's where the creation process happens.
-        </p>
+        <div>
+          <p>Opening a card = develop that piece of content.</p>
+          <ul className="mt-3 space-y-1.5 text-[13px] text-[#4A3D45]">
+            <li className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#612A4F] flex-shrink-0" />
+              Prepare the concept
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#612A4F] flex-shrink-0" />
+              Write the script
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#612A4F] flex-shrink-0" />
+              Create the filming/shooting plan
+            </li>
+          </ul>
+        </div>
       ),
-      placement: "left" as const,
+      placement: "right" as const,
+      disableBeacon: true,
+      spotlightPadding: 4,
+    },
+    {
+      target: '[data-tour="kanban-board"]',
+      title: "",
+      content: (<></>),
+      placement: "center" as const,
       disableBeacon: true,
     },
     {
@@ -437,13 +275,6 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
         </div>
       ),
       placement: "right" as const,
-      disableBeacon: true,
-    },
-    {
-      target: '[data-tour="kanban-board"]',
-      title: "",
-      content: (<></>),
-      placement: "center" as const,
       disableBeacon: true,
     },
     {
@@ -493,20 +324,38 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
   return (
     <>
     {run && stepIndex === 1 && (
-      <FloatingBigPicture
+      <BigPictureBanner
         onNext={() => goToStep(2)}
         onBack={() => goToStep(0)}
-        stepIndex={1}
-        totalSteps={steps.length}
       />
     )}
-    {run && stepIndex === 5 && (
-      <FloatingAnnotatedCard
-        onNext={() => goToStep(6)}
-        onBack={() => goToStep(4)}
-        stepIndex={5}
-        totalSteps={steps.length}
-      />
+    {run && stepIndex === 3 && createPortal(
+      <div
+        className="fixed left-0 right-0 flex justify-center"
+        style={{ zIndex: 10004, bottom: 60 }}
+      >
+        <div
+          className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-white"
+          style={{ boxShadow: "0 8px 30px rgba(93,63,90,0.12)", border: "1px solid rgba(93,63,90,0.08)" }}
+        >
+          <button
+            onClick={() => goToStep(2)}
+            title=""
+            className="px-3 py-1.5 text-[13px] font-medium text-[#8B7082] hover:text-[#612A4F] transition-colors outline-none focus:outline-none"
+          >
+            Back
+          </button>
+          <button
+            onClick={() => goToStep(4)}
+            title=""
+            className="px-4 py-2 rounded-xl text-[13px] font-semibold text-white outline-none focus:outline-none transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
+            style={{ backgroundColor: "#612A4F" }}
+          >
+            Next
+          </button>
+        </div>
+      </div>,
+      document.body
     )}
     <Joyride
       steps={steps}

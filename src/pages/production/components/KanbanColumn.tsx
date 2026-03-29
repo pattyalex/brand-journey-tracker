@@ -8,7 +8,7 @@ import {
 import { KanbanColumn as KanbanColumnType, ProductionCard } from "../types";
 import { columnColors, columnAccentColors } from "../utils/productionConstants";
 import { useProductionContext } from "@/contexts/ProductionContext";
-import { GripVertical, Video } from "lucide-react";
+import { GripVertical, Video, Maximize2 } from "lucide-react";
 import { SiInstagram, SiTiktok, SiYoutube } from "react-icons/si";
 
 import InlineCardInput from "./InlineCardInput";
@@ -75,15 +75,29 @@ export interface KanbanColumnProps {
 
 // Demo cards shown inside the ideate column when the tour is active
 const TOUR_DEMO_CARDS = [
-  { title: "The one wellness thing nobody talks about", filled: 0 },
-  { title: "3 books that changed how I think about money", filled: 0 },
-  { title: "What I eat in a day as a creator", filled: 0 },
+  { title: "The one wellness thing nobody talks about", filled: 1 },
+  { title: "3 books that changed how I think about money", filled: 1 },
+  { title: "What I eat in a day as a creator", filled: 1 },
+];
+
+// Demo cards for all other columns during the "big picture" step
+const TOUR_TOFILM_CARDS = [
+  { title: "Morning routine as a creator", format: "Talking head", platforms: ["youtube", "instagram"], filled: 3 },
+];
+
+const TOUR_TOEDIT_CARDS = [
+  { title: "My top 5 productivity apps", format: "Screen recording", platforms: ["youtube", "tiktok"], filled: 4 },
+];
+
+const TOUR_READYTOPOST_CARDS = [
+  { title: "How I plan my content for the week", format: "Voice-over", platforms: ["instagram", "tiktok"], filled: 5 },
+  { title: "Unpopular opinions about social media", format: "Talking head", platforms: ["tiktok"], filled: 5 },
 ];
 
 // Demo cards for shape-ideas column — first 2 ideas with format & platforms
 const TOUR_SHAPE_CARDS = [
-  { title: "The one wellness thing nobody talks about", format: "Voice-over", platforms: ["instagram", "tiktok"], filled: 2 },
-  { title: "3 books that changed how I think about money", format: "Talking head", platforms: ["youtube", "instagram"], filled: 2 },
+  { title: "5 mistakes I made when I started posting", format: "Voice-over", platforms: ["instagram", "tiktok"], filled: 2 },
+  { title: "How I recover after a long day of work", format: "Talking head", platforms: ["youtube", "instagram"], filled: 2 },
 ];
 
 const getPlatformIcon = (platform: string) => {
@@ -134,6 +148,89 @@ const TourDemoCard: React.FC<{
           />
         ))}
       </div>
+    </div>
+  </div>
+);
+
+// Annotation label for anatomy step
+const AnatomyLabel: React.FC<{ text: string; className?: string }> = ({ text, className = "" }) => (
+  <span
+    className={`text-[12px] font-semibold px-2.5 py-1 rounded-md ${className}`}
+    style={{ backgroundColor: "#EDE3E8", color: "#612A4F" }}
+  >
+    {text}
+  </span>
+);
+
+// Anatomy card with labels — rendered on the actual card in the column
+const TourAnatomyCard: React.FC = () => (
+  <div className="relative overflow-visible" style={{ zIndex: 10 }}>
+    {/* The card itself */}
+    <div className="rounded-[14px] bg-white border border-[rgba(93,63,90,0.06)] p-3 shadow-[0_4px_20px_rgba(93,63,90,0.12)] overflow-visible">
+      <div className="flex items-start gap-2">
+        <GripVertical className="w-4 h-4 text-gray-300 flex-shrink-0 mt-0.5" />
+        <h3 className="font-medium text-[15px] text-gray-800 leading-[1.4] tracking-[-0.01em] flex-1">
+          How I recover after a long day of work
+        </h3>
+        <Maximize2 className="w-3.5 h-3.5 text-gray-400 flex-shrink-0 mt-0.5" />
+      </div>
+      <div className="flex items-center justify-between mt-2">
+        <span className="inline-flex items-center gap-1 text-[12px] px-2 py-0.5 rounded-full text-gray-500/80 font-normal">
+          <Video className="w-3 h-3" />
+          Talking head
+        </span>
+        <div className="flex gap-1.5 items-center">
+          <SiInstagram className="w-3.5 h-3.5 text-[#8B7082]" />
+          <SiTiktok className="w-3.5 h-3.5 text-[#8B7082]" />
+        </div>
+      </div>
+      <div className="mt-2 pt-2 border-t border-[#E8E2E5]">
+        <div className="flex items-center gap-1.5">
+          {[true, true, false, false, false, false].map((filled, i) => (
+            <div
+              key={i}
+              className="w-[6px] h-[6px] rounded-full"
+              style={filled ? { backgroundColor: "#612A4F" } : { backgroundColor: "transparent", border: "1.5px solid #C4B5C9" }}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+
+    {/* Labels */}
+    {/* Drag — left */}
+    <div className="absolute flex items-center gap-0" style={{ top: 12, left: -90 }}>
+      <AnatomyLabel text="Drag" />
+      <div style={{ width: 50 }} className="h-px bg-[#C4B5C9]" />
+      <div className="w-0 h-0 border-t-[3px] border-t-transparent border-b-[3px] border-b-transparent border-l-[6px] border-l-[#C4B5C9]" />
+    </div>
+
+    {/* Click to open — right side */}
+    <div className="absolute flex items-center gap-0" style={{ top: 6, right: -320 }}>
+      <div className="w-0 h-0 border-t-[3px] border-t-transparent border-b-[3px] border-b-transparent border-r-[6px] border-r-[#C4B5C9]" />
+      <div style={{ width: 80 }} className="h-px bg-[#C4B5C9]" />
+      <AnatomyLabel text="Click any card to open it — that's where the creation process happens" className="max-w-[220px]" />
+    </div>
+
+    {/* Content format — left */}
+    <div className="absolute flex items-center gap-0" style={{ bottom: 38, left: -160 }}>
+      <AnatomyLabel text="Content format" />
+      <div style={{ width: 56 }} className="h-px bg-[#C4B5C9]" />
+      <div className="w-0 h-0 border-t-[3px] border-t-transparent border-b-[3px] border-b-transparent border-l-[6px] border-l-[#C4B5C9]" />
+    </div>
+
+    {/* Platforms — below right */}
+    <div className="absolute flex flex-col items-center gap-0" style={{ bottom: -70, right: -45 }}>
+      <div className="w-0 h-0 border-l-[3px] border-l-transparent border-r-[3px] border-r-transparent border-b-[6px] border-b-[#C4B5C9]" />
+      <div className="w-px bg-[#C4B5C9]" style={{ height: 60 }} />
+      <AnatomyLabel text="Platforms where you'll post the content" className="max-w-[150px] text-center" />
+    </div>
+
+    {/* Steps completed — below left */}
+    <div className="absolute flex flex-col items-center gap-0" style={{ bottom: -95, left: -15 }}>
+      <div className="w-0 h-0 border-l-[3px] border-l-transparent border-r-[3px] border-r-transparent border-b-[6px] border-b-[#C4B5C9]" />
+      <div className="w-px bg-[#C4B5C9]" style={{ height: 38 }} />
+      <AnatomyLabel text="Steps completed in the creation process" className="max-w-[120px] text-center" />
     </div>
   </div>
 );
@@ -249,7 +346,7 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
   return (
     <div
       key={column.id}
-      className={`flex-shrink-0 w-[340px] ${isTourActive && column.id === 'shape-ideas' ? 'overflow-visible' : ''}`}
+      className={`flex-shrink-0 w-[340px] ${isTourActive && (column.id === 'shape-ideas' || tourStepIndex === 3) ? 'overflow-visible' : ''}`}
       data-tour={`column-${column.id}`}
       onDragOver={(e) => handleDragOver(e, column.id)}
       onDragLeave={handleDragLeave}
@@ -261,6 +358,7 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
         }}
         className={cn(
           "flex flex-col transition-all duration-300 max-h-[calc(100vh-48px)] rounded-[20px]",
+          isTourActive && tourStepIndex === 3 && "overflow-visible",
           draggedOverColumn === column.id && draggedCard
             ? column.id === "ideate" && columns.find(col => col.cards.some(c => c.id === draggedCard.id))?.id !== "ideate"
               ? "opacity-60"
@@ -276,6 +374,9 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
           ...(isTourActive ? {
             background: 'linear-gradient(180deg, #FAF7F5 0%, #F3EEEB 100%)',
             borderRadius: 20,
+            ...(tourStepIndex === 1 ? {
+              border: '2px solid rgba(97, 42, 79, 0.35)',
+            } : {}),
           } : {}),
         }}
       >
@@ -305,9 +406,9 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
         {/* Scrollable Cards Area - beige background */}
         {(() => {
           const realCards = column.cards.filter(c => c.title && c.title.trim() && !c.title.toLowerCase().includes('add quick idea')).length > 0;
-          const hasCards = realCards || (isTourActive && (column.id === 'ideate' || column.id === 'shape-ideas'));
+          const hasCards = realCards || (isTourActive && (tourStepIndex === 1 || tourStepIndex === 2 || tourStepIndex === 3 || column.id === 'ideate' || column.id === 'shape-ideas'));
           return (
-            <div className={`flex-1 ${isTourActive && column.id === 'shape-ideas' ? 'overflow-visible' : 'overflow-y-auto'} px-3 pt-3 pb-3 space-y-3 hide-scrollbar hover:hide-scrollbar relative rounded-[16px]`} style={{ minHeight: 'calc(100vh - 120px)', border: hasCards ? '1.5px solid rgba(180, 168, 175, 0.2)' : '1.5px dashed rgba(180, 168, 175, 0.25)', backgroundColor: hasCards ? 'rgba(255, 252, 250, 0.7)' : 'rgba(255, 255, 255, 0.1)' }}>
+            <div className={`flex-1 ${isTourActive && (column.id === 'shape-ideas' || tourStepIndex === 3) ? 'overflow-visible' : 'overflow-y-auto'} px-3 pt-3 pb-3 space-y-3 hide-scrollbar hover:hide-scrollbar relative rounded-[16px]`} style={{ minHeight: 'calc(100vh - 120px)', border: hasCards ? '1.5px solid rgba(180, 168, 175, 0.2)' : '1.5px dashed rgba(180, 168, 175, 0.25)', backgroundColor: hasCards ? 'rgba(255, 252, 250, 0.7)' : 'rgba(255, 255, 255, 0.1)' }}>
               {/* Not Allowed Overlay for Ideate Column */}
               <AnimatePresence>
                 {(() => {
@@ -332,15 +433,79 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
                     return 0;
                   });
 
-                  // Hide all cards, empty states, and buttons on anatomy step (step 3)
-                  if (isTourActive && (tourStepIndex === 1 || tourStepIndex === 5)) {
-                    return <div />;
+                  // Anatomy inline step (step 3) — show anatomy card on shape-ideas, faded cards elsewhere
+                  if (isTourActive && tourStepIndex === 3) {
+                    if (column.id === 'shape-ideas') {
+                      return (
+                        <div className="overflow-visible">
+                          <div style={{ opacity: 0.35 }}>
+                            <TourDemoCard title={TOUR_SHAPE_CARDS[0].title} filled={TOUR_SHAPE_CARDS[0].filled} format={TOUR_SHAPE_CARDS[0].format} platforms={TOUR_SHAPE_CARDS[0].platforms} />
+                          </div>
+                          <div className="mt-3">
+                            <TourAnatomyCard />
+                          </div>
+                        </div>
+                      );
+                    }
+                    const cards =
+                      column.id === 'ideate' ? TOUR_DEMO_CARDS :
+                      column.id === 'to-film' ? TOUR_TOFILM_CARDS :
+                      column.id === 'to-edit' ? TOUR_TOEDIT_CARDS :
+                      column.id === 'ready-to-post' ? TOUR_READYTOPOST_CARDS : [];
+                    return (
+                      <div style={{ opacity: 0.35 }}>
+                        {cards.map((card, i) => (
+                          <div key={i} className={i > 0 ? "mt-3" : ""}>
+                            <TourDemoCard title={card.title} filled={card.filled} format={(card as any).format} platforms={(card as any).platforms} />
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  }
+                  // Big picture step (step 1) & opening card step (step 2) — show faded demo cards in ALL columns
+                  if (isTourActive && (tourStepIndex === 1 || tourStepIndex === 2)) {
+                    const cards =
+                      column.id === 'ideate' ? TOUR_DEMO_CARDS :
+                      column.id === 'shape-ideas' ? TOUR_SHAPE_CARDS :
+                      column.id === 'to-film' ? TOUR_TOFILM_CARDS :
+                      column.id === 'to-edit' ? TOUR_TOEDIT_CARDS :
+                      column.id === 'ready-to-post' ? TOUR_READYTOPOST_CARDS : [];
+
+                    // On step 2, the second ideate card gets purple outline + full opacity
+                    if (tourStepIndex === 2 && column.id === 'ideate') {
+                      return (
+                        <>
+                          {cards.map((card, i) => (
+                            <div
+                              key={i}
+                              className={i > 0 ? "mt-3" : ""}
+                              style={{ opacity: i === 1 ? 1 : 0.55 }}
+                              {...(i === 1 ? { 'data-tour': 'ideate-card-2' } : {})}
+                            >
+                              <div style={i === 1 ? { border: '2px solid rgba(97, 42, 79, 0.5)', borderRadius: 14 } : {}}>
+                                <TourDemoCard title={card.title} filled={card.filled} format={(card as any).format} platforms={(card as any).platforms} />
+                              </div>
+                            </div>
+                          ))}
+                        </>
+                      );
+                    }
+
+                    return (
+                      <div style={{ opacity: 0.55 }}>
+                        {cards.map((card, i) => (
+                          <div key={i} className={i > 0 ? "mt-3" : ""}>
+                            <TourDemoCard title={card.title} filled={card.filled} format={(card as any).format} platforms={(card as any).platforms} />
+                          </div>
+                        ))}
+                      </div>
+                    );
                   }
                   if (isTourActive && column.id === 'ideate') {
                     return <TourIdeateDemoCards />;
                   }
                   if (isTourActive && column.id === 'shape-ideas') {
-                    return <TourShapeDemoCards isActive={tourStepIndex === 4} showStatic={tourStepIndex === 2} />;
+                    return <TourShapeDemoCards isActive={tourStepIndex === 5} showStatic={tourStepIndex === 2} />;
                   }
 
                   // Show empty state if no cards
@@ -551,7 +716,7 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
               </AnimatePresence>
 
               {/* Buttons Area - right below cards (hidden on anatomy step) */}
-              {!(isTourActive && (tourStepIndex === 1 || tourStepIndex === 5)) && column.cards.filter(c => c.title && c.title.trim() && !c.title.toLowerCase().includes('add quick idea')).length > 0 && (
+              {!(isTourActive && (tourStepIndex === 1 || tourStepIndex === 2 || tourStepIndex === 3)) && column.cards.filter(c => c.title && c.title.trim() && !c.title.toLowerCase().includes('add quick idea')).length > 0 && (
                 <div className="px-1 pt-2 space-y-2">
                   {addingToColumn === column.id ? (
                     <div key={`inline-input-${column.id}`}>
