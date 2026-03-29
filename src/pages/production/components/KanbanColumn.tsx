@@ -199,23 +199,23 @@ const TourAnatomyCard: React.FC = () => (
 
     {/* Labels */}
     {/* Drag — left */}
-    <div className="absolute flex items-center gap-0" style={{ top: 12, left: -90 }}>
+    <div className="absolute flex items-center gap-0" style={{ top: 9, left: -90 }}>
       <AnatomyLabel text="Drag" />
       <div style={{ width: 50 }} className="h-px bg-[#C4B5C9]" />
       <div className="w-0 h-0 border-t-[3px] border-t-transparent border-b-[3px] border-b-transparent border-l-[6px] border-l-[#C4B5C9]" />
     </div>
 
     {/* Click to open — right side */}
-    <div className="absolute flex items-center gap-0" style={{ top: 6, right: -320 }}>
+    <div className="absolute flex items-center gap-0" style={{ top: 13, right: -214 }}>
       <div className="w-0 h-0 border-t-[3px] border-t-transparent border-b-[3px] border-b-transparent border-r-[6px] border-r-[#C4B5C9]" />
-      <div style={{ width: 80 }} className="h-px bg-[#C4B5C9]" />
-      <AnatomyLabel text="Click any card to open it — that's where the creation process happens" className="max-w-[220px]" />
+      <div style={{ width: 65 }} className="h-px bg-[#C4B5C9]" />
+      <AnatomyLabel text="Click and open the card" className="max-w-[220px]" />
     </div>
 
     {/* Content format — left */}
-    <div className="absolute flex items-center gap-0" style={{ bottom: 38, left: -160 }}>
+    <div className="absolute flex items-center gap-0" style={{ bottom: 33, left: -160 }}>
       <AnatomyLabel text="Content format" />
-      <div style={{ width: 56 }} className="h-px bg-[#C4B5C9]" />
+      <div style={{ width: 60 }} className="h-px bg-[#C4B5C9]" />
       <div className="w-0 h-0 border-t-[3px] border-t-transparent border-b-[3px] border-b-transparent border-l-[6px] border-l-[#C4B5C9]" />
     </div>
 
