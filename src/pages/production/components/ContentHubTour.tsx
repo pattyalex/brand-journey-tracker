@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { createPortal } from "react-dom";
 import Joyride, { CallBackProps, EVENTS, STATUS, Step, TooltipRenderProps } from "react-joyride";
-import { GripVertical, Video, ArrowRight } from "lucide-react";
+import { GripVertical, Video, ArrowRight, Maximize2 } from "lucide-react";
 import { SiInstagram, SiTiktok } from "react-icons/si";
 
 interface ContentHubTourProps {
@@ -128,7 +128,7 @@ const FloatingAnnotatedCard: React.FC<{
       >
         Each card represents a piece of content
       </h3>
-      <p className="text-[14px] text-[#4A3D45] mb-10 text-center max-w-[340px]">
+      <p className="text-[14px] text-[#4A3D45] mb-16 text-center max-w-[340px]">
         Here's what each part means:
       </p>
 
@@ -140,9 +140,10 @@ const FloatingAnnotatedCard: React.FC<{
         {/* Row 1: Grip + Title */}
         <div className="flex items-start gap-2.5">
           <GripVertical className="w-4 h-4 text-gray-300 flex-shrink-0 mt-1" />
-          <h4 className="font-medium text-[15px] text-gray-800 leading-[1.4]">
+          <h4 className="font-medium text-[15px] text-gray-800 leading-[1.4] flex-1">
             3 books that changed how I think about money
           </h4>
+          <Maximize2 className="w-3.5 h-3.5 text-gray-400 flex-shrink-0 mt-1" />
         </div>
 
         {/* Row 2: Format + Platforms */}
@@ -182,11 +183,11 @@ const FloatingAnnotatedCard: React.FC<{
           <div className="w-0 h-0 border-t-[3px] border-t-transparent border-b-[3px] border-b-transparent border-l-[6px] border-l-[#C4B5C9]" />
         </div>
 
-        {/* Title label — right of title, arrow points left into title */}
-        <div className="absolute flex items-center gap-0" style={{ top: 18, right: -115 }}>
+        {/* Click to open label — right of card */}
+        <div className="absolute flex items-center gap-0" style={{ top: -2, right: -260 }}>
           <div className="w-0 h-0 border-t-[3px] border-t-transparent border-b-[3px] border-b-transparent border-r-[6px] border-r-[#C4B5C9]" />
-          <div style={{ width: 58 }} className="h-px bg-[#C4B5C9]" />
-          <Label text="Title / Hook" />
+          <div style={{ width: 48 }} className="h-px bg-[#C4B5C9]" />
+          <Label text="Click any card to open it — that's where the creation process happens" className="max-w-[220px]" />
         </div>
 
         {/* Format label — left side, arrow points right into video icon */}
@@ -196,23 +197,23 @@ const FloatingAnnotatedCard: React.FC<{
           <div className="w-0 h-0 border-t-[3px] border-t-transparent border-b-[3px] border-b-transparent border-l-[6px] border-l-[#C4B5C9]" />
         </div>
 
-        {/* Platforms label — right side of card, arrow points left to platform icons */}
-        <div className="absolute flex items-center gap-0" style={{ bottom: 26, right: -222 }}>
-          <div className="w-0 h-0 border-t-[3px] border-t-transparent border-b-[3px] border-b-transparent border-r-[6px] border-r-[#C4B5C9]" />
-          <div style={{ width: 50 }} className="h-px bg-[#C4B5C9]" />
-          <Label text="Platforms where you'll post the content" className="max-w-[180px]" />
+        {/* Platforms label — below card, arrow points up to platform icons */}
+        <div className="absolute flex flex-col items-center gap-0" style={{ bottom: -70, right: -45 }}>
+          <div className="w-0 h-0 border-l-[3px] border-l-transparent border-r-[3px] border-r-transparent border-b-[6px] border-b-[#C4B5C9]" />
+          <div className="w-px bg-[#C4B5C9]" style={{ height: 60 }} />
+          <Label text="Platforms where you'll post the content" className="max-w-[150px] text-center" />
         </div>
 
         {/* Progress label — below left, arrow points up to dots */}
-        <div className="absolute flex flex-col items-center gap-0" style={{ bottom: -85, left: 10 }}>
+        <div className="absolute flex flex-col items-center gap-0" style={{ bottom: -95, left: -15 }}>
           <div className="w-0 h-0 border-l-[3px] border-l-transparent border-r-[3px] border-r-transparent border-b-[6px] border-b-[#C4B5C9]" />
-          <div className="w-px bg-[#C4B5C9]" style={{ height: 30 }} />
+          <div className="w-px bg-[#C4B5C9]" style={{ height: 38 }} />
           <Label text="Steps completed in the creation process" className="max-w-[120px] text-center" />
         </div>
       </div>
 
       {/* Navigation */}
-      <div className="flex items-center justify-end w-[340px] mt-24">
+      <div className="flex items-center justify-end w-[340px] mt-32">
         <div className="flex items-center gap-2">
           <button
             onClick={onBack}
