@@ -67,6 +67,7 @@ import { getFormatColors, getPlatformColors } from "./production/utils/productio
 import { useSidebar } from "@/components/ui/sidebar";
 import { ProductionProvider } from "@/contexts/ProductionContext";
 import KanbanColumnComponent from "./production/components/KanbanColumn";
+import ContentHubTour from "./production/components/ContentHubTour";
 
 // columnHeaderIcons and emptyStateIconComponents moved to KanbanColumn.tsx
 
@@ -82,6 +83,7 @@ const KanbanContainer: React.FC<{
   return (
     <div
       ref={horizontalScrollRef}
+      data-tour="kanban-board"
       className="flex gap-5 flex-1 overflow-x-auto overflow-y-visible ml-[-34px] pl-[34px] mt-[-16px] pt-[16px] hide-scrollbar items-start"
       onScroll={(e) => {
         const target = e.currentTarget;
@@ -186,6 +188,16 @@ const Production = () => {
     pendingSkipMove,
     handleSkipColumnChoice,
   } = board;
+
+  // Onboarding tour state
+  const [runTour, setRunTour] = useState(false);
+  const [tourStepIndex, setTourStepIndex] = useState(-1);
+  useEffect(() => {
+    if (!isMobile && !localStorage.getItem("hasSeenContentHubTour")) {
+      const timer = setTimeout(() => setRunTour(true), 600);
+      return () => clearTimeout(timer);
+    }
+  }, [isMobile]);
 
   const [isAddCardDialogOpen, setIsAddCardDialogOpen] = useState(false);
   const [selectedColumnId, setSelectedColumnId] = useState<string>("");
@@ -296,6 +308,7 @@ const Production = () => {
   const [selectedSubCategory, setSelectedSubCategory] = useState<string>(() => getString(StorageKeys.pillarSelectedSubCategory) || "");
   const [cascadeIdeas, setCascadeIdeas] = useState<string[]>(() => getJSON<string[]>(StorageKeys.pillarCascadeIdeas, []));
   const [pillarIdeasMap, setPillarIdeasMap] = useState<Record<string, string[]>>(() => getJSON<Record<string, string[]>>(StorageKeys.pillarIdeasMap, {}));
+  const [pillarLastSubCategoryMap, setPillarLastSubCategoryMap] = useState<Record<string, string>>(() => getJSON<Record<string, string>>(StorageKeys.pillarLastSubCategoryMap, {}));
   const [isGeneratingCascadeIdeas, setIsGeneratingCascadeIdeas] = useState(false);
   const [newPillarIndex, setNewPillarIndex] = useState<number | null>(null);
   const [newSubCategoryIndex, setNewSubCategoryIndex] = useState<number | null>(null);
@@ -323,6 +336,7 @@ const Production = () => {
   useEffect(() => { setJSON(StorageKeys.pillarSubCategories, pillarSubCategories); savePillarsToSupabase(); }, [pillarSubCategories]);
   useEffect(() => { setJSON(StorageKeys.pillarCascadeIdeas, cascadeIdeas); savePillarsToSupabase(); }, [cascadeIdeas]);
   useEffect(() => { setJSON(StorageKeys.pillarIdeasMap, pillarIdeasMap); }, [pillarIdeasMap]);
+  useEffect(() => { setJSON(StorageKeys.pillarLastSubCategoryMap, pillarLastSubCategoryMap); }, [pillarLastSubCategoryMap]);
   useEffect(() => { setString(StorageKeys.pillarSelectedTheme, selectedUserPillar || ""); savePillarsToSupabase(); }, [selectedUserPillar]);
   useEffect(() => { setString(StorageKeys.pillarSelectedSubCategory, selectedSubCategory || ""); savePillarsToSupabase(); }, [selectedSubCategory]);
 
@@ -2098,6 +2112,15 @@ const Production = () => {
   return (
       <div className="w-full h-screen flex flex-col pl-5 pr-3 pt-4" style={{ background: 'linear-gradient(180deg, #FAF7F5 0%, #F0EBE8 100%)' }}>
         <ProductionProvider value={board}>
+        <ContentHubTour
+          run={runTour}
+          onComplete={() => {
+            setRunTour(false);
+            setTourStepIndex(-1);
+            localStorage.setItem("hasSeenContentHubTour", "true");
+          }}
+          onStepChange={setTourStepIndex}
+        />
         <KanbanContainer
           horizontalScrollRef={horizontalScrollRef}
           setScrollProgress={setScrollProgress}
@@ -2134,6 +2157,8 @@ const Production = () => {
               setSelectedIdeateCard={setSelectedIdeateCard}
               setIsIdeateDialogOpen={setIsIdeateDialogOpen}
               setAddingToColumn={setAddingToColumn}
+              isTourActive={runTour}
+              tourStepIndex={tourStepIndex}
             />
           ))}
 
@@ -2745,9 +2770,19 @@ const Production = () => {
                       <div
                         onClick={async () => {
                           if (selectedUserPillar !== pillar) {
+                            // Remember the current subcategory for the pillar we're leaving
+                            if (selectedUserPillar && selectedSubCategory) {
+                              setPillarLastSubCategoryMap(prev => ({ ...prev, [selectedUserPillar]: selectedSubCategory }));
+                            }
+
                             setSelectedUserPillar(pillar);
-                            setSelectedSubCategory("");
-                            setCascadeIdeas([]);
+
+                            // Restore last selected subcategory and its cached ideas
+                            const lastSub = pillarLastSubCategoryMap[pillar] || "";
+                            const cacheKey = `${pillar}::${lastSub}`;
+                            const cached = lastSub ? pillarIdeasMap[cacheKey] : null;
+                            setSelectedSubCategory(lastSub);
+                            setCascadeIdeas(cached && cached.length > 0 ? cached : []);
 
                             // Only generate sub-categories if they don't exist for this pillar
                             if (!pillarSubCategories[pillar] || pillarSubCategories[pillar].length === 0) {
@@ -2791,9 +2826,17 @@ const Production = () => {
                             }
                             // Generate sub-categories when user finishes typing pillar name (only if they don't exist)
                             if (currentPillarValue.trim() && currentPillarValue.trim().length >= 2) {
+                              // Remember subcategory for the pillar we're leaving
+                              if (selectedUserPillar && selectedSubCategory && selectedUserPillar !== currentPillarValue) {
+                                setPillarLastSubCategoryMap(prev => ({ ...prev, [selectedUserPillar]: selectedSubCategory }));
+                              }
                               setSelectedUserPillar(currentPillarValue);
-                              setSelectedSubCategory("");
-                              setCascadeIdeas([]);
+                              // Restore last subcategory and cached ideas, or clear for new themes
+                              const lastSub = pillarLastSubCategoryMap[currentPillarValue] || "";
+                              const cacheKey = `${currentPillarValue}::${lastSub}`;
+                              const cached = lastSub ? pillarIdeasMap[cacheKey] : null;
+                              setSelectedSubCategory(lastSub);
+                              setCascadeIdeas(cached && cached.length > 0 ? cached : []);
 
                               // Only generate if sub-categories don't exist for this pillar
                               if (!pillarSubCategories[currentPillarValue] || pillarSubCategories[currentPillarValue].length === 0) {
@@ -2918,6 +2961,7 @@ const Production = () => {
                               }
 
                               setSelectedSubCategory(subCat);
+                              setPillarLastSubCategoryMap(prev => ({ ...prev, [selectedUserPillar]: subCat }));
                               const cacheKey = `${selectedUserPillar}::${subCat}`;
                               const cached = pillarIdeasMap[cacheKey];
                               if (cached && cached.length > 0) {
@@ -2975,6 +3019,7 @@ const Production = () => {
                                   }
                                   // Select it and generate ideas
                                   setSelectedSubCategory(name);
+                                  setPillarLastSubCategoryMap(prev => ({ ...prev, [selectedUserPillar]: name }));
                                   const cacheKey = `${selectedUserPillar}::${name}`;
                                   const cached = pillarIdeasMap[cacheKey];
                                   if (cached && cached.length > 0) {

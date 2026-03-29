@@ -52,7 +52,7 @@ const Layout = ({ children, hideSidebar = false }: LayoutProps) => {
       <div className="h-screen flex w-full bg-white overflow-hidden">
         {/* Sidebar - hidden on mobile */}
         {shouldShowSidebar && (
-          <div className="flex-shrink-0 h-full hidden md:block">
+          <div className="flex-shrink-0 h-full hidden md:block" style={{ position: 'relative', zIndex: 10002 }}>
             <Sidebar />
           </div>
         )}

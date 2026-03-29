@@ -1,13 +1,16 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   Lightbulb, PenLine, Brain, Camera, Scissors, CalendarDays, Plus, Sparkles, Zap, Send,
 } from "lucide-react";
 import { KanbanColumn as KanbanColumnType, ProductionCard } from "../types";
 import { columnColors, columnAccentColors } from "../utils/productionConstants";
 import { useProductionContext } from "@/contexts/ProductionContext";
+import { GripVertical, Video } from "lucide-react";
+import { SiInstagram, SiTiktok, SiYoutube } from "react-icons/si";
+
 import InlineCardInput from "./InlineCardInput";
 import ProductionCardItem from "./ProductionCardItem";
 
@@ -66,7 +69,116 @@ export interface KanbanColumnProps {
   setSelectedIdeateCard: (card: ProductionCard | null) => void;
   setIsIdeateDialogOpen: (open: boolean) => void;
   setAddingToColumn: (columnId: string | null) => void;
+  isTourActive?: boolean;
+  tourStepIndex?: number;
 }
+
+// Demo cards shown inside the ideate column when the tour is active
+const TOUR_DEMO_CARDS = [
+  { title: "The one wellness thing nobody talks about", filled: 0 },
+  { title: "3 books that changed how I think about money", filled: 0 },
+  { title: "What I eat in a day as a creator", filled: 0 },
+];
+
+// Demo cards for shape-ideas column — first 2 ideas with format & platforms
+const TOUR_SHAPE_CARDS = [
+  { title: "The one wellness thing nobody talks about", format: "Voice-over", platforms: ["instagram", "tiktok"], filled: 2 },
+  { title: "3 books that changed how I think about money", format: "Talking head", platforms: ["youtube", "instagram"], filled: 2 },
+];
+
+const getPlatformIcon = (platform: string) => {
+  const cls = "w-3.5 h-3.5 text-[#8B7082]";
+  if (platform === "instagram") return <SiInstagram key={platform} className={cls} />;
+  if (platform === "tiktok") return <SiTiktok key={platform} className={cls} />;
+  if (platform === "youtube") return <SiYoutube key={platform} className={cls} />;
+  return null;
+};
+
+const TourDemoCard: React.FC<{
+  title: string;
+  filled: number;
+  format?: string;
+  platforms?: string[];
+}> = ({ title, filled, format, platforms }) => (
+  <div className="rounded-[14px] bg-white border border-[rgba(93,63,90,0.06)] py-4 px-3 shadow-[0_2px_8px_rgba(93,63,90,0.05)]">
+    <div className="flex items-center gap-2">
+      <GripVertical className="w-4 h-4 text-gray-300 flex-shrink-0" />
+      <h3 className="font-medium text-[15px] text-gray-800 leading-[1.4] tracking-[-0.01em]">
+        {title}
+      </h3>
+    </div>
+    {format && (
+      <div className="flex items-center justify-between mt-2">
+        <span className="inline-flex items-center gap-1 text-[12px] px-2 py-0.5 rounded-full text-gray-500/80 font-normal">
+          <Video className="w-3 h-3" />
+          {format}
+        </span>
+        {platforms && platforms.length > 0 && (
+          <div className="flex gap-1.5 items-center">
+            {platforms.map(getPlatformIcon)}
+          </div>
+        )}
+      </div>
+    )}
+    <div className="mt-2 pt-2 border-t border-[#E8E2E5]">
+      <div className="flex items-center gap-1.5">
+        {Array.from({ length: 6 }).map((_, j) => (
+          <div
+            key={j}
+            className="w-[6px] h-[6px] rounded-full"
+            style={
+              j < filled
+                ? { backgroundColor: "#612A4F" }
+                : { backgroundColor: "transparent", border: "1.5px solid #C4B5C9" }
+            }
+          />
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
+const TourIdeateDemoCards: React.FC = () => (
+  <>
+    {TOUR_DEMO_CARDS.map((card, i) => (
+      <TourDemoCard key={i} title={card.title} filled={card.filled} />
+    ))}
+  </>
+);
+
+const TourShapeDemoCards: React.FC<{ isActive: boolean }> = ({ isActive }) => (
+  <div className="overflow-visible">
+    {/* First card — fully inside the column */}
+    <TourDemoCard
+      title={TOUR_SHAPE_CARDS[0].title}
+      filled={TOUR_SHAPE_CARDS[0].filled}
+      format={TOUR_SHAPE_CARDS[0].format}
+      platforms={TOUR_SHAPE_CARDS[0].platforms}
+    />
+    {/* Second card — loops sliding in from the left when this step is active */}
+    <motion.div
+      className="relative mt-3"
+      animate={isActive ? {
+        x: [-180, -60, -60, -180],
+        opacity: [0, 1, 1, 0],
+      } : { x: -180, opacity: 0 }}
+      transition={isActive ? {
+        duration: 3,
+        times: [0, 0.3, 0.7, 1],
+        ease: "easeInOut",
+        repeat: Infinity,
+        repeatDelay: 0.5,
+      } : { duration: 0 }}
+    >
+      <TourDemoCard
+        title={TOUR_SHAPE_CARDS[1].title}
+        filled={TOUR_SHAPE_CARDS[1].filled}
+        format={TOUR_SHAPE_CARDS[1].format}
+        platforms={TOUR_SHAPE_CARDS[1].platforms}
+      />
+    </motion.div>
+  </div>
+);
 
 const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
   column,
@@ -98,6 +210,8 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
   setSelectedIdeateCard,
   setIsIdeateDialogOpen,
   setAddingToColumn,
+  isTourActive = false,
+  tourStepIndex = -1,
 }) => {
   const navigate = useNavigate();
   // Board-level state from context (eliminates prop drilling)
@@ -122,7 +236,8 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
   return (
     <div
       key={column.id}
-      className="flex-shrink-0 w-[340px]"
+      className={`flex-shrink-0 w-[340px] ${isTourActive && column.id === 'shape-ideas' ? 'overflow-visible' : ''}`}
+      data-tour={`column-${column.id}`}
       onDragOver={(e) => handleDragOver(e, column.id)}
       onDragLeave={handleDragLeave}
       onDrop={(e) => handleDrop(e, column.id)}
@@ -144,6 +259,10 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
           ...(draggedOverColumn === column.id && draggedCard ? {
             background: 'rgba(139, 112, 130, 0.08)',
             boxShadow: '0 0 40px rgba(139, 112, 130, 0.2), inset 0 0 0 1px rgba(139, 112, 130, 0.15)',
+          } : {}),
+          ...(isTourActive ? {
+            background: 'linear-gradient(180deg, #FAF7F5 0%, #F3EEEB 100%)',
+            borderRadius: 20,
           } : {}),
         }}
       >
@@ -172,9 +291,10 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
 
         {/* Scrollable Cards Area - beige background */}
         {(() => {
-          const hasCards = column.cards.filter(c => c.title && c.title.trim() && !c.title.toLowerCase().includes('add quick idea')).length > 0;
+          const realCards = column.cards.filter(c => c.title && c.title.trim() && !c.title.toLowerCase().includes('add quick idea')).length > 0;
+          const hasCards = realCards || (isTourActive && (column.id === 'ideate' || column.id === 'shape-ideas'));
           return (
-            <div className="flex-1 overflow-y-auto px-3 pt-3 pb-3 space-y-3 hide-scrollbar hover:hide-scrollbar relative rounded-[16px]" style={{ minHeight: 'calc(100vh - 120px)', border: hasCards ? '1.5px solid rgba(180, 168, 175, 0.2)' : '1.5px dashed rgba(180, 168, 175, 0.25)', backgroundColor: hasCards ? 'rgba(255, 252, 250, 0.7)' : 'rgba(255, 255, 255, 0.1)' }}>
+            <div className={`flex-1 ${isTourActive && column.id === 'shape-ideas' ? 'overflow-visible' : 'overflow-y-auto'} px-3 pt-3 pb-3 space-y-3 hide-scrollbar hover:hide-scrollbar relative rounded-[16px]`} style={{ minHeight: 'calc(100vh - 120px)', border: hasCards ? '1.5px solid rgba(180, 168, 175, 0.2)' : '1.5px dashed rgba(180, 168, 175, 0.25)', backgroundColor: hasCards ? 'rgba(255, 252, 250, 0.7)' : 'rgba(255, 255, 255, 0.1)' }}>
               {/* Not Allowed Overlay for Ideate Column */}
               <AnimatePresence>
                 {(() => {
@@ -198,6 +318,17 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
                     }
                     return 0;
                   });
+
+                  // Hide all cards, empty states, and buttons on anatomy step (step 3)
+                  if (isTourActive && tourStepIndex === 3) {
+                    return <div />;
+                  }
+                  if (isTourActive && column.id === 'ideate') {
+                    return <TourIdeateDemoCards />;
+                  }
+                  if (isTourActive && column.id === 'shape-ideas') {
+                    return <TourShapeDemoCards isActive={tourStepIndex === 2} />;
+                  }
 
                   // Show empty state if no cards
                   if (filteredSortedCards.length === 0 && !draggedCard) {
@@ -406,8 +537,8 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
                 })()}
               </AnimatePresence>
 
-              {/* Buttons Area - right below cards */}
-              {column.cards.filter(c => c.title && c.title.trim() && !c.title.toLowerCase().includes('add quick idea')).length > 0 && (
+              {/* Buttons Area - right below cards (hidden on anatomy step) */}
+              {!(isTourActive && tourStepIndex === 3) && column.cards.filter(c => c.title && c.title.trim() && !c.title.toLowerCase().includes('add quick idea')).length > 0 && (
                 <div className="px-1 pt-2 space-y-2">
                   {addingToColumn === column.id ? (
                     <div key={`inline-input-${column.id}`}>
