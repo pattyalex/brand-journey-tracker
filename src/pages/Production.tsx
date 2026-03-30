@@ -1486,6 +1486,8 @@ const Production = () => {
       }
       currentFormData.contentType = contentType;
       currentFormData.imageMode = imageMode;
+      if (caption) currentFormData.caption = caption;
+      if (slides.length > 0) currentFormData.slides = slides;
     }
     // Steps 3, 4, 5 save their own data through their respective dialogs
 

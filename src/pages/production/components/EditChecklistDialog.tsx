@@ -228,7 +228,9 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
     setStatus(card?.editingChecklist?.status || null);
     setTitle(card?.hook || card?.title || "");
     setHook(card?.hook || card?.title || "");
-    setScript(card?.script || "");
+    const slidesText = card?.slides?.map(s => s.content).filter(Boolean).join('\n\n') || '';
+    const scriptFromCard = card?.script?.trim() || '';
+    setScript(slidesText || scriptFromCard || "");
   }, [card, isOpen]);
 
   // Save global checklist whenever it changes
@@ -347,7 +349,7 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
             <div className="absolute right-0 top-0 bottom-0 w-px bg-[#8B7082]/30"></div>
             <div className="h-full p-4">
               {/* Media type + edit button */}
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-5">
                 <div>
                   <p className="text-[11px] font-semibold text-[#612A4F] uppercase tracking-wider mb-1">Media Type</p>
                   <div className="flex items-center gap-1.5">
@@ -420,48 +422,42 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
                 )}
               </div>
 
-              {/* Script/Caption section */}
+              {/* Script section */}
               <div className="mt-6">
-                <p className="text-[11px] font-semibold text-[#612A4F] uppercase tracking-wider mb-1">
-                  {isImage ? 'Caption' : 'Script'}
-                </p>
+                <p className="text-[11px] font-semibold text-[#612A4F] uppercase tracking-wider mb-1">Script</p>
                 {isEditing ? (
                   <textarea
                     autoFocus
                     value={script}
                     onChange={(e) => setScript(e.target.value)}
                     className="w-full h-full min-h-[200px] text-[13px] text-gray-700 leading-relaxed bg-transparent border-none p-0 resize-none focus:outline-none focus:ring-0"
-                    placeholder={isImage ? "Write your caption here..." : "Write your script here..."}
+                    placeholder="Write your script here..."
                   />
                 ) : script ? (
                   <div className="-mx-2 px-2">
                     <span className="text-[13px] text-gray-700 leading-relaxed whitespace-pre-wrap">{script}</span>
                   </div>
                 ) : (
-                  <p className="text-[13px] text-gray-400 italic">
-                    {isImage ? 'No caption added' : 'No script added'}
-                  </p>
+                  <p className="text-[13px] text-gray-400 italic">No script added</p>
                 )}
               </div>
 
-              {/* Caption section (video only — image uses the Script slot above) */}
-              {!isImage && (
-                <div className="mt-6">
-                  <p className="text-[11px] font-semibold text-[#612A4F] uppercase tracking-wider mb-1">Caption</p>
-                  {isEditing ? (
-                    <textarea
-                      value={card?.caption || ''}
-                      className="w-full min-h-[80px] text-[13px] text-gray-700 leading-relaxed bg-transparent border-none p-0 resize-none focus:outline-none focus:ring-0"
-                      placeholder="Write your caption here..."
-                      readOnly
-                    />
-                  ) : card?.caption ? (
-                    <p className="text-[13px] text-gray-700 leading-relaxed whitespace-pre-wrap">{card.caption}</p>
-                  ) : (
-                    <p className="text-[13px] text-gray-400 italic">No caption added</p>
-                  )}
-                </div>
-              )}
+              {/* Caption section */}
+              <div className="mt-6">
+                <p className="text-[11px] font-semibold text-[#612A4F] uppercase tracking-wider mb-1">Caption</p>
+                {isEditing ? (
+                  <textarea
+                    value={card?.caption || ''}
+                    className="w-full min-h-[80px] text-[13px] text-gray-700 leading-relaxed bg-transparent border-none p-0 resize-none focus:outline-none focus:ring-0"
+                    placeholder="Write your caption here..."
+                    readOnly
+                  />
+                ) : card?.caption ? (
+                  <p className="text-[13px] text-gray-700 leading-relaxed whitespace-pre-wrap">{card.caption}</p>
+                ) : (
+                  <p className="text-[13px] text-gray-400 italic">No caption added</p>
+                )}
+              </div>
 
               {/* Card details - Formats, Platform, Shooting Plan */}
               <div className="mt-4 pt-2 space-y-6">

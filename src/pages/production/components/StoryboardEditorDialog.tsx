@@ -877,7 +877,7 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
                 ref={scriptRef}
               >
               {/* Media type + edit button */}
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-5">
                 <div>
                   <p className="text-[11px] font-semibold text-[#612A4F] uppercase tracking-wider mb-1">Media Type</p>
                   <div className="flex items-center gap-1.5">
