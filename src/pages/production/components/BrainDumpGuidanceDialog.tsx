@@ -110,7 +110,7 @@ const BrainDumpGuidanceDialog: React.FC<BrainDumpGuidanceDialogProps> = ({
       <div className="px-6 pt-4 pb-4 flex-1 overflow-y-auto flex flex-col">
         {/* Title/Hook Label + Title Input */}
         <div className="mb-2">
-          <label className="text-[12px] font-medium text-[#8B7082] uppercase tracking-wider">Title/Hook</label>
+          <label className="text-[12px] font-medium text-[#8B7082] uppercase tracking-wider">Hook</label>
         </div>
         <div className="border-b border-gray-200 pb-2 mb-3">
           <TooltipProvider>

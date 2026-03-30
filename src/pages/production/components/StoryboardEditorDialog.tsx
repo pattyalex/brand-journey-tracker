@@ -876,32 +876,53 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
                 className="h-full overflow-y-auto p-4"
                 ref={scriptRef}
               >
-              {/* Content type indicator */}
-              <div className="flex items-center gap-1.5 mb-3">
-                <Video className="w-3.5 h-3.5 text-[#8B7082]" />
-                <span className="text-[11px] text-[#8B7082] font-medium">Video</span>
+              {/* Media type + edit button */}
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <p className="text-[11px] font-semibold text-[#612A4F] uppercase tracking-wider mb-1">Media Type</p>
+                  <div className="flex items-center gap-1.5">
+                    <Video className="w-3.5 h-3.5 text-[#8B7082]" />
+                    <span className="text-[11px] text-[#8B7082] font-medium">Video</span>
+                  </div>
+                </div>
+                {!isEditingScript ? (
+                  <TooltipProvider delayDuration={0}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={() => setIsEditingScript(true)}
+                          className="p-1 text-[#8B7082] hover:text-[#612A4F] transition-all duration-200 hover:scale-110 hover:-rotate-12"
+                        >
+                          <SquarePen className="w-4 h-4" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" sideOffset={4} className="bg-gray-500 text-white">
+                        <p>Edit</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                ) : (
+                  <TooltipProvider delayDuration={0}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={() => setIsEditingScript(false)}
+                          className="p-1.5 rounded-lg bg-[#A89098] hover:bg-[#8B7082] text-white transition-colors"
+                        >
+                          <Check className="w-4 h-4" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" sideOffset={4} className="bg-gray-500 text-white">
+                        <p>Save changes</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
               </div>
 
               {/* Hook section */}
               <div className="mb-4">
-                <div className="flex items-center justify-between mb-1">
-                  <p className="text-[11px] font-semibold text-[#612A4F] uppercase tracking-wider">Title/Hook</p>
-                  {!isEditingScript ? (
-                    <button
-                      onClick={() => setIsEditingScript(true)}
-                      className="p-1 text-[#8B7082] hover:text-[#612A4F] transition-all duration-200 hover:scale-110 hover:-rotate-12"
-                    >
-                      <SquarePen className="w-4 h-4" />
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => setIsEditingScript(false)}
-                      className="p-1.5 rounded-lg bg-[#A89098] hover:bg-[#8B7082] text-white transition-colors"
-                    >
-                      <Check className="w-4 h-4" />
-                    </button>
-                  )}
-                </div>
+                <p className="text-[11px] font-semibold text-[#612A4F] uppercase tracking-wider mb-1">Hook</p>
                 {isEditingScript ? (
                   <input
                     type="text"
@@ -933,20 +954,7 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
                     {renderScript()}
                   </div>
                 ) : (
-                  <div
-                    onClick={() => setIsEditingScript(true)}
-                    className="flex items-center gap-4 py-4 text-center cursor-pointer hover:bg-amber-50/50 rounded-lg transition-colors"
-                  >
-                    <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center">
-                      <FileText className="w-6 h-6 text-amber-400" />
-                    </div>
-                    <div className="text-left">
-                      <h4 className="text-xs text-gray-600 font-medium">Click to add script</h4>
-                      <p className="text-xs text-gray-400">
-                        Add a script to start creating your storyboard
-                      </p>
-                    </div>
-                  </div>
+                  <p className="text-[13px] text-gray-400 italic">No script added</p>
                 )}
               </div>
 

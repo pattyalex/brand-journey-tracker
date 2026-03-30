@@ -346,40 +346,61 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
           <div className="w-[320px] flex-shrink-0 bg-white/40 relative overflow-y-auto">
             <div className="absolute right-0 top-0 bottom-0 w-px bg-[#8B7082]/30"></div>
             <div className="h-full p-4">
-              {/* Content type indicator */}
-              <div className="flex items-center gap-1.5 mb-3">
-                {contentType === 'video' ? (
-                  <Video className="w-3.5 h-3.5 text-[#8B7082]" />
-                ) : card?.imageMode === 'carousel' ? (
-                  <Layers className="w-3.5 h-3.5 text-[#8B7082]" />
+              {/* Media type + edit button */}
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <p className="text-[11px] font-semibold text-[#612A4F] uppercase tracking-wider mb-1">Media Type</p>
+                  <div className="flex items-center gap-1.5">
+                    {contentType === 'video' ? (
+                      <Video className="w-3.5 h-3.5 text-[#8B7082]" />
+                    ) : card?.imageMode === 'carousel' ? (
+                      <Layers className="w-3.5 h-3.5 text-[#8B7082]" />
+                    ) : (
+                      <ImageIcon className="w-3.5 h-3.5 text-[#8B7082]" />
+                    )}
+                    <span className="text-[11px] text-[#8B7082] font-medium">
+                      {contentType === 'video' ? 'Video' : card?.imageMode === 'carousel' ? 'Carousel' : 'Image'}
+                    </span>
+                  </div>
+                </div>
+                {!isEditing ? (
+                  <TooltipProvider delayDuration={0}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={() => setIsEditing(true)}
+                          className="p-1 text-[#8B7082] hover:text-[#612A4F] transition-all duration-200 hover:scale-110 hover:-rotate-12"
+                        >
+                          <SquarePen className="w-4 h-4" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" sideOffset={4} className="bg-gray-500 text-white">
+                        <p>Edit</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 ) : (
-                  <ImageIcon className="w-3.5 h-3.5 text-[#8B7082]" />
+                  <TooltipProvider delayDuration={0}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={() => setIsEditing(false)}
+                          className="p-1.5 rounded-lg bg-[#A89098] hover:bg-[#8B7082] text-white transition-colors"
+                        >
+                          <Check className="w-4 h-4" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" sideOffset={4} className="bg-gray-500 text-white">
+                        <p>Save changes</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 )}
-                <span className="text-[11px] text-[#8B7082] font-medium">
-                  {contentType === 'video' ? 'Video' : card?.imageMode === 'carousel' ? 'Carousel' : 'Image'}
-                </span>
               </div>
 
               {/* Hook section */}
               <div className="mb-4">
-                <div className="flex items-center justify-between mb-1">
-                  <p className="text-[11px] font-semibold text-[#612A4F] uppercase tracking-wider">Title/Hook</p>
-                  {!isEditing ? (
-                    <button
-                      onClick={() => setIsEditing(true)}
-                      className="p-1 text-[#8B7082] hover:text-[#612A4F] transition-all duration-200 hover:scale-110 hover:-rotate-12"
-                    >
-                      <SquarePen className="w-4 h-4" />
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => setIsEditing(false)}
-                      className="p-1.5 rounded-lg bg-[#A89098] hover:bg-[#8B7082] text-white transition-colors"
-                    >
-                      <Check className="w-4 h-4" />
-                    </button>
-                  )}
-                </div>
+                <p className="text-[11px] font-semibold text-[#612A4F] uppercase tracking-wider mb-1">Hook</p>
                 {isEditing ? (
                   <input
                     type="text"
@@ -417,22 +438,9 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
                     <span className="text-[13px] text-gray-700 leading-relaxed whitespace-pre-wrap">{script}</span>
                   </div>
                 ) : (
-                  <div
-                    onClick={() => setIsEditing(true)}
-                    className="flex items-center gap-4 py-4 text-center cursor-pointer hover:bg-pink-50/50 rounded-lg transition-colors"
-                  >
-                    <div className="w-12 h-12 rounded-full bg-pink-100 flex items-center justify-center">
-                      <FileText className="w-6 h-6 text-pink-400" />
-                    </div>
-                    <div className="text-left">
-                      <h4 className="text-xs text-gray-600 font-medium">
-                        {isImage ? 'Click to add caption' : 'Click to add script'}
-                      </h4>
-                      <p className="text-xs text-gray-400">
-                        {isImage ? 'Add caption to review while editing' : 'Add a script to review while editing'}
-                      </p>
-                    </div>
-                  </div>
+                  <p className="text-[13px] text-gray-400 italic">
+                    {isImage ? 'No caption added' : 'No script added'}
+                  </p>
                 )}
               </div>
 
