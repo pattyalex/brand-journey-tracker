@@ -120,6 +120,9 @@ const BigPictureBanner: React.FC<{
           <p className="text-[14px] leading-relaxed text-[#4A3D45]">
             This is where you can see <span style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600, fontStyle: "italic", color: "#612A4F", fontSize: "16px" }}>all your ideas</span> at a glance.
           </p>
+          <p className="text-[14px] leading-relaxed text-[#4A3D45] mt-2">
+            Each column represents a step in the content production process.
+          </p>
           <div className="flex items-center justify-between mt-5">
             <TourProgressDots currentStep={1} />
             <div className="flex items-center gap-2">
@@ -172,6 +175,13 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
         });
       }
     };
+    // On steps that scroll the board (4, 5), clear stale position and only measure after scroll settles
+    if (stepIndex === 4 || stepIndex === 5) {
+      setBoardPos(null);
+      const timer = setTimeout(update, 100);
+      window.addEventListener("resize", update);
+      return () => { clearTimeout(timer); window.removeEventListener("resize", update); };
+    }
     update();
     const timer = setTimeout(update, 150);
     window.addEventListener("resize", update);
