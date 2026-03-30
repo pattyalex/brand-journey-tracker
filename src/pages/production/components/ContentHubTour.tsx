@@ -21,8 +21,8 @@ const TourTooltip: React.FC<TooltipRenderProps> = ({
   isLastStep,
   tooltipProps,
 }) => {
-  // Hide tooltip on floating steps (big picture = 1, drag demo = 3, anatomy = 4)
-  if (index === 1 || index === 3 || index === 4) {
+  // Hide tooltip on floating steps (big picture = 1, open card = 2, drag demo = 3, anatomy = 4, ready = 5)
+  if (index === 1 || index === 2 || index === 3 || index === 4 || index === 5) {
     return <div {...tooltipProps} style={{ display: "none" }} />;
   }
 
@@ -149,6 +149,62 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
   const [currentTarget, setCurrentTarget] = useState<string | null>(null);
   const [stepIndex, setStepIndex] = useState(0);
   const [anatomyPos, setAnatomyPos] = useState<{ top: number; left: number; width: number } | null>(null);
+  const [ideateCardPos, setIdeateCardPos] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
+  const [boardPos, setBoardPos] = useState<{ left: number; width: number; top: number; height: number } | null>(null);
+  const [readyColPos, setReadyColPos] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
+
+  // Track visible board area for centering portals (clamped to viewport)
+  useEffect(() => {
+    if (!run) return;
+    const update = () => {
+      const board = document.querySelector<HTMLElement>('[data-tour="kanban-board"]');
+      if (board) {
+        const rect = board.getBoundingClientRect();
+        const visibleLeft = Math.max(0, rect.left);
+        const visibleRight = Math.min(window.innerWidth, rect.right);
+        setBoardPos({
+          left: visibleLeft,
+          width: visibleRight - visibleLeft,
+          top: rect.top,
+          height: rect.height,
+        });
+      }
+    };
+    update();
+    const timer = setTimeout(update, 150);
+    window.addEventListener("resize", update);
+    return () => { clearTimeout(timer); window.removeEventListener("resize", update); };
+  }, [run, stepIndex]);
+
+  // Track ideate-card-2 position on step 2
+  useEffect(() => {
+    if (stepIndex !== 2) { setIdeateCardPos(null); return; }
+    const update = () => {
+      const el = document.querySelector<HTMLElement>('[data-tour="ideate-card-2"]');
+      if (el) {
+        const rect = el.getBoundingClientRect();
+        setIdeateCardPos({ top: rect.top, left: rect.left, width: rect.width, height: rect.height });
+      }
+    };
+    const timer = setTimeout(update, 150);
+    window.addEventListener("resize", update);
+    return () => { clearTimeout(timer); window.removeEventListener("resize", update); };
+  }, [stepIndex]);
+
+  // Track ready-to-post column position on step 5
+  useEffect(() => {
+    if (stepIndex !== 5) { setReadyColPos(null); return; }
+    const update = () => {
+      const el = document.querySelector<HTMLElement>('[data-tour="column-ready-to-post"]');
+      if (el) {
+        const rect = el.getBoundingClientRect();
+        setReadyColPos({ top: rect.top, left: rect.left, width: rect.width, height: rect.height });
+      }
+    };
+    const timer = setTimeout(update, 300);
+    window.addEventListener("resize", update);
+    return () => { clearTimeout(timer); window.removeEventListener("resize", update); };
+  }, [stepIndex]);
 
   // Track anatomy card position on step 4
   useEffect(() => {
@@ -264,30 +320,11 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
       disableBeacon: true,
     },
     {
-      target: '[data-tour="ideate-card-2"]',
-      title: "Click on a card to open it",
-      content: (
-        <div>
-          <p>Opening a card = develop that piece of content.</p>
-          <ul className="mt-3 space-y-1.5 text-[13px] text-[#4A3D45]">
-            <li className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#612A4F] flex-shrink-0" />
-              Prepare the concept
-            </li>
-            <li className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#612A4F] flex-shrink-0" />
-              Write the script
-            </li>
-            <li className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#612A4F] flex-shrink-0" />
-              Create the filming/shooting plan
-            </li>
-          </ul>
-        </div>
-      ),
-      placement: "right" as const,
+      target: '[data-tour="kanban-board"]',
+      title: "",
+      content: (<></>),
+      placement: "center" as const,
       disableBeacon: true,
-      spotlightPadding: 4,
     },
     {
       target: '[data-tour="kanban-board"]',
@@ -305,13 +342,8 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
     },
     {
       target: '[data-tour="kanban-board"]',
-      title: "Ready to go",
-      content: (
-        <p>
-          Once your content is fully produced and ready, it lands here.
-          From this point, head to your Calendar to schedule it for posting.
-        </p>
-      ),
+      title: "",
+      content: (<></>),
       placement: "center" as const,
       disableBeacon: true,
     },
@@ -355,10 +387,110 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
         onBack={() => goToStep(0)}
       />
     )}
-    {run && stepIndex === 3 && createPortal(
+    {/* Step 2 — "Click on a card to open it" positioned next to ideate-card-2 */}
+    {run && stepIndex === 2 && createPortal(
+      <>
+        {ideateCardPos && (
+          <div
+            className="fixed"
+            style={{
+              zIndex: 10004,
+              top: ideateCardPos.top,
+              left: ideateCardPos.left + ideateCardPos.width + 16,
+            }}
+          >
+            <div
+              className="rounded-2xl bg-white p-6"
+              style={{
+                boxShadow: "0 8px 30px rgba(93,63,90,0.12), 0 -8px 30px rgba(93,63,90,0.1)",
+                border: "1px solid rgba(93,63,90,0.08)",
+                maxWidth: 380,
+                position: "relative",
+              }}
+            >
+              <h3
+                className="text-[18px] mb-2 text-[#612A4F]"
+                style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
+              >
+                Click on a card to open it
+              </h3>
+              <div className="text-[14px] leading-relaxed text-[#4A3D45]">
+                <p>Opening a card = develop that piece of content.</p>
+                <ul className="mt-3 space-y-1.5 text-[13px] text-[#4A3D45]">
+                  <li className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#612A4F] flex-shrink-0" />
+                    Prepare the concept
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#612A4F] flex-shrink-0" />
+                    Write the script
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#612A4F] flex-shrink-0" />
+                    Create the filming/shooting plan
+                  </li>
+                </ul>
+              </div>
+              <div className="flex items-center justify-between mt-5">
+                <div />
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => goToStep(1)}
+                    title=""
+                    className="px-3 py-1.5 text-[13px] font-medium text-[#8B7082] hover:text-[#612A4F] transition-colors outline-none focus:outline-none"
+                  >
+                    Back
+                  </button>
+                  <button
+                    onClick={() => goToStep(3)}
+                    title=""
+                    className="px-4 py-2 rounded-xl text-[13px] font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98] outline-none focus:outline-none"
+                    style={{ backgroundColor: "#612A4F" }}
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+              {/* Arrow pointing left */}
+              <div
+                style={{
+                  position: "absolute",
+                  left: -14,
+                  top: 24,
+                  width: 14,
+                  height: 28,
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    width: 20,
+                    height: 20,
+                    backgroundColor: "#FFFFFF",
+                    transform: "rotate(45deg)",
+                    position: "absolute",
+                    right: -10,
+                    top: 4,
+                    boxShadow: "0 8px 30px rgba(93,63,90,0.12)",
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+      </>,
+      document.body
+    )}
+    {/* Step 3 — "Drag cards to advance them" centered in visible board area */}
+    {run && stepIndex === 3 && boardPos && createPortal(
       <div
-        className="fixed left-0 right-0 flex justify-center"
-        style={{ zIndex: 10004, bottom: 180, paddingLeft: 300 }}
+        className="fixed"
+        style={{
+          zIndex: 10004,
+          bottom: 180,
+          left: boardPos.left + boardPos.width / 2,
+          transform: "translateX(-50%)",
+        }}
       >
         <div
           className="rounded-2xl bg-white p-6"
@@ -398,6 +530,7 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
       </div>,
       document.body
     )}
+    {/* Step 4 — Anatomy card labels */}
     {run && stepIndex === 4 && createPortal(
       <>
         {/* Title + subtitle above the card */}
@@ -449,33 +582,119 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
             </div>
           </div>
         </div>}
-        {/* Back / Next buttons at the bottom */}
-        <div
-          className="fixed left-0 right-0 flex justify-center"
-          style={{ zIndex: 10004, bottom: 160, paddingLeft: 550 }}
-        >
+        {/* Back / Next buttons at the bottom — centered in visible board area */}
+        {boardPos && (
           <div
-            className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-white"
-            style={{ boxShadow: "0 8px 30px rgba(93,63,90,0.12)", border: "1px solid rgba(93,63,90,0.08)" }}
+            className="fixed"
+            style={{
+              zIndex: 10004,
+              bottom: 160,
+              left: boardPos.left + boardPos.width / 2,
+              transform: "translateX(-50%)",
+            }}
           >
+            <div
+              className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-white"
+              style={{ boxShadow: "0 8px 30px rgba(93,63,90,0.12)", border: "1px solid rgba(93,63,90,0.08)" }}
+            >
+              <button
+                onClick={() => goToStep(3)}
+                title=""
+                className="px-3 py-1.5 text-[13px] font-medium text-[#8B7082] hover:text-[#612A4F] transition-colors outline-none focus:outline-none"
+              >
+                Back
+              </button>
+              <button
+                onClick={() => goToStep(5)}
+                title=""
+                className="px-4 py-2 rounded-xl text-[13px] font-semibold text-white outline-none focus:outline-none transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
+                style={{ backgroundColor: "#612A4F" }}
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
+      </>,
+      document.body
+    )}
+    {/* Step 5 — "Ready to go" positioned next to ready-to-post column */}
+    {run && stepIndex === 5 && createPortal(
+      <div
+        className="fixed"
+        style={{
+          zIndex: 10004,
+          top: "47%",
+          transform: "translateY(-50%)",
+          ...(readyColPos
+            ? { left: readyColPos.left - 356 }
+            : { right: 340 }),
+        }}
+      >
+        <div style={{ position: "relative" }}>
+        <div
+          className="rounded-2xl bg-white p-6"
+          style={{
+            boxShadow: "0 8px 30px rgba(93,63,90,0.12), 0 -8px 30px rgba(93,63,90,0.1)",
+            border: "1px solid rgba(93,63,90,0.08)",
+            maxWidth: 340,
+          }}
+        >
+          <h3
+            className="text-[18px] text-[#612A4F] mb-2"
+            style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
+          >
+            Ready to go
+          </h3>
+          <p className="text-[14px] leading-relaxed text-[#4A3D45]">
+            Once your content is fully produced and ready, it lands here.
+            From this point, head to your Calendar to schedule it for posting.
+          </p>
+          <div className="flex items-center justify-end mt-5 gap-2">
             <button
-              onClick={() => goToStep(3)}
+              onClick={() => goToStep(4)}
               title=""
               className="px-3 py-1.5 text-[13px] font-medium text-[#8B7082] hover:text-[#612A4F] transition-colors outline-none focus:outline-none"
             >
               Back
             </button>
             <button
-              onClick={() => goToStep(5)}
+              onClick={() => { onComplete(); }}
               title=""
               className="px-4 py-2 rounded-xl text-[13px] font-semibold text-white outline-none focus:outline-none transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
               style={{ backgroundColor: "#612A4F" }}
             >
-              Next
+              Start creating!
             </button>
           </div>
         </div>
-      </>,
+        {/* Arrow pointing right */}
+        <div
+          style={{
+            position: "absolute",
+            right: -18,
+            top: "50%",
+            transform: "translateY(-50%)",
+            width: 18,
+            height: 36,
+            overflow: "hidden",
+          }}
+        >
+          <div
+            style={{
+              width: 26,
+              height: 26,
+              backgroundColor: "#FFFFFF",
+              transform: "rotate(45deg)",
+              position: "absolute",
+              left: -13,
+              top: 5,
+              boxShadow: "0 8px 30px rgba(93,63,90,0.12)",
+            }}
+          />
+        </div>
+        </div>
+      </div>,
       document.body
     )}
     <Joyride

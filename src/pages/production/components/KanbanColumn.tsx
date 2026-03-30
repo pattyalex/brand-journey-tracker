@@ -374,7 +374,9 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
           ...(isTourActive ? {
             background: 'linear-gradient(180deg, #FAF7F5 0%, #F3EEEB 100%)',
             borderRadius: 20,
-            ...(tourStepIndex === 1 || tourStepIndex === 5 ? {
+            ...(tourStepIndex === 1 ? {
+              border: '2px solid rgba(97, 42, 79, 0.35)',
+            } : tourStepIndex === 5 && column.id === 'ready-to-post' ? {
               border: '2px solid rgba(97, 42, 79, 0.35)',
             } : tourStepIndex === 3 ? {
               border: 'none',
@@ -546,6 +548,28 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
                     const filteredCards = (tourStepIndex === 2 && column.id === 'shape-ideas')
                       ? []
                       : cards;
+
+                    // On step 5, show Schedule on Calendar button in ready-to-post column
+                    if (tourStepIndex === 5 && column.id === 'ready-to-post') {
+                      return (
+                        <div style={{ opacity: 0.55 }}>
+                          {filteredCards.map((card, i) => (
+                            <div key={i} className={i > 0 ? "mt-3" : ""}>
+                              <TourDemoCard title={card.title} filled={card.filled} format={(card as any).format} platforms={(card as any).platforms} />
+                            </div>
+                          ))}
+                          <div className="mt-3">
+                            <button
+                              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-[12px] text-[14px] font-medium"
+                              style={{ backgroundColor: '#8B7082', color: 'white' }}
+                            >
+                              <CalendarDays className="w-4 h-4" />
+                              Schedule on Calendar
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    }
 
                     return (
                       <div style={{ opacity: 0.55 }}>
