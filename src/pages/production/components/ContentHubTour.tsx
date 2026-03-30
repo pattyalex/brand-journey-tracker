@@ -203,13 +203,13 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
         setReadyColPos({ top: rect.top, left: rect.left, width: rect.width, height: rect.height });
       }
     };
-    // Wait 600ms for the smooth scroll to finish before measuring
-    const timer = setTimeout(update, 600);
+    // Measure after instant scroll completes
+    const timer = setTimeout(update, 50);
     window.addEventListener("resize", update);
     return () => { clearTimeout(timer); window.removeEventListener("resize", update); };
   }, [stepIndex]);
 
-  // Track anatomy card position on step 4 — re-measure after scroll settles
+  // Track anatomy card position on step 4 — only show after scroll settles
   useEffect(() => {
     if (stepIndex !== 4) { setAnatomyPos(null); return; }
     const update = () => {
@@ -219,18 +219,12 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
         setAnatomyPos({ top: rect.top, left: rect.left, width: rect.width });
       }
     };
-    // Measure immediately, then re-measure after scroll completes
-    requestAnimationFrame(update);
+    // Measure after instant scroll completes
     const t1 = setTimeout(update, 50);
-    const t2 = setTimeout(update, 400);
-    const t3 = setTimeout(update, 700);
-    // Also re-measure on scroll (catches the smooth scroll animation)
-    const kanban = document.querySelector<HTMLElement>('[data-tour="kanban-board"]');
-    kanban?.addEventListener("scroll", update);
+    // Re-measure on resize
     window.addEventListener("resize", update);
     return () => {
-      clearTimeout(t1); clearTimeout(t2); clearTimeout(t3);
-      kanban?.removeEventListener("scroll", update);
+      clearTimeout(t1);
       window.removeEventListener("resize", update);
     };
   }, [stepIndex]);
@@ -283,12 +277,12 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
         kanban.scrollTo({ left: 0, behavior: "smooth" });
       }
     }
-    // Scroll to center the shape-ideas column for anatomy step
+    // Scroll to center the shape-ideas column for anatomy step (instant to avoid visible jump)
     if (stepIndex === 4) {
       requestAnimationFrame(() => {
         const shapeCol = document.querySelector<HTMLElement>('[data-tour="column-shape-ideas"]');
         if (shapeCol) {
-          shapeCol.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+          shapeCol.scrollIntoView({ behavior: "instant", inline: "center", block: "nearest" });
         }
       });
     }
@@ -303,7 +297,7 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
       requestAnimationFrame(() => {
         const readyCol = document.querySelector<HTMLElement>('[data-tour="column-ready-to-post"]');
         if (readyCol) {
-          readyCol.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+          readyCol.scrollIntoView({ behavior: "instant", inline: "center", block: "nearest" });
         }
       });
       return () => {
@@ -648,17 +642,15 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
       </>,
       document.body
     )}
-    {/* Step 5 — "Ready to go" positioned next to ready-to-post column */}
-    {run && stepIndex === 5 && createPortal(
+    {/* Step 5 — "Ready to go" positioned next to ready-to-post column (only render once position is known) */}
+    {run && stepIndex === 5 && readyColPos && createPortal(
       <div
         className="fixed"
         style={{
           zIndex: 10004,
           top: "47%",
           transform: "translateY(-50%)",
-          ...(readyColPos
-            ? { left: Math.max(16, readyColPos.left - 420) }
-            : { right: 340 }),
+          left: Math.max(16, readyColPos.left - 420),
         }}
       >
         <div style={{ position: "relative" }}>
