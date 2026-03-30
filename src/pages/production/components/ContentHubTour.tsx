@@ -271,11 +271,21 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
       }
     }
     // Scroll to start for steps 1-3
+    // Reset scrollLeft on the kanban board AND all its ancestors — scrollIntoView
+    // from step 4 can shift a parent container (the sidebar is position:fixed so it
+    // stays put, but content shifts). This undoes that shift completely.
     if (stepIndex >= 1 && stepIndex <= 3) {
-      const kanban = document.querySelector<HTMLElement>('[data-tour="kanban-board"]');
-      if (kanban) {
-        kanban.scrollTo({ left: 0, behavior: "smooth" });
-      }
+      setTimeout(() => {
+        const kanban = document.querySelector<HTMLElement>('[data-tour="kanban-board"]');
+        if (kanban) {
+          kanban.scrollLeft = 0;
+          let parent = kanban.parentElement;
+          while (parent && parent !== document.documentElement) {
+            if (parent.scrollLeft !== 0) parent.scrollLeft = 0;
+            parent = parent.parentElement;
+          }
+        }
+      }, 0);
     }
     // Scroll to center the shape-ideas column for anatomy step (instant to avoid visible jump)
     if (stepIndex === 4) {
