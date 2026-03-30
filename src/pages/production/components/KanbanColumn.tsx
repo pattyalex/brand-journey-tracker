@@ -136,7 +136,7 @@ const TourDemoCard: React.FC<{
     )}
     <div className="mt-2 pt-2 border-t border-[#E8E2E5]">
       <div className="flex items-center gap-1.5">
-        {Array.from({ length: 6 }).map((_, j) => (
+        {Array.from({ length: 5 }).map((_, j) => (
           <div
             key={j}
             className="w-[6px] h-[6px] rounded-full"
@@ -186,7 +186,7 @@ const TourAnatomyCard: React.FC = () => (
       </div>
       <div className="mt-2 pt-2 border-t border-[#E8E2E5]">
         <div className="flex items-center gap-1.5">
-          {[true, true, false, false, false, false].map((filled, i) => (
+          {[true, true, false, false, false].map((filled, i) => (
             <div
               key={i}
               className="w-[6px] h-[6px] rounded-full"
@@ -563,7 +563,7 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
                           <div className="mt-3">
                             <button
                               className="w-full flex items-center justify-center gap-2 py-2.5 rounded-[12px] text-[14px] font-medium"
-                              style={{ backgroundColor: '#8B7082', color: 'white' }}
+                              style={{ backgroundColor: '#612A4F', color: 'white' }}
                             >
                               <CalendarDays className="w-4 h-4" />
                               Schedule on Calendar

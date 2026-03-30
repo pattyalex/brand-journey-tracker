@@ -46,30 +46,10 @@ const TourTooltip: React.FC<TooltipRenderProps> = ({
 
     {/* Step dots + navigation */}
     <div className="flex items-center justify-between mt-5">
-      <div className="flex gap-1.5">
-        {index !== 2 && Array.from({ length: size }).map((_, i) => (
-          <div
-            key={i}
-            className="w-[6px] h-[6px] rounded-full transition-colors duration-200"
-            style={
-              i <= index
-                ? { backgroundColor: "#612A4F" }
-                : { backgroundColor: "transparent", border: "1.5px solid #C4B5C9" }
-            }
-          />
-        ))}
-      </div>
+      <TourProgressDots currentStep={index} />
 
       <div className="flex items-center gap-2">
-        {index === 0 ? (
-          <button
-            {...skipProps}
-            title=""
-            className="px-3 py-1.5 text-[13px] font-medium text-[#8B7082] hover:text-[#612A4F] transition-colors outline-none focus:outline-none"
-          >
-            Skip tour
-          </button>
-        ) : (
+        {index !== 0 && (
           <button
             {...backProps}
             title=""
@@ -91,6 +71,25 @@ const TourTooltip: React.FC<TooltipRenderProps> = ({
   </div>
   );
 };
+
+const TOTAL_STEPS = 6;
+
+// Reusable progress dots for all tour popups
+const TourProgressDots: React.FC<{ currentStep: number }> = ({ currentStep }) => (
+  <div className="flex gap-1.5">
+    {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
+      <div
+        key={i}
+        className="w-[6px] h-[6px] rounded-full transition-colors duration-200"
+        style={
+          i <= currentStep
+            ? { backgroundColor: "#612A4F" }
+            : { backgroundColor: "transparent", border: "1.5px solid #C4B5C9" }
+        }
+      />
+    ))}
+  </div>
+);
 
 // Banner card for the big picture step — matches popup design
 const BigPictureBanner: React.FC<{
@@ -119,24 +118,27 @@ const BigPictureBanner: React.FC<{
             Columns = Big picture view
           </h3>
           <p className="text-[14px] leading-relaxed text-[#4A3D45]">
-            See all your content ideas and their progress at a glance.
+            This is where you can see <span style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600, fontStyle: "italic", color: "#612A4F", fontSize: "16px" }}>all your ideas</span> at a glance.
           </p>
-          <div className="flex items-center justify-end mt-5 gap-2">
-            <button
-              onClick={onBack}
-              title=""
-              className="px-3 py-1.5 text-[13px] font-medium text-[#8B7082] hover:text-[#612A4F] transition-colors outline-none focus:outline-none"
-            >
-              Back
-            </button>
-            <button
-              onClick={onNext}
-              title=""
-              className="px-4 py-2 rounded-xl text-[13px] font-semibold text-white outline-none focus:outline-none transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
-              style={{ backgroundColor: "#612A4F" }}
-            >
-              Next
-            </button>
+          <div className="flex items-center justify-between mt-5">
+            <TourProgressDots currentStep={1} />
+            <div className="flex items-center gap-2">
+              <button
+                onClick={onBack}
+                title=""
+                className="px-3 py-1.5 text-[13px] font-medium text-[#8B7082] hover:text-[#612A4F] transition-colors outline-none focus:outline-none"
+              >
+                Back
+              </button>
+              <button
+                onClick={onNext}
+                title=""
+                className="px-4 py-2 rounded-xl text-[13px] font-semibold text-white outline-none focus:outline-none transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
+                style={{ backgroundColor: "#612A4F" }}
+              >
+                Next
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -339,8 +341,7 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
       title: "Welcome to Content Hub",
       content: (
         <p>
-          This is the place where you create, shape, and prepare every piece of
-          content before it goes live.
+          This is your production center. It's where you develop your ideas into ready-to-post content.
         </p>
       ),
       placement: "center" as const,
@@ -446,10 +447,10 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
                 className="text-[18px] mb-2 text-[#612A4F]"
                 style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
               >
-                Click on a card to open it
+                Each card = one piece of content
               </h3>
               <div className="text-[14px] leading-relaxed text-[#4A3D45]">
-                <p>Opening a card = develop that piece of content.</p>
+                <p>Click on a card to open it. That's where you can develop your idea:</p>
                 <ul className="mt-3 space-y-1.5 text-[13px] text-[#4A3D45]">
                   <li className="flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#612A4F] flex-shrink-0" />
@@ -466,7 +467,7 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
                 </ul>
               </div>
               <div className="flex items-center justify-between mt-5">
-                <div />
+                <TourProgressDots currentStep={2} />
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => goToStep(1)}
@@ -543,22 +544,25 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
           <p className="text-[14px] leading-relaxed text-[#4A3D45]">
             Move cards to the next column as your content progresses
           </p>
-          <div className="flex items-center justify-end mt-5 gap-2">
-            <button
-              onClick={() => goToStep(2)}
-              title=""
-              className="px-3 py-1.5 text-[13px] font-medium text-[#8B7082] hover:text-[#612A4F] transition-colors outline-none focus:outline-none"
-            >
-              Back
-            </button>
-            <button
-              onClick={() => goToStep(4)}
-              title=""
-              className="px-4 py-2 rounded-xl text-[13px] font-semibold text-white outline-none focus:outline-none transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
-              style={{ backgroundColor: "#612A4F" }}
-            >
-              Next
-            </button>
+          <div className="flex items-center justify-between mt-5">
+            <TourProgressDots currentStep={3} />
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => goToStep(2)}
+                title=""
+                className="px-3 py-1.5 text-[13px] font-medium text-[#8B7082] hover:text-[#612A4F] transition-colors outline-none focus:outline-none"
+              >
+                Back
+              </button>
+              <button
+                onClick={() => goToStep(4)}
+                title=""
+                className="px-4 py-2 rounded-xl text-[13px] font-semibold text-white outline-none focus:outline-none transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
+                style={{ backgroundColor: "#612A4F" }}
+              >
+                Next
+              </button>
+            </div>
           </div>
         </div>
       </div>,
@@ -628,24 +632,27 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
             }}
           >
             <div
-              className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-white"
+              className="flex items-center gap-5 px-5 py-3 rounded-2xl bg-white"
               style={{ boxShadow: "0 8px 30px rgba(93,63,90,0.12)", border: "1px solid rgba(93,63,90,0.08)" }}
             >
-              <button
-                onClick={() => goToStep(3)}
-                title=""
-                className="px-3 py-1.5 text-[13px] font-medium text-[#8B7082] hover:text-[#612A4F] transition-colors outline-none focus:outline-none"
-              >
-                Back
-              </button>
-              <button
-                onClick={() => goToStep(5)}
-                title=""
-                className="px-4 py-2 rounded-xl text-[13px] font-semibold text-white outline-none focus:outline-none transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
-                style={{ backgroundColor: "#612A4F" }}
-              >
-                Next
-              </button>
+              <TourProgressDots currentStep={4} />
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => goToStep(3)}
+                  title=""
+                  className="px-3 py-1.5 text-[13px] font-medium text-[#8B7082] hover:text-[#612A4F] transition-colors outline-none focus:outline-none"
+                >
+                  Back
+                </button>
+                <button
+                  onClick={() => goToStep(5)}
+                  title=""
+                  className="px-4 py-2 rounded-xl text-[13px] font-semibold text-white outline-none focus:outline-none transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
+                  style={{ backgroundColor: "#612A4F" }}
+                >
+                  Next
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -684,22 +691,25 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
           <p className="text-[14px] leading-relaxed text-[#4A3D45] mt-3">
             From this point, head to your Calendar to schedule it for posting.
           </p>
-          <div className="flex items-center justify-end mt-5 gap-2">
-            <button
-              onClick={() => goToStep(4)}
-              title=""
-              className="px-3 py-1.5 text-[13px] font-medium text-[#8B7082] hover:text-[#612A4F] transition-colors outline-none focus:outline-none"
-            >
-              Back
-            </button>
-            <button
-              onClick={() => { onComplete(); }}
-              title=""
-              className="px-4 py-2 rounded-xl text-[13px] font-semibold text-white outline-none focus:outline-none transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
-              style={{ backgroundColor: "#612A4F" }}
-            >
-              Start creating!
-            </button>
+          <div className="flex items-center justify-between mt-5">
+            <TourProgressDots currentStep={5} />
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => goToStep(4)}
+                title=""
+                className="px-3 py-1.5 text-[13px] font-medium text-[#8B7082] hover:text-[#612A4F] transition-colors outline-none focus:outline-none"
+              >
+                Back
+              </button>
+              <button
+                onClick={() => { onComplete(); }}
+                title=""
+                className="px-4 py-2 rounded-xl text-[13px] font-semibold text-white outline-none focus:outline-none transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
+                style={{ backgroundColor: "#612A4F" }}
+              >
+                Start creating!
+              </button>
+            </div>
           </div>
         </div>
         {/* Arrow pointing right */}
