@@ -552,12 +552,14 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
                     // On step 5, show Schedule on Calendar button in ready-to-post column
                     if (tourStepIndex === 5 && column.id === 'ready-to-post') {
                       return (
-                        <div style={{ opacity: 0.55 }}>
-                          {filteredCards.map((card, i) => (
-                            <div key={i} className={i > 0 ? "mt-3" : ""}>
-                              <TourDemoCard title={card.title} filled={card.filled} format={(card as any).format} platforms={(card as any).platforms} />
-                            </div>
-                          ))}
+                        <>
+                          <div style={{ opacity: 0.55 }}>
+                            {filteredCards.map((card, i) => (
+                              <div key={i} className={i > 0 ? "mt-3" : ""}>
+                                <TourDemoCard title={card.title} filled={card.filled} format={(card as any).format} platforms={(card as any).platforms} />
+                              </div>
+                            ))}
+                          </div>
                           <div className="mt-3">
                             <button
                               className="w-full flex items-center justify-center gap-2 py-2.5 rounded-[12px] text-[14px] font-medium"
@@ -567,7 +569,7 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
                               Schedule on Calendar
                             </button>
                           </div>
-                        </div>
+                        </>
                       );
                     }
 

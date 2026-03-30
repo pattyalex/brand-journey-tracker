@@ -186,12 +186,14 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
         setIdeateCardPos({ top: rect.top, left: rect.left, width: rect.width, height: rect.height });
       }
     };
-    const timer = setTimeout(update, 150);
+    // Measure immediately and once more after a short delay
+    requestAnimationFrame(update);
+    const timer = setTimeout(update, 50);
     window.addEventListener("resize", update);
     return () => { clearTimeout(timer); window.removeEventListener("resize", update); };
   }, [stepIndex]);
 
-  // Track ready-to-post column position on step 5
+  // Track ready-to-post column position on step 5 (wait for scroll to complete)
   useEffect(() => {
     if (stepIndex !== 5) { setReadyColPos(null); return; }
     const update = () => {
@@ -201,12 +203,13 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
         setReadyColPos({ top: rect.top, left: rect.left, width: rect.width, height: rect.height });
       }
     };
-    const timer = setTimeout(update, 300);
+    // Wait 600ms for the smooth scroll to finish before measuring
+    const timer = setTimeout(update, 600);
     window.addEventListener("resize", update);
     return () => { clearTimeout(timer); window.removeEventListener("resize", update); };
   }, [stepIndex]);
 
-  // Track anatomy card position on step 4
+  // Track anatomy card position on step 4 — re-measure after scroll settles
   useEffect(() => {
     if (stepIndex !== 4) { setAnatomyPos(null); return; }
     const update = () => {
@@ -216,10 +219,20 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
         setAnatomyPos({ top: rect.top, left: rect.left, width: rect.width });
       }
     };
-    // Wait for render then track
-    const timer = setTimeout(update, 100);
+    // Measure immediately, then re-measure after scroll completes
+    requestAnimationFrame(update);
+    const t1 = setTimeout(update, 50);
+    const t2 = setTimeout(update, 400);
+    const t3 = setTimeout(update, 700);
+    // Also re-measure on scroll (catches the smooth scroll animation)
+    const kanban = document.querySelector<HTMLElement>('[data-tour="kanban-board"]');
+    kanban?.addEventListener("scroll", update);
     window.addEventListener("resize", update);
-    return () => { clearTimeout(timer); window.removeEventListener("resize", update); };
+    return () => {
+      clearTimeout(t1); clearTimeout(t2); clearTimeout(t3);
+      kanban?.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+    };
   }, [stepIndex]);
 
   // Elevate individual column targets above the overlay
@@ -245,6 +258,12 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
       el.style.position = "relative";
       el.style.zIndex = "10001";
     });
+    // Keep sidebar above elevated columns
+    // Keep sidebar above elevated columns — target the fixed sidebar wrapper
+    const sidebarEl = document.querySelector<HTMLElement>('[data-sidebar="sidebar"]')?.closest<HTMLElement>('.fixed');
+    if (sidebarEl) {
+      sidebarEl.style.zIndex = "10003";
+    }
     if (stepIndex === 3) {
       const shapeCol = document.querySelector<HTMLElement>('[data-tour="column-shape-ideas"]');
       if (shapeCol) {
@@ -257,12 +276,21 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
         anatomyCol.style.zIndex = "10002";
       }
     }
-    // Scroll to start for steps 1-4
-    if (stepIndex >= 1 && stepIndex <= 4) {
+    // Scroll to start for steps 1-3
+    if (stepIndex >= 1 && stepIndex <= 3) {
       const kanban = document.querySelector<HTMLElement>('[data-tour="kanban-board"]');
       if (kanban) {
         kanban.scrollTo({ left: 0, behavior: "smooth" });
       }
+    }
+    // Scroll to center the shape-ideas column for anatomy step
+    if (stepIndex === 4) {
+      requestAnimationFrame(() => {
+        const shapeCol = document.querySelector<HTMLElement>('[data-tour="column-shape-ideas"]');
+        if (shapeCol) {
+          shapeCol.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+        }
+      });
     }
     // Scroll to show the last columns on step 5, hide columns after Ready to Post
     if (stepIndex === 5) {
@@ -271,11 +299,11 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
       const scheduledCol = document.querySelector<HTMLElement>('[data-tour="column-scheduled"]');
       if (scheduleCol) { scheduleCol.style.display = "none"; }
       if (scheduledCol) { scheduledCol.style.display = "none"; }
-      // Scroll after hiding so Ready to Post is the last visible column
+      // Scroll so Ready to Post column is centered in view (leaves room for tooltip)
       requestAnimationFrame(() => {
         const readyCol = document.querySelector<HTMLElement>('[data-tour="column-ready-to-post"]');
         if (readyCol) {
-          readyCol.scrollIntoView({ behavior: "smooth", inline: "end", block: "nearest" });
+          readyCol.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
         }
       });
       return () => {
@@ -283,6 +311,7 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
           el.style.position = "";
           el.style.zIndex = "";
         });
+        if (sidebarEl) sidebarEl.style.zIndex = "";
         if (scheduleCol) scheduleCol.style.display = "";
         if (scheduledCol) scheduledCol.style.display = "";
         const kanban = document.querySelector<HTMLElement>('[data-tour="kanban-board"]');
@@ -296,6 +325,7 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
         el.style.position = "";
         el.style.zIndex = "";
       });
+      if (sidebarEl) sidebarEl.style.zIndex = "";
     };
   }, [stepIndex]);
 
@@ -627,7 +657,7 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
           top: "47%",
           transform: "translateY(-50%)",
           ...(readyColPos
-            ? { left: readyColPos.left - 356 }
+            ? { left: Math.max(16, readyColPos.left - 420) }
             : { right: 340 }),
         }}
       >
@@ -637,17 +667,19 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
           style={{
             boxShadow: "0 8px 30px rgba(93,63,90,0.12), 0 -8px 30px rgba(93,63,90,0.1)",
             border: "1px solid rgba(93,63,90,0.08)",
-            maxWidth: 340,
+            maxWidth: 440,
           }}
         >
           <h3
-            className="text-[18px] text-[#612A4F] mb-2"
+            className="text-[18px] text-[#612A4F] mb-2 whitespace-nowrap"
             style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
           >
-            Ready to go
+            Finally, go to Calendar to schedule your content
           </h3>
           <p className="text-[14px] leading-relaxed text-[#4A3D45]">
-            Once your content is fully produced and ready, it lands here.
+            Once your content is fully produced and ready to post, it lands in this column.
+          </p>
+          <p className="text-[14px] leading-relaxed text-[#4A3D45] mt-3">
             From this point, head to your Calendar to schedule it for posting.
           </p>
           <div className="flex items-center justify-end mt-5 gap-2">
