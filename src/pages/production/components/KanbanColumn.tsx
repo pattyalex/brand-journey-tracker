@@ -491,9 +491,14 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
                       );
                     }
 
+                    // On step 2, hide the first shape-ideas card so the tooltip isn't blocked
+                    const filteredCards = (tourStepIndex === 2 && column.id === 'shape-ideas')
+                      ? []
+                      : cards;
+
                     return (
                       <div style={{ opacity: 0.55 }}>
-                        {cards.map((card, i) => (
+                        {filteredCards.map((card, i) => (
                           <div key={i} className={i > 0 ? "mt-3" : ""}>
                             <TourDemoCard title={card.title} filled={card.filled} format={(card as any).format} platforms={(card as any).platforms} />
                           </div>
