@@ -30,7 +30,7 @@ const TourTooltip: React.FC<TooltipRenderProps> = ({
   <div
     {...tooltipProps}
     className="rounded-2xl bg-white p-6 shadow-2xl border border-[rgba(93,63,90,0.08)]"
-    style={{ maxWidth: 380, fontFamily: "inherit" }}
+    style={{ maxWidth: 380, fontFamily: "inherit", position: "relative", zIndex: 10002 }}
   >
     {step.title && (
       <h3
@@ -330,31 +330,78 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
       />
     )}
     {run && stepIndex === 3 && createPortal(
-      <div
-        className="fixed left-0 right-0 flex justify-center"
-        style={{ zIndex: 10004, bottom: 160, paddingLeft: 550 }}
-      >
+      <>
+        {/* Title + subtitle above the card */}
         <div
-          className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-white"
-          style={{ boxShadow: "0 8px 30px rgba(93,63,90,0.12)", border: "1px solid rgba(93,63,90,0.08)" }}
+          className="fixed left-0 right-0 flex justify-center"
+          style={{ zIndex: 10004, top: 95, paddingLeft: 115 }}
         >
-          <button
-            onClick={() => goToStep(2)}
-            title=""
-            className="px-3 py-1.5 text-[13px] font-medium text-[#8B7082] hover:text-[#612A4F] transition-colors outline-none focus:outline-none"
-          >
-            Back
-          </button>
-          <button
-            onClick={() => goToStep(4)}
-            title=""
-            className="px-4 py-2 rounded-xl text-[13px] font-semibold text-white outline-none focus:outline-none transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
-            style={{ backgroundColor: "#612A4F" }}
-          >
-            Next
-          </button>
+          <div style={{ position: "relative" }}>
+            <div
+              className="rounded-2xl bg-white p-6"
+              style={{ boxShadow: "0 8px 30px rgba(93,63,90,0.12)", border: "none", width: 316 }}
+            >
+              <h3
+                className="text-[18px] text-[#612A4F] text-center"
+                style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
+              >
+                Here's what each part of a card means:
+              </h3>
+            </div>
+            {/* Arrow pointing down */}
+            <div
+              style={{
+                position: "absolute",
+                bottom: -14,
+                left: "50%",
+                transform: "translateX(-50%)",
+                width: 28,
+                height: 14,
+                overflow: "hidden",
+              }}
+            >
+              <div
+                style={{
+                  width: 20,
+                  height: 20,
+                  backgroundColor: "#FFFFFF",
+                  transform: "rotate(45deg)",
+                  position: "absolute",
+                  top: -10,
+                  left: 4,
+                  boxShadow: "0 8px 30px rgba(93,63,90,0.12)",
+                }}
+              />
+            </div>
+          </div>
         </div>
-      </div>,
+        {/* Back / Next buttons at the bottom */}
+        <div
+          className="fixed left-0 right-0 flex justify-center"
+          style={{ zIndex: 10004, bottom: 160, paddingLeft: 550 }}
+        >
+          <div
+            className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-white"
+            style={{ boxShadow: "0 8px 30px rgba(93,63,90,0.12)", border: "1px solid rgba(93,63,90,0.08)" }}
+          >
+            <button
+              onClick={() => goToStep(2)}
+              title=""
+              className="px-3 py-1.5 text-[13px] font-medium text-[#8B7082] hover:text-[#612A4F] transition-colors outline-none focus:outline-none"
+            >
+              Back
+            </button>
+            <button
+              onClick={() => goToStep(4)}
+              title=""
+              className="px-4 py-2 rounded-xl text-[13px] font-semibold text-white outline-none focus:outline-none transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
+              style={{ backgroundColor: "#612A4F" }}
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      </>,
       document.body
     )}
     <Joyride

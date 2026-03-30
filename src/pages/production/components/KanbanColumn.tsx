@@ -166,7 +166,7 @@ const AnatomyLabel: React.FC<{ text: string; className?: string }> = ({ text, cl
 const TourAnatomyCard: React.FC = () => (
   <div className="relative overflow-visible" style={{ zIndex: 10 }}>
     {/* The card itself */}
-    <div className="rounded-[14px] bg-white border border-[rgba(93,63,90,0.06)] p-3 shadow-[0_4px_20px_rgba(93,63,90,0.12)] overflow-visible">
+    <div className="rounded-[14px] bg-white border-2 border-[rgba(97,42,79,0.25)] p-3 shadow-[0_4px_20px_rgba(93,63,90,0.12)] overflow-visible">
       <div className="flex items-start gap-2">
         <GripVertical className="w-4 h-4 text-gray-300 flex-shrink-0 mt-0.5" />
         <h3 className="font-medium text-[15px] text-gray-800 leading-[1.4] tracking-[-0.01em] flex-1">
