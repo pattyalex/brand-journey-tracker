@@ -2125,7 +2125,7 @@ const Production = () => {
         <KanbanContainer
           horizontalScrollRef={horizontalScrollRef}
           setScrollProgress={setScrollProgress}
-          isTourAnatomyStep={runTour && tourStepIndex === 3}
+          isTourAnatomyStep={runTour && tourStepIndex === 4}
         >
           {columns.map((column, index) => (
             <KanbanColumnComponent
