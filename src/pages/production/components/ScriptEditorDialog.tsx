@@ -438,7 +438,7 @@ Guidelines:
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1">
                     <p className="text-xs font-medium text-[#9E7089] mb-2">
-                      From your brainstorming notes:
+                      From your brain dump:
                     </p>
                     <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
                       {brainDumpSuggestion}

@@ -177,12 +177,12 @@ const BrainDumpGuidanceDialog: React.FC<BrainDumpGuidanceDialogProps> = ({
         {/* Notes/Brain Dump Area */}
         <div className="flex flex-col flex-1">
           <label className="text-[12px] font-medium text-[#8B7082] uppercase tracking-wider mb-2">
-            Notes & Brainstorming
+            Brain dump
           </label>
           <Textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Write down any initial thoughts, or skip ahead if your idea is ready to go..."
+            placeholder={"Capture your raw ideas here, we'll refine later...\nNothing to say? Just hit Next."}
             className="min-h-[300px] flex-1 resize-none rounded-lg focus:outline-none focus:ring-0 transition-all text-sm leading-relaxed bg-white p-4" style={{ border: '0.5px solid #e5e7eb' }}
           />
         </div>

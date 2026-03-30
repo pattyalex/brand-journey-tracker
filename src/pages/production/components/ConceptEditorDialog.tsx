@@ -13,7 +13,7 @@ import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-
 import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
 import {
   MoreHorizontal, X, MapPin, Shirt, Boxes, Plus, ArrowLeft, ArrowRight, Check, ChevronDown, ChevronUp,
-  Sparkles, Send, Bot, User, Upload, Link2, Image as ImageIcon, Layers, Video, NotebookPen,
+  Sparkles, Send, Bot, User, Upload, Link2, Image as ImageIcon, Layers, Video, NotebookPen, ArrowDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -56,6 +56,9 @@ interface ConceptEditorDialogProps {
   contentType?: 'video' | 'image';
   onContentTypeChange?: (type: 'video' | 'image') => void;
   onToggleComplete?: (step: number) => void;
+  showBrainDumpSuggestion?: boolean;
+  brainDumpSuggestion?: string;
+  setShowBrainDumpSuggestion?: (value: boolean) => void;
 }
 
 const ConceptEditorDialog: React.FC<ConceptEditorDialogProps> = ({
@@ -93,6 +96,9 @@ const ConceptEditorDialog: React.FC<ConceptEditorDialogProps> = ({
   contentType = 'image',
   onContentTypeChange,
   onToggleComplete,
+  showBrainDumpSuggestion = false,
+  brainDumpSuggestion = '',
+  setShowBrainDumpSuggestion,
 }) => {
   const [shakeButton, setShakeButton] = useState(false);
   const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
@@ -502,6 +508,49 @@ Guidelines:
                 <label className="text-[12px] font-medium text-[#612A4F] uppercase tracking-wider">
                   Script
                 </label>
+                {/* Brain Dump Suggestion Block */}
+                {showBrainDumpSuggestion && brainDumpSuggestion && (
+                  <div className="bg-gradient-to-r from-[#C4A4B5]/15 to-[#D4B4C5]/15 border border-[#C4A4B5]/30 rounded-lg p-4 space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1">
+                        <p className="text-xs font-medium text-[#9E7089] mb-2">
+                          From your brain dump:
+                        </p>
+                        <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
+                          {brainDumpSuggestion}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => setShowBrainDumpSuggestion?.(false)}
+                        className="text-[#C4A4B5] hover:text-[#9E7089] transition-colors"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                    <div className="flex justify-center mt-2">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              onClick={() => {
+                                setScriptContent?.(scriptContent + (scriptContent ? "\n\n" : "") + brainDumpSuggestion);
+                                setShowBrainDumpSuggestion?.(false);
+                              }}
+                              className="w-8 h-8 rounded-full bg-[#9E7089] text-white flex items-center justify-center hover:bg-[#8B7082] transition-colors shadow-sm hover:shadow-md"
+                            >
+                              <ArrowDown className="w-4 h-4" />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="bottom">
+                            <p>Append to Script</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                  </div>
+                )}
                 <div className="relative">
                   <Textarea
                     value={scriptContent}

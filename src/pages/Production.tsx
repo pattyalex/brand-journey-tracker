@@ -1559,6 +1559,20 @@ const Production = () => {
             setSlides(latestCard!.slides || []);
             setImageMode(latestCard!.imageMode || 'image');
             setPlatformTags(latestCard!.platforms || []);
+            // Check for brain dump suggestion
+            {
+              const notesText = latestCard!.description?.trim() || "";
+              const alreadyHandledText = latestCard!.brainDumpHandledText?.trim() || "";
+              const hasNotes = notesText.length > 0;
+              const alreadyHandled = alreadyHandledText.length > 0 && notesText === alreadyHandledText;
+              if (hasNotes && !alreadyHandled) {
+                setBrainDumpSuggestion(latestCard!.description!);
+                setShowBrainDumpSuggestion(true);
+              } else {
+                setBrainDumpSuggestion("");
+                setShowBrainDumpSuggestion(false);
+              }
+            }
             break;
           }
           case 3: // Edit
@@ -3559,6 +3573,9 @@ const Production = () => {
               contentType={contentType}
               onContentTypeChange={handleContentTypeChange}
               onToggleComplete={handleToggleStepComplete}
+              brainDumpSuggestion={brainDumpSuggestion}
+              showBrainDumpSuggestion={showBrainDumpSuggestion}
+              setShowBrainDumpSuggestion={handleBrainDumpDismiss}
             />
           )}
 
