@@ -904,7 +904,7 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
               {/* Hook section */}
               <div className="mb-4">
                 <div className="flex items-center justify-between mb-1">
-                  <p className="text-[11px] font-semibold text-[#612A4F] uppercase tracking-wider">Hook</p>
+                  <p className="text-[11px] font-semibold text-[#612A4F] uppercase tracking-wider">Title/Hook</p>
                   {!isEditingScript ? (
                     <button
                       onClick={() => setIsEditingScript(true)}

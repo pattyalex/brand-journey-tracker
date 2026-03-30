@@ -108,11 +108,39 @@ const BrainDumpGuidanceDialog: React.FC<BrainDumpGuidanceDialogProps> = ({
 
       {/* Content Area */}
       <div className="px-6 pt-4 pb-4 flex-1 overflow-y-auto flex flex-col">
-        {/* Content Type Dropdown + Title Input */}
-        <div className="flex items-center gap-3 border-b border-gray-200 pb-2 mb-8">
-          {/* Content Type Dropdown */}
+        {/* Title/Hook Label + Title Input */}
+        <div className="mb-2">
+          <label className="text-[12px] font-medium text-[#8B7082] uppercase tracking-wider">Title/Hook</label>
+        </div>
+        <div className="border-b border-gray-200 pb-2 mb-3">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Enter content title..."
+                  tabIndex={-1}
+                  autoComplete="off"
+                  className="w-full px-0 py-1 text-xl font-semibold bg-transparent border-0 focus:outline-none focus:ring-0 placeholder:text-[#A0A0A0] truncate"
+                />
+              </TooltipTrigger>
+              {title && title.length > 30 && (
+                <TooltipContent side="bottom" className="max-w-md">
+                  {title}
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+        {/* Content Type Dropdown */}
+        <div className="mb-2">
+          <label className="text-[12px] font-medium text-[#8B7082] uppercase tracking-wider">Media Type</label>
+        </div>
+        <div className="mb-8">
           {onContentTypeChange && (
-            <div className="relative flex-shrink-0">
+            <div className="relative inline-block">
               <button
                 onClick={() => setIsTypeDropdownOpen(!isTypeDropdownOpen)}
                 className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-gray-200 hover:border-gray-300 bg-white text-sm text-gray-700 transition-colors"
@@ -144,26 +172,6 @@ const BrainDumpGuidanceDialog: React.FC<BrainDumpGuidanceDialogProps> = ({
               )}
             </div>
           )}
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Enter content title..."
-                  tabIndex={-1}
-                  autoComplete="off"
-                  className="flex-1 px-0 py-1 text-xl font-semibold bg-transparent border-0 focus:outline-none focus:ring-0 placeholder:text-[#A0A0A0] truncate"
-                />
-              </TooltipTrigger>
-              {title && title.length > 30 && (
-                <TooltipContent side="bottom" className="max-w-md">
-                  {title}
-                </TooltipContent>
-              )}
-            </Tooltip>
-          </TooltipProvider>
         </div>
 
         {/* Notes/Brain Dump Area */}

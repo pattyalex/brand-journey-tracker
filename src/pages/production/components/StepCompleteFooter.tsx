@@ -40,7 +40,7 @@ const StepCompleteFooter: React.FC<StepCompleteFooterProps> = ({
   };
 
   return (
-    <div className="px-6 py-4 border-t border-gray-100 flex justify-end items-center flex-shrink-0">
+    <div className="px-6 py-4 border-t border-gray-100 flex justify-center items-center flex-shrink-0">
       <div className="flex items-center gap-2">
         <span className="text-sm text-gray-500">Step Complete</span>
         <TooltipProvider delayDuration={0}>

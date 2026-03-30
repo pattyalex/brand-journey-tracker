@@ -321,10 +321,42 @@ Guidelines:
       </div>
 
       <div className="flex-1 overflow-y-auto px-6 -mt-1 pb-1">
-        {/* Title + CTA */}
-        <div className="flex items-center gap-4 border-b border-gray-200 pb-2 mb-10">
+        {/* Title/Hook Label + Title Input */}
+        <div className="mb-2">
+          <label className="text-[12px] font-medium text-[#8B7082] uppercase tracking-wider">Title/Hook</label>
+        </div>
+        <div className="border-b border-gray-200 pb-2 mb-3">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <input
+                  type="text"
+                  value={cardHook || cardTitle}
+                  onChange={(e) => {
+                    setCardHook(e.target.value);
+                    if (!cardTitle) setCardTitle(e.target.value);
+                  }}
+                  tabIndex={-1}
+                  autoComplete="off"
+                  placeholder="Enter content title..."
+                  className="w-full px-0 py-1 text-xl font-semibold bg-transparent border-0 focus:outline-none focus:ring-0 placeholder:text-[#A0A0A0] truncate"
+                />
+              </TooltipTrigger>
+              {(cardHook || cardTitle) && (cardHook || cardTitle).length > 30 && (
+                <TooltipContent side="bottom" className="max-w-md">
+                  {cardHook || cardTitle}
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+        {/* Content Type Dropdown */}
+        <div className="mb-2">
+          <label className="text-[12px] font-medium text-[#8B7082] uppercase tracking-wider">Media Type</label>
+        </div>
+        <div className="mb-10">
           {onContentTypeChange && (
-            <div className="relative flex-shrink-0">
+            <div className="relative inline-block">
               <button onClick={() => setIsTypeDropdownOpen(!isTypeDropdownOpen)} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-gray-200 hover:border-gray-300 bg-white text-sm text-gray-700 transition-colors">
                 {contentType === 'video' ? <Video className="w-3.5 h-3.5 text-[#612A4F]" /> : <ImageIcon className="w-3.5 h-3.5 text-[#612A4F]" />}
                 <span className="font-medium text-[13px]">{contentType === 'video' ? 'Video' : 'Image'}</span>
@@ -347,29 +379,6 @@ Guidelines:
               )}
             </div>
           )}
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <input
-                  type="text"
-                  value={cardHook || cardTitle}
-                  onChange={(e) => {
-                    setCardHook(e.target.value);
-                    if (!cardTitle) setCardTitle(e.target.value);
-                  }}
-                  tabIndex={-1}
-                  autoComplete="off"
-                  placeholder="Enter content title..."
-                  className="w-2/3 px-0 py-1 text-xl font-semibold bg-transparent border-0 focus:outline-none focus:ring-0 placeholder:text-[#A0A0A0] truncate"
-                />
-              </TooltipTrigger>
-              {(cardHook || cardTitle) && (cardHook || cardTitle).length > 30 && (
-                <TooltipContent side="bottom" className="max-w-md">
-                  {cardHook || cardTitle}
-                </TooltipContent>
-              )}
-            </Tooltip>
-          </TooltipProvider>
         </div>
 
         {/* Two Column Layout */}

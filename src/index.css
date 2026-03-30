@@ -94,11 +94,11 @@
     opacity: 0;
     transform: translateX(-360px) translateY(65px);
   }
-  8% {
+  5% {
     opacity: 1;
     transform: translateX(-360px) translateY(65px);
   }
-  20% {
+  12% {
     opacity: 1;
     transform: translateX(-360px) translateY(65px);
   }

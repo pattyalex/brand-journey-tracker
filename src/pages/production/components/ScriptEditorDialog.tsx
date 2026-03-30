@@ -371,11 +371,44 @@ Guidelines:
         <ContentFlowProgress currentStep={2} className="w-[550px]" onStepClick={onNavigateToStep} completedSteps={completedSteps} onToggleComplete={onToggleComplete} />
       </div>
       <div className="flex-1 overflow-y-auto px-6 pb-1">
-        {/* Content Type Dropdown + Title */}
-        <div className="flex items-center gap-3 border-b border-gray-200 pb-2 mb-6">
-          {/* Content Type Dropdown */}
+        {/* Title/Hook Label + Title Input */}
+        <div className="mb-2">
+          <label className="text-[12px] font-medium text-[#8B7082] uppercase tracking-wider">Title/Hook</label>
+        </div>
+        <div className="border-b border-gray-200 pb-2 mb-3">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <input
+                  ref={titleInputRef}
+                  type="text"
+                  value={cardHook || cardTitle}
+                  onChange={(e) => {
+                    setCardHook(e.target.value);
+                    // Also sync to title for backwards compatibility
+                    if (!cardTitle) setCardTitle(e.target.value);
+                  }}
+                  tabIndex={-1}
+                  autoComplete="off"
+                  placeholder="Enter content title..."
+                  className="w-full px-0 py-1 text-xl font-semibold bg-transparent border-0 focus:outline-none focus:ring-0 placeholder:text-[#A0A0A0]"
+                />
+              </TooltipTrigger>
+              {(cardHook || cardTitle) && (cardHook || cardTitle).length > 30 && (
+                <TooltipContent side="bottom" className="max-w-md">
+                  {cardHook || cardTitle}
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+        {/* Content Type Dropdown */}
+        <div className="mb-2">
+          <label className="text-[12px] font-medium text-[#8B7082] uppercase tracking-wider">Media Type</label>
+        </div>
+        <div className="mb-6">
           {onContentTypeChange && (
-            <div className="relative flex-shrink-0">
+            <div className="relative inline-block">
               <button
                 onClick={() => setIsTypeDropdownOpen(!isTypeDropdownOpen)}
                 className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-gray-200 hover:border-gray-300 bg-white text-sm text-gray-700 transition-colors"
@@ -407,31 +440,6 @@ Guidelines:
               )}
             </div>
           )}
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <input
-                  ref={titleInputRef}
-                  type="text"
-                  value={cardHook || cardTitle}
-                  onChange={(e) => {
-                    setCardHook(e.target.value);
-                    // Also sync to title for backwards compatibility
-                    if (!cardTitle) setCardTitle(e.target.value);
-                  }}
-                  tabIndex={-1}
-                  autoComplete="off"
-                  placeholder="Enter content title..."
-                  className="flex-1 px-0 py-1 text-xl font-semibold bg-transparent border-0 focus:outline-none focus:ring-0 placeholder:text-[#A0A0A0]"
-                />
-              </TooltipTrigger>
-              {(cardHook || cardTitle) && (cardHook || cardTitle).length > 30 && (
-                <TooltipContent side="bottom" className="max-w-md">
-                  {cardHook || cardTitle}
-                </TooltipContent>
-              )}
-            </Tooltip>
-          </TooltipProvider>
         </div>
 
         {/* Two Column Layout */}
