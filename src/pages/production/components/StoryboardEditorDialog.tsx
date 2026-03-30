@@ -36,7 +36,6 @@ import {
   Check,
   Camera,
   X,
-  ChevronLeft,
   BookOpen,
   MapPin,
   Shirt,
@@ -801,25 +800,7 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
 
   const dialogContent = (
     <>
-      {/* Top bar: Back button (left) and Close button (right) */}
-      {onNavigateToStep && (
-        <TooltipProvider delayDuration={0}>
-          <Tooltip disableHoverableContent>
-            <TooltipTrigger asChild>
-              <button
-                onClick={() => handleNavigateWithSave(2)}
-                className="absolute top-6 left-4 p-2 rounded-full hover:bg-[#612A4F]/10 text-gray-400 hover:text-[#612A4F] transition-colors z-30 focus:outline-none"
-                tabIndex={-1}
-              >
-                <ChevronLeft className="w-6 h-6" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="top" sideOffset={4} className="bg-gray-500 text-white">
-              <p>Previous step</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      )}
+      {/* Top bar: Close button (right) */}
       <TooltipProvider delayDuration={0}>
         <Tooltip disableHoverableContent>
           <TooltipTrigger asChild>
@@ -1195,7 +1176,7 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
           </div>
 
         </div>
-      <StepCompleteFooter stepNumber={3} completedSteps={completedSteps} onToggleComplete={onToggleComplete} showNextStep={!!onNavigateToStep} onNextStep={onNavigateToStep ? () => handleNavigateWithSave(4) : undefined} />
+      <StepCompleteFooter stepNumber={3} completedSteps={completedSteps} onToggleComplete={onToggleComplete} showNextStep={!!onNavigateToStep} onNextStep={onNavigateToStep ? () => handleNavigateWithSave(4) : undefined} showPrevStep={!!onNavigateToStep} onPrevStep={onNavigateToStep ? () => handleNavigateWithSave(2) : undefined} />
     </>
   );
 
