@@ -183,7 +183,7 @@ const BrainDumpGuidanceDialog: React.FC<BrainDumpGuidanceDialogProps> = ({
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder={"Capture your raw ideas here, we'll refine later...\nNothing to say? Just hit Next."}
-            className="min-h-[300px] flex-1 resize-none rounded-lg focus:outline-none focus:ring-0 transition-all text-sm leading-relaxed bg-white p-4" style={{ border: '0.5px solid #e5e7eb' }}
+            className="min-h-[300px] flex-1 resize-none rounded-lg focus:outline-none focus:ring-0 transition-all text-sm leading-relaxed bg-white p-4 placeholder:italic" style={{ border: '0.5px solid #e5e7eb' }}
           />
         </div>
       </div>

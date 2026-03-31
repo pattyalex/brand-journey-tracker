@@ -663,7 +663,7 @@ Guidelines:
             {/* How It's Shot */}
             <div className="space-y-3">
               <h4 className="text-[12px] font-medium text-[#612A4F] uppercase tracking-wider">
-                How It's Shot
+                Filming Format
               </h4>
 
               {/* Format selection */}
@@ -689,8 +689,8 @@ Guidelines:
                   <SelectContent>
                     <SelectGroup>
                       <SelectLabel className="text-sm font-medium text-gray-500">Video</SelectLabel>
-                      {!formatTags.includes("Talking to camera") && (
-                        <SelectItem value="Talking to camera"><span className="flex items-center gap-2"><Video className="w-4 h-4 text-gray-400" />Talking to camera</span></SelectItem>
+                      {!formatTags.includes("Talking head") && (
+                        <SelectItem value="Talking head"><span className="flex items-center gap-2"><Video className="w-4 h-4 text-gray-400" />Talking head</span></SelectItem>
                       )}
                       {!formatTags.includes("Voice-over") && (
                         <SelectItem value="Voice-over"><span className="flex items-center gap-2"><Video className="w-4 h-4 text-gray-400" />Voice-over</span></SelectItem>
@@ -725,17 +725,16 @@ Guidelines:
                       ))}
                     </SelectGroup>
                     <div
-                      className="flex items-center gap-2 px-2 py-1.5 cursor-text border-b border-gray-100 mb-1"
+                      className="flex items-center gap-2 px-2 py-2 cursor-text border-t border-gray-100 mt-1 hover:bg-accent transition-colors rounded-sm"
                       onPointerDown={(e) => {
                         e.stopPropagation();
                         e.preventDefault();
                       }}
                     >
-                      <Video className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
                       <input
                         type="text"
-                        placeholder="+ Add video format..."
-                        className="flex-1 text-xs text-gray-500 bg-transparent border-none outline-none placeholder:text-gray-400 focus:placeholder:text-transparent"
+                        placeholder="＋ Add your own video format"
+                        className="flex-1 text-[13px] text-black bg-transparent border-none outline-none cursor-text placeholder:text-black placeholder:font-medium focus:placeholder:text-transparent"
                         onPointerDown={(e) => e.stopPropagation()}
                         onClick={(e) => e.stopPropagation()}
                         onKeyDown={(e) => {

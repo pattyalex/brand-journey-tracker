@@ -883,7 +883,6 @@ Guidelines:
                 {[
                   { name: "Instagram", icon: SiInstagram },
                   { name: "TikTok", icon: SiTiktok },
-                  { name: "YouTube", icon: SiYoutube },
                   { name: "Facebook", icon: SiFacebook },
                   { name: "LinkedIn", icon: SiLinkedin },
                   { name: "X", icon: RiTwitterXLine },
