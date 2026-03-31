@@ -461,26 +461,35 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
 
               {/* Card details - Formats, Platform, Shooting Plan */}
               <div className="mt-4 pt-2 space-y-6">
-                {/* Formats (How it's shot) */}
-                {card?.formats && card.formats.length > 0 && (
+                {/* Format section */}
+                {contentType === 'video' && card?.formats && card.formats.length > 0 && (
                   <div>
-                    <h4 className="text-[11px] font-semibold text-[#612A4F] uppercase tracking-wider mb-2">How it's shot</h4>
+                    <h4 className="text-[11px] font-semibold text-[#612A4F] uppercase tracking-wider mb-2">Filming Format</h4>
                     <div className="space-y-1">
-                      {card.formats.map((format, idx) => {
-                        const isPhoto = ['photo post', 'carousel', 'text post', 'photo', 'static'].some(
-                          p => format.toLowerCase().includes(p)
-                        );
-                        return (
-                          <div key={idx} className="flex items-center gap-2 text-[13px] text-gray-600">
-                            {isPhoto ? (
-                              <Camera className="w-4 h-4 text-[#8B7082]" />
-                            ) : (
-                              <Video className="w-4 h-4 text-[#8B7082]" />
-                            )}
-                            <span>{format}</span>
-                          </div>
-                        );
-                      })}
+                      {card.formats.map((format, idx) => (
+                        <div key={idx} className="flex items-center gap-2 text-[13px] text-gray-600">
+                          <Video className="w-4 h-4 text-[#8B7082]" />
+                          <span>{format}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {contentType === 'image' && (
+                  <div>
+                    <h4 className="text-[11px] font-semibold text-[#612A4F] uppercase tracking-wider mb-2">Format</h4>
+                    <div className="flex items-center gap-2 text-[13px] text-gray-600">
+                      {card?.imageMode === 'carousel' ? (
+                        <>
+                          <Layers className="w-4 h-4 text-[#8B7082]" />
+                          <span>Carousel</span>
+                        </>
+                      ) : (
+                        <>
+                          <ImageIcon className="w-4 h-4 text-[#8B7082]" />
+                          <span>Single Image</span>
+                        </>
+                      )}
                     </div>
                   </div>
                 )}
