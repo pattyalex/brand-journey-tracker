@@ -47,7 +47,7 @@ const ToggleSidebarButton = () => {
         <Button
           variant="ghost"
           size="icon"
-          className="fixed z-50 h-8 w-8 transition-all duration-200 hover:bg-[#F5F0F3] rounded-lg top-[1.55rem] left-[10.5rem]"
+          className="fixed z-[10003] h-8 w-8 transition-all duration-200 hover:bg-[#F5F0F3] rounded-lg top-[1.55rem] left-[10.5rem]"
           onClick={toggleSidebar}
           aria-label="Toggle Sidebar"
         >

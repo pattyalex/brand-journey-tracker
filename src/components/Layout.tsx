@@ -49,6 +49,7 @@ const Layout = ({ children, hideSidebar = false }: LayoutProps) => {
 
   return (
     <SidebarProvider key={sidebarKey}>
+      {shouldShowSidebar && <div className="hidden md:block"><ToggleSidebarButton /></div>}
       <div className="h-screen flex w-full bg-white overflow-hidden">
         {/* Sidebar - hidden on mobile */}
         {shouldShowSidebar && (
@@ -57,7 +58,6 @@ const Layout = ({ children, hideSidebar = false }: LayoutProps) => {
           </div>
         )}
         <main className={`flex-1 min-w-0 overflow-x-clip overflow-y-auto relative h-full bg-white scroll-smooth ${!shouldShowSidebar ? 'w-full' : ''} pb-20 md:pb-0`}>
-          {shouldShowSidebar && <div className="hidden md:block"><ToggleSidebarButton /></div>}
           {children}
           <Toaster/>
         </main>
