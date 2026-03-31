@@ -978,10 +978,10 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
 
               {/* Card details - Formats, Platform, Shooting Plan */}
               <div className="mt-4 pt-2 space-y-6">
-                {/* Formats (How it's shot) */}
+                {/* Formats (Filming Format) */}
                 {card?.formats && card.formats.length > 0 && (
                   <div>
-                    <h4 className="text-[11px] font-semibold text-[#612A4F] uppercase tracking-wider mb-2">How it's shot</h4>
+                    <h4 className="text-[11px] font-semibold text-[#612A4F] uppercase tracking-wider mb-2">Filming Format</h4>
                     <div className="space-y-1">
                       {card.formats.map((format, idx) => {
                         const isPhoto = ['photo post', 'carousel', 'text post', 'photo', 'static'].some(
