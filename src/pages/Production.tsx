@@ -81,11 +81,27 @@ const KanbanContainer: React.FC<{
   const { state: sidebarState } = useSidebar();
   const isSidebarCollapsed = sidebarState === 'collapsed';
 
+  // Enable horizontal scrolling with mouse wheel / trackpad
+  useEffect(() => {
+    const el = horizontalScrollRef.current;
+    if (!el) return;
+    const handleWheel = (e: WheelEvent) => {
+      // If there's horizontal delta (trackpad), let it scroll naturally
+      // If only vertical delta (mouse wheel), convert to horizontal
+      if (Math.abs(e.deltaX) < Math.abs(e.deltaY)) {
+        e.preventDefault();
+        el.scrollLeft += e.deltaY;
+      }
+    };
+    el.addEventListener('wheel', handleWheel, { passive: false });
+    return () => el.removeEventListener('wheel', handleWheel);
+  }, [horizontalScrollRef]);
+
   return (
     <div
       ref={horizontalScrollRef}
       data-tour="kanban-board"
-      className={`flex gap-5 flex-1 ${isTourAnatomyStep ? 'overflow-visible' : 'overflow-x-auto'} overflow-y-visible ml-[-34px] pl-[34px] mt-[-16px] pt-[16px] hide-scrollbar items-start`}
+      className={`flex gap-5 flex-1 min-w-0 max-w-full ${isTourAnatomyStep ? 'overflow-visible' : 'overflow-x-auto'} overflow-y-visible ml-[-34px] pl-[34px] mt-[-16px] pt-[16px] hide-scrollbar items-start`}
       onScroll={(e) => {
         const target = e.currentTarget;
         const maxScroll = target.scrollWidth - target.clientWidth;
@@ -2127,7 +2143,7 @@ const Production = () => {
   }
 
   return (
-      <div className="w-full h-screen flex flex-col pl-5 pr-3 pt-4" style={{ background: 'linear-gradient(180deg, #FAF7F5 0%, #F0EBE8 100%)' }}>
+      <div className="w-full h-screen flex flex-col pl-5 pr-3 pt-4 min-w-0 max-w-full" style={{ background: 'linear-gradient(180deg, #FAF7F5 0%, #F0EBE8 100%)' }}>
         <ProductionProvider value={board}>
         <ContentHubTour
           run={runTour}
