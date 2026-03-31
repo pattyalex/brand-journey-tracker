@@ -1,15 +1,16 @@
 import { useState, useEffect } from "react";
-import { Send, Calendar, Video, Image as ImageIcon, ChevronLeft, ChevronRight, GripVertical } from "lucide-react";
+import { Send, Calendar, CalendarDays, Video, Image as ImageIcon, ChevronLeft, ChevronRight, GripVertical } from "lucide-react";
 import { SiInstagram, SiTiktok, SiYoutube, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useSidebar } from "@/components/ui/sidebar";
-import { StorageKeys, getString } from "@/lib/storage";
+import { StorageKeys, getString, setString } from "@/lib/storage";
 import { format, parseISO } from "date-fns";
-import { EVENTS, on } from "@/lib/events";
+import { EVENTS, emit, on } from "@/lib/events";
 import { KanbanColumn, ProductionCard } from "@/pages/production/types";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const getPlatformIcon = (platform: string, size: string = "w-3.5 h-3.5"): React.ReactNode => {
   const p = platform.toLowerCase();
@@ -39,6 +40,8 @@ export const ReadyToPostSidebar = ({
   const { state: sidebarState } = useSidebar();
   const navigate = useNavigate();
   const [readyCards, setReadyCards] = useState<ProductionCard[]>([]);
+  const [draggingCardId, setDraggingCardId] = useState<string | null>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
 
   const loadReadyCards = () => {
     const savedData = getString(StorageKeys.productionKanban);
@@ -54,8 +57,11 @@ export const ReadyToPostSidebar = ({
         c => !c.isCompleted
       ) || [];
 
-      // Sort by last updated (most recent first)
+      // Sort: unscheduled first, then scheduled; within each group, most recent first
       cards.sort((a, b) => {
+        const aScheduled = !!a.scheduledDate;
+        const bScheduled = !!b.scheduledDate;
+        if (aScheduled !== bScheduled) return aScheduled ? 1 : -1;
         const dateA = a.lastUpdated ? new Date(a.lastUpdated).getTime() : 0;
         const dateB = b.lastUpdated ? new Date(b.lastUpdated).getTime() : 0;
         return dateB - dateA;
@@ -75,8 +81,60 @@ export const ReadyToPostSidebar = ({
     return () => { cleanup1(); cleanup2(); };
   }, []);
 
+  // Handle dropping a scheduled card back to unschedule it
+  const handleUnscheduleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+
+    const contentId = e.dataTransfer.getData('contentId');
+    const contentType = e.dataTransfer.getData('contentType');
+
+    if (!contentId || contentType !== 'scheduled') return;
+
+    const savedData = getString(StorageKeys.productionKanban);
+    if (!savedData) return;
+
+    try {
+      const columns: KanbanColumn[] = JSON.parse(savedData);
+      let cardTitle = '';
+      columns.forEach(column => {
+        const card = column.cards.find(c => c.id === contentId);
+        if (card) {
+          cardTitle = card.title || card.hook || '';
+          card.scheduledDate = undefined;
+          card.schedulingStatus = undefined;
+          card.scheduledStartTime = undefined;
+          card.scheduledEndTime = undefined;
+        }
+      });
+
+      setString(StorageKeys.productionKanban, JSON.stringify(columns));
+      emit(window, EVENTS.productionKanbanUpdated);
+      emit(window, EVENTS.scheduledContentUpdated);
+      loadReadyCards();
+      toast.success('Unscheduled', { description: cardTitle || 'Content removed from calendar' });
+    } catch (err) {
+      console.error('Error unscheduling content:', err);
+    }
+  };
+
   const renderContent = () => (
-    <div className="flex flex-col h-full">
+    <div
+      className="flex flex-col h-full"
+      onDragOver={(e) => {
+        const contentType = e.dataTransfer.types.includes('contenttype') ? '' : '';
+        // Allow drop for scheduled content being dragged back
+        e.preventDefault();
+        setIsDragOver(true);
+      }}
+      onDragLeave={(e) => {
+        // Only clear if leaving the container entirely
+        if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+          setIsDragOver(false);
+        }
+      }}
+      onDrop={handleUnscheduleDrop}
+    >
       {/* Header */}
       {!hideHeader && (
         <div className="flex items-center gap-2.5 mb-5 ml-2">
@@ -92,8 +150,16 @@ export const ReadyToPostSidebar = ({
         </div>
       )}
 
+      {/* Drop zone highlight when dragging scheduled content over */}
+      {isDragOver && (
+        <div className="mx-1 mb-3 p-4 rounded-xl border-2 border-dashed border-[#612a4f]/30 bg-[#612a4f]/5 flex flex-col items-center gap-1.5 transition-all">
+          <Calendar className="w-5 h-5 text-[#612a4f]/50" />
+          <p className="text-[11px] font-medium text-[#612a4f]/60 text-center">Drop here to unschedule</p>
+        </div>
+      )}
+
       {/* Cards list */}
-      {readyCards.length === 0 ? (
+      {readyCards.length === 0 && !isDragOver ? (
         <div className="pt-[22vh]">
           <div className="flex flex-col items-center text-center px-4 pt-4 pb-6 mb-2">
             <div className="w-10 h-10 rounded-full flex items-center justify-center mb-3" style={{ background: 'rgba(97,42,79,0.07)' }}>
@@ -118,48 +184,66 @@ export const ReadyToPostSidebar = ({
       ) : (
         <div className="flex-1 overflow-y-auto space-y-2 -mx-1 px-1">
           {readyCards.map(card => {
-            const plannedDate = card.plannedDate ? parseISO(card.plannedDate) : null;
+            const isScheduled = !!card.scheduledDate;
+            const isDragged = draggingCardId === card.id;
 
             return (
-              <Tooltip key={card.id}>
-                <TooltipTrigger asChild>
-                  <div
-                    className={cn(
-                      "rounded-xl border p-3 transition-all hover:shadow-sm cursor-grab active:cursor-grabbing flex items-center gap-2",
-                      "border-gray-200 bg-white"
-                    )}
-                  >
-                    {/* Grip handle */}
-                    <div className="flex-shrink-0 flex items-center">
-                      <GripVertical className="w-4 h-4 text-gray-300" />
-                    </div>
+              <div
+                key={card.id}
+                draggable
+                onDragStart={(e) => {
+                  setDraggingCardId(card.id);
+                  e.dataTransfer.setData('text/plain', card.id);
+                  e.dataTransfer.setData('contentId', card.id);
+                  // If already scheduled, drag as 'scheduled' so it can be moved between dates
+                  // If unscheduled, drag as 'ready-to-post' so drop handler knows to set scheduledDate
+                  e.dataTransfer.setData('contentType', isScheduled ? 'scheduled' : 'ready-to-post');
+                  if (isScheduled && card.scheduledDate) {
+                    e.dataTransfer.setData('fromDate', card.scheduledDate.split('T')[0]);
+                  }
+                  e.dataTransfer.effectAllowed = 'move';
+                }}
+                onDragEnd={() => setDraggingCardId(null)}
+                className={cn(
+                  "rounded-xl border p-3 transition-all hover:shadow-sm cursor-grab active:cursor-grabbing",
+                  isScheduled
+                    ? "border-[#612a4f]/15 bg-[#612a4f]/[0.02]"
+                    : "border-gray-200 bg-white",
+                  isDragged && "opacity-40 scale-[0.98]",
+                )}
+              >
+                <div className="flex items-center gap-2">
+                  {/* Grip handle */}
+                  <div className="flex-shrink-0 flex items-center">
+                    <GripVertical className="w-4 h-4 text-gray-300" />
+                  </div>
 
-                    {/* Title */}
-                    <p className="flex-1 min-w-0 text-sm font-medium text-gray-900 leading-snug line-clamp-2">
+                  {/* Title + scheduled badge */}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 leading-snug line-clamp-2">
                       {card.title || card.hook || "Untitled content"}
                     </p>
-
-                    {/* Content type icon */}
-                    <div className="flex-shrink-0 flex items-center">
-                      {card.contentType === 'image' ? (
-                        <ImageIcon className="w-3.5 h-3.5 text-gray-400" />
-                      ) : (
-                        <Video className="w-3.5 h-3.5 text-gray-400" />
-                      )}
-                    </div>
+                    {/* Scheduled date indicator */}
+                    {isScheduled && card.scheduledDate && (
+                      <div className="flex items-center gap-1 mt-1.5">
+                        <CalendarDays className="w-3 h-3 text-[#612a4f]/50" />
+                        <span className="text-[11px] text-[#612a4f]/60 font-medium">
+                          {format(new Date(card.scheduledDate + 'T12:00:00'), 'MMM d')}
+                        </span>
+                      </div>
+                    )}
                   </div>
-                </TooltipTrigger>
-                <TooltipContent
-                  side="bottom"
-                  align="start"
-                  sideOffset={8}
-                  className="bg-[#2D2D2D] text-white border-0 px-3 py-2 rounded-lg shadow-lg max-w-[200px]"
-                >
-                  <p className="text-[11px] leading-relaxed">
-                    Drag and drop onto a date in your calendar to schedule this content
-                  </p>
-                </TooltipContent>
-              </Tooltip>
+
+                  {/* Content type icon */}
+                  <div className="flex-shrink-0 flex items-center">
+                    {card.contentType === 'image' ? (
+                      <ImageIcon className="w-3.5 h-3.5 text-gray-400" />
+                    ) : (
+                      <Video className="w-3.5 h-3.5 text-gray-400" />
+                    )}
+                  </div>
+                </div>
+              </div>
             );
           })}
         </div>

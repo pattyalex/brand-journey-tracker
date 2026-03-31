@@ -97,6 +97,7 @@ const ProductionCardItem: React.FC<ProductionCardItemProps> = ({
     handleCardDragOver,
     handleDeleteCard,
     handleSetPlannedDate,
+    handleMarkAsPosted,
   } = useProductionContext();
   return (
     <React.Fragment key={card.id || `fallback-${cardIndex}`}>
@@ -125,7 +126,7 @@ const ProductionCardItem: React.FC<ProductionCardItemProps> = ({
         onDragOver={(e) => handleCardDragOver(e, columnId, cardIndex)}
         onClick={(e) => {
           // Open edit modal for Shape Ideas, Ideate, To Film, To Edit, and To Schedule cards on single click (with delay to detect double-click)
-          if ((columnId === "shape-ideas" || columnId === "ideate" || columnId === "to-film" || columnId === "to-edit" || columnId === "ready-to-post" || columnId === "to-schedule") && !isEditing) {
+          if ((columnId === "shape-ideas" || columnId === "ideate" || columnId === "to-film" || columnId === "to-edit" || columnId === "ready-to-post") && !isEditing) {
             e.stopPropagation();
             // Clear any existing timeout
             if (clickTimeoutRef.current) {
@@ -143,9 +144,6 @@ const ProductionCardItem: React.FC<ProductionCardItemProps> = ({
                 handleOpenEditChecklist(card);
               } else if (columnId === "ready-to-post") {
                 handleOpenContentFlow(card, 5);
-              } else if (columnId === "to-schedule") {
-                setSchedulingCard(card);
-                setIsScheduleColumnExpanded(true);
               }
             }, 250);
           }
@@ -159,7 +157,7 @@ const ProductionCardItem: React.FC<ProductionCardItemProps> = ({
           "hover:-translate-y-[3px]",
           "transition-all duration-200",
           columnId === "ideate" ? "py-4 px-3" : "p-3",
-          (columnId === "shape-ideas" || columnId === "ideate" || columnId === "to-film" || columnId === "to-edit" || columnId === "ready-to-post" || columnId === "to-schedule") && !isEditing ? "cursor-pointer" : (!isEditing && "cursor-grab active:cursor-grabbing"),
+          (columnId === "shape-ideas" || columnId === "ideate" || columnId === "to-film" || columnId === "to-edit" || columnId === "ready-to-post") && !isEditing ? "cursor-pointer" : (!isEditing && "cursor-grab active:cursor-grabbing"),
           isThisCardDragged ? "opacity-40 scale-[0.98]" : "",
           card.isCompleted && "opacity-60",
           recentlyRepurposedCardId === card.id && "ring-2 ring-emerald-500 ring-offset-2",
@@ -177,17 +175,6 @@ const ProductionCardItem: React.FC<ProductionCardItemProps> = ({
             REPURPOSED
           </div>
         )}
-        {/* Scheduled date indicator for to-schedule column */}
-        {columnId === 'to-schedule' && card.scheduledDate && (
-          <div className="flex items-center gap-1 mb-2">
-            <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg" style={{ backgroundColor: 'rgba(139, 112, 130, 0.08)', border: '1px solid rgba(139, 112, 130, 0.12)' }}>
-              <CalendarDays className="w-3 h-3" style={{ color: '#8B7082', strokeWidth: 1.5 }} />
-              <span className="text-[11px] font-medium" style={{ color: '#6B5A63' }}>
-                Scheduled: {new Date(card.scheduledDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-              </span>
-            </div>
-          </div>
-        )}
         {/* Calendar origin indicator */}
         {card.fromCalendar && !card.scheduledDate && (
           <div className="flex items-center gap-1 mb-2">
@@ -200,7 +187,7 @@ const ProductionCardItem: React.FC<ProductionCardItemProps> = ({
           </div>
         )}
         {/* Planned date indicator - clickable to edit */}
-        {columnId !== "posted" && columnId !== "to-schedule" && !card.fromCalendar && card.plannedDate && (
+        {columnId !== "posted" && !card.fromCalendar && card.plannedDate && (
           <div className="flex items-center gap-1 mb-2">
             <Popover
               open={planningCardId === card.id}
@@ -330,10 +317,6 @@ const ProductionCardItem: React.FC<ProductionCardItemProps> = ({
                         else if (columnId === "ideate") handleOpenIdeateCardEditor(card);
                         else if (columnId === "to-edit") handleOpenEditChecklist(card);
                         else if (columnId === "ready-to-post") handleOpenContentFlow(card, 5);
-                        else if (columnId === "to-schedule") {
-                          setSchedulingCard(card);
-                          setIsScheduleColumnExpanded(true);
-                        }
                       }}
                     >
                       <Maximize2 className="h-2.5 w-2.5 text-gray-400 hover:text-[#612A4F]" />
@@ -341,6 +324,28 @@ const ProductionCardItem: React.FC<ProductionCardItemProps> = ({
                   </TooltipTrigger>
                   <TooltipContent side="top" sideOffset={6} className="bg-gray-500 text-white">
                     <p>Open card &amp; create</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+            {columnId === "ready-to-post" && (
+              <TooltipProvider delayDuration={100}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-5 w-5 p-0 rounded-md border border-transparent hover:border-gray-200 hover:bg-gray-50 transition-all"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleMarkAsPosted(card.id, e);
+                      }}
+                    >
+                      <Check className="h-2.5 w-2.5 text-gray-400 hover:text-emerald-600" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" sideOffset={6} className="bg-gray-500 text-white">
+                    <p>Mark as posted</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -455,11 +460,9 @@ const ProductionCardItem: React.FC<ProductionCardItemProps> = ({
                       const isPublished = schedulingStatus === 'scheduled' && card.scheduledDate && new Date(card.scheduledDate) < new Date(new Date().toDateString());
                       return (
                         <>
-                          {schedulingStatus === 'to-schedule' && <CalendarDays className="w-2.5 h-2.5" />}
                           {schedulingStatus === 'scheduled' && !isPublished && <Check className="w-2.5 h-2.5" />}
                           {isPublished && <PartyPopper className="w-2.5 h-2.5" />}
-                          {schedulingStatus === 'to-schedule' ? 'To schedule' :
-                           isPublished ? 'Published' :
+                          {isPublished ? 'Published' :
                            schedulingStatus === 'scheduled' ? 'Scheduled' : ''}
                         </>
                       );
@@ -477,9 +480,15 @@ const ProductionCardItem: React.FC<ProductionCardItemProps> = ({
             </div>
           );
         })()}
-        {/* Stage completion progress dots */}
-        <div className="mt-2 pt-2 border-t border-[#E8E2E5]">
+        {/* Stage completion progress dots + scheduled label */}
+        <div className="mt-2 pt-2 border-t border-[#E8E2E5] flex items-center justify-between">
           <ProgressDots stageCompletions={card.stageCompletions} hasContentType={!!card.contentType} />
+          {columnId === 'ready-to-post' && card.scheduledDate && (
+            <div className="flex items-center gap-1">
+              <CalendarDays className="w-3 h-3" style={{ color: '#8B7082', strokeWidth: 1.5 }} />
+              <span className="text-[11px] font-medium" style={{ color: '#8B7082' }}>Scheduled</span>
+            </div>
+          )}
         </div>
         {/* Just added message at bottom */}
         {card.isNew && (

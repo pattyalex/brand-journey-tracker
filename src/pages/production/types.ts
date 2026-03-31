@@ -13,7 +13,7 @@ export interface StoryboardScene {
 
 export type EditingStatus = "to-start-editing" | "needs-more-editing" | "ready-to-schedule";
 
-export type SchedulingStatus = "to-schedule" | "scheduled";
+export type SchedulingStatus = "scheduled";
 
 export interface EditingChecklistItem {
   id: string;
@@ -66,7 +66,6 @@ export interface StageCompletions {
   toFilm: boolean;
   toEdit: boolean;
   readyToPost: boolean;
-  toSchedule: boolean;
 }
 
 export interface ProductionCard {

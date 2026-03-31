@@ -248,7 +248,7 @@ export const useHomePageState = () => {
       try {
         const columns: KanbanColumn[] = JSON.parse(savedData);
 
-        const toScheduleColumn = columns.find(col => col.id === 'to-schedule');
+        const toScheduleColumn = columns.find(col => col.id === 'ready-to-post');
         toScheduleColumn?.cards.forEach(c => {
           if (c.schedulingStatus === 'scheduled' && c.scheduledDate) {
             const schedDate = new Date(c.scheduledDate);
@@ -294,7 +294,7 @@ export const useHomePageState = () => {
 
     try {
       const columns: KanbanColumn[] = JSON.parse(savedData);
-      const toScheduleColumn = columns.find(col => col.id === 'to-schedule');
+      const toScheduleColumn = columns.find(col => col.id === 'ready-to-post');
       const ideateColumn = columns.find(col => col.id === 'ideate');
 
       const scheduledByDate: Record<string, typeof toScheduleColumn.cards> = {};
@@ -448,7 +448,7 @@ export const useHomePageState = () => {
     "shape-ideas": { bg: "bg-blue-100", text: "text-blue-700", border: "border-blue-200", emoji: "🧠", displayName: "Script and Concept" },
     "to-film": { bg: "bg-amber-100", text: "text-amber-700", border: "border-amber-200", emoji: "🎥" },
     "to-edit": { bg: "bg-rose-100", text: "text-rose-700", border: "border-rose-200", emoji: "💻" },
-    "to-schedule": { bg: "bg-indigo-100", text: "text-indigo-700", border: "border-indigo-200", emoji: "📅" },
+    "ready-to-post": { bg: "bg-indigo-100", text: "text-indigo-700", border: "border-indigo-200", emoji: "📅" },
   };
 
   const getColumnTagStyle = (columnId: string) => {

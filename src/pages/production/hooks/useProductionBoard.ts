@@ -21,10 +21,6 @@ export interface UseProductionBoardCallbacks {
   onPlanningCardClear?: () => void;
   /** Navigate function from react-router */
   navigate?: (path: string) => void;
-  /** Called when schedule column expanded state should change */
-  onScheduleColumnExpandedChange?: (expanded: boolean) => void;
-  /** Called when scheduling card should be cleared */
-  onSchedulingCardClear?: () => void;
 }
 
 // ─── Backfill stage completions for existing cards ─────────────────────
@@ -44,12 +40,22 @@ export const getInitialColumns = (): KanbanColumn[] => {
   if (savedData) {
     try {
       const savedColumns = JSON.parse(savedData);
+      // Migrate cards from removed columns (to-schedule, scheduled) into ready-to-post
+      const removedColumnCards: ProductionCard[] = [];
+      for (const sc of savedColumns) {
+        if (sc.id === 'to-schedule' || sc.id === 'scheduled') {
+          for (const card of sc.cards) {
+            removedColumnCards.push({ ...card, columnId: 'ready-to-post' });
+          }
+        }
+      }
       return defaultColumns.map(defaultCol => {
         const savedCol = savedColumns.find((sc: KanbanColumn) => sc.id === defaultCol.id);
-        return {
-          ...defaultCol,
-          cards: (savedCol?.cards || []).map(backfillStageCompletions),
-        };
+        const cards = (savedCol?.cards || []).map(backfillStageCompletions);
+        if (defaultCol.id === 'ready-to-post' && removedColumnCards.length > 0) {
+          return { ...defaultCol, cards: [...cards, ...removedColumnCards.map(backfillStageCompletions)] };
+        }
+        return { ...defaultCol, cards };
       });
     } catch (error) {
       console.error("Failed to load production data:", error);
@@ -92,13 +98,6 @@ export function useProductionBoard(
   const [dropPosition, setDropPosition] = useState<{ columnId: string; index: number } | null>(null);
   const isDraggingRef = useRef<boolean>(false);
 
-  // ── Planned → Scheduled dialog (used by drag-drop) ────────────────────
-  const [showPlannedToScheduledDialog, setShowPlannedToScheduledDialog] = useState(false);
-  const [pendingScheduleMove, setPendingScheduleMove] = useState<{
-    card: ProductionCard;
-    dropPosition: { columnId: string; index: number };
-    sourceColumnId: string;
-  } | null>(null);
 
   // ── Skip-column nudge dialog (used by drag-drop) ─────────────────────
   const [showSkipColumnDialog, setShowSkipColumnDialog] = useState(false);
@@ -516,7 +515,6 @@ export function useProductionBoard(
                 scheduledDate: dateString,
                 scheduledStartTime: startTime,
                 scheduledEndTime: endTime,
-                stageCompletions: { ...(card.stageCompletions || DEFAULT_STAGE_COMPLETIONS), toSchedule: true },
               }
             : card
         ),
@@ -532,11 +530,10 @@ export function useProductionBoard(
           card.id === cardId
             ? {
                 ...card,
-                schedulingStatus: 'to-schedule' as const,
+                schedulingStatus: undefined,
                 scheduledDate: undefined,
                 scheduledStartTime: undefined,
                 scheduledEndTime: undefined,
-                stageCompletions: { ...(card.stageCompletions || DEFAULT_STAGE_COMPLETIONS), toSchedule: false },
               }
             : card
         ),
@@ -560,6 +557,70 @@ export function useProductionBoard(
   // ═══════════════════════════════════════════════════════════════════════
   // HANDLERS — Archive
   // ═══════════════════════════════════════════════════════════════════════
+
+  const handleMarkAsPosted = useCallback((cardId: string, e?: React.MouseEvent) => {
+    // Find the card in columns
+    let foundCard: ProductionCard | null = null;
+    for (const col of columns) {
+      const card = col.cards.find(c => c.id === cardId);
+      if (card) { foundCard = card; break; }
+    }
+    if (!foundCard) return;
+
+    // Woosh animation: clone the card element and animate it flying to the right
+    const button = e?.currentTarget as HTMLElement | undefined;
+    const cardElement = button?.closest?.('[class*="group relative"]') as HTMLElement | null;
+    if (cardElement) {
+      const rect = cardElement.getBoundingClientRect();
+      const ghost = cardElement.cloneNode(true) as HTMLElement;
+      ghost.style.position = 'fixed';
+      ghost.style.left = `${rect.left}px`;
+      ghost.style.top = `${rect.top}px`;
+      ghost.style.width = `${rect.width}px`;
+      ghost.style.height = `${rect.height}px`;
+      ghost.style.pointerEvents = 'none';
+      ghost.style.zIndex = '9999';
+      ghost.style.opacity = '1';
+      ghost.style.filter = 'brightness(1.1)';
+      ghost.style.boxShadow = '0 0 15px rgba(139, 112, 130, 0.6)';
+      ghost.style.borderRadius = '14px';
+      ghost.style.transition = 'transform 0.5s cubic-bezier(0.55, 0.055, 0.675, 0.19), opacity 0.5s ease-out, filter 0.5s ease-out';
+      document.body.appendChild(ghost);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          ghost.style.transform = `translateX(calc(100vw - ${rect.left}px + 100px)) translateY(-30px) rotate(15deg) scale(0.7)`;
+          ghost.style.opacity = '0';
+          ghost.style.filter = 'brightness(1.3) blur(4px)';
+        });
+      });
+      setTimeout(() => ghost.remove(), 550);
+    }
+
+    // Create archived copy
+    const archivedCopy: ProductionCard = {
+      ...foundCard,
+      id: `archived-${foundCard.id}-${Date.now()}`,
+      columnId: 'posted',
+      schedulingStatus: undefined,
+      archivedAt: new Date().toISOString(),
+      postedAt: new Date().toISOString(),
+    } as ProductionCard & { archivedAt: string; postedAt: string };
+
+    // Remove from column
+    setColumns((prev) =>
+      prev.map((col) => ({
+        ...col,
+        cards: col.cards.filter((c) => c.id !== cardId),
+      }))
+    );
+
+    // Add to archive
+    setArchivedCards((prev) => [archivedCopy, ...prev]);
+
+    toast.success("Content saved to Archive", {
+      action: { label: "View Archive", onClick: () => emit(window, EVENTS.openArchiveDialog) }
+    });
+  }, [columns]);
 
   const handleDeleteArchivedContent = useCallback((card: ProductionCard) => {
     setArchivedCards((prev) => prev.filter((c) => c.id !== card.id));
@@ -601,21 +662,20 @@ export function useProductionBoard(
     // Remove from archived cards
     setArchivedCards((prev) => prev.filter((c) => c.id !== card.id));
 
-    // Create restored card for to-schedule column
-    // Clear scheduling properties so it shows as unscheduled in the column
+    // Create restored card for ready-to-post column
     const restoredCard: ProductionCard = {
       ...card,
-      columnId: 'to-schedule',
+      columnId: 'ready-to-post',
       scheduledDate: undefined,
-      schedulingStatus: 'to-schedule',
+      schedulingStatus: undefined,
     };
     // Remove archivedAt which is a dynamic property
     delete (restoredCard as any).archivedAt;
 
-    // Add to to-schedule column
+    // Add to ready-to-post column
     setColumns((prev) =>
       prev.map((col) =>
-        col.id === 'to-schedule'
+        col.id === 'ready-to-post'
           ? { ...col, cards: [restoredCard, ...col.cards] }
           : col
       )
@@ -627,7 +687,7 @@ export function useProductionBoard(
     }
 
     toast.success("Content restored!", {
-      description: "Moved back to To Schedule"
+      description: "Moved back to Ready to Post"
     });
   }, [lastArchivedCard]);
 
@@ -725,19 +785,6 @@ export function useProductionBoard(
     }
 
 
-
-    // Check if moving a card with planned date to "to-schedule" column
-    if (actualTargetColumnId === "to-schedule" && draggedCard.plannedDate && sourceColumnId !== "to-schedule") {
-      // Store the pending move and show the dialog
-      setPendingScheduleMove({
-        card: draggedCard,
-        dropPosition: savedDropPosition,
-        sourceColumnId: sourceColumnId!,
-      });
-      setShowPlannedToScheduledDialog(true);
-      setDraggedCard(null);
-      return;
-    }
 
     // Handle archiving when dropped on Posted column
     if (actualTargetColumnId === "posted") {
@@ -837,9 +884,6 @@ export function useProductionBoard(
             },
           };
         }
-        if (column.id === 'to-schedule') {
-          cardToAdd = { ...cardToAdd, schedulingStatus: 'to-schedule' as const };
-        }
         filtered.splice(pos.index, 0, cardToAdd);
         return { ...column, cards: filtered };
       }
@@ -865,67 +909,6 @@ export function useProductionBoard(
     setPendingSkipMove(null);
   }, [pendingSkipMove, executeColumnMove]);
 
-  // Handle the planned-to-scheduled conversion dialog choice
-  const handlePlannedToScheduledChoice = useCallback((useAsScheduled: boolean) => {
-    if (!pendingScheduleMove) return;
-
-    const { card, dropPosition, sourceColumnId } = pendingScheduleMove;
-
-    setColumns((prev) => {
-      return prev.map((column) => {
-        if (column.id === sourceColumnId) {
-          // Remove from source column
-          return {
-            ...column,
-            cards: column.cards.filter((c) => c.id !== card.id),
-          };
-        } else if (column.id === "to-schedule") {
-          // Add to target column with appropriate scheduling
-          const filtered = column.cards.filter(
-            (c) => c.title && c.title.trim() && !c.title.toLowerCase().includes('add quick idea')
-          );
-
-          let cardToAdd: ProductionCard = {
-            ...card,
-            columnId: "to-schedule",
-            schedulingStatus: 'to-schedule' as const,
-          };
-
-          if (useAsScheduled && card.plannedDate) {
-            // Use the planned date as the scheduled date
-            cardToAdd = {
-              ...cardToAdd,
-              scheduledDate: card.plannedDate,
-              schedulingStatus: 'scheduled' as const,
-              plannedDate: undefined,
-              plannedColor: undefined,
-              stageCompletions: { ...(cardToAdd.stageCompletions || DEFAULT_STAGE_COMPLETIONS), toSchedule: true },
-            };
-          } else {
-            // Clear the planned date, let them schedule manually
-            cardToAdd = {
-              ...cardToAdd,
-              plannedDate: undefined,
-              plannedColor: undefined,
-            };
-          }
-
-          filtered.splice(dropPosition.index, 0, cardToAdd);
-          return { ...column, cards: filtered };
-        }
-        return column;
-      });
-    });
-
-    if (useAsScheduled && card.plannedDate) {
-      toast.success("Scheduled!", {
-        description: `Scheduled for ${new Date(card.plannedDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
-      });
-    }
-
-    setShowPlannedToScheduledDialog(false);
-    setPendingScheduleMove(null);
-  }, [pendingScheduleMove]);
 
   // ═══════════════════════════════════════════════════════════════════════
   // Return
@@ -957,12 +940,6 @@ export function useProductionBoard(
     setDropPosition,
     isDraggingRef,
 
-    // Planned → Scheduled dialog
-    showPlannedToScheduledDialog,
-    setShowPlannedToScheduledDialog,
-    pendingScheduleMove,
-    setPendingScheduleMove,
-
     // Refs
     deletedCardRef,
     prevColumnsRef,
@@ -980,6 +957,7 @@ export function useProductionBoard(
     handleUpdateScheduledColor,
 
     // Archive handlers
+    handleMarkAsPosted,
     handleDeleteArchivedContent,
     handleRepurposeContent,
     handleRestoreContent,
@@ -991,7 +969,6 @@ export function useProductionBoard(
     handleDragOver,
     handleDragLeave,
     handleDrop,
-    handlePlannedToScheduledChoice,
 
     // Skip-column nudge
     showSkipColumnDialog,

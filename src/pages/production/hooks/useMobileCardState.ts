@@ -70,8 +70,7 @@ export interface UseMobileCardStateReturn {
   isScriptIdeas: boolean;
   isToEdit: boolean;
   isToFilm: boolean;
-  isToSchedule: boolean;
-  isScheduled: boolean;
+  isReadyToPost: boolean;
 }
 
 export function useMobileCardState(
@@ -83,8 +82,7 @@ export function useMobileCardState(
   const isScriptIdeas = card.columnId === 'shape-ideas';
   const isToEdit = card.columnId === 'to-edit';
   const isToFilm = card.columnId === 'to-film';
-  const isToSchedule = card.columnId === 'to-schedule';
-  const isScheduled = card.columnId === 'scheduled';
+  const isReadyToPost = card.columnId === 'ready-to-post';
 
   const [title, setTitle] = useState(card.title);
   const [notes, setNotes] = useState(isIdeate ? (card.description || '') : '');
@@ -237,7 +235,7 @@ export function useMobileCardState(
         filmingNotes !== (card.filmingNotes || '')
       );
 
-      const scheduleChanged = (isToSchedule || isScheduled) && (
+      const scheduleChanged = isReadyToPost && (
         scheduledDate !== (card.scheduledDate || '') ||
         scheduledStartTime !== (card.scheduledStartTime || '09:00')
       );
@@ -269,15 +267,15 @@ export function useMobileCardState(
             externalLinks: card.editingChecklist?.externalLinks || [],
             status: card.editingChecklist?.status || null,
           } : card.editingChecklist,
-          scheduledDate: (isToSchedule || isScheduled) ? (scheduledDate || undefined) : card.scheduledDate,
-          scheduledStartTime: (isToSchedule || isScheduled) ? scheduledStartTime : card.scheduledStartTime,
-          schedulingStatus: (isToSchedule || isScheduled) && scheduledDate ? 'scheduled' : card.schedulingStatus,
+          scheduledDate: isReadyToPost ? (scheduledDate || undefined) : card.scheduledDate,
+          scheduledStartTime: isReadyToPost ? scheduledStartTime : card.scheduledStartTime,
+          schedulingStatus: isReadyToPost && scheduledDate ? 'scheduled' : card.schedulingStatus,
         });
       }
     }, 500);
 
     return () => clearTimeout(timeout);
-  }, [title, notes, script, checklistItems, editorNotes, formatTags, platformTags, locationText, outfitText, propsText, filmingNotes, scheduledDate, scheduledStartTime, isToSchedule, isScheduled]);
+  }, [title, notes, script, checklistItems, editorNotes, formatTags, platformTags, locationText, outfitText, propsText, filmingNotes, scheduledDate, scheduledStartTime, isReadyToPost]);
 
   return {
     title, setTitle,
@@ -303,6 +301,6 @@ export function useMobileCardState(
     showScheduleConfirm, setShowScheduleConfirm,
     calendarMonth, setCalendarMonth,
     scheduledContent, scheduledDates, calendarDays,
-    isIdeate, isScriptIdeas, isToEdit, isToFilm, isToSchedule, isScheduled,
+    isIdeate, isScriptIdeas, isToEdit, isToFilm, isReadyToPost,
   };
 }

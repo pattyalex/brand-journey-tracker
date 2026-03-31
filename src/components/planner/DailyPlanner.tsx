@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { TIMEZONES, getDateString } from "./dailyPlanner/utils/plannerUtils";
+import { EVENTS, on } from "@/lib/events";
 import { AllTasksSidebar } from "./dailyPlanner/components/AllTasksSidebar";
 import { ContentOverviewSidebar } from "./dailyPlanner/components/ContentOverviewSidebar";
 import { ReadyToPostSidebar } from "./dailyPlanner/components/ReadyToPostSidebar";
@@ -175,6 +176,14 @@ export const DailyPlanner = () => {
     toast.success('Task created for ' + format(new Date(monthlyAddDialogState.dayString), 'MMM d'));
     closeMonthlyDialog();
   };
+
+  // Close content dialog when content is unscheduled (e.g. dragged back to sidebar)
+  useEffect(() => {
+    const cleanup = on(window, EVENTS.scheduledContentUpdated, () => {
+      setContentDialogState(prev => prev.open ? { ...prev, open: false } : prev);
+    });
+    return cleanup;
+  }, []);
 
   // Handler to open content dialog (for planned/ideas)
   const handleOpenContentDialog = useCallback((content: ProductionCard, type: 'scheduled' | 'planned') => {

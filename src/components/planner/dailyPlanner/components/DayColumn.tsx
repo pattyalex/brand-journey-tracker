@@ -212,10 +212,10 @@ export const DayColumn = ({
                       const roundedMinute = Math.round(rawMinute / 30) * 30;
                       const newStartTime = `${hour.toString().padStart(2, '0')}:${roundedMinute.toString().padStart(2, '0')}`;
 
-                      if (contentType === 'scheduled') {
-                        const toScheduleColumn = columns.find(c => c.id === 'to-schedule');
-                        if (toScheduleColumn) {
-                          const card = toScheduleColumn.cards.find(c => c.id === contentId);
+                      if (contentType === 'scheduled' || contentType === 'ready-to-post') {
+                        const readyToPostColumn = columns.find(c => c.id === 'ready-to-post');
+                        if (readyToPostColumn) {
+                          const card = readyToPostColumn.cards.find(c => c.id === contentId);
                           if (card) {
                             // Preserve original duration
                             let durationMinutes = 60;
@@ -235,7 +235,8 @@ export const DayColumn = ({
                             emit(window, EVENTS.productionKanbanUpdated);
                             emit(window, EVENTS.scheduledContentUpdated);
                             loadProductionContent?.();
-                            toast.success('Content moved to ' + format(new Date(dayString + 'T12:00:00'), 'MMM d'));
+                            const label = contentType === 'ready-to-post' ? 'Scheduled for ' : 'Content moved to ';
+                            toast.success(label + format(new Date(dayString + 'T12:00:00'), 'MMM d'));
                           }
                         }
                       } else if (contentType === 'planned') {
@@ -768,8 +769,8 @@ export const DayColumn = ({
                   if (!savedData) return;
                   try {
                     const columns: KanbanColumn[] = JSON.parse(savedData);
-                    if (contentType === 'scheduled') {
-                      const col = columns.find(c => c.id === 'to-schedule');
+                    if (contentType === 'scheduled' || contentType === 'ready-to-post') {
+                      const col = columns.find(c => c.id === 'ready-to-post');
                       const card = col?.cards.find(c => c.id === contentId);
                       if (card) {
                         let dur = 60;
@@ -787,7 +788,7 @@ export const DayColumn = ({
                         emit(window, EVENTS.productionKanbanUpdated);
                         emit(window, EVENTS.scheduledContentUpdated);
                         loadProductionContent?.();
-                        toast.success('Content moved');
+                        toast.success(contentType === 'ready-to-post' ? 'Scheduled!' : 'Content moved');
                       }
                     } else if (contentType === 'planned') {
                       const col = columns.find(c => c.id === 'ideate');
@@ -1012,17 +1013,17 @@ export const DayColumn = ({
             const contentType = e.dataTransfer.getData('contentType');
             const fromDate = e.dataTransfer.getData('fromDate');
 
-            // Handle content drops (move between days)
-            if (contentId && contentType && fromDate !== dayString) {
+            // Handle content drops (move between days or first-time scheduling from sidebar)
+            if (contentId && contentType && (contentType === 'ready-to-post' || fromDate !== dayString)) {
               const savedData = getString(StorageKeys.productionKanban);
               if (savedData) {
                 try {
                   const columns: KanbanColumn[] = JSON.parse(savedData);
 
-                  if (contentType === 'scheduled') {
-                    const toScheduleColumn = columns.find(c => c.id === 'to-schedule');
-                    if (toScheduleColumn) {
-                      const card = toScheduleColumn.cards.find(c => c.id === contentId);
+                  if (contentType === 'scheduled' || contentType === 'ready-to-post') {
+                    const readyToPostColumn = columns.find(c => c.id === 'ready-to-post');
+                    if (readyToPostColumn) {
+                      const card = readyToPostColumn.cards.find(c => c.id === contentId);
                       if (card) {
                         card.scheduledDate = dayString;
                         card.schedulingStatus = 'scheduled';
@@ -1030,7 +1031,8 @@ export const DayColumn = ({
                         emit(window, EVENTS.productionKanbanUpdated);
                         emit(window, EVENTS.scheduledContentUpdated);
                         loadProductionContent?.();
-                        toast.success('Content moved to ' + format(new Date(dayString + 'T12:00:00'), 'MMM d'));
+                        const label = contentType === 'ready-to-post' ? 'Scheduled for ' : 'Content moved to ';
+                        toast.success(label + format(new Date(dayString + 'T12:00:00'), 'MMM d'));
                       }
                     }
                   } else if (contentType === 'planned') {

@@ -305,7 +305,7 @@ const ArchiveDialog: React.FC<ArchiveDialogProps> = ({
                         Restore
                       </button>
                       <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap pointer-events-none">
-                        Send back to To Schedule
+                        Send back to Ready to Post
                         <div className="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-gray-900"></div>
                       </div>
                     </div>

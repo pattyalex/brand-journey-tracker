@@ -356,7 +356,7 @@ const ExpandedScheduleView: React.FC<ExpandedScheduleViewProps> = (props) => {
           <CalendarDays className="w-10 h-10 text-amber-700" />
         </motion.div>
         <h3 className="text-lg font-bold text-amber-700 mb-2">Drop to unschedule</h3>
-        <p className="text-sm text-amber-600 leading-relaxed">This content will move to<br /><span className="font-semibold">"To Schedule"</span> column</p>
+        <p className="text-sm text-amber-600 leading-relaxed">This content will move to<br /><span className="font-semibold">"Ready to Post"</span> column</p>
         <p className="text-xs text-amber-500 mt-2">Find it in Batch Schedule or its own dialog</p>
       </div>
     );

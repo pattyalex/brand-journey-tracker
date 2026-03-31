@@ -66,16 +66,14 @@ export const ContentOverviewSidebar = ({
             // Actually, let's count planned content separately
           }
 
-          // In Production: cards in 'script-ideas', 'to-film', 'to-edit', or unscheduled cards in 'to-schedule'
+          // In Production: cards in 'script-ideas', 'to-film', 'to-edit'
           if (column.id === 'script-ideas' || column.id === 'to-film' || column.id === 'to-edit') {
-            inProduction++;
-          } else if (column.id === 'to-schedule' && !card.scheduledDate) {
             inProduction++;
           }
 
-          // Scheduled to Publish: cards in 'to-schedule' that HAVE been scheduled (have scheduledDate)
+          // Scheduled to Publish: cards in 'ready-to-post' that HAVE been scheduled (have scheduledDate)
           // but NOT yet marked as completed/posted
-          if (column.id === 'to-schedule' && card.scheduledDate && !card.isCompleted) {
+          if (column.id === 'ready-to-post' && card.scheduledDate && !card.isCompleted) {
             scheduledToPublish++;
           }
 

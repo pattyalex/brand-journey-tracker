@@ -101,7 +101,7 @@ const KanbanContainer: React.FC<{
     <div
       ref={horizontalScrollRef}
       data-tour="kanban-board"
-      className={`flex gap-5 flex-1 min-w-0 max-w-full ${isTourAnatomyStep ? 'overflow-visible' : 'overflow-x-auto'} overflow-y-visible ml-[-34px] pl-[34px] mt-[-16px] pt-[16px] hide-scrollbar items-start`}
+      className={`flex gap-5 flex-1 min-w-0 max-w-full ${isTourAnatomyStep ? 'overflow-visible' : 'overflow-x-auto'} overflow-y-visible ml-[-34px] pl-[34px] pr-1 mt-[-16px] pt-[16px] hide-scrollbar items-start`}
       onScroll={(e) => {
         const target = e.currentTarget;
         const maxScroll = target.scrollWidth - target.clientWidth;
@@ -1074,7 +1074,6 @@ const Production = () => {
     'to-film': 3,
     'to-edit': 4,
     'ready-to-post': 5,
-    'to-schedule': 6,
   };
 
   const stepToColumn: Record<number, string> = {
@@ -1083,16 +1082,15 @@ const Production = () => {
     3: 'to-film',
     4: 'to-edit',
     5: 'ready-to-post',
-    6: 'to-schedule',
   };
 
   // Determine appropriate column based on card content
   const determineColumnByContent = (card: Partial<ProductionCard>): string => {
     // Check from most advanced to least advanced stage
 
-    // 1. Has scheduled date → Schedule column
+    // 1. Has scheduled date → Ready to Post column
     if (card.scheduledDate) {
-      return 'to-schedule';
+      return 'ready-to-post';
     }
 
     // 2. Has editing checklist with items → Edit column
@@ -2143,7 +2141,7 @@ const Production = () => {
   }
 
   return (
-      <div className="w-full h-screen flex flex-col pl-5 pr-3 pt-4 min-w-0 max-w-full" style={{ background: 'linear-gradient(180deg, #FAF7F5 0%, #F0EBE8 100%)' }}>
+      <div className="w-full h-screen flex flex-col pl-5 pr-0 pt-4 min-w-0 max-w-full" style={{ background: 'linear-gradient(180deg, #FAF7F5 0%, #F0EBE8 100%)' }}>
         <ProductionProvider value={board}>
         <ContentHubTour
           run={runTour}
@@ -2198,7 +2196,7 @@ const Production = () => {
 
           {/* Collapsible Archive Side Panel - inside KanbanContainer */}
           <div
-            className="flex-shrink-0 self-stretch mr-4 w-[48px] relative flex items-end pb-6"
+            className="flex-shrink-0 self-stretch mr-0 w-[48px] relative flex items-end pb-6"
             onDragOver={(e) => handleDragOver(e, "posted")}
             onDragLeave={handleDragLeave}
             onDrop={(e) => handleDrop(e, "posted")}
@@ -2208,14 +2206,13 @@ const Production = () => {
                 "group h-[280px] rounded-2xl transition-all duration-300 flex flex-col items-center justify-center overflow-hidden absolute right-0 bottom-6",
                 draggedOverColumn === "posted" && draggedCard
                   ? "bg-[#F5F0F7] border-2 border-dashed border-[#8B7082] shadow-lg w-[180px]"
-                  : "bg-white/90 backdrop-blur-sm border border-[#E8E4E6] shadow-md hover:shadow-lg hover:border-[#C9B5C0] w-[48px] hover:w-[180px]",
-                draggedCard && "w-[180px]"
+                  : "bg-white/90 backdrop-blur-sm border border-[#E8E4E6] shadow-md hover:shadow-lg hover:border-[#C9B5C0] w-[48px] hover:w-[180px]"
               )}
             >
               {/* Collapsed state - just icon */}
               <div className={cn(
                 "flex flex-col items-center gap-2 transition-all duration-300",
-                (draggedCard || draggedOverColumn === "posted") ? "opacity-0 absolute" : "group-hover:opacity-0 group-hover:absolute"
+                (draggedOverColumn === "posted" && draggedCard) ? "opacity-0 absolute" : "group-hover:opacity-0 group-hover:absolute"
               )}>
                 <Archive className="w-5 h-5 text-[#8B7082]" />
                 <span className="text-[10px] text-[#8B7082] font-medium" style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>
@@ -2226,7 +2223,7 @@ const Production = () => {
               {/* Expanded state - full content */}
               <div className={cn(
                 "flex flex-col items-center gap-3 px-4 transition-all duration-300",
-                (draggedCard || draggedOverColumn === "posted") ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                (draggedOverColumn === "posted" && draggedCard) ? "opacity-100" : "opacity-0 group-hover:opacity-100"
               )}>
                 <Archive className={cn(
                   "w-7 h-7 transition-colors",
@@ -2263,12 +2260,12 @@ const Production = () => {
                       setArchivedCards((prev) => prev.filter((c) => c.id !== lastArchivedCard.card.id));
                       setColumns((prev) =>
                         prev.map((col) =>
-                          col.id === 'to-schedule'
+                          col.id === 'ready-to-post'
                             ? { ...col, cards: [{
                                 ...lastArchivedCard.card,
-                                columnId: 'to-schedule',
+                                columnId: 'ready-to-post',
                                 scheduledDate: undefined,
-                                schedulingStatus: 'to-schedule',
+                                schedulingStatus: undefined,
                               }, ...col.cards] }
                             : col
                         )
@@ -3721,11 +3718,10 @@ const Production = () => {
                   }
                   const updatedCard: ProductionCard = {
                     ...card,
-                    columnId: 'to-schedule',
-                    schedulingStatus: 'to-schedule' as const,
+                    columnId: 'ready-to-post',
                   };
                   if (sourceColumnId) {
-                    if (sourceColumnId === 'to-schedule') {
+                    if (sourceColumnId === 'ready-to-post') {
                       return prev.map((col) => ({
                         ...col,
                         cards: col.cards.map((c) => c.id === card.id ? updatedCard : c),
@@ -3735,14 +3731,14 @@ const Production = () => {
                       if (col.id === sourceColumnId) {
                         return { ...col, cards: col.cards.filter(c => c.id !== card.id) };
                       }
-                      if (col.id === 'to-schedule') {
+                      if (col.id === 'ready-to-post') {
                         return { ...col, cards: [...col.cards, updatedCard] };
                       }
                       return col;
                     });
                   }
                   return prev.map((col) => {
-                    if (col.id === 'to-schedule') {
+                    if (col.id === 'ready-to-post') {
                       return { ...col, cards: [...col.cards, updatedCard] };
                     }
                     return col;
@@ -3762,7 +3758,7 @@ const Production = () => {
         {/* Expanded Schedule Column View */}
         {isScheduleColumnExpanded && (
           <ExpandedScheduleView
-            cards={columns.find(col => col.id === 'to-schedule')?.cards || []}
+            cards={columns.find(col => col.id === 'ready-to-post')?.cards || []}
             singleCard={schedulingCard}
             onClose={() => {
               setIsScheduleColumnExpanded(false);
@@ -3774,9 +3770,8 @@ const Production = () => {
             onNavigateToStep={handleNavigateToStep}
             onOpenContentFlow={handleOpenContentFlowForCard}
             onMoveToScheduleColumn={(card) => {
-              // Move card to 'to-schedule' column
+              // Move card to 'ready-to-post' column
               setColumns((prev) => {
-                // Check if card exists in any column
                 let cardExists = false;
                 let sourceColumnId: string | undefined;
 
@@ -3790,14 +3785,11 @@ const Production = () => {
 
                 const updatedCard: ProductionCard = {
                   ...card,
-                  columnId: 'to-schedule',
-                  schedulingStatus: 'to-schedule' as const,
+                  columnId: 'ready-to-post',
                 };
 
                 if (cardExists && sourceColumnId) {
-                  // Card exists - move it to to-schedule
-                  if (sourceColumnId === 'to-schedule') {
-                    // Already in to-schedule, just update
+                  if (sourceColumnId === 'ready-to-post') {
                     return prev.map((col) => ({
                       ...col,
                       cards: col.cards.map((c) =>
@@ -3805,20 +3797,18 @@ const Production = () => {
                       ),
                     }));
                   }
-                  // Move from source to to-schedule
                   return prev.map((col) => {
                     if (col.id === sourceColumnId) {
                       return { ...col, cards: col.cards.filter(c => c.id !== card.id) };
                     }
-                    if (col.id === 'to-schedule') {
+                    if (col.id === 'ready-to-post') {
                       return { ...col, cards: [...col.cards, updatedCard] };
                     }
                     return col;
                   });
                 } else {
-                  // Card doesn't exist in columns - add it to to-schedule
                   return prev.map((col) => {
-                    if (col.id === 'to-schedule') {
+                    if (col.id === 'ready-to-post') {
                       return { ...col, cards: [...col.cards, updatedCard] };
                     }
                     return col;

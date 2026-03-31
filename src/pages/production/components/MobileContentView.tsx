@@ -13,8 +13,6 @@ const columnConfig: Record<string, { icon: React.ElementType; color: string; gra
   'shape-ideas': { icon: PenLine, color: '#612a4f', gradient: 'linear-gradient(135deg, rgba(97, 42, 79, 0.1) 0%, rgba(139, 112, 130, 0.05) 100%)', label: 'Script & Concept' },
   'to-film': { icon: Camera, color: '#612a4f', gradient: 'linear-gradient(135deg, rgba(97, 42, 79, 0.1) 0%, rgba(139, 112, 130, 0.05) 100%)', label: 'To Shoot' },
   'to-edit': { icon: Scissors, color: '#612a4f', gradient: 'linear-gradient(135deg, rgba(97, 42, 79, 0.1) 0%, rgba(139, 112, 130, 0.05) 100%)', label: 'To Edit' },
-  'to-schedule': { icon: CalendarDays, color: '#612a4f', gradient: 'linear-gradient(135deg, rgba(97, 42, 79, 0.1) 0%, rgba(139, 112, 130, 0.05) 100%)', label: 'To Schedule' },
-  'scheduled': { icon: CalendarCheck, color: '#10b981', gradient: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(5, 150, 105, 0.06) 100%)', label: 'Scheduled' },
   'posted': { icon: Archive, color: '#8B7082', gradient: 'linear-gradient(135deg, rgba(139, 112, 130, 0.08) 0%, rgba(139, 112, 130, 0.03) 100%)', label: 'Posted' },
 };
 

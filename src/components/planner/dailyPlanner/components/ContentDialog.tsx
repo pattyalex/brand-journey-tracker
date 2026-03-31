@@ -81,7 +81,7 @@ export const ContentDialog = ({
       const newStart = parseTimeTo24(startTime);
       const newEnd = parseTimeTo24(endTime);
       if (type === 'scheduled') {
-        const col = columns.find(c => c.id === 'to-schedule');
+        const col = columns.find(c => c.id === 'ready-to-post');
         const card = col?.cards.find(c => c.id === content.id);
         if (card) {
           if (newStart) card.scheduledStartTime = newStart;

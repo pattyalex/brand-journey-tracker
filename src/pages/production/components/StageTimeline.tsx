@@ -10,7 +10,7 @@ interface StageTimelineProps {
   className?: string;
 }
 
-const AUTO_STAGES: Set<keyof StageCompletions> = new Set(['ideate', 'toSchedule']);
+const AUTO_STAGES: Set<keyof StageCompletions> = new Set(['ideate']);
 
 const StageTimeline: React.FC<StageTimelineProps> = ({ card, onToggleStage, className }) => {
   const completions = card.stageCompletions || DEFAULT_STAGE_COMPLETIONS;

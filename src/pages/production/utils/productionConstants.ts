@@ -7,8 +7,6 @@ export const columnAccentColors: Record<string, { accent: string; accentLight: s
   "to-film": { accent: "#D4A855", accentLight: "rgba(212, 168, 85, 0.1)", accentBg: "rgba(212, 168, 85, 0.08)" }, // Yellow-ish
   "to-edit": { accent: "#D4839B", accentLight: "rgba(212, 131, 155, 0.1)", accentBg: "rgba(212, 131, 155, 0.08)" }, // Pinkish
   "ready-to-post": { accent: "#E07A5F", accentLight: "rgba(224, 122, 95, 0.1)", accentBg: "rgba(224, 122, 95, 0.08)" }, // Warm coral
-  "to-schedule": { accent: "#7B9E6B", accentLight: "rgba(123, 158, 107, 0.1)", accentBg: "rgba(123, 158, 107, 0.08)" }, // Green-ish
-  "scheduled": { accent: "#10B981", accentLight: "rgba(16, 185, 129, 0.1)", accentBg: "rgba(16, 185, 129, 0.08)" }, // Emerald green
   posted: { accent: "#8B7082", accentLight: "rgba(139, 112, 130, 0.1)", accentBg: "rgba(139, 112, 130, 0.08)" }, // Neutral mauve
 };
 
@@ -19,8 +17,6 @@ export const columnColors: Record<string, { bg: string; border: string; badge: s
   "to-film": { bg: "bg-white", border: "border-transparent", badge: "bg-[#F5F2F4]", text: "text-[#612A4F]", buttonBg: "bg-[#F5F2F4]", buttonText: "text-[#612A4F]", topBorder: "bg-[#8B7082]", cardAccent: "border-l-[#DDD6DA]" },
   "to-edit": { bg: "bg-white", border: "border-transparent", badge: "bg-[#F5F2F4]", text: "text-[#612A4F]", buttonBg: "bg-[#F5F2F4]", buttonText: "text-[#612A4F]", topBorder: "bg-[#8B7082]", cardAccent: "border-l-[#DDD6DA]" },
   "ready-to-post": { bg: "bg-white", border: "border-transparent", badge: "bg-[#F5F2F4]", text: "text-[#612A4F]", buttonBg: "bg-[#F5F2F4]", buttonText: "text-[#612A4F]", topBorder: "bg-[#8B7082]", cardAccent: "border-l-[#DDD6DA]" },
-  "to-schedule": { bg: "bg-white", border: "border-transparent", badge: "bg-[#F5F2F4]", text: "text-[#612A4F]", buttonBg: "bg-[#F5F2F4]", buttonText: "text-[#612A4F]", topBorder: "bg-[#8B7082]", cardAccent: "border-l-[#DDD6DA]" },
-  "scheduled": { bg: "bg-white", border: "border-transparent", badge: "bg-[#ECFDF5]", text: "text-[#059669]", buttonBg: "bg-[#ECFDF5]", buttonText: "text-[#059669]", topBorder: "bg-[#10B981]", cardAccent: "border-l-[#A7F3D0]" },
   posted: { bg: "bg-white", border: "border-transparent", badge: "bg-[#F5F2F4]", text: "text-[#612A4F]", buttonBg: "bg-[#F5F2F4]", buttonText: "text-[#612A4F]", topBorder: "bg-[#8B7082]", cardAccent: "border-l-[#DDD6DA]" },
 };
 
@@ -31,8 +27,6 @@ export const cardColors: Record<string, { bg: string; border: string; accent: st
   "to-film": { bg: "bg-white", border: "border-[#F0EBF2]", accent: "border-l-[#C0ABCF]" },
   "to-edit": { bg: "bg-white", border: "border-[#F0EBF2]", accent: "border-l-[#B49CC6]" },
   "ready-to-post": { bg: "bg-white", border: "border-[#F0EBF2]", accent: "border-l-[#AC91BE]" },
-  "to-schedule": { bg: "bg-white", border: "border-[#F0EBF2]", accent: "border-l-[#A88DBD]" },
-  "scheduled": { bg: "bg-white", border: "border-[#D1FAE5]", accent: "border-l-[#6EE7B7]" },
   posted: { bg: "bg-white", border: "border-[#F0EBF2]", accent: "border-l-[#9C7EB4]" },
 };
 
@@ -43,8 +37,6 @@ export const columnIcons: Record<string, string> = {
   "to-film": "Clapperboard",
   "to-edit": "Scissors",
   "ready-to-post": "Send",
-  "to-schedule": "CalendarDays",
-  "scheduled": "CalendarCheck",
   posted: "Archive",
 };
 
@@ -55,8 +47,6 @@ export const emptyStateIcons: Record<string, string> = {
   "to-film": "LayoutGrid",
   "to-edit": "Scissors",
   "ready-to-post": "Send",
-  "to-schedule": "CalendarDays",
-  "scheduled": "CalendarCheck",
   posted: "Archive",
 };
 
@@ -67,11 +57,10 @@ export const DEFAULT_STAGE_COMPLETIONS: StageCompletions = {
   toFilm: false,
   toEdit: false,
   readyToPost: false,
-  toSchedule: false,
 };
 
 export const STAGE_ORDER: (keyof StageCompletions)[] = [
-  'ideate', 'scriptAndConcept', 'toFilm', 'toEdit', 'readyToPost', 'toSchedule',
+  'ideate', 'scriptAndConcept', 'toFilm', 'toEdit', 'readyToPost',
 ];
 
 export const STAGE_LABELS: Record<keyof StageCompletions, string> = {
@@ -80,7 +69,6 @@ export const STAGE_LABELS: Record<keyof StageCompletions, string> = {
   toFilm: 'To Shoot',
   toEdit: 'To Edit',
   readyToPost: 'Ready to Post',
-  toSchedule: 'To Schedule',
 };
 
 export const COLUMN_TO_STAGE: Record<string, keyof StageCompletions> = {
@@ -89,10 +77,9 @@ export const COLUMN_TO_STAGE: Record<string, keyof StageCompletions> = {
   'to-film': 'toFilm',
   'to-edit': 'toEdit',
   'ready-to-post': 'readyToPost',
-  'to-schedule': 'toSchedule',
 };
 
-export const COLUMN_ORDER = ['ideate', 'shape-ideas', 'to-film', 'to-edit', 'ready-to-post', 'to-schedule'];
+export const COLUMN_ORDER = ['ideate', 'shape-ideas', 'to-film', 'to-edit', 'ready-to-post'];
 
 // Maps video step numbers (1-6) to stage completion keys
 export const VIDEO_STEP_TO_STAGE: Record<number, keyof StageCompletions> = {
@@ -101,16 +88,14 @@ export const VIDEO_STEP_TO_STAGE: Record<number, keyof StageCompletions> = {
   3: 'toFilm',
   4: 'toEdit',
   5: 'readyToPost',
-  6: 'toSchedule',
 };
 
-// Maps image step numbers (1-5) to stage completion keys
+// Maps image step numbers (1-4) to stage completion keys
 export const IMAGE_STEP_TO_STAGE: Record<number, keyof StageCompletions> = {
   1: 'ideate',
   2: 'scriptAndConcept',
   3: 'toEdit',
   4: 'readyToPost',
-  5: 'toSchedule',
 };
 
 export const defaultColumns: KanbanColumn[] = [
@@ -119,6 +104,4 @@ export const defaultColumns: KanbanColumn[] = [
   { id: "to-film", title: "To Shoot", cards: [] },
   { id: "to-edit", title: "To Edit", cards: [] },
   { id: "ready-to-post", title: "Ready to Post", cards: [] },
-  { id: "to-schedule", title: "To Schedule", cards: [] },
-  { id: "scheduled", title: "Scheduled", cards: [] },
 ];

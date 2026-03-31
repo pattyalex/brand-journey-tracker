@@ -46,7 +46,7 @@ const BatchSchedulePanel: React.FC<BatchSchedulePanelProps> = ({ state }) => {
           <h3 className="text-lg font-bold text-amber-700 mb-2">Drop to unschedule</h3>
           <p className="text-sm text-amber-600 leading-relaxed">
             This content will move to<br />
-            <span className="font-semibold">"To Schedule"</span> column
+            <span className="font-semibold">"Ready to Post"</span> column
           </p>
           <p className="text-sm text-amber-700 mt-5 font-medium">
             Reschedule via <span className="font-bold">Batch Schedule</span> or by clicking on the card
@@ -57,7 +57,7 @@ const BatchSchedulePanel: React.FC<BatchSchedulePanelProps> = ({ state }) => {
           <CalendarDays className="w-10 h-10 mx-auto mb-3 opacity-50" />
           <p className="text-sm font-medium">No content to schedule</p>
           <p className="text-xs mt-1 leading-relaxed px-2">
-            Drag cards into the "To Schedule" column<br />to add content here
+            Drag cards into the "Ready to Post" column<br />to add content here
           </p>
         </div>
       ) : (

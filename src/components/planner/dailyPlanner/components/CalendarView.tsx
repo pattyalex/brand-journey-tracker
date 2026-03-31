@@ -469,8 +469,8 @@ export const CalendarView = ({
         const columns: KanbanColumn[] = JSON.parse(savedData);
 
         if (type === 'scheduled') {
-          // Remove scheduled date from to-schedule column
-          const toScheduleColumn = columns.find(c => c.id === 'to-schedule');
+          // Remove scheduled date from ready-to-post column
+          const toScheduleColumn = columns.find(c => c.id === 'ready-to-post');
           if (toScheduleColumn) {
             const card = toScheduleColumn.cards.find(c => c.id === contentId);
             if (card) {
@@ -500,7 +500,7 @@ export const CalendarView = ({
               <button
                 onClick={() => {
                   setString(StorageKeys.highlightedUnscheduledCard, contentId);
-                  navigate('/production?scrollTo=to-schedule');
+                  navigate('/production?scrollTo=ready-to-post');
                 }}
                 className="underline font-medium text-indigo-600 hover:text-indigo-800"
               >
@@ -524,7 +524,7 @@ export const CalendarView = ({
     if (savedData) {
       try {
         const columns: KanbanColumn[] = JSON.parse(savedData);
-        const toScheduleColumn = columns.find(c => c.id === 'to-schedule');
+        const toScheduleColumn = columns.find(c => c.id === 'ready-to-post');
         if (toScheduleColumn) {
           const card = toScheduleColumn.cards.find(c => c.id === contentId);
           if (card) {
@@ -569,7 +569,7 @@ export const CalendarView = ({
     console.log('📦 DROP HANDLER - contentId:', contentId, 'taskId:', taskId, 'fromDate:', fromDate, 'toDate:', toDate);
 
     // Handle content item drop
-    if (contentId && fromDate !== toDate) {
+    if (contentId && (contentType === 'ready-to-post' || fromDate !== toDate)) {
       console.log('🎬 Processing content drop...');
       const savedData = getString(StorageKeys.productionKanban);
       if (savedData) {
@@ -583,6 +583,10 @@ export const CalendarView = ({
               if (contentType === 'scheduled') {
                 card.scheduledDate = toDate;
                 card.schedulingStatus = 'scheduled';
+              } else if (contentType === 'ready-to-post') {
+                // First-time scheduling from sidebar
+                card.scheduledDate = toDate;
+                card.schedulingStatus = 'scheduled';
               } else if (contentType === 'planned') {
                 card.plannedDate = toDate;
               }
@@ -594,7 +598,9 @@ export const CalendarView = ({
             setString(StorageKeys.productionKanban, JSON.stringify(columns));
             emit(window, EVENTS.productionKanbanUpdated);
             emit(window, EVENTS.scheduledContentUpdated);
-            toast.success('Content moved to ' + format(new Date(toDate + 'T12:00:00'), 'MMM d'));
+            loadProductionContent?.();
+            const label = contentType === 'ready-to-post' ? 'Scheduled for ' : 'Content moved to ';
+            toast.success(label + format(new Date(toDate + 'T12:00:00'), 'MMM d'));
           }
         } catch (err) {
           console.error('Error updating content date:', err);
@@ -833,6 +839,7 @@ export const CalendarView = ({
                           onDragStart={(e) => {
                             console.log('🎬 DRAG START - Scheduled Content:', content.id, content.hook || content.title, 'from:', dayString);
                             e.stopPropagation();
+                            setContentTooltip(null);
                             e.dataTransfer.setData('text/plain', content.id);
                             e.dataTransfer.setData('contentId', content.id);
                             e.dataTransfer.setData('contentType', 'scheduled');

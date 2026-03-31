@@ -21,7 +21,6 @@ const columnHeaderIcons: Record<string, React.FC<{ className?: string; style?: R
   "to-film": Camera,
   "to-edit": Scissors,
   "ready-to-post": Send,
-  "to-schedule": CalendarDays,
 };
 
 // Icon component mapping for empty states
@@ -31,7 +30,6 @@ const emptyStateIconComponents: Record<string, React.FC<{ className?: string; st
   "to-film": Camera,
   "to-edit": Scissors,
   "ready-to-post": Send,
-  "to-schedule": CalendarDays,
 };
 
 export interface KanbanColumnProps {
@@ -393,7 +391,6 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
             {column.id === 'to-film' && <Camera className="w-5 h-5 text-[#612A4F]" style={{ strokeWidth: 1.5 }} />}
             {column.id === 'to-edit' && <Scissors className="w-5 h-5 text-[#612A4F]" style={{ strokeWidth: 1.5 }} />}
             {column.id === 'ready-to-post' && <Send className="w-5 h-5 text-[#612A4F]" style={{ strokeWidth: 1.5 }} />}
-            {column.id === 'to-schedule' && <CalendarDays className="w-5 h-5 text-[#612A4F]" style={{ strokeWidth: 1.5 }} />}
             <h2 className="text-[18px] tracking-[0.02em] text-[#612A4F]" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>
               {column.title.includes('&')
                 ? column.title.split('&').map((part, i, arr) => (
@@ -428,12 +425,6 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
                   }).sort((a, b) => {
                     // Sort: pinned first, then unscheduled before scheduled
                     if (a.isPinned !== b.isPinned) return (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0);
-                    // Then sort scheduled cards to the bottom
-                    if (column.id === 'to-schedule') {
-                      const aScheduled = !!a.scheduledDate;
-                      const bScheduled = !!b.scheduledDate;
-                      if (aScheduled !== bScheduled) return aScheduled ? 1 : -1;
-                    }
                     return 0;
                   });
 
@@ -590,13 +581,13 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
                     return <TourShapeDemoCards isActive={false} showStatic={tourStepIndex === 2} />;
                   }
 
-                  // Show empty state if no cards
-                  if (filteredSortedCards.length === 0 && !draggedCard) {
+                  // Show empty state if no cards (hidden only for the column being dragged over)
+                  if (filteredSortedCards.length === 0 && draggedOverColumn !== column.id) {
                     const IconComponent = emptyStateIconComponents[column.id] || Lightbulb;
 
                     return (
                       <div className="flex flex-col items-center justify-start pt-3 px-4 h-full min-h-[380px]">
-                        {/* Icon and text - hidden for ideate when input is showing */}
+                        {/* Icon and text - hidden during drag or for ideate when input is showing */}
                         {!(column.id === 'ideate' && addingToColumn === 'ideate') && (
                           <>
                             {/* Minimal empty state — icon + styled text */}
@@ -618,7 +609,6 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
                                  column.id === 'shape-ideas' ? <>Drag ideas here when<br />they need a <span className="font-bold text-[15px]" style={{ color: '#4A3D45', fontFamily: "'Playfair Display', serif" }}>script</span> or <span className="font-bold text-[15px]" style={{ color: '#4A3D45', fontFamily: "'Playfair Display', serif" }}>concept</span></> :
                                  column.id === 'to-film' ? <>Drag content here when it's scripted and <span className="font-bold text-[15px]" style={{ color: '#4A3D45', fontFamily: "'Playfair Display', serif" }}>ready to film</span> or <span className="font-bold text-[15px]" style={{ color: '#4A3D45', fontFamily: "'Playfair Display', serif" }}>photograph</span></> :
                                  column.id === 'to-edit' ? <>Drag content here once it's been filmed and <span className="font-bold text-[15px]" style={{ color: '#4A3D45', fontFamily: "'Playfair Display', serif" }}>needs editing</span></> :
-                                 column.id === 'to-schedule' ? <>Drag finished content here to <span className="font-bold text-[15px]" style={{ color: '#4A3D45', fontFamily: "'Playfair Display', serif" }}>pick a posting date</span></> :
                                  column.id === 'ready-to-post' ? <>Content that's fully done and<br /><span className="font-bold text-[15px]" style={{ color: '#4A3D45', fontFamily: "'Playfair Display', serif" }}>ready to be scheduled</span> and <span className="font-bold text-[15px]" style={{ color: '#4A3D45', fontFamily: "'Playfair Display', serif" }}>go live</span></> :
                                  'Drag content here when ready.'}
                               </p>
@@ -626,10 +616,10 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
                           </>
                         )}
 
-                        {/* Ready to Post — Go to Calendar button */}
+                        {/* Ready to Post — Schedule on Calendar button (always visible, even during drag) */}
                         {column.id === 'ready-to-post' && (
                           <button
-                            onClick={() => navigate('/task-board?view=month&mode=content')}
+                            onClick={() => navigate('/task-board?view=calendar&mode=content&panel=ready-to-post')}
                             className="group/btn w-full flex items-center justify-center gap-2 py-2.5 rounded-[12px] text-[14px] font-medium transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
                             style={{
                               backgroundColor: '#8B7082',
@@ -701,26 +691,6 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
                           </>
                         )}
 
-                        {/* Batch Schedule button - only for to-schedule column */}
-                        {column.id === 'to-schedule' && (
-                          <button
-                            onClick={() => setIsScheduleColumnExpanded(true)}
-                            className="w-full flex items-center justify-center gap-2 py-3 rounded-[12px] text-[13px] font-medium transition-all duration-200 mt-3"
-                            style={{
-                              backgroundColor: '#8B7082',
-                              color: 'white',
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.backgroundColor = '#7A6272';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.backgroundColor = '#8B7082';
-                            }}
-                          >
-                            <CalendarDays className="w-3.5 h-3.5" style={{ strokeWidth: 2 }} />
-                            Batch Schedule
-                          </button>
-                        )}
                       </div>
                     );
                   }
@@ -798,7 +768,7 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
               </AnimatePresence>
 
               {/* Buttons Area - right below cards (hidden on anatomy step) */}
-              {!(isTourActive && (tourStepIndex === 1 || tourStepIndex === 2 || tourStepIndex === 3 || tourStepIndex === 4 || tourStepIndex === 5)) && column.cards.filter(c => c.title && c.title.trim() && !c.title.toLowerCase().includes('add quick idea')).length > 0 && (
+              {!(isTourActive && (tourStepIndex === 1 || tourStepIndex === 2 || tourStepIndex === 3 || tourStepIndex === 4 || tourStepIndex === 5)) && (column.cards.filter(c => c.title && c.title.trim() && !c.title.toLowerCase().includes('add quick idea')).length > 0 || (draggedOverColumn === 'ready-to-post' && column.id === 'ready-to-post')) && (
                 <div className="px-1 pt-2 space-y-2">
                   {addingToColumn === column.id ? (
                     <div key={`inline-input-${column.id}`}>
@@ -826,20 +796,26 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
                       <Plus className="w-4 h-4 group-hover/btn:rotate-90 transition-transform duration-200" />
                       Add idea
                     </button>
-                  ) : null}
-
-                  {/* Batch Schedule button - only for to-schedule column */}
-                  {column.id === 'to-schedule' && (
-                    <div
-                      className="group/btn px-4 py-2.5 rounded-xl transition-all duration-200 cursor-pointer w-full hover:-translate-y-0.5 active:scale-[0.98] bg-[#8B7082] hover:bg-[#7A6272] shadow-sm hover:shadow-md"
-                      onClick={() => setIsScheduleColumnExpanded(true)}
+                  ) : column.id === 'ready-to-post' ? (
+                    <button
+                      key="schedule-btn"
+                      onClick={() => navigate('/task-board?view=calendar&mode=content&panel=ready-to-post')}
+                      className="group/btn w-full flex items-center justify-center gap-2 py-2.5 rounded-[12px] text-[14px] font-medium transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
+                      style={{
+                        backgroundColor: '#8B7082',
+                        color: 'white',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = '#7A6272';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = '#8B7082';
+                      }}
                     >
-                      <div className="flex items-center justify-center gap-2 text-white">
-                        <CalendarDays className="h-4 w-4" />
-                        <span className="text-sm font-semibold">Batch Schedule</span>
-                      </div>
-                    </div>
-                  )}
+                      <CalendarDays className="w-4 h-4" />
+                      Schedule on Calendar
+                    </button>
+                  ) : null}
 
                   {/* Brainstorm with MegAI button - only for ideate column */}
                   {column.id === 'ideate' && (
@@ -868,6 +844,7 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
                   )}
                 </div>
               )}
+
             </div>
           );
         })()}

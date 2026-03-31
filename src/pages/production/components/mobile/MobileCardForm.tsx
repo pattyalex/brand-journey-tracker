@@ -36,8 +36,7 @@ const columnLabels: Record<string, string> = {
   'shape-ideas': 'Script & Concept',
   'to-film': 'To Shoot',
   'to-edit': 'To Edit',
-  'to-schedule': 'To Schedule',
-  'scheduled': 'Scheduled',
+  'ready-to-post': 'Ready to Post',
   'posted': 'Posted',
 };
 
@@ -104,8 +103,7 @@ interface MobileCardFormProps {
   isScriptIdeas: boolean;
   isToEdit: boolean;
   isToFilm: boolean;
-  isToSchedule: boolean;
-  isScheduled: boolean;
+  isReadyToPost: boolean;
 
   // Actions
   onMove: (targetColumnId: string) => void;
@@ -141,7 +139,7 @@ const MobileCardForm: React.FC<MobileCardFormProps> = ({
   showScheduleConfirm, setShowScheduleConfirm,
   calendarMonth, setCalendarMonth,
   scheduledContent, scheduledDates, calendarDays,
-  isIdeate, isScriptIdeas, isToEdit, isToFilm, isToSchedule, isScheduled,
+  isIdeate, isScriptIdeas, isToEdit, isToFilm, isReadyToPost,
   onMove, onDelete, onSaveCard,
 }) => {
   return (
@@ -1031,7 +1029,7 @@ const MobileCardForm: React.FC<MobileCardFormProps> = ({
         )}
 
         {/* To Schedule: Scheduling Interface */}
-        {isToSchedule && (
+        {isReadyToPost && (
           <>
             {!scheduledDate && (
               <div
@@ -1295,114 +1293,6 @@ const MobileCardForm: React.FC<MobileCardFormProps> = ({
           </>
         )}
 
-        {/* Scheduled Column View */}
-        {isScheduled && (
-          <>
-            <div
-              className="rounded-3xl p-5"
-              style={{
-                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                boxShadow: '0 8px 32px rgba(16, 185, 129, 0.25)',
-              }}
-            >
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: 'rgba(255, 255, 255, 0.2)' }}>
-                  <CalendarCheck className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <p className="text-white font-semibold text-lg">Scheduled</p>
-                  <p className="text-white/80 text-sm">
-                    {card.scheduledDate && new Date(card.scheduledDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-                    {card.scheduledStartTime && ` at ${(() => {
-                      const [h] = card.scheduledStartTime.split(':').map(Number);
-                      const hour12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
-                      const ampm = h >= 12 ? 'PM' : 'AM';
-                      return `${hour12}:00 ${ampm}`;
-                    })()}`}
-                  </p>
-                </div>
-              </div>
-
-              <button
-                onClick={() => setShowMarkPosted(true)}
-                className="w-full py-3 rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
-                style={{ background: 'rgba(255, 255, 255, 0.95)' }}
-              >
-                <Send className="w-5 h-5" style={{ color: '#059669' }} />
-                <span className="font-semibold" style={{ color: '#059669' }}>Mark as Posted</span>
-              </button>
-            </div>
-
-            {/* Content Summary for Scheduled */}
-            <div
-              className="rounded-3xl overflow-hidden"
-              style={{
-                background: 'rgba(255, 255, 255, 0.75)',
-                backdropFilter: 'blur(10px)',
-                WebkitBackdropFilter: 'blur(10px)',
-                boxShadow: '0 8px 32px rgba(97, 42, 79, 0.08), inset 0 1px 0 rgba(255,255,255,0.9)',
-                border: '1px solid rgba(255, 255, 255, 0.6)',
-              }}
-            >
-              <button
-                onClick={() => toggleSection('scheduledSummary')}
-                className="w-full p-5 flex items-center justify-between"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'rgba(16, 185, 129, 0.1)' }}>
-                    <FileText className="w-4 h-4" style={{ color: '#059669' }} />
-                  </div>
-                  <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#8B7082' }}>Content Summary</span>
-                </div>
-                <ChevronDown
-                  className="w-5 h-5 transition-transform duration-300"
-                  style={{ color: '#8B7082', transform: expandedSections.has('scheduledSummary') ? 'rotate(180deg)' : 'rotate(0deg)' }}
-                />
-              </button>
-
-              {expandedSections.has('scheduledSummary') && (
-                <div className="px-5 pb-5 space-y-4">
-                  {card.script && (
-                    <div>
-                      <p className="text-xs font-medium mb-2" style={{ color: '#8B7082' }}>Script</p>
-                      <p className="text-sm leading-relaxed" style={{ color: '#1a1523', display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                        {card.script}
-                      </p>
-                    </div>
-                  )}
-                  {card.platforms && card.platforms.length > 0 && (
-                    <div>
-                      <p className="text-xs font-medium mb-2" style={{ color: '#8B7082' }}>Platforms</p>
-                      <div className="flex flex-wrap gap-2">
-                        {card.platforms.map((platform) => (
-                          <span key={platform} className="px-3 py-1 rounded-full text-xs" style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#059669' }}>
-                            {platform}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {card.formats && card.formats.length > 0 && (
-                    <div>
-                      <p className="text-xs font-medium mb-2" style={{ color: '#8B7082' }}>Format</p>
-                      <div className="flex flex-wrap gap-2">
-                        {card.formats.map((format) => (
-                          <span key={format} className="px-3 py-1 rounded-full text-xs flex items-center gap-1" style={{ background: 'rgba(139, 112, 130, 0.1)', color: '#1a1523' }}>
-                            <Video className="w-3 h-3" />
-                            {format}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {!card.script && !card.platforms?.length && !card.formats?.length && (
-                    <p className="text-sm" style={{ color: '#8B7082' }}>No content details available</p>
-                  )}
-                </div>
-              )}
-            </div>
-          </>
-        )}
 
         {/* Schedule confirmation modal */}
         {showScheduleConfirm && (

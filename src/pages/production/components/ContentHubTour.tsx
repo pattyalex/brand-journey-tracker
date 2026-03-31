@@ -310,11 +310,6 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
     }
     // Scroll to show the last columns on step 5, hide columns after Ready to Post
     if (stepIndex === 5) {
-      // Hide columns after Ready to Post and collapse their space
-      const scheduleCol = document.querySelector<HTMLElement>('[data-tour="column-to-schedule"]');
-      const scheduledCol = document.querySelector<HTMLElement>('[data-tour="column-scheduled"]');
-      if (scheduleCol) { scheduleCol.style.display = "none"; }
-      if (scheduledCol) { scheduledCol.style.display = "none"; }
       // Scroll so Ready to Post column is centered in view (leaves room for tooltip)
       requestAnimationFrame(() => {
         const readyCol = document.querySelector<HTMLElement>('[data-tour="column-ready-to-post"]');
@@ -328,8 +323,6 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
           el.style.zIndex = "";
         });
         if (sidebarEl) sidebarEl.style.zIndex = "";
-        if (scheduleCol) scheduleCol.style.display = "";
-        if (scheduledCol) scheduledCol.style.display = "";
         const kanban = document.querySelector<HTMLElement>('[data-tour="kanban-board"]');
         if (kanban) {
           kanban.scrollTo({ left: 0, behavior: "smooth" });

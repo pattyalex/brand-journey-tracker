@@ -45,8 +45,8 @@ const Dashboard = () => {
       try {
         const columns: KanbanColumn[] = JSON.parse(savedData);
 
-        // Find to-schedule column for scheduled/posted content
-        const toScheduleColumn = columns.find(col => col.id === 'to-schedule');
+        // Find ready-to-post column for scheduled/posted content
+        const toScheduleColumn = columns.find(col => col.id === 'ready-to-post');
         toScheduleColumn?.cards.forEach(c => {
           if (c.schedulingStatus === 'scheduled' && c.scheduledDate) {
             const schedDate = new Date(c.scheduledDate);

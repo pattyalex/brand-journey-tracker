@@ -16,7 +16,6 @@ const VIDEO_STEPS: Step[] = [
   { label: "Film", shortLabel: "Film" },
   { label: "To Edit", shortLabel: "Edit" },
   { label: "Ready to Post", shortLabel: "Ready" },
-  { label: "To Schedule", shortLabel: "Schedule" },
 ];
 
 const IMAGE_STEPS: Step[] = [
@@ -24,7 +23,6 @@ const IMAGE_STEPS: Step[] = [
   { label: "Concept", shortLabel: "Concept" },
   { label: "To Edit", shortLabel: "Edit" },
   { label: "Ready to Post", shortLabel: "Ready" },
-  { label: "To Schedule", shortLabel: "Schedule" },
 ];
 
 /**

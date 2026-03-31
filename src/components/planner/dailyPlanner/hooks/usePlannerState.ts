@@ -192,6 +192,12 @@ export const usePlannerState = ({
     if (modeParam === 'content' || modeParam === 'tasks' || modeParam === 'both') {
       setContentDisplayMode(modeParam as ContentDisplayMode);
     }
+
+    // Auto-expand Ready to Post sidebar when navigated from Content Hub
+    const panelParam = searchParams.get('panel');
+    if (panelParam === 'ready-to-post') {
+      setIsAllTasksCollapsed(false);
+    }
   }, [searchParams]);
 
   // Load production content function (moved outside useEffect for reuse)
@@ -206,8 +212,8 @@ export const usePlannerState = ({
     try {
       const columns: KanbanColumn[] = JSON.parse(savedData);
 
-      // Get scheduled content from to-schedule column
-      const toScheduleColumn = columns.find(col => col.id === 'to-schedule');
+      // Get scheduled content from ready-to-post column
+      const toScheduleColumn = columns.find(col => col.id === 'ready-to-post');
       const scheduledCards = toScheduleColumn?.cards.filter(
         c => c.schedulingStatus === 'scheduled' && c.scheduledDate
       ) || [];

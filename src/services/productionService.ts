@@ -20,7 +20,7 @@ export interface StoryboardScene {
 }
 
 export type EditingStatus = 'to-start-editing' | 'needs-more-editing' | 'ready-to-schedule';
-export type SchedulingStatus = 'to-schedule' | 'scheduled';
+export type SchedulingStatus = 'scheduled';
 export type CardStatus = 'to-start' | 'needs-work' | 'ready' | null;
 export type CardAddedFrom = 'calendar' | 'quick-idea' | 'ai-generated' | 'bank-of-ideas' | 'repurposed' | 'idea-expander';
 
@@ -29,7 +29,7 @@ export interface StageCompletions {
   scriptAndConcept: boolean;
   toFilm: boolean;
   toEdit: boolean;
-  toSchedule: boolean;
+  readyToPost: boolean;
 }
 export type ScheduledColor = 'indigo' | 'rose' | 'amber' | 'emerald' | 'sky' | 'violet' | 'orange' | 'cyan' | 'sage';
 

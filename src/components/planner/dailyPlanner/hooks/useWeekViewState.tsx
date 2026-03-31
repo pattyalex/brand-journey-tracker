@@ -357,7 +357,7 @@ export const useWeekViewState = ({
         const columns: KanbanColumn[] = JSON.parse(savedData);
 
         if (type === 'scheduled') {
-          const toScheduleColumn = columns.find(c => c.id === 'to-schedule');
+          const toScheduleColumn = columns.find(c => c.id === 'ready-to-post');
           if (toScheduleColumn) {
             const card = toScheduleColumn.cards.find(c => c.id === contentId);
             if (card) {
@@ -386,7 +386,7 @@ export const useWeekViewState = ({
               <button
                 onClick={() => {
                   setString(StorageKeys.highlightedUnscheduledCard, contentId);
-                  navigate('/production?scrollTo=to-schedule');
+                  navigate('/production?scrollTo=ready-to-post');
                 }}
                 className="underline font-medium text-indigo-600 hover:text-indigo-800"
               >
@@ -410,7 +410,7 @@ export const useWeekViewState = ({
     if (savedData) {
       try {
         const columns: KanbanColumn[] = JSON.parse(savedData);
-        const toScheduleColumn = columns.find(c => c.id === 'to-schedule');
+        const toScheduleColumn = columns.find(c => c.id === 'ready-to-post');
         if (toScheduleColumn) {
           const card = toScheduleColumn.cards.find(c => c.id === contentId);
           if (card) {

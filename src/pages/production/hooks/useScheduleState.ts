@@ -261,7 +261,7 @@ export function useScheduleState(props: ExpandedScheduleViewProps) {
   // Get cards
   const toScheduleCards = useMemo(() => {
     if (embedded || planningMode) {
-      const toScheduleColumn = columns.find(col => col.id === 'to-schedule');
+      const toScheduleColumn = columns.find(col => col.id === 'ready-to-post');
       return toScheduleColumn?.cards || [];
     }
     return propCards || [];
@@ -288,7 +288,7 @@ export function useScheduleState(props: ExpandedScheduleViewProps) {
   // Internal handlers
   const handleScheduleInternal = (cardId: string, date: Date) => {
     const newColumns = columns.map(col => {
-      if (col.id === 'to-schedule') {
+      if (col.id === 'ready-to-post') {
         return {
           ...col,
           cards: col.cards.map(card => {
@@ -306,12 +306,12 @@ export function useScheduleState(props: ExpandedScheduleViewProps) {
 
   const handleUnscheduleInternal = (cardId: string) => {
     const newColumns = columns.map(col => {
-      if (col.id === 'to-schedule') {
+      if (col.id === 'ready-to-post') {
         return {
           ...col,
           cards: col.cards.map(card => {
             if (card.id === cardId) {
-              return { ...card, schedulingStatus: 'to-schedule' as const, scheduledDate: undefined };
+              return { ...card, schedulingStatus: undefined, scheduledDate: undefined };
             }
             return card;
           }),
@@ -366,7 +366,7 @@ export function useScheduleState(props: ExpandedScheduleViewProps) {
   }, [columns]);
 
   const handleArchiveContent = (cardId: string, e: React.MouseEvent) => {
-    const toScheduleCol = columns.find(col => col.id === 'to-schedule');
+    const toScheduleCol = columns.find(col => col.id === 'ready-to-post');
     const card = toScheduleCol?.cards.find(c => c.id === cardId);
     if (!card) return;
 
@@ -432,7 +432,7 @@ export function useScheduleState(props: ExpandedScheduleViewProps) {
     if (savedData) {
       try {
         const storedColumns: KanbanColumn[] = JSON.parse(savedData);
-        const toScheduleColumn = storedColumns.find(c => c.id === 'to-schedule');
+        const toScheduleColumn = storedColumns.find(c => c.id === 'ready-to-post');
         if (toScheduleColumn) {
           const card = toScheduleColumn.cards.find(c => c.id === cardId);
           if (card) {
@@ -456,7 +456,7 @@ export function useScheduleState(props: ExpandedScheduleViewProps) {
     newMarkedIds.add(cardId);
     setMarkedAsPostedIds(newMarkedIds);
 
-    const toScheduleCol = columns.find(col => col.id === 'to-schedule');
+    const toScheduleCol = columns.find(col => col.id === 'ready-to-post');
     let card = toScheduleCol?.cards.find(c => c.id === cardId);
     if (!card && singleCard && singleCard.id === cardId) {
       card = {
@@ -482,7 +482,7 @@ export function useScheduleState(props: ExpandedScheduleViewProps) {
 
   const handleArchiveAndRemove = () => {
     if (!deleteConfirmCard) return;
-    const toScheduleCol = columns.find(col => col.id === 'to-schedule');
+    const toScheduleCol = columns.find(col => col.id === 'ready-to-post');
     const card = toScheduleCol?.cards.find(c => c.id === deleteConfirmCard.id);
     if (!card) { setDeleteConfirmCard(null); return; }
 
@@ -521,7 +521,7 @@ export function useScheduleState(props: ExpandedScheduleViewProps) {
     } as ProductionCard & { archivedAt: string };
 
     const newColumns = columns.map(col => {
-      if (col.id === 'to-schedule') {
+      if (col.id === 'ready-to-post') {
         return { ...col, cards: col.cards.filter(c => c.id !== deleteConfirmCard.id) };
       }
       return col;
@@ -569,7 +569,7 @@ export function useScheduleState(props: ExpandedScheduleViewProps) {
     }
 
     const newColumns = columns.map(col => {
-      if (col.id === 'to-schedule') {
+      if (col.id === 'ready-to-post') {
         return { ...col, cards: col.cards.filter(c => c.id !== deleteConfirmCard.id) };
       }
       return col;
@@ -584,7 +584,7 @@ export function useScheduleState(props: ExpandedScheduleViewProps) {
 
   const handleUpdateColorInternal = (cardId: string, color: ScheduleColorKey) => {
     const newColumns = columns.map(col => {
-      if (col.id === 'to-schedule') {
+      if (col.id === 'ready-to-post') {
         return {
           ...col,
           cards: col.cards.map(card => {
@@ -607,7 +607,7 @@ export function useScheduleState(props: ExpandedScheduleViewProps) {
     if (!savedData) return;
     try {
       const currentColumns: KanbanColumn[] = JSON.parse(savedData);
-      const toScheduleIndex = currentColumns.findIndex(col => col.id === 'to-schedule');
+      const toScheduleIndex = currentColumns.findIndex(col => col.id === 'ready-to-post');
       if (toScheduleIndex < 0) return;
       currentColumns[toScheduleIndex] = {
         ...currentColumns[toScheduleIndex],
@@ -665,7 +665,7 @@ export function useScheduleState(props: ExpandedScheduleViewProps) {
     if (!savedData) return;
     try {
       const currentColumns: KanbanColumn[] = JSON.parse(savedData);
-      const toScheduleIndex = currentColumns.findIndex(col => col.id === 'to-schedule');
+      const toScheduleIndex = currentColumns.findIndex(col => col.id === 'ready-to-post');
       if (toScheduleIndex < 0) return;
 
       const newCard: ProductionCard = {
@@ -673,7 +673,7 @@ export function useScheduleState(props: ExpandedScheduleViewProps) {
         title: newIdeaHook,
         hook: newIdeaHook,
         description: newIdeaNotes,
-        columnId: 'to-schedule',
+        columnId: 'ready-to-post',
         schedulingStatus: 'scheduled',
         scheduledDate: addIdeaPopoverDate,
         scheduledColor: newIdeaColor as ProductionCard['scheduledColor'],
@@ -788,7 +788,7 @@ export function useScheduleState(props: ExpandedScheduleViewProps) {
 
       const cardIdsToRemove = new Set(cardsToAutoArchive.map(c => c.id));
       const newColumns = columns.map(col => {
-        if (col.id === 'to-schedule') {
+        if (col.id === 'ready-to-post') {
           return { ...col, cards: col.cards.filter(c => !cardIdsToRemove.has(c.id)) };
         }
         return col;

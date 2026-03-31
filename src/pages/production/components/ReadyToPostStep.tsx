@@ -267,7 +267,7 @@ const ReadyToPostStep: React.FC<ReadyToPostStepProps> = ({
                 <button
                   onClick={() => {
                     onClose();
-                    navigate("/task-board");
+                    navigate("/task-board?view=calendar&mode=content&panel=ready-to-post");
                   }}
                   className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#612A4F] text-sm font-medium text-white hover:bg-[#4A1F3D] transition-all duration-200 shadow-[0_2px_12px_rgba(97,42,79,0.25)] hover:shadow-[0_4px_20px_rgba(97,42,79,0.35)]"
                 >
