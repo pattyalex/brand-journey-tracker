@@ -256,6 +256,14 @@ const Production = () => {
   const [activeContentFlowStep, setActiveContentFlowStep] = useState<number | null>(null);
   const [contentFlowCard, setContentFlowCard] = useState<ProductionCard | null>(null);
 
+  // DEBUG: track what's resetting the dialog
+  React.useEffect(() => {
+    console.log('DEBUG activeContentFlowStep changed to:', activeContentFlowStep);
+    if (activeContentFlowStep === null) {
+      console.trace('DEBUG: dialog was closed — stack trace:');
+    }
+  }, [activeContentFlowStep]);
+
   // Content type state (video vs image)
   const [contentType, setContentType] = useState<ContentType>('video');
 

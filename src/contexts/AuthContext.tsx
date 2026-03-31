@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { User, Session } from '@supabase/supabase-js';
 import { StorageKeys, getString, remove, setString, setActiveUserId } from '@/lib/storage';
@@ -41,6 +41,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
   const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
   const [hasUsedTrial, setHasUsedTrial] = useState(false);
+  // Ref to track onboarding completion across effect closures (avoids stale state)
+  const onboardingConfirmedRef = useRef(false);
 
   // Get user-specific localStorage key
   const getOnboardingKey = (userId: string) => `${StorageKeys.hasCompletedOnboarding}_${userId}`;
@@ -100,9 +102,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setActiveUserId(session?.user?.id ?? null);
         setSession(session);
         setUser(session?.user ?? null);
-        // Reset onboarding check so ProtectedRoute shows loading spinner
-        // until the DB check completes for the new user
-        if (session?.user) {
+        // Only re-check onboarding for genuinely new sessions (not token refreshes)
+        // If onboarding is already confirmed, skip the re-check to avoid unmounting pages
+        if (session?.user && !onboardingConfirmedRef.current) {
           setCheckingOnboarding(true);
         }
         setIsAuthLoaded(true);
@@ -121,6 +123,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Check onboarding status from Supabase profile
   useEffect(() => {
     const checkOnboardingStatus = async () => {
+      // If onboarding is already confirmed, don't re-check (prevents page unmounting)
+      if (onboardingConfirmedRef.current) {
+        setCheckingOnboarding(false);
+        return;
+      }
+
       setCheckingOnboarding(true);
 
       if (user) {
@@ -131,6 +139,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (storedOnboarding === 'true') {
           console.log('✅ Onboarding already completed (from localStorage) for user:', user.id);
           setHasCompletedOnboarding(true);
+          onboardingConfirmedRef.current = true;
           setCheckingOnboarding(false);
           return;
         }
@@ -149,6 +158,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (profile?.has_completed_onboarding) {
           console.log('✅ Onboarding complete');
           setHasCompletedOnboarding(true);
+          onboardingConfirmedRef.current = true;
           setString(userOnboardingKey, 'true');
         } else {
           console.log('❌ Onboarding not yet complete');

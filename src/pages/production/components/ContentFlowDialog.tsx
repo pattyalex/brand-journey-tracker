@@ -95,6 +95,7 @@ const ContentFlowDialog: React.FC<ContentFlowDialogProps> = ({
     <Dialog open={activeStep !== null} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
         hideCloseButton
+        onFocusOutside={(e) => e.preventDefault()}
         className={cn(
           "overflow-hidden border-0 shadow-2xl p-0 flex flex-col transition-all duration-300",
           isTypePickerStep ? "h-auto max-h-[90vh]" : "h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)]",

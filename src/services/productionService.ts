@@ -131,6 +131,14 @@ interface DbProductionCard {
   calendar_only: boolean;
   stage_completions: Record<string, boolean> | null;
   display_order: number;
+  content_type: string | null;
+  caption: string | null;
+  visual_references: any[] | null;
+  link_previews: any[] | null;
+  slides: any[] | null;
+  image_mode: string | null;
+  last_updated: string | null;
+  manual_column_override: boolean;
 }
 
 // =====================================================
@@ -176,6 +184,14 @@ const dbToProductionCard = (db: DbProductionCard): ProductionCard => ({
   calendarOnly: db.calendar_only || false,
   stageCompletions: db.stage_completions as StageCompletions | undefined,
   displayOrder: db.display_order || 0,
+  contentType: (db.content_type as 'video' | 'image') || undefined,
+  caption: db.caption || undefined,
+  visualReferences: db.visual_references || undefined,
+  linkPreviews: db.link_previews || undefined,
+  slides: db.slides || undefined,
+  imageMode: (db.image_mode as 'image' | 'carousel') || undefined,
+  lastUpdated: db.last_updated || undefined,
+  manualColumnOverride: db.manual_column_override || false,
 });
 
 const productionCardToDb = (userId: string, card: Omit<ProductionCard, 'id'>) => ({
@@ -217,6 +233,14 @@ const productionCardToDb = (userId: string, card: Omit<ProductionCard, 'id'>) =>
   calendar_only: card.calendarOnly || false,
   stage_completions: card.stageCompletions || null,
   display_order: card.displayOrder || 0,
+  content_type: card.contentType || null,
+  caption: card.caption || null,
+  visual_references: card.visualReferences || [],
+  link_previews: card.linkPreviews || [],
+  slides: card.slides || [],
+  image_mode: card.imageMode || null,
+  last_updated: card.lastUpdated || null,
+  manual_column_override: card.manualColumnOverride || false,
 });
 
 // =====================================================
