@@ -4,6 +4,7 @@ import { EVENTS, on, emit } from "@/lib/events";
 import { StorageKeys, getString, setJSON, setString } from "@/lib/storage";
 import { GlobalPlannerData, PlannerDay, PlannerItem } from "@/types/planner";
 import { updateUserPreferences } from "@/services/preferencesService";
+import { syncPlannerDataToSupabase, syncAllTasksToSupabase } from "@/services/plannerService";
 import { ContentDisplayMode } from "./usePlannerState";
 import { PlannerView } from "../types";
 
@@ -97,6 +98,8 @@ export const usePlannerPersistence = ({
 }: UsePlannerPersistenceArgs) => {
   // Track if this is initial mount to prevent saving empty initial state
   const isInitialMount = useRef(true);
+  // Track previous planner data for Supabase diffing (only sync changed days)
+  const prevPlannerDataRef = useRef<PlannerDay[] | null>(null);
 
   // Note: plannerData, allTasks, and contentCalendarData are now initialized
   // directly from localStorage in usePlannerState.ts to prevent re-render flash.
@@ -243,11 +246,27 @@ export const usePlannerPersistence = ({
     setJSON(StorageKeys.plannerData, data);
     // Emit event for same-tab sync (e.g., Dashboard)
     emit(window, EVENTS.plannerDataUpdated, data);
+
+    // Write-through to Supabase (async, non-blocking, never overwrites local state)
+    if (userId) {
+      const prev = prevPlannerDataRef.current;
+      prevPlannerDataRef.current = data;
+      syncPlannerDataToSupabase(userId, data, prev).catch(err =>
+        console.error('Supabase planner sync failed:', err)
+      );
+    }
   };
 
   const saveAllTasks = (tasks: PlannerItem[]) => {
     setJSON(StorageKeys.allTasks, tasks);
     emit(window, EVENTS.allTasksUpdated, tasks);
+
+    // Write-through to Supabase (async, non-blocking)
+    if (userId) {
+      syncAllTasksToSupabase(userId, tasks).catch(err =>
+        console.error('Supabase allTasks sync failed:', err)
+      );
+    }
   };
 
   const saveScheduledContent = (data: any[]) => {
