@@ -62,6 +62,7 @@ interface CalendarViewProps {
   }>>;
   loadProductionContent?: () => void;
   onOpenContentDialog?: (content: ProductionCard, type: 'scheduled' | 'planned') => void;
+  onOpenTimePickerDialog?: (content: ProductionCard, type: 'scheduled' | 'planned') => void;
   onOpenContentFlow?: (cardId: string) => void;
   savePlannerData?: (data: PlannerDay[]) => void;
   activePanel?: 'tasks' | 'content';
@@ -98,6 +99,7 @@ export const CalendarView = ({
   setProductionContent,
   loadProductionContent,
   onOpenContentDialog,
+  onOpenTimePickerDialog,
   onOpenContentFlow,
   savePlannerData,
   activePanel = 'tasks',
@@ -633,7 +635,7 @@ export const CalendarView = ({
             loadProductionContent?.();
             // Open time picker for newly scheduled content
             if (scheduledCard && contentType === 'ready-to-post') {
-              onOpenContentDialog?.(scheduledCard, 'scheduled');
+              onOpenTimePickerDialog?.(scheduledCard, 'scheduled');
             }
           }
         } catch (err) {
@@ -910,7 +912,15 @@ export const CalendarView = ({
                             <span className={cn(
                               "flex-1 truncate leading-tight",
                               content.isCompleted && "line-through opacity-60"
-                            )}>{content.hook || content.title}</span>
+                            )}>
+                              {content.scheduledStartTime && (() => {
+                                const [h, m] = content.scheduledStartTime!.split(':').map(Number);
+                                const suffix = h >= 12 ? 'pm' : 'am';
+                                const hr = h === 0 ? 12 : h > 12 ? h - 12 : h;
+                                return <span className="opacity-70 mr-0.5">{hr}{m > 0 ? `:${String(m).padStart(2,'0')}` : ''}{suffix} </span>;
+                              })()}
+                              {content.hook || content.title}
+                            </span>
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -1091,6 +1101,12 @@ export const CalendarView = ({
                                   className={`flex-1 truncate leading-tight ${task.isCompleted ? 'line-through opacity-50' : ''}`}
                                   style={{ color: taskColorInfo.text }}
                                 >
+                                  {task.startTime && (() => {
+                                    const [h, m] = task.startTime!.split(':').map(Number);
+                                    const suffix = h >= 12 ? 'pm' : 'am';
+                                    const hr = h === 0 ? 12 : h > 12 ? h - 12 : h;
+                                    return <span className="opacity-60 mr-0.5">{hr}{m > 0 ? `:${String(m).padStart(2,'0')}` : ''}{suffix} </span>;
+                                  })()}
                                   {task.text}
                                 </div>
                                 <button

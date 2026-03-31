@@ -899,6 +899,7 @@ export const DailyPlanner = () => {
               setProductionContent={setProductionContent}
               loadProductionContent={loadProductionContent}
               onOpenContentDialog={handleOpenContentDialog}
+              onOpenTimePickerDialog={handleOpenTimePickerDialog}
               onOpenContentFlow={handleOpenContentFlow}
               savePlannerData={persistence.savePlannerData}
               activePanel={bothPanelTab}
