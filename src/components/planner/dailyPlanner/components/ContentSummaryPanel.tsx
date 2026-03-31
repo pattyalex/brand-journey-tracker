@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
-import { X, Pencil, Check, Video, Image as ImageIcon, Calendar, Clock, FileText, Type } from "lucide-react";
+import { X, Pencil, Check, Video, Image as ImageIcon, Calendar, Clock, MoreHorizontal, Plus } from "lucide-react";
 import { SiInstagram, SiTiktok, SiYoutube, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { ProductionCard, KanbanColumn } from "@/pages/production/types";
 import { StorageKeys, getString, setString } from "@/lib/storage";
 import { EVENTS, emit } from "@/lib/events";
@@ -15,12 +16,12 @@ const getPlatformIcon = (platform: string, size: string = "w-3.5 h-3.5"): React.
   if (p.includes("instagram") || p === "ig") return <SiInstagram className={size} />;
   if (p.includes("facebook")) return <SiFacebook className={size} />;
   if (p.includes("linkedin")) return <SiLinkedin className={size} />;
-  if (p.includes("twitter") || p.includes("x.com")) return <RiTwitterXLine className={size} />;
+  if (p.includes("twitter") || p.includes("x.com") || p === "x") return <RiTwitterXLine className={size} />;
   if (p.includes("threads")) return <RiThreadsLine className={size} />;
   return null;
 };
 
-const ALL_PLATFORMS = ["Instagram", "TikTok", "YouTube", "Facebook", "LinkedIn", "X / Twitter", "Threads"];
+const STANDARD_PLATFORMS = ["Instagram", "TikTok", "Facebook", "LinkedIn", "X", "Threads"];
 
 const to12h = (time24: string): string => {
   if (!time24) return "";
@@ -40,6 +41,8 @@ export const ContentSummaryPanel = ({ content, onClose }: ContentSummaryPanelPro
   const [editingPlatforms, setEditingPlatforms] = useState(false);
   const [captionValue, setCaptionValue] = useState(content.caption || "");
   const [platformsValue, setPlatformsValue] = useState<string[]>(content.platforms || []);
+  const [customPlatformInput, setCustomPlatformInput] = useState("");
+  const [showCustomInput, setShowCustomInput] = useState(false);
   const captionRef = useRef<HTMLTextAreaElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -103,7 +106,9 @@ export const ContentSummaryPanel = ({ content, onClose }: ContentSummaryPanelPro
   const isVideo = content.contentType !== "image";
   const title = content.hook || content.title || "Untitled";
   const formats = content.formats || [];
-  const hasScript = !!content.script;
+  const scriptText = isVideo
+    ? (content.script || "")
+    : (content.slides?.map(s => s.content).filter(Boolean).join("\n\n") || "");
 
   return (
     <div
@@ -190,7 +195,10 @@ export const ContentSummaryPanel = ({ content, onClose }: ContentSummaryPanelPro
           <div className="flex items-center justify-between mb-1">
             <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Platforms</p>
             <button
-              onClick={() => setEditingPlatforms(!editingPlatforms)}
+              onClick={() => {
+                if (editingPlatforms) { setShowCustomInput(false); setCustomPlatformInput(""); }
+                setEditingPlatforms(!editingPlatforms);
+              }}
               className="w-5 h-5 rounded-md hover:bg-gray-100 flex items-center justify-center"
             >
               {editingPlatforms ? (
@@ -201,33 +209,106 @@ export const ContentSummaryPanel = ({ content, onClose }: ContentSummaryPanelPro
             </button>
           </div>
           {editingPlatforms ? (
-            <div className="flex flex-wrap gap-1.5">
-              {ALL_PLATFORMS.map((p) => {
-                const isSelected = platformsValue.some(
-                  (pv) => pv.toLowerCase() === p.toLowerCase()
-                );
-                return (
+            <div className="space-y-2">
+              {/* Standard platform icon buttons */}
+              <div className="flex items-center gap-1 flex-wrap">
+                {STANDARD_PLATFORMS.map((p) => {
+                  const isSelected = platformsValue.some(
+                    (pv) => pv.toLowerCase() === p.toLowerCase()
+                  );
+                  return (
+                    <button
+                      key={p}
+                      onClick={() => handleTogglePlatform(p)}
+                      className={cn(
+                        "p-1.5 rounded-lg transition-all",
+                        isSelected
+                          ? "bg-[#8B7082]/25 text-[#612A4F]"
+                          : "text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                      )}
+                      title={p}
+                    >
+                      {getPlatformIcon(p, "w-4 h-4")}
+                    </button>
+                  );
+                })}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => setShowCustomInput(!showCustomInput)}
+                      className={cn(
+                        "p-1.5 rounded-lg transition-all",
+                        showCustomInput
+                          ? "bg-[#612A4F] text-white"
+                          : "text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                      )}
+                    >
+                      <MoreHorizontal className="w-4 h-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="bg-gray-700 text-white text-xs px-2 py-1">
+                    Other
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+
+              {/* Custom platform input */}
+              {showCustomInput && (
+                <div className="flex gap-1.5">
+                  <input
+                    type="text"
+                    value={customPlatformInput}
+                    onChange={(e) => setCustomPlatformInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && customPlatformInput.trim()) {
+                        e.preventDefault();
+                        handleTogglePlatform(customPlatformInput.trim());
+                        setCustomPlatformInput("");
+                      }
+                    }}
+                    placeholder="e.g. Pinterest"
+                    className="flex-1 text-[11px] bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-[#8B7082]"
+                  />
                   <button
-                    key={p}
-                    onClick={() => handleTogglePlatform(p)}
-                    className={cn(
-                      "flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded-full border transition-colors",
-                      isSelected
-                        ? "border-[#612a4f]/30 bg-[#612a4f]/10 text-[#612a4f]"
-                        : "border-gray-200 text-gray-400 hover:border-gray-300"
-                    )}
+                    onClick={() => {
+                      if (customPlatformInput.trim()) {
+                        handleTogglePlatform(customPlatformInput.trim());
+                        setCustomPlatformInput("");
+                      }
+                    }}
+                    className="px-2 py-1 rounded-lg bg-[#612A4F] text-white"
                   >
-                    {getPlatformIcon(p, "w-3 h-3")}
-                    <span>{p}</span>
+                    <Plus className="w-3 h-3" />
                   </button>
-                );
-              })}
+                </div>
+              )}
+
+              {/* Custom platform chips (non-standard ones already on the card) */}
+              {platformsValue.filter(p => !STANDARD_PLATFORMS.includes(p)).length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {platformsValue
+                    .filter(p => !STANDARD_PLATFORMS.includes(p))
+                    .map((p) => (
+                      <span
+                        key={p}
+                        className="flex items-center gap-1 text-[11px] font-medium text-[#612a4f] bg-[#612a4f]/10 px-2 py-0.5 rounded-full"
+                      >
+                        {p}
+                        <button onClick={() => handleTogglePlatform(p)} className="hover:text-red-500">
+                          <X className="w-2.5 h-2.5" />
+                        </button>
+                      </span>
+                    ))}
+                </div>
+              )}
             </div>
           ) : platformsValue.length > 0 ? (
             <div className="flex items-center gap-1.5">
               {platformsValue.map((p) => (
                 <span key={p} className="text-[#612a4f]/70">
-                  {getPlatformIcon(p, "w-4 h-4")}
+                  {getPlatformIcon(p, "w-4 h-4") || (
+                    <span className="text-[11px] font-medium text-[#612a4f] bg-[#612a4f]/8 px-2 py-0.5 rounded-full">{p}</span>
+                  )}
                 </span>
               ))}
             </div>
@@ -276,13 +357,19 @@ export const ContentSummaryPanel = ({ content, onClose }: ContentSummaryPanelPro
           )}
         </div>
 
-        {/* Script preview (read-only) */}
-        {hasScript && (
-          <div>
-            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Script</p>
-            <p className="text-[12px] text-gray-500 leading-relaxed line-clamp-2">{content.script}</p>
-          </div>
-        )}
+        {/* Script (read-only) */}
+        <div>
+          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
+            {isVideo ? "Script" : "Slides Text"}
+          </p>
+          {scriptText ? (
+            <div className="text-[12px] text-gray-500 leading-relaxed max-h-[120px] overflow-y-auto whitespace-pre-wrap">
+              {scriptText}
+            </div>
+          ) : (
+            <p className="text-[12px] text-gray-300 italic">No script yet</p>
+          )}
+        </div>
       </div>
     </div>
   );

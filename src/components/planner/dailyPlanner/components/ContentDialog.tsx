@@ -200,17 +200,6 @@ export const ContentDialog = ({
           {/* Buttons */}
           <div className="flex flex-col gap-2">
             <button
-              onClick={() => {
-                onOpenChange(false);
-                onOpenFullFlow?.(content.id);
-              }}
-              className="w-full px-4 py-3 rounded-2xl text-sm font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100 transition-all duration-150 flex items-center justify-between"
-            >
-              <span>Open Full Workflow</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-
-            <button
               onClick={handleSaveTime}
               className={`w-full flex items-center justify-center px-4 py-3.5 rounded-2xl bg-gradient-to-r ${accentGradient} text-white font-medium text-sm shadow-lg shadow-[#612a4f]/25 hover:shadow-xl hover:shadow-[#612a4f]/30 hover:scale-[1.01] active:scale-[0.99] transition-all duration-150`}
             >

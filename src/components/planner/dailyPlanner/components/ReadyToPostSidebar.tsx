@@ -205,67 +205,68 @@ export const ReadyToPostSidebar = ({
         <div className="flex-1 overflow-y-auto space-y-2 -mx-1 px-1">
           {readyCards.filter(c => !c.scheduledDate).map(card => {
             const isDragged = draggingCardId === card.id;
+            const isSelected = selectedCard?.id === card.id;
 
             return (
-              <div
-                key={card.id}
-                draggable
-                onDragStart={(e) => {
-                  setDraggingCardId(card.id);
-                  e.dataTransfer.setData('text/plain', card.id);
-                  e.dataTransfer.setData('contentId', card.id);
-                  e.dataTransfer.setData('contentType', 'ready-to-post');
-                  e.dataTransfer.effectAllowed = 'move';
-                }}
-                onDragEnd={() => setDraggingCardId(null)}
-                onClick={() => setSelectedCard(card)}
-                className={cn(
-                  "rounded-xl border p-3 hover:shadow-sm cursor-pointer",
-                  "border-gray-200 bg-white",
-                  isDragged && "opacity-40 scale-[0.98]",
-                )}
-              >
-                <div className="flex items-center gap-2">
-                  {/* Grip handle */}
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="flex-shrink-0 flex items-center">
-                        <GripVertical className="w-4 h-4 text-gray-300" />
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="bg-gray-700 text-white text-xs px-2 py-1">
-                      Drag to a date to schedule
-                    </TooltipContent>
-                  </Tooltip>
+              <div key={card.id}>
+                <div
+                  draggable
+                  onDragStart={(e) => {
+                    setDraggingCardId(card.id);
+                    e.dataTransfer.setData('text/plain', card.id);
+                    e.dataTransfer.setData('contentId', card.id);
+                    e.dataTransfer.setData('contentType', 'ready-to-post');
+                    e.dataTransfer.effectAllowed = 'move';
+                  }}
+                  onDragEnd={() => setDraggingCardId(null)}
+                  onClick={() => setSelectedCard(isSelected ? null : card)}
+                  className={cn(
+                    "rounded-xl border p-3 hover:shadow-sm cursor-pointer",
+                    "border-gray-200 bg-white",
+                    isDragged && "opacity-40 scale-[0.98]",
+                    isSelected && "border-[#612a4f]/30 ring-1 ring-[#612a4f]/15",
+                  )}
+                >
+                  <div className="flex items-center gap-2">
+                    {/* Grip handle */}
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex-shrink-0 flex items-center">
+                          <GripVertical className="w-4 h-4 text-gray-300" />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="bg-gray-700 text-white text-xs px-2 py-1">
+                        Drag to a date to schedule
+                      </TooltipContent>
+                    </Tooltip>
 
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 leading-snug line-clamp-2">
-                      {card.title || card.hook || "Untitled content"}
-                    </p>
-                  </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 leading-snug line-clamp-2">
+                        {card.title || card.hook || "Untitled content"}
+                      </p>
+                    </div>
 
-                  {/* Content type icon */}
-                  <div className="flex-shrink-0 flex items-center">
-                    {card.contentType === 'image' ? (
-                      <ImageIcon className="w-3.5 h-3.5 text-gray-400" />
-                    ) : (
-                      <Video className="w-3.5 h-3.5 text-gray-400" />
-                    )}
+                    {/* Content type icon */}
+                    <div className="flex-shrink-0 flex items-center">
+                      {card.contentType === 'image' ? (
+                        <ImageIcon className="w-3.5 h-3.5 text-gray-400" />
+                      ) : (
+                        <Video className="w-3.5 h-3.5 text-gray-400" />
+                      )}
+                    </div>
                   </div>
                 </div>
+                {isSelected && (
+                  <div className="mt-1.5">
+                    <ContentSummaryPanel
+                      content={card}
+                      onClose={() => setSelectedCard(null)}
+                    />
+                  </div>
+                )}
               </div>
             );
           })}
-        </div>
-      )}
-
-      {/* Summary panel overlay */}
-      {selectedCard && (
-        <div className="mt-3">
-          <ContentSummaryPanel
-            content={selectedCard}
-            onClose={() => setSelectedCard(null)}
-          />
         </div>
       )}
     </div>
