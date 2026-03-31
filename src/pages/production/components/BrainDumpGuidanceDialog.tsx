@@ -140,36 +140,31 @@ const BrainDumpGuidanceDialog: React.FC<BrainDumpGuidanceDialogProps> = ({
         </div>
         <div className="mb-8">
           {onContentTypeChange && (
-            <div className="relative inline-block">
+            <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
               <button
-                onClick={() => setIsTypeDropdownOpen(!isTypeDropdownOpen)}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-gray-200 hover:border-gray-300 bg-white text-sm text-gray-700 transition-colors"
+                onClick={() => onContentTypeChange('video')}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium transition-colors",
+                  contentType === 'video'
+                    ? "bg-[#612A4F] text-white"
+                    : "bg-white text-gray-500 hover:bg-gray-50"
+                )}
               >
-                {contentType === 'video' ? <Video className="w-3.5 h-3.5 text-[#612A4F]" /> : <ImageIcon className="w-3.5 h-3.5 text-[#612A4F]" />}
-                <span className="font-medium text-[13px]">{contentType === 'video' ? 'Video' : 'Image'}</span>
-                <ChevronDown className="w-3 h-3 text-gray-400" />
+                <Video className="w-3.5 h-3.5" />
+                Video
               </button>
-              {isTypeDropdownOpen && (
-                <>
-                  <div className="fixed inset-0 z-20" onClick={() => setIsTypeDropdownOpen(false)} />
-                  <div className="absolute top-full left-0 mt-1 w-36 bg-white rounded-xl border border-gray-200 shadow-lg z-30 overflow-hidden">
-                    <button
-                      onClick={() => { onContentTypeChange('video'); setIsTypeDropdownOpen(false); }}
-                      className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm hover:bg-gray-50 transition-colors"
-                    >
-                      <Video className="w-4 h-4 text-[#612A4F]" />
-                      <span className={contentType === 'video' ? 'font-semibold text-gray-900' : 'text-gray-600'}>Video</span>
-                    </button>
-                    <button
-                      onClick={() => { onContentTypeChange('image'); setIsTypeDropdownOpen(false); }}
-                      className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm hover:bg-gray-50 transition-colors"
-                    >
-                      <ImageIcon className="w-4 h-4 text-[#612A4F]" />
-                      <span className={contentType === 'image' ? 'font-semibold text-gray-900' : 'text-gray-600'}>Image</span>
-                    </button>
-                  </div>
-                </>
-              )}
+              <button
+                onClick={() => onContentTypeChange('image')}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium transition-colors border-l border-gray-200",
+                  contentType === 'image'
+                    ? "bg-[#612A4F] text-white"
+                    : "bg-white text-gray-500 hover:bg-gray-50"
+                )}
+              >
+                <ImageIcon className="w-3.5 h-3.5" />
+                Image
+              </button>
             </div>
           )}
         </div>
