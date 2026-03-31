@@ -13,7 +13,7 @@ import { SiYoutube, SiTiktok, SiInstagram, SiFacebook, SiLinkedin } from "react-
 import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
 import {
   MoreHorizontal, X, MapPin, Shirt, Boxes, Plus, ArrowLeft, ArrowRight, Check, ChevronDown, ChevronUp,
-  Sparkles, Send, Bot, User, Upload, Link2, Image as ImageIcon, Layers, Video, NotebookPen, ArrowDown,
+  Sparkles, Send, Bot, User, Upload, Link2, Globe, Image as ImageIcon, Layers, Video, NotebookPen, ArrowDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -106,6 +106,8 @@ const ConceptEditorDialog: React.FC<ConceptEditorDialogProps> = ({
     slides.length > 0 ? slides[0].id : null
   );
   const [linkInput, setLinkInput] = useState("");
+  const [showLinkInput, setShowLinkInput] = useState(false);
+  const [linkName, setLinkName] = useState("");
   const [isDragOver, setIsDragOver] = useState(false);
   const [previewImage, setPreviewImage] = useState<VisualReference | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -193,10 +195,11 @@ const ConceptEditorDialog: React.FC<ConceptEditorDialogProps> = ({
     const preview: LinkPreview = {
       id: `link-${Date.now()}`,
       url,
-      title: new URL(url).hostname,
+      title: linkName.trim() || new URL(url).hostname,
     };
     setLinkPreviews([...linkPreviews, preview]);
     setLinkInput("");
+    setLinkName("");
   };
 
   const handleRemoveLink = (linkId: string) => {
@@ -383,31 +386,11 @@ Guidelines:
                 Visual References
               </label>
               <p className="text-xs text-gray-400 -mt-1">
-                Upload moodboard images, paste links, or describe your vision
+                Add images or links to inspire your content
               </p>
 
-              {/* Upload zone - full when no images, compact "add more" when images exist */}
-              {visualReferences.length === 0 ? (
-                <div
-                  className={cn(
-                    "border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors",
-                    isDragOver
-                      ? "border-[#612A4F] bg-[#612A4F]/5"
-                      : "border-gray-200 hover:border-[#8B7082] hover:bg-gray-50"
-                  )}
-                  onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
-                  onDragLeave={() => setIsDragOver(false)}
-                  onDrop={(e) => {
-                    e.preventDefault();
-                    setIsDragOver(false);
-                    handleFileUpload(e.dataTransfer.files);
-                  }}
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <Upload className="w-5 h-5 text-gray-400 mx-auto mb-1" />
-                  <p className="text-xs text-gray-500">Drop images here or click to upload</p>
-                </div>
-              ) : (
+              {/* Uploaded image thumbnails */}
+              {visualReferences.length > 0 && (
                 <div
                   className="flex flex-wrap gap-3"
                   onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
@@ -434,21 +417,53 @@ Guidelines:
                       </button>
                     </div>
                   ))}
-                  {/* Compact add-more button */}
-                  <div
-                    className={cn(
-                      "w-[calc(33.333%-8px)] aspect-square rounded-xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-colors",
-                      isDragOver
-                        ? "border-[#612A4F] bg-[#612A4F]/5"
-                        : "border-gray-200 hover:border-[#8B7082] hover:bg-gray-50"
-                    )}
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <Plus className="w-5 h-5 text-gray-400 mb-1" />
-                    <span className="text-xs text-gray-400">Add more</span>
-                  </div>
                 </div>
               )}
+
+              {/* Two-column card grid: Upload + Link */}
+              <div className="grid grid-cols-2 gap-3">
+                {/* Upload card */}
+                <div
+                  className={cn(
+                    "border-2 border-dashed rounded-xl p-5 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all",
+                    isDragOver
+                      ? "border-[#612A4F] bg-[#612A4F]/5"
+                      : "border-gray-200 hover:border-[#612A4F]/40 hover:bg-[#612A4F]/[0.02]"
+                  )}
+                  onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+                  onDragLeave={() => setIsDragOver(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setIsDragOver(false);
+                    handleFileUpload(e.dataTransfer.files);
+                  }}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <div className="w-9 h-9 rounded-lg bg-[#612A4F]/10 flex items-center justify-center">
+                    <Upload className="w-4 h-4 text-[#612A4F]" />
+                  </div>
+                  <span className="text-sm font-medium text-gray-700">Upload images</span>
+                  <span className="text-xs text-gray-400 text-center">Add any visual references to guide the shoot</span>
+                </div>
+
+                {/* Link card */}
+                <div
+                  className="border border-gray-200 rounded-xl p-5 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all hover:border-gray-300 hover:bg-gray-50/50"
+                  onClick={() => {
+                    setShowLinkInput(true);
+                    setTimeout(() => {
+                      document.getElementById('visual-ref-link-input')?.focus();
+                    }, 0);
+                  }}
+                >
+                  <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center">
+                    <Globe className="w-4 h-4 text-gray-500" />
+                  </div>
+                  <span className="text-sm font-medium text-gray-700">Paste a link</span>
+                  <span className="text-xs text-gray-400 text-center">This is your inspiration from Pinterest, Instagram, or any URL</span>
+                </div>
+              </div>
+
               <input
                 ref={fileInputRef}
                 type="file"
@@ -458,50 +473,77 @@ Guidelines:
                 onChange={(e) => handleFileUpload(e.target.files)}
               />
 
-              {/* Link paste field */}
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <Link2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              {/* Link input — full width below cards, shown on "Paste a link" click */}
+              {showLinkInput && (
+                <div className="flex flex-col gap-2 relative">
+                  <button
+                    onClick={() => { setShowLinkInput(false); setLinkInput(""); setLinkName(""); }}
+                    className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-colors z-10"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                  <div className="relative">
+                    <Link2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input
+                      id="visual-ref-link-input"
+                      type="text"
+                      value={linkInput}
+                      onChange={(e) => setLinkInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddLink();
+                        }
+                      }}
+                      placeholder="Paste a link..."
+                      className="w-full pl-9 pr-16 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#612A4F] focus:border-[#612A4F]"
+                    />
+                    {linkInput.trim() && (
+                      <button
+                        onClick={handleAddLink}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 text-xs font-medium rounded-md bg-[#612A4F] text-white hover:bg-[#4E2240] transition-colors"
+                      >
+                        Add
+                      </button>
+                    )}
+                  </div>
                   <input
                     type="text"
-                    value={linkInput}
-                    onChange={(e) => setLinkInput(e.target.value)}
+                    value={linkName}
+                    onChange={(e) => setLinkName(e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault();
                         handleAddLink();
                       }
                     }}
-                    placeholder="Paste a link with inspiration from Instagram, Pinterest, or others"
-                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#612A4F] focus:border-[#612A4F]"
+                    placeholder="Name this link (optional)..."
+                    className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#612A4F] focus:border-[#612A4F]"
                   />
                 </div>
-                {linkInput.trim() && (
-                  <Button
-                    size="sm"
-                    onClick={handleAddLink}
-                    className="bg-[#612A4F] hover:bg-[#4E2240] h-auto py-2"
-                  >
-                    Add
-                  </Button>
-                )}
-              </div>
+              )}
 
               {/* Link previews */}
               {linkPreviews.length > 0 && (
                 <div className="space-y-2">
-                  {linkPreviews.map(link => (
-                    <div key={link.id} className="flex items-center gap-3 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg">
-                      <Link2 className="w-4 h-4 text-[#8B7082] flex-shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-gray-700 truncate">{link.title || link.url}</p>
-                        <p className="text-xs text-gray-400 truncate">{link.url}</p>
+                  {linkPreviews.map(link => {
+                    let sourceName = '';
+                    try { sourceName = new URL(link.url).hostname.replace('www.', ''); } catch {}
+                    return (
+                      <div key={link.id} className="flex items-center gap-3 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg">
+                        <div className="w-8 h-8 rounded-md bg-gray-200 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                          <Globe className="w-4 h-4 text-gray-400" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-gray-700 truncate">{link.title || link.url}</p>
+                          <p className="text-xs text-gray-400 truncate">{sourceName}</p>
+                        </div>
+                        <button onClick={() => handleRemoveLink(link.id)} className="text-gray-300 hover:text-gray-500 transition-colors flex-shrink-0">
+                          <X className="w-4 h-4" />
+                        </button>
                       </div>
-                      <button onClick={() => handleRemoveLink(link.id)} className="text-gray-300 hover:text-gray-500 transition-colors">
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
