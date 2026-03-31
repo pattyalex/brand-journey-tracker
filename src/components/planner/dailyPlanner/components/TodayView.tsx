@@ -38,10 +38,11 @@ interface TodayViewProps {
     endTime: string;
   }>>;
   onOpenContentDialog?: (content: ProductionCard, type: 'scheduled' | 'planned') => void;
+  onOpenTimePickerDialog?: (content: ProductionCard, type: 'scheduled' | 'planned') => void;
   onOpenContentFlow?: (cardId: string) => void;
 }
 
-export const TodayView = ({ state, derived, refs, helpers, setters, actions, todayAddDialogState, setTodayAddDialogState, onOpenContentDialog, onOpenContentFlow }: TodayViewProps) => {
+export const TodayView = ({ state, derived, refs, helpers, setters, actions, todayAddDialogState, setTodayAddDialogState, onOpenContentDialog, onOpenTimePickerDialog, onOpenContentFlow }: TodayViewProps) => {
   // Google Calendar integration
   const {
     connection: googleConnection,
@@ -294,6 +295,7 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
               handleEditItem={handleEditItem}
               savePlannerData={savePlannerData}
               saveAllTasks={saveAllTasks}
+              onOpenTimePickerDialog={onOpenTimePickerDialog}
             />
 
         {/* Time labels are handled by hour labels only */}

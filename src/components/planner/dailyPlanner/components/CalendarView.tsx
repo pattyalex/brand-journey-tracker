@@ -577,6 +577,7 @@ export const CalendarView = ({
           const columns: KanbanColumn[] = JSON.parse(savedData);
           let updated = false;
 
+          let scheduledCard: ProductionCard | null = null;
           columns.forEach(column => {
             const card = column.cards.find(c => c.id === contentId);
             if (card) {
@@ -590,6 +591,7 @@ export const CalendarView = ({
               } else if (contentType === 'planned') {
                 card.plannedDate = toDate;
               }
+              scheduledCard = { ...card };
               updated = true;
             }
           });
@@ -599,8 +601,10 @@ export const CalendarView = ({
             emit(window, EVENTS.productionKanbanUpdated);
             emit(window, EVENTS.scheduledContentUpdated);
             loadProductionContent?.();
-            const label = contentType === 'ready-to-post' ? 'Scheduled for ' : 'Content moved to ';
-            toast.success(label + format(new Date(toDate + 'T12:00:00'), 'MMM d'));
+            // Open time picker for newly scheduled content
+            if (scheduledCard && contentType === 'ready-to-post') {
+              onOpenContentDialog?.(scheduledCard, 'scheduled');
+            }
           }
         } catch (err) {
           console.error('Error updating content date:', err);

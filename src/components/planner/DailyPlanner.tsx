@@ -3,14 +3,15 @@ import { addDays, addMonths, endOfMonth, endOfWeek, format, startOfMonth, startO
 import { ChevronLeft, ChevronRight, ChevronDown, Plus, Clock, FileText, Palette, Lightbulb, ListTodo, ArrowRight, Check, X, Trash2, Send } from 'lucide-react';
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
-import { getWeekStartsOn, getDayNames, getString, StorageKeys } from "@/lib/storage";
+import { getWeekStartsOn, getDayNames, getString, setString, StorageKeys } from "@/lib/storage";
 import { toast } from "sonner";
 import { PlannerItem } from "@/types/planner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { TIMEZONES, getDateString } from "./dailyPlanner/utils/plannerUtils";
-import { EVENTS, on } from "@/lib/events";
+import { EVENTS, on, emit } from "@/lib/events";
+import { KanbanColumn } from "@/pages/production/types";
 import { AllTasksSidebar } from "./dailyPlanner/components/AllTasksSidebar";
 import { ContentOverviewSidebar } from "./dailyPlanner/components/ContentOverviewSidebar";
 import { ReadyToPostSidebar } from "./dailyPlanner/components/ReadyToPostSidebar";
@@ -21,6 +22,7 @@ import { CalendarView } from "./dailyPlanner/components/CalendarView";
 import ExpandedScheduleView from "@/pages/production/components/ExpandedScheduleView";
 import { TaskDialog } from "./dailyPlanner/components/TaskDialog";
 import { ContentDialog } from "./dailyPlanner/components/ContentDialog";
+import { ContentSummaryPanel } from "./dailyPlanner/components/ContentSummaryPanel";
 import StandaloneContentFlow from "./dailyPlanner/components/StandaloneContentFlow";
 import { ProductionCard } from "@/pages/production/types";
 import {
@@ -71,12 +73,15 @@ export const DailyPlanner = () => {
     endTime: string;
   }>({ open: false, startTime: '', endTime: '' });
 
-  // State for content dialog (view/edit content)
+  // State for content dialog (time picker after drag-drop scheduling)
   const [contentDialogState, setContentDialogState] = useState<{
     open: boolean;
     content: ProductionCard | null;
     type: 'scheduled' | 'planned';
   }>({ open: false, content: null, type: 'planned' });
+
+  // State for content summary panel (click on content)
+  const [summaryPanelContent, setSummaryPanelContent] = useState<ProductionCard | null>(null);
 
   // State for standalone content flow (for scheduled content)
   const [contentFlowCardId, setContentFlowCardId] = useState<string | null>(null);
@@ -185,8 +190,13 @@ export const DailyPlanner = () => {
     return cleanup;
   }, []);
 
-  // Handler to open content dialog (for planned/ideas)
+  // Handler to open content summary panel (click on content)
   const handleOpenContentDialog = useCallback((content: ProductionCard, type: 'scheduled' | 'planned') => {
+    setSummaryPanelContent(content);
+  }, []);
+
+  // Handler to open time picker dialog (after drag-drop scheduling)
+  const handleOpenTimePickerDialog = useCallback((content: ProductionCard, type: 'scheduled' | 'planned') => {
     setContentDialogState({ open: true, content, type });
   }, []);
 
@@ -503,6 +513,39 @@ export const DailyPlanner = () => {
                 "hidden lg:block h-full flex-shrink-0 transition-all duration-300 relative",
                 isAllTasksCollapsed ? "w-12" : "w-80"
               )}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => {
+                // Handle content unscheduling when dropped on sidebar (any tab)
+                const contentId = e.dataTransfer.getData('contentId');
+                const contentType = e.dataTransfer.getData('contentType');
+                if (contentId && contentType === 'scheduled') {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  const savedData = getString(StorageKeys.productionKanban);
+                  if (savedData) {
+                    try {
+                      const columns: KanbanColumn[] = JSON.parse(savedData);
+                      let cardTitle = '';
+                      columns.forEach(column => {
+                        const card = column.cards.find(c => c.id === contentId);
+                        if (card) {
+                          cardTitle = card.title || card.hook || '';
+                          card.scheduledDate = undefined;
+                          card.schedulingStatus = undefined;
+                          card.scheduledStartTime = undefined;
+                          card.scheduledEndTime = undefined;
+                        }
+                      });
+                      setString(StorageKeys.productionKanban, JSON.stringify(columns));
+                      emit(window, EVENTS.productionKanbanUpdated);
+                      emit(window, EVENTS.scheduledContentUpdated);
+                      toast.success('Unscheduled', { description: cardTitle || 'Content removed from calendar' });
+                    } catch (err) {
+                      console.error('Error unscheduling content:', err);
+                    }
+                  }
+                }
+              }}
             >
               {/* Collapse/Expand Button */}
               <Tooltip>
@@ -762,6 +805,7 @@ export const DailyPlanner = () => {
               todayAddDialogState={todayAddDialogState}
               setTodayAddDialogState={setTodayAddDialogState}
               onOpenContentDialog={handleOpenContentDialog}
+              onOpenTimePickerDialog={handleOpenTimePickerDialog}
               onOpenContentFlow={handleOpenContentFlow}
             />
           </div>
@@ -816,6 +860,7 @@ export const DailyPlanner = () => {
               setWeeklyAddDialogState={setWeeklyAddDialogState}
               loadProductionContent={loadProductionContent}
               onOpenContentDialog={handleOpenContentDialog}
+              onOpenTimePickerDialog={handleOpenTimePickerDialog}
               onOpenContentFlow={handleOpenContentFlow}
             />
           </div>
@@ -951,11 +996,46 @@ export const DailyPlanner = () => {
                           e.currentTarget.classList.remove('bg-blue-50');
 
                           const itemId = e.dataTransfer.getData('taskId');
+                          const contentId = e.dataTransfer.getData('contentId');
+                          const contentType = e.dataTransfer.getData('contentType');
                           const fromDate = e.dataTransfer.getData('fromDate');
                           const toDate = dayString;
                           const isContentItem = e.dataTransfer.getData('isContentItem') === 'true';
 
-                          console.log('📅 MONTH VIEW DROP - itemId:', itemId, 'fromDate:', fromDate, 'toDate:', toDate, 'isContentItem:', isContentItem);
+                          console.log('📅 MONTH VIEW DROP - itemId:', itemId, 'contentId:', contentId, 'fromDate:', fromDate, 'toDate:', toDate, 'isContentItem:', isContentItem);
+
+                          // Handle content drop from Ready to Post sidebar
+                          if (contentId && (contentType === 'ready-to-post' || contentType === 'scheduled')) {
+                            const savedData = getString(StorageKeys.productionKanban);
+                            if (savedData) {
+                              try {
+                                const columns: KanbanColumn[] = JSON.parse(savedData);
+                                let updated = false;
+                                let scheduledCard: any = null;
+                                columns.forEach(column => {
+                                  const card = column.cards.find(c => c.id === contentId);
+                                  if (card) {
+                                    card.scheduledDate = toDate;
+                                    card.schedulingStatus = 'scheduled';
+                                    scheduledCard = { ...card };
+                                    updated = true;
+                                  }
+                                });
+                                if (updated) {
+                                  setString(StorageKeys.productionKanban, JSON.stringify(columns));
+                                  emit(window, EVENTS.productionKanbanUpdated);
+                                  emit(window, EVENTS.scheduledContentUpdated);
+                                  // Open time picker dialog
+                                  if (scheduledCard) {
+                                    handleOpenTimePickerDialog(scheduledCard, 'scheduled');
+                                  }
+                                }
+                              } catch (err) {
+                                console.error('Error scheduling content:', err);
+                              }
+                            }
+                            return;
+                          }
 
                           if (itemId && !fromDate) {
                             // Task is coming from All Tasks (no date)
@@ -1221,6 +1301,19 @@ export const DailyPlanner = () => {
         setters={setters}
         actions={actions}
       />
+
+      {/* Content Summary Panel */}
+      {summaryPanelContent && (
+        <div className="fixed inset-0 z-[250] flex items-center justify-center">
+          <div className="absolute inset-0" onClick={() => setSummaryPanelContent(null)} />
+          <div className="relative w-full max-w-[340px] mx-4 z-10">
+            <ContentSummaryPanel
+              content={summaryPanelContent}
+              onClose={() => setSummaryPanelContent(null)}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Content Dialog */}
       <ContentDialog

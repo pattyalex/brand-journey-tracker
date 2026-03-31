@@ -65,6 +65,7 @@ interface DayColumnProps {
   };
   loadProductionContent?: () => void;
   onOpenContentDialog?: (content: ProductionCard, type: 'scheduled' | 'planned') => void;
+  onOpenTimePickerDialog?: (content: ProductionCard, type: 'scheduled' | 'planned') => void;
   handleDeleteContent: (contentId: string, type: 'scheduled' | 'planned') => void;
   handleToggleComplete: (contentId: string, e: React.MouseEvent) => void;
   setContentTooltip: (tooltip: {
@@ -121,6 +122,7 @@ export const DayColumn = ({
   productionContent,
   loadProductionContent,
   onOpenContentDialog,
+  onOpenTimePickerDialog,
   handleDeleteContent,
   handleToggleComplete,
   setContentTooltip,
@@ -235,8 +237,8 @@ export const DayColumn = ({
                             emit(window, EVENTS.productionKanbanUpdated);
                             emit(window, EVENTS.scheduledContentUpdated);
                             loadProductionContent?.();
-                            const label = contentType === 'ready-to-post' ? 'Scheduled for ' : 'Content moved to ';
-                            toast.success(label + format(new Date(dayString + 'T12:00:00'), 'MMM d'));
+                            // Open time picker dialog so user can adjust time
+                            onOpenTimePickerDialog?.({ ...card }, 'scheduled');
                           }
                         }
                       } else if (contentType === 'planned') {
@@ -496,6 +498,7 @@ export const DayColumn = ({
                 draggable={true}
                 onDragStart={(e) => {
                   e.stopPropagation();
+                  setContentTooltip(null);
                   e.dataTransfer.setData('contentId', content.id);
                   e.dataTransfer.setData('contentType', isPlanned ? 'planned' : 'scheduled');
                   e.dataTransfer.setData('fromDate', dayString);
@@ -1107,6 +1110,7 @@ export const DayColumn = ({
                   onMouseLeave={() => setContentTooltip(null)}
                   onDragStart={(e) => {
                     e.stopPropagation();
+                    setContentTooltip(null);
                     e.dataTransfer.setData('contentId', content.id);
                     e.dataTransfer.setData('contentType', isPlanned ? 'planned' : 'scheduled');
                     e.dataTransfer.setData('fromDate', dayString);

@@ -1,5 +1,9 @@
 import { PlannerItem } from "@/types/planner";
 import { PlannerDay } from "@/types/planner";
+import { KanbanColumn, ProductionCard } from "@/pages/production/types";
+import { StorageKeys, getString, setString } from "@/lib/storage";
+import { EVENTS, emit } from "@/lib/events";
+import { format } from "date-fns";
 
 interface TimeGridProps {
   todayZoomLevel: number;
@@ -29,6 +33,7 @@ interface TimeGridProps {
   ) => void;
   savePlannerData: (data: PlannerDay[]) => void;
   saveAllTasks: (tasks: PlannerItem[]) => void;
+  onOpenTimePickerDialog?: (content: ProductionCard, type: 'scheduled' | 'planned') => void;
 }
 
 export const TimeGrid = ({
@@ -49,6 +54,7 @@ export const TimeGrid = ({
   handleEditItem,
   savePlannerData,
   saveAllTasks,
+  onOpenTimePickerDialog,
 }: TimeGridProps) => {
   return (
     <>
@@ -97,6 +103,42 @@ export const TimeGrid = ({
 
                         const taskId = e.dataTransfer.getData('taskId');
                         const fromAllTasks = e.dataTransfer.getData('fromAllTasks');
+                        const contentId = e.dataTransfer.getData('contentId');
+                        const contentType = e.dataTransfer.getData('contentType');
+
+                        // Handle content drop from Ready to Post sidebar
+                        if (contentId && (contentType === 'ready-to-post' || contentType === 'scheduled')) {
+                          const savedData = getString(StorageKeys.productionKanban);
+                          if (savedData) {
+                            try {
+                              const columns: KanbanColumn[] = JSON.parse(savedData);
+                              let scheduledCard: ProductionCard | null = null;
+                              columns.forEach(column => {
+                                const card = column.cards.find(c => c.id === contentId);
+                                if (card) {
+                                  card.scheduledDate = dateString;
+                                  card.schedulingStatus = 'scheduled';
+                                  const hourStr = hour.toString().padStart(2, '0');
+                                  const minuteStr = minute.toString().padStart(2, '0');
+                                  card.scheduledStartTime = `${hourStr}:${minuteStr}`;
+                                  // Default 1 hour duration
+                                  const endHour = Math.min(hour + 1, 23);
+                                  card.scheduledEndTime = `${endHour.toString().padStart(2, '0')}:${minuteStr}`;
+                                  scheduledCard = { ...card };
+                                }
+                              });
+                              if (scheduledCard) {
+                                setString(StorageKeys.productionKanban, JSON.stringify(columns));
+                                emit(window, EVENTS.productionKanbanUpdated);
+                                emit(window, EVENTS.scheduledContentUpdated);
+                                onOpenTimePickerDialog?.(scheduledCard, 'scheduled');
+                              }
+                            } catch (err) {
+                              console.error('Error scheduling content:', err);
+                            }
+                          }
+                          return;
+                        }
 
                         console.log('=== DROP EVENT ===');
                         console.log('TaskId:', taskId);

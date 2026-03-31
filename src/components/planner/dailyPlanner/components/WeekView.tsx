@@ -90,6 +90,7 @@ interface WeekViewProps {
   }>>;
   loadProductionContent?: () => void;
   onOpenContentDialog?: (content: ProductionCard, type: 'scheduled' | 'planned') => void;
+  onOpenTimePickerDialog?: (content: ProductionCard, type: 'scheduled' | 'planned') => void;
   onOpenContentFlow?: (cardId: string) => void;
 }
 
@@ -140,6 +141,7 @@ export const WeekView = ({
   setWeeklyAddDialogState,
   loadProductionContent,
   onOpenContentDialog,
+  onOpenTimePickerDialog,
   onOpenContentFlow,
 }: WeekViewProps) => {
   // Extract state/handlers into custom hook
@@ -259,6 +261,7 @@ export const WeekView = ({
                         productionContent={productionContent}
                         loadProductionContent={loadProductionContent}
                         onOpenContentDialog={onOpenContentDialog}
+                        onOpenTimePickerDialog={onOpenTimePickerDialog}
                         handleDeleteContent={viewState.handleDeleteContent}
                         handleToggleComplete={viewState.handleToggleComplete}
                         setContentTooltip={viewState.setContentTooltip}
