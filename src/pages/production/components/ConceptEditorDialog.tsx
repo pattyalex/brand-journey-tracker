@@ -472,7 +472,7 @@ Guidelines:
                         handleAddLink();
                       }
                     }}
-                    placeholder="Paste a link to Instagram, Pinterest..."
+                    placeholder="Paste a link with inspiration from Instagram, Pinterest, or others"
                     className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#612A4F] focus:border-[#612A4F]"
                   />
                 </div>

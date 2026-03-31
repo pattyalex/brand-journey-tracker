@@ -617,8 +617,8 @@ export function useProductionBoard(
     // Add to archive
     setArchivedCards((prev) => [archivedCopy, ...prev]);
 
-    toast.success("Content saved to Archive", {
-      action: { label: "View Archive", onClick: () => emit(window, EVENTS.openArchiveDialog) }
+    toast.success("Posted! 🎉", {
+      description: "Content saved in Archive"
     });
   }, [columns]);
 
@@ -666,11 +666,15 @@ export function useProductionBoard(
     const restoredCard: ProductionCard = {
       ...card,
       columnId: 'ready-to-post',
+      isCompleted: false,
       scheduledDate: undefined,
       schedulingStatus: undefined,
+      scheduledStartTime: undefined,
+      scheduledEndTime: undefined,
     };
-    // Remove archivedAt which is a dynamic property
+    // Remove archivedAt/postedAt which are dynamic properties
     delete (restoredCard as any).archivedAt;
+    delete (restoredCard as any).postedAt;
 
     // Add to ready-to-post column
     setColumns((prev) =>

@@ -477,7 +477,7 @@ export function useScheduleState(props: ExpandedScheduleViewProps) {
     } as ProductionCard & { archivedAt: string; postedAt: string };
 
     emit(window, EVENTS.contentArchived, { card: archivedCopy });
-    toast.success("Posted! \ud83c\udf89");
+    toast.success("Posted! 🎉", { description: "Content saved in Archive" });
   };
 
   const handleArchiveAndRemove = () => {

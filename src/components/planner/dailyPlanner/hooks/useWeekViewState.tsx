@@ -403,36 +403,58 @@ export const useWeekViewState = ({
     }
   };
 
-  // Handle toggling completion for scheduled content
+  // Handle marking content as posted — archive and remove from ready-to-post
   const handleToggleComplete = (contentId: string, e: React.MouseEvent) => {
     e.stopPropagation();
+    setContentTooltip(null);
     const savedData = getString(StorageKeys.productionKanban);
     if (savedData) {
       try {
         const columns: KanbanColumn[] = JSON.parse(savedData);
         const toScheduleColumn = columns.find(c => c.id === 'ready-to-post');
         if (toScheduleColumn) {
-          const card = toScheduleColumn.cards.find(c => c.id === contentId);
-          if (card) {
-            const newCompletedState = !card.isCompleted;
-            card.isCompleted = newCompletedState;
+          const cardIndex = toScheduleColumn.cards.findIndex(c => c.id === contentId);
+          if (cardIndex !== -1) {
+            const card = toScheduleColumn.cards[cardIndex];
+
+            // If already completed, just uncomplete it
+            if (card.isCompleted) {
+              card.isCompleted = false;
+              setString(StorageKeys.productionKanban, JSON.stringify(columns));
+              emit(window, EVENTS.productionKanbanUpdated);
+              emit(window, EVENTS.scheduledContentUpdated);
+              loadProductionContent?.();
+              return;
+            }
+
+            // Create archive copy
+            const archivedCopy = {
+              ...card,
+              id: `archived-${card.id}-${Date.now()}`,
+              columnId: 'posted',
+              isCompleted: true,
+              schedulingStatus: undefined,
+              archivedAt: new Date().toISOString(),
+              postedAt: new Date().toISOString(),
+            } as ProductionCard & { archivedAt: string; postedAt: string };
+
+            // Add to archived storage directly
+            const archivedData = getString(StorageKeys.archivedContent);
+            const archived: ProductionCard[] = archivedData ? JSON.parse(archivedData) : [];
+            archived.unshift(archivedCopy);
+            setString(StorageKeys.archivedContent, JSON.stringify(archived));
+
+            // Remove card from ready-to-post column
+            toScheduleColumn.cards.splice(cardIndex, 1);
             setString(StorageKeys.productionKanban, JSON.stringify(columns));
+
+            // Emit events
             emit(window, EVENTS.productionKanbanUpdated);
             emit(window, EVENTS.scheduledContentUpdated);
+            emit(window, EVENTS.contentArchived, { card: archivedCopy });
             loadProductionContent?.();
-            if (newCompletedState) {
-              // Create archive copy
-              const archivedCopy: ProductionCard = {
-                ...card,
-                id: `archived-${card.id}-${Date.now()}`,
-                columnId: 'posted',
-                schedulingStatus: undefined,
-                archivedAt: new Date().toISOString(),
-                postedAt: new Date().toISOString(),
-              } as ProductionCard & { archivedAt: string; postedAt: string };
-              emit(window, EVENTS.contentArchived, { card: archivedCopy });
-              toast.success("Posted! 🎉");
-            }
+
+            toast.success("Posted! 🎉", { description: "Content saved in Archive" });
           }
         }
       } catch (err) {
