@@ -203,9 +203,14 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
   const chatMessagesRef = useRef<HTMLDivElement>(null);
   const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
 
-  // Auto-scroll to bottom when messages change
+  const lastAssistantRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to the start of the latest assistant message
   useEffect(() => {
-    if (chatMessagesRef.current) {
+    const lastMsg = megAIMessages[megAIMessages.length - 1];
+    if (lastMsg?.role === 'assistant' && lastAssistantRef.current) {
+      lastAssistantRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else if (chatMessagesRef.current) {
       chatMessagesRef.current.scrollTop = chatMessagesRef.current.scrollHeight;
     }
   }, [megAIMessages, isAILoading]);
@@ -581,6 +586,7 @@ Guidelines:
                   {megAIMessages.map((msg, idx) => (
                     <div
                       key={idx}
+                      ref={msg.role === 'assistant' && idx === megAIMessages.length - 1 ? lastAssistantRef : undefined}
                       className={cn(
                         "flex gap-2",
                         msg.role === 'user' ? "justify-end" : "justify-start"

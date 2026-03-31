@@ -119,9 +119,14 @@ const ConceptEditorDialog: React.FC<ConceptEditorDialogProps> = ({
   const [isAILoading, setIsAILoading] = useState(false);
   const chatMessagesRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to bottom when messages change
+  const lastAssistantRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to the start of the latest assistant message
   useEffect(() => {
-    if (chatMessagesRef.current) {
+    const lastMsg = megAIMessages[megAIMessages.length - 1];
+    if (lastMsg?.role === 'assistant' && lastAssistantRef.current) {
+      lastAssistantRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else if (chatMessagesRef.current) {
       chatMessagesRef.current.scrollTop = chatMessagesRef.current.scrollHeight;
     }
   }, [megAIMessages, isAILoading]);
@@ -698,7 +703,7 @@ Guidelines:
                     </div>
                   )}
                   {megAIMessages.map((msg, idx) => (
-                    <div key={idx} className={cn("flex gap-2", msg.role === 'user' ? "justify-end" : "justify-start")}>
+                    <div key={idx} ref={msg.role === 'assistant' && idx === megAIMessages.length - 1 ? lastAssistantRef : undefined} className={cn("flex gap-2", msg.role === 'user' ? "justify-end" : "justify-start")}>
                       {msg.role === 'assistant' && (
                         <div className="w-6 h-6 rounded-full bg-[#612A4F] flex items-center justify-center flex-shrink-0">
                           <Bot className="w-3 h-3 text-white" />
