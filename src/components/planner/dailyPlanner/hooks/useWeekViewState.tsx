@@ -247,14 +247,31 @@ export const useWeekViewState = ({
       return;
     }
 
+    // Convert 12-hour to 24-hour format for storage
+    const convert12To24 = (time12: string): string => {
+      const match = time12.match(/(\d{1,2}):(\d{2})\s*(am|pm)/i);
+      if (!match) return time12; // already 24h format, return as-is
+      let hour = parseInt(match[1], 10);
+      const minute = match[2];
+      const period = match[3].toLowerCase();
+      if (hour > 12) hour = hour % 12;
+      if (hour < 1) hour = 1;
+      if (period === 'pm' && hour !== 12) hour += 12;
+      else if (period === 'am' && hour === 12) hour = 0;
+      return `${hour.toString().padStart(2, '0')}:${minute}`;
+    };
+
+    const rawStart = taskStartTime || addDialogStartTime || '';
+    const rawEnd = taskEndTime || addDialogEndTime || '';
+
     const newTask: PlannerItem = {
       id: `task-${Date.now()}`,
       text: taskTitle.trim(),
-      completed: false,
+      isCompleted: false,
       section: 'morning',
       date: addDialogDate,
-      startTime: taskStartTime || addDialogStartTime || undefined,
-      endTime: taskEndTime || addDialogEndTime || undefined,
+      startTime: rawStart ? convert12To24(rawStart) : undefined,
+      endTime: rawEnd ? convert12To24(rawEnd) : undefined,
       description: taskDescription || undefined,
       color: taskColor || undefined,
       isContentCalendar: taskIncludeInContentCalendar,

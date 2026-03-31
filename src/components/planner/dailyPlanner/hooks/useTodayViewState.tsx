@@ -265,7 +265,7 @@ export const useTodayViewState = ({
     const newTask: PlannerItem = {
       id: `task-${Date.now()}`,
       text: taskTitle.trim(),
-      completed: false,
+      isCompleted: false,
       section: 'morning',
       date: dateString,
       startTime: taskStartTime ? convert12To24(taskStartTime) : undefined,

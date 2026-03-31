@@ -337,3 +337,296 @@ export const batchCreatePlannerItems = async (
   const data = await createMany<DbPlannerItem>('planner_items', dbItems);
   return data.map(dbToPlannerItem);
 };
+
+// =====================================================
+// Full Sync Helpers (localStorage <-> Supabase)
+// =====================================================
+
+// Local PlannerDay type (matches src/types/planner.ts, no userId/id/timestamps)
+interface LocalPlannerDay {
+  date: string;
+  items: Array<{
+    id: string;
+    text: string;
+    section: 'morning' | 'midday' | 'afternoon' | 'evening';
+    isCompleted: boolean;
+    date: string;
+    startTime?: string;
+    endTime?: string;
+    description?: string;
+    location?: string;
+    color?: string;
+    order?: number;
+    isContentCalendar?: boolean;
+    isPlaceholder?: boolean;
+  }>;
+  greatDay?: string;
+  grateful?: string;
+  tasks?: string;
+}
+
+interface LocalPlannerItem {
+  id: string;
+  text: string;
+  section: 'morning' | 'midday' | 'afternoon' | 'evening';
+  isCompleted: boolean;
+  date: string;
+  startTime?: string;
+  endTime?: string;
+  description?: string;
+  location?: string;
+  color?: string;
+  order?: number;
+  isContentCalendar?: boolean;
+  isPlaceholder?: boolean;
+}
+
+/**
+ * Sync a single planner day (with its items) to Supabase.
+ * Upserts the day row, deletes existing items, re-inserts current items.
+ */
+export const syncPlannerDay = async (
+  userId: string,
+  day: LocalPlannerDay
+): Promise<void> => {
+  try {
+    // 1. Upsert the planner_day row
+    const { data: dayRow, error: dayError } = await supabase
+      .from('planner_days')
+      .upsert(
+        {
+          user_id: userId,
+          date: day.date,
+          great_day: day.greatDay || null,
+          grateful: day.grateful || null,
+          tasks: day.tasks || null,
+        },
+        { onConflict: 'user_id,date' }
+      )
+      .select()
+      .single();
+
+    if (dayError) {
+      console.error('Error upserting planner day:', dayError);
+      return;
+    }
+
+    // 2. Delete all existing items for this day
+    const { error: deleteError } = await supabase
+      .from('planner_items')
+      .delete()
+      .eq('planner_day_id', dayRow.id);
+
+    if (deleteError) {
+      console.error('Error deleting planner items:', deleteError);
+      return;
+    }
+
+    // 3. Insert current items
+    if (day.items.length > 0) {
+      const dbItems = day.items.map((item, index) => ({
+        user_id: userId,
+        planner_day_id: dayRow.id,
+        text: item.text,
+        section: item.section || null,
+        is_completed: item.isCompleted || false,
+        date: item.date || day.date,
+        start_time: item.startTime || null,
+        end_time: item.endTime || null,
+        description: item.description || null,
+        location: item.location || null,
+        color: item.color || null,
+        display_order: item.order ?? index,
+        is_content_calendar: item.isContentCalendar || false,
+        is_placeholder: item.isPlaceholder || false,
+        is_global_task: false,
+      }));
+
+      const { error: insertError } = await supabase
+        .from('planner_items')
+        .insert(dbItems);
+
+      if (insertError) {
+        console.error('Error inserting planner items:', insertError);
+      }
+    }
+  } catch (err) {
+    console.error('syncPlannerDay failed:', err);
+  }
+};
+
+/**
+ * Sync all planner days to Supabase. Compares with previous state
+ * and only syncs days that changed.
+ */
+export const syncPlannerDataToSupabase = async (
+  userId: string,
+  currentData: LocalPlannerDay[],
+  previousData: LocalPlannerDay[] | null
+): Promise<void> => {
+  if (!previousData) {
+    // First sync — sync all days that have items or metadata
+    const daysToSync = currentData.filter(
+      d => d.items.length > 0 || d.greatDay || d.grateful || d.tasks
+    );
+    await Promise.all(daysToSync.map(day => syncPlannerDay(userId, day)));
+    return;
+  }
+
+  // Build a map of previous days for comparison
+  const prevMap = new Map(previousData.map(d => [d.date, d]));
+
+  // Find days that changed
+  for (const day of currentData) {
+    const prev = prevMap.get(day.date);
+    if (!prev || JSON.stringify(day) !== JSON.stringify(prev)) {
+      await syncPlannerDay(userId, day);
+    }
+  }
+
+  // Find days that were removed (existed in prev but not in current)
+  const currentDates = new Set(currentData.map(d => d.date));
+  for (const prev of previousData) {
+    if (!currentDates.has(prev.date)) {
+      // Delete the day and its items from Supabase
+      const { data: dayRow } = await supabase
+        .from('planner_days')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('date', prev.date)
+        .single();
+
+      if (dayRow) {
+        await supabase.from('planner_items').delete().eq('planner_day_id', dayRow.id);
+        await supabase.from('planner_days').delete().eq('id', dayRow.id);
+      }
+    }
+  }
+};
+
+/**
+ * Sync allTasks (global sidebar tasks) to Supabase.
+ * These are planner_items with is_global_task = true and no planner_day_id.
+ */
+export const syncAllTasksToSupabase = async (
+  userId: string,
+  tasks: LocalPlannerItem[]
+): Promise<void> => {
+  try {
+    // 1. Delete all existing global tasks for this user
+    const { error: deleteError } = await supabase
+      .from('planner_items')
+      .delete()
+      .eq('user_id', userId)
+      .eq('is_global_task', true);
+
+    if (deleteError) {
+      console.error('Error deleting global tasks:', deleteError);
+      return;
+    }
+
+    // 2. Insert current tasks
+    if (tasks.length > 0) {
+      const dbItems = tasks.map((item, index) => ({
+        user_id: userId,
+        planner_day_id: null,
+        text: item.text,
+        section: item.section || null,
+        is_completed: item.isCompleted || false,
+        date: item.date || null,
+        start_time: item.startTime || null,
+        end_time: item.endTime || null,
+        description: item.description || null,
+        location: item.location || null,
+        color: item.color || null,
+        display_order: item.order ?? index,
+        is_content_calendar: item.isContentCalendar || false,
+        is_placeholder: item.isPlaceholder || false,
+        is_global_task: true,
+      }));
+
+      const { error: insertError } = await supabase
+        .from('planner_items')
+        .insert(dbItems);
+
+      if (insertError) {
+        console.error('Error inserting global tasks:', insertError);
+      }
+    }
+  } catch (err) {
+    console.error('syncAllTasksToSupabase failed:', err);
+  }
+};
+
+/**
+ * Load all planner data from Supabase and return in localStorage format.
+ */
+export const loadPlannerDataFromSupabase = async (
+  userId: string
+): Promise<{ days: LocalPlannerDay[]; allTasks: LocalPlannerItem[] }> => {
+  // Fetch all days
+  const { data: days, error: daysError } = await supabase
+    .from('planner_days')
+    .select('*')
+    .eq('user_id', userId)
+    .order('date', { ascending: true });
+
+  if (daysError) {
+    console.error('Error fetching planner days:', daysError);
+    throw daysError;
+  }
+
+  // Fetch all items for this user
+  const { data: items, error: itemsError } = await supabase
+    .from('planner_items')
+    .select('*')
+    .eq('user_id', userId)
+    .order('display_order', { ascending: true });
+
+  if (itemsError) {
+    console.error('Error fetching planner items:', itemsError);
+    throw itemsError;
+  }
+
+  // Separate global tasks from day-specific items
+  const globalTasks: LocalPlannerItem[] = [];
+  const itemsByDayId: Record<string, LocalPlannerItem[]> = {};
+
+  for (const item of (items || [])) {
+    const localItem: LocalPlannerItem = {
+      id: item.id,
+      text: item.text,
+      section: (item.section || 'morning') as LocalPlannerItem['section'],
+      isCompleted: item.is_completed || false,
+      date: item.date || '',
+      startTime: item.start_time || undefined,
+      endTime: item.end_time || undefined,
+      description: item.description || undefined,
+      location: item.location || undefined,
+      color: item.color || undefined,
+      order: item.display_order || 0,
+      isContentCalendar: item.is_content_calendar || false,
+      isPlaceholder: item.is_placeholder || false,
+    };
+
+    if (item.is_global_task) {
+      globalTasks.push(localItem);
+    } else if (item.planner_day_id) {
+      if (!itemsByDayId[item.planner_day_id]) {
+        itemsByDayId[item.planner_day_id] = [];
+      }
+      itemsByDayId[item.planner_day_id].push(localItem);
+    }
+  }
+
+  // Build local planner days
+  const localDays: LocalPlannerDay[] = (days || []).map(day => ({
+    date: day.date,
+    greatDay: day.great_day || undefined,
+    grateful: day.grateful || undefined,
+    tasks: day.tasks || undefined,
+    items: itemsByDayId[day.id] || [],
+  }));
+
+  return { days: localDays, allTasks: globalTasks };
+};
