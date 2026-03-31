@@ -657,7 +657,7 @@ Return JSON array only.`
 // Generate content ideas for a pillar + sub-category
 app.post('/api/generate-content-ideas', async (req, res) => {
   try {
-    const { pillarName, subCategory, count, direction } = req.body;
+    const { pillarName, subCategory, count, direction, allThemes, previousIdeas } = req.body;
     const ideaCount = count || 7;
     const apiKey = process.env.ANTHROPIC_API_KEY;
 
@@ -671,6 +671,40 @@ app.post('/api/generate-content-ideas', async (req, res) => {
 
     console.log(`Generating content ideas for "${pillarName}" > "${subCategory}"...`);
 
+    // MegAI system prompt — kept in sync with src/lib/megai-prompt.ts
+    const systemPrompt = `You are MegAI, a creative strategist that generates content ideas for brand creators.
+
+## Core Rules
+
+1. **Theme specificity is non-negotiable.** Every idea you generate must be deeply specific to the user's topic and theme. If an idea would still make sense for a completely different niche just by swapping out a keyword, discard it and try again. Generic ideas are failures.
+
+2. **No generic hook templates.** Never fall back on formulaic hooks like "X things you didn't know about Y" or "Stop scrolling if you Z." Every hook must be crafted from the specific substance of the topic, not filled into a reusable template.
+
+3. **Vary narrative structure across ideas.** Do not repeat the same format or storytelling arc within a set of ideas. Mix approaches — use contrast, tension, personal stakes, unexpected angles, behind-the-scenes framing, provocative questions, or micro-stories. Each idea should feel structurally distinct from the others.
+
+4. **User direction is the highest priority instruction.** When the user provides direction, tone preferences, or constraints, treat those as overriding instructions. Shape every idea around what the user has asked for, not what seems generically "engaging."
+
+5. **Avoid repetition.** When provided with previousIdeas, never regenerate or closely rephrase any of them. Each new idea must offer a genuinely different angle.
+
+## Output Rules
+- Write as actual video/post titles that make people stop scrolling
+- NO emojis
+- Each idea should spark curiosity or emotion
+- Keep titles concise (under 15 words)
+- Return ONLY a JSON array of ${ideaCount} strings, nothing else.`;
+
+    const themesContext = allThemes && allThemes.length > 0
+      ? `\n\nThe creator's full set of content themes: ${allThemes.join(', ')}. The ACTIVE theme is "${pillarName}" — generate ideas only for this theme.`
+      : '';
+
+    const previousIdeasBlock = previousIdeas && previousIdeas.length > 0
+      ? `\n\nPREVIOUSLY GENERATED IDEAS (do NOT repeat or closely rephrase any of these):\n${previousIdeas.map((idea, i) => `${i + 1}. ${idea}`).join('\n')}`
+      : '';
+
+    const directionBlock = direction
+      ? `\n\nIMPORTANT DIRECTION: The ideas should have a "${direction}" tone/angle. Lean heavily into this direction.`
+      : '';
+
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -681,30 +715,10 @@ app.post('/api/generate-content-ideas', async (req, res) => {
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 600,
-        system: `You are a content strategist helping creators generate scroll-stopping content ideas.
-
-BEFORE generating, think:
-- What personal story could a creator tell about this topic?
-- What vulnerable moment or realization would resonate?
-- What surprising angle hasn't been done to death?
-- What would make someone comment "I needed to hear this"?
-
-QUALITY TEST: If the idea sounds like it could come from any creator, REJECT it. Generate ideas that feel personal and specific.
-
-RULES:
-- Write as actual video/post titles that make people stop scrolling
-- Mix: vulnerable confessions, surprising takes, specific stories, relatable fails, hard-won lessons
-- NO generic templates like "5 tips for X" or "How to Y"
-- NO emojis
-- Each idea should spark curiosity or emotion
-- Keep titles concise (under 15 words)
-
-Return ONLY a JSON array of ${ideaCount} strings, nothing else.`,
+        system: systemPrompt,
         messages: [{
           role: 'user',
-          content: `Generate ${ideaCount} content ideas for a creator focused on "${pillarName}", specifically about "${subCategory}".${direction ? `\n\nIMPORTANT DIRECTION: The ideas should have a "${direction}" tone/angle. Lean heavily into this direction.` : ''}
-
-Create ideas that feel personal and specific - like real stories a creator would tell, not generic advice anyone could give. Think: vulnerable moments, specific realizations, relatable struggles, surprising perspectives.
+          content: `Generate ${ideaCount} content ideas for a creator focused on "${pillarName}", specifically about "${subCategory}".${themesContext}${directionBlock}${previousIdeasBlock}
 
 Return only a JSON array of strings.`
         }]

@@ -434,7 +434,14 @@ const Production = () => {
       const response = await fetch('http://localhost:3001/api/generate-content-ideas', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pillarName, subCategory, count, direction }),
+        body: JSON.stringify({
+          pillarName,
+          subCategory,
+          count,
+          direction,
+          allThemes: userPillars,
+          previousIdeas: cascadeIdeas,
+        }),
       });
       if (!response.ok) return [];
       const data = await response.json();
@@ -2240,7 +2247,7 @@ const Production = () => {
                 )}>
                   {draggedOverColumn === "posted" && draggedCard
                     ? "Release to archive"
-                    : <>Drop cards here<br />to archive</>
+                    : <>Drop content cards here<br />to archive</>
                   }
                 </p>
 
@@ -3287,10 +3294,45 @@ const Production = () => {
                             <textarea
                               value={ideaCustomPrompt}
                               onChange={(e) => setIdeaCustomPrompt(e.target.value)}
-                              placeholder="Or tell me exactly what you're looking for..."
+                              placeholder="Describe how you'd like MegAI to adjust the ideas..."
                               rows={3}
                               className="w-full px-4 py-3 rounded-xl border border-[#D0E0D8] bg-white/70 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:border-[#7BA393] focus:bg-white focus:shadow-sm transition-all resize-none shadow-inner"
                             />
+                            {ideaCustomPrompt.trim() && (
+                              <button
+                                onClick={async () => {
+                                  setIsGeneratingMoreIdeas(true);
+                                  try {
+                                    const parts = [ideaDirection, ideaCustomPrompt.trim()].filter(Boolean);
+                                    const directionText = parts.length > 0 ? parts.join(". Also: ") : undefined;
+                                    const newIdeas = await generateContentIdeasWithAI(selectedUserPillar, selectedSubCategory, 5, directionText);
+                                    const filteredIdeas = newIdeas.filter(idea => !cascadeIdeas.includes(idea));
+                                    const merged = [...cascadeIdeas, ...filteredIdeas];
+                                    setCascadeIdeas(merged);
+                                    const cacheKey = `${selectedUserPillar}::${selectedSubCategory}`;
+                                    setPillarIdeasMap(prev => ({ ...prev, [cacheKey]: merged }));
+                                  } catch (error) {
+                                    console.error('Error generating more ideas:', error);
+                                  } finally {
+                                    setIsGeneratingMoreIdeas(false);
+                                  }
+                                }}
+                                disabled={isGeneratingMoreIdeas}
+                                className="mt-2 flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-[#7BA393] text-white hover:bg-[#6B9080] transition-all shadow-sm hover:shadow-md active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                {isGeneratingMoreIdeas ? (
+                                  <>
+                                    <div className="animate-spin rounded-full h-3.5 w-3.5 border-2 border-white/40 border-t-white"></div>
+                                    Generating...
+                                  </>
+                                ) : (
+                                  <>
+                                    <Check className="w-3.5 h-3.5" />
+                                    Apply direction
+                                  </>
+                                )}
+                              </button>
+                            )}
                           </div>
                           <button
                             onClick={async () => {
