@@ -194,6 +194,52 @@ app.post('/api/create-subscription', verifySupabaseAuth, async (req, res) => {
   }
 });
 
+// Cancel subscription (at period end)
+app.post('/api/cancel-subscription', async (req, res) => {
+  try {
+    const { subscriptionId } = req.body;
+    if (!subscriptionId) return res.status(400).json({ error: 'subscriptionId is required' });
+
+    const subscription = await stripe.subscriptions.update(subscriptionId, {
+      cancel_at_period_end: true,
+    });
+
+    console.log('Subscription set to cancel at period end:', subscription.id);
+    res.json({ subscription });
+  } catch (error) {
+    console.error('Error canceling subscription:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update subscription (switch plan)
+app.post('/api/update-subscription', async (req, res) => {
+  try {
+    const { subscriptionId, newPriceId } = req.body;
+    if (!subscriptionId || !newPriceId) {
+      return res.status(400).json({ error: 'subscriptionId and newPriceId are required' });
+    }
+
+    // Get current subscription to find item ID
+    const currentSub = await stripe.subscriptions.retrieve(subscriptionId);
+    const itemId = currentSub.items.data[0]?.id;
+    if (!itemId) return res.status(400).json({ error: 'Could not find subscription item' });
+
+    // Update to new price with proration
+    const subscription = await stripe.subscriptions.update(subscriptionId, {
+      items: [{ id: itemId, price: newPriceId }],
+      proration_behavior: 'create_prorations',
+      cancel_at_period_end: false,
+    });
+
+    console.log('Subscription updated to new price:', subscription.id);
+    res.json({ subscription });
+  } catch (error) {
+    console.error('Error updating subscription:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Get customer by email
 app.post('/api/get-customer-by-email', async (req, res) => {
   try {

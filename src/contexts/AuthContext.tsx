@@ -13,6 +13,12 @@ interface AuthContextType {
   subscriptionStatus: string | null;
   hasActiveSubscription: boolean;
   hasUsedTrial: boolean;
+  isOnTrial: boolean;
+  trialEndsAt: string | null;
+  stripeCustomerId: string | null;
+  stripeSubscriptionId: string | null;
+  planType: string | null;
+  refreshSubscription: () => Promise<void>;
   login: () => void;
   logout: () => void;
   completeOnboarding: () => void;
@@ -41,6 +47,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
   const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
   const [hasUsedTrial, setHasUsedTrial] = useState(false);
+  const [isOnTrial, setIsOnTrial] = useState(false);
+  const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null);
+  const [stripeCustomerId, setStripeCustomerId] = useState<string | null>(null);
+  const [stripeSubscriptionId, setStripeSubscriptionId] = useState<string | null>(null);
+  const [planType, setPlanType] = useState<string | null>(null);
   // Ref to track onboarding completion across effect closures (avoids stale state)
   const onboardingConfirmedRef = useRef(false);
 
@@ -134,22 +145,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (user) {
         const userOnboardingKey = getOnboardingKey(user.id);
 
-        // Check localStorage first — trust it, don't clear it
+        // Check localStorage first for onboarding status
         const storedOnboarding = getString(userOnboardingKey);
         if (storedOnboarding === 'true') {
           console.log('✅ Onboarding already completed (from localStorage) for user:', user.id);
           setHasCompletedOnboarding(true);
           onboardingConfirmedRef.current = true;
-          setCheckingOnboarding(false);
-          return;
         }
 
-        console.log('🔍 Checking onboarding status for user:', user.id);
+        console.log('🔍 Fetching profile for user:', user.id);
 
-        // Check if profile exists, onboarding is complete, and subscription status
+        // Always fetch profile to get subscription data
         const { data: profile, error } = await supabase
           .from('profiles')
-          .select('id, has_completed_onboarding, subscription_status, is_on_trial, trial_ends_at, has_used_trial')
+          .select('id, has_completed_onboarding, subscription_status, is_on_trial, trial_ends_at, has_used_trial, stripe_customer_id, stripe_subscription_id, plan_type')
           .eq('id', user.id)
           .single();
 
@@ -160,7 +169,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setHasCompletedOnboarding(true);
           onboardingConfirmedRef.current = true;
           setString(userOnboardingKey, 'true');
-        } else {
+        } else if (storedOnboarding !== 'true') {
           console.log('❌ Onboarding not yet complete');
           setHasCompletedOnboarding(false);
         }
@@ -169,6 +178,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (profile) {
           setSubscriptionStatus(profile.subscription_status);
           setHasUsedTrial(profile.has_used_trial ?? false);
+          setIsOnTrial(profile.is_on_trial ?? false);
+          setTrialEndsAt(profile.trial_ends_at ?? null);
+          setStripeCustomerId(profile.stripe_customer_id ?? null);
+          setStripeSubscriptionId(profile.stripe_subscription_id ?? null);
+          setPlanType(profile.plan_type ?? null);
           console.log('📊 Subscription status:', profile.subscription_status);
         }
       } else {
@@ -231,6 +245,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // User has access if subscription is active, trialing, or not yet set (during onboarding)
   const hasActiveSubscription = subscriptionStatus === 'active' || subscriptionStatus === 'trialing' || subscriptionStatus === null;
 
+  const refreshSubscription = useCallback(async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from('profiles')
+      .select('subscription_status, is_on_trial, trial_ends_at, has_used_trial, stripe_customer_id, stripe_subscription_id, plan_type')
+      .eq('id', user.id)
+      .single();
+    if (data) {
+      setSubscriptionStatus(data.subscription_status);
+      setIsOnTrial(data.is_on_trial ?? false);
+      setTrialEndsAt(data.trial_ends_at ?? null);
+      setHasUsedTrial(data.has_used_trial ?? false);
+      setStripeCustomerId(data.stripe_customer_id ?? null);
+      setStripeSubscriptionId(data.stripe_subscription_id ?? null);
+      setPlanType(data.plan_type ?? null);
+    }
+  }, [user]);
+
   const openLoginModal = useCallback(() => {
     setLoginOpen(true);
   }, []);
@@ -250,6 +282,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       subscriptionStatus,
       hasActiveSubscription,
       hasUsedTrial,
+      isOnTrial,
+      trialEndsAt,
+      stripeCustomerId,
+      stripeSubscriptionId,
+      planType,
+      refreshSubscription,
       login,
       logout,
       completeOnboarding,

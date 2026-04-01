@@ -74,11 +74,12 @@ export const getSubscription = async (customerId: string) => {
 };
 
 export const cancelSubscription = async (subscriptionId: string) => {
-  const response = await fetch(`/api/subscription/${subscriptionId}/cancel`, {
+  const response = await fetch('/api/cancel-subscription', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
+    body: JSON.stringify({ subscriptionId }),
   });
 
   if (!response.ok) {
@@ -88,15 +89,13 @@ export const cancelSubscription = async (subscriptionId: string) => {
   return response.json();
 };
 
-export const updateSubscription = async (subscriptionId: string, priceId: string) => {
-  const response = await fetch(`/api/subscription/${subscriptionId}`, {
-    method: 'PATCH',
+export const updateSubscription = async (subscriptionId: string, newPriceId: string) => {
+  const response = await fetch('/api/update-subscription', {
+    method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      priceId,
-    }),
+    body: JSON.stringify({ subscriptionId, newPriceId }),
   });
 
   if (!response.ok) {

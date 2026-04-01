@@ -1,7 +1,101 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { CreditCard, Crown, Check, FileText } from 'lucide-react';
+import { CreditCard, Crown, Check, FileText, Loader2, AlertTriangle } from 'lucide-react';
+import { useAuth } from "@/contexts/AuthContext";
+import { cancelSubscription, updateSubscription } from "@/api/stripe";
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const MembershipSection = () => {
+  const {
+    subscriptionStatus, isOnTrial, trialEndsAt, hasUsedTrial,
+    stripeSubscriptionId, planType, user, refreshSubscription,
+  } = useAuth();
+
+  const [canceling, setCanceling] = useState(false);
+  const [switching, setSwitching] = useState(false);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [showSwitchConfirm, setShowSwitchConfirm] = useState<'monthly' | 'annual' | null>(null);
+
+  const formatDate = (dateStr: string | null) => {
+    if (!dateStr) return '';
+    return new Date(dateStr).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  };
+
+  const daysRemaining = () => {
+    if (!trialEndsAt) return 0;
+    const diff = new Date(trialEndsAt).getTime() - Date.now();
+    return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+  };
+
+  const planLabel = planType === 'annual' ? 'Premium Annual' : 'Premium Monthly';
+  const priceAmount = planType === 'annual' ? '$14' : '$17';
+  const priceInterval = planType === 'annual' ? '/month (billed annually)' : '/month';
+
+  const handleCancel = async () => {
+    if (!stripeSubscriptionId) {
+      toast.error('No active subscription found.');
+      return;
+    }
+    setCanceling(true);
+    try {
+      await cancelSubscription(stripeSubscriptionId);
+      // Update Supabase profile immediately so UI reflects the change
+      if (user?.id) {
+        await supabase.from('profiles').update({
+          subscription_status: 'canceled',
+          is_on_trial: false,
+        }).eq('id', user.id);
+      }
+      await refreshSubscription();
+      toast.success('Subscription canceled. You will retain access until the end of your billing period.');
+    } catch (err) {
+      console.error('Cancel error:', err);
+      toast.error('Failed to cancel subscription. Please try again.');
+    } finally {
+      setCanceling(false);
+      setShowCancelConfirm(false);
+    }
+  };
+
+  const handleSwitchPlan = async (targetPlan: 'monthly' | 'annual') => {
+    if (!stripeSubscriptionId) {
+      toast.error('No active subscription found.');
+      return;
+    }
+    const newPriceId = targetPlan === 'annual'
+      ? import.meta.env.VITE_STRIPE_PRICE_ANNUAL
+      : import.meta.env.VITE_STRIPE_PRICE_MONTHLY;
+    if (!newPriceId) {
+      toast.error('Price configuration missing.');
+      return;
+    }
+    setSwitching(true);
+    try {
+      await updateSubscription(stripeSubscriptionId, newPriceId);
+      if (user?.id) {
+        await supabase.from('profiles').update({ plan_type: targetPlan }).eq('id', user.id);
+      }
+      await refreshSubscription();
+      toast.success(`Switched to ${targetPlan} plan.`);
+    } catch (err) {
+      console.error('Switch plan error:', err);
+      toast.error('Failed to switch plan. Please try again.');
+    } finally {
+      setSwitching(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div
@@ -32,197 +126,316 @@ const MembershipSection = () => {
         </div>
 
         {/* Trial Banner */}
-        <div
-          className="p-4 rounded-xl mb-6 flex items-center justify-between"
-          style={{
-            background: 'linear-gradient(145deg, rgba(97, 42, 79, 0.08) 0%, rgba(74, 52, 66, 0.05) 100%)',
-            border: '1px solid rgba(97, 42, 79, 0.15)',
-          }}
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-2 h-2 rounded-full bg-[#612a4f] animate-pulse"></div>
-            <div>
-              <p className="text-sm font-medium text-[#612a4f]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                Free Trial Active
-              </p>
-              <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                14-day trial ends on May 30, 2025
-              </p>
-            </div>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 px-3 rounded-lg text-xs border-red-200 text-red-500 hover:bg-red-50"
-            style={{ fontFamily: "'DM Sans', sans-serif" }}
+        {isOnTrial && trialEndsAt && subscriptionStatus !== 'canceled' && (
+          <div
+            className="p-4 rounded-xl mb-6 flex items-center justify-between"
+            style={{
+              background: 'linear-gradient(145deg, rgba(97, 42, 79, 0.08) 0%, rgba(74, 52, 66, 0.05) 100%)',
+              border: '1px solid rgba(97, 42, 79, 0.15)',
+            }}
           >
-            Cancel Trial
-          </Button>
-        </div>
-
-        {/* Current Plan */}
-        <div className="p-5 rounded-xl bg-[#8B7082]/5 mb-6">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-sm font-medium text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                Premium Monthly
-              </p>
-              <p className="text-2xl font-semibold text-[#612a4f] mt-1" style={{ fontFamily: "'Playfair Display', serif" }}>
-                $17<span className="text-sm font-normal text-[#8B7082]">/month</span>
-              </p>
-              <p className="text-xs text-[#8B7082] mt-2" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                Next billing: May 30, 2025
-              </p>
+            <div className="flex items-center gap-3">
+              <div className="w-2 h-2 rounded-full bg-[#612a4f] animate-pulse"></div>
+              <div>
+                <p className="text-sm font-medium text-[#612a4f]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                  Free Trial Active
+                </p>
+                <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                  {daysRemaining()} days left — ends on {formatDate(trialEndsAt)}
+                </p>
+              </div>
             </div>
-            <span
-              className="px-3 py-1 rounded-full text-xs font-medium"
-              style={{
-                background: 'linear-gradient(145deg, #612a4f 0%, #4a3442 100%)',
-                color: 'white',
-                fontFamily: "'DM Sans', sans-serif",
-              }}
-            >
-              Current Plan
-            </span>
-          </div>
-        </div>
-
-        {/* Plan Options */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="p-5 rounded-xl border-2 border-[#612a4f]/20 bg-[#612a4f]/5">
-            <p className="text-sm font-medium text-[#2d2a26] mb-1" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-              Monthly
-            </p>
-            <p className="text-xl font-semibold text-[#612a4f]" style={{ fontFamily: "'Playfair Display', serif" }}>
-              $17<span className="text-xs font-normal text-[#8B7082]">/mo</span>
-            </p>
-            <ul className="mt-3 space-y-2">
-              {['Unlimited projects', 'Advanced features', 'Priority support'].map((feature) => (
-                <li key={feature} className="flex items-center gap-2 text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                  <Check className="w-3 h-3 text-[#612a4f]" />
-                  {feature}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="p-5 rounded-xl border border-[#E8E4E6] hover:border-[#8B7082]/30 transition-colors">
-            <div className="flex items-center justify-between mb-1">
-              <p className="text-sm font-medium text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                Annual
-              </p>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-green-100 text-green-700">
-                Save 18%
-              </span>
-            </div>
-            <p className="text-xl font-semibold text-[#2d2a26]" style={{ fontFamily: "'Playfair Display', serif" }}>
-              $14<span className="text-xs font-normal text-[#8B7082]">/mo</span>
-            </p>
-            <p className="text-[10px] text-[#8B7082] mb-3" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-              Billed annually ($168)
-            </p>
             <Button
               variant="outline"
               size="sm"
-              className="w-full h-8 rounded-lg text-xs border-[#8B7082]/30 text-[#612a4f] hover:bg-[#612a4f]/5"
+              className="h-8 px-3 rounded-lg text-xs border-red-200 text-red-500 hover:bg-red-50"
               style={{ fontFamily: "'DM Sans', sans-serif" }}
+              onClick={() => setShowCancelConfirm(true)}
+              disabled={canceling}
             >
-              Switch to Annual
+              {canceling ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Cancel Trial'}
             </Button>
           </div>
-        </div>
+        )}
+
+        {/* Canceled Banner */}
+        {subscriptionStatus === 'canceled' && (
+          <div
+            className="p-4 rounded-xl mb-6 flex items-center justify-between"
+            style={{
+              background: 'rgba(239, 68, 68, 0.05)',
+              border: '1px solid rgba(239, 68, 68, 0.15)',
+            }}
+          >
+            <div className="flex items-center gap-3">
+              <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0" />
+              <div>
+                <p className="text-sm font-medium text-red-600" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                  Subscription Canceled
+                </p>
+                <p className="text-xs text-red-400" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                  {trialEndsAt ? `Access until ${formatDate(trialEndsAt)}` : 'Your access has ended'}
+                </p>
+              </div>
+            </div>
+            <Button
+              size="sm"
+              className="h-8 px-4 rounded-lg text-xs bg-[#612a4f] hover:bg-[#4d2140] text-white"
+              style={{ fontFamily: "'DM Sans', sans-serif" }}
+              onClick={() => window.location.href = '/onboarding?step=payment-setup'}
+            >
+              Resubscribe
+            </Button>
+          </div>
+        )}
+
+        {/* Past Due Banner */}
+        {subscriptionStatus === 'past_due' && (
+          <div
+            className="p-4 rounded-xl mb-6 flex items-center justify-between"
+            style={{
+              background: 'rgba(245, 158, 11, 0.08)',
+              border: '1px solid rgba(245, 158, 11, 0.2)',
+            }}
+          >
+            <div className="flex items-center gap-3">
+              <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0" />
+              <div>
+                <p className="text-sm font-medium text-amber-700" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                  Payment Failed
+                </p>
+                <p className="text-xs text-amber-500" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                  Please update your payment method to keep your subscription active.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Current Plan */}
+        {(subscriptionStatus === 'active' || subscriptionStatus === 'trialing') && (
+          <div className="p-5 rounded-xl bg-[#8B7082]/5 mb-6">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-sm font-medium text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                  {planLabel}
+                </p>
+                <p className="text-2xl font-semibold text-[#612a4f] mt-1" style={{ fontFamily: "'Playfair Display', serif" }}>
+                  {priceAmount}<span className="text-sm font-normal text-[#8B7082]">{priceInterval}</span>
+                </p>
+                {trialEndsAt && !isOnTrial && (
+                  <p className="text-xs text-[#8B7082] mt-2" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                    Next billing: {formatDate(trialEndsAt)}
+                  </p>
+                )}
+              </div>
+              <span
+                className="px-3 py-1 rounded-full text-xs font-medium"
+                style={{
+                  background: 'linear-gradient(145deg, #612a4f 0%, #4a3442 100%)',
+                  color: 'white',
+                  fontFamily: "'DM Sans', sans-serif",
+                }}
+              >
+                Current Plan
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Plan Options */}
+        {subscriptionStatus !== 'canceled' && (
+          <div className="grid grid-cols-2 gap-4">
+            <div className={`p-5 rounded-xl ${planType === 'monthly' || !planType ? 'border-2 border-[#612a4f]/20 bg-[#612a4f]/5' : 'border border-[#E8E4E6]'}`}>
+              <p className="text-sm font-medium text-[#2d2a26] mb-1" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                Monthly
+              </p>
+              <p className="text-xl font-semibold text-[#612a4f]" style={{ fontFamily: "'Playfair Display', serif" }}>
+                $17<span className="text-xs font-normal text-[#8B7082]">/mo</span>
+              </p>
+              <p className="text-[10px] text-[#8B7082] mb-3">&nbsp;</p>
+              <ul className="space-y-2">
+                {['Unlimited projects', 'Advanced features', 'Priority support'].map((feature) => (
+                  <li key={feature} className="flex items-center gap-2 text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                    <Check className="w-3 h-3 text-[#612a4f]" />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+              {planType === 'annual' && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full h-8 rounded-lg text-xs border-[#8B7082]/30 text-[#612a4f] hover:bg-[#612a4f]/5 mt-3"
+                  style={{ fontFamily: "'DM Sans', sans-serif" }}
+                  onClick={() => setShowSwitchConfirm('monthly')}
+                  disabled={switching}
+                >
+                  {switching ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
+                  Switch to Monthly
+                </Button>
+              )}
+            </div>
+
+            <div className={`p-5 rounded-xl ${planType === 'annual' ? 'border-2 border-[#612a4f]/20 bg-[#612a4f]/5' : 'border border-[#E8E4E6] hover:border-[#8B7082]/30 transition-colors'}`}>
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-sm font-medium text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                  Annual
+                </p>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-green-100 text-green-700">
+                  Save 18%
+                </span>
+              </div>
+              <p className="text-xl font-semibold text-[#2d2a26]" style={{ fontFamily: "'Playfair Display', serif" }}>
+                $14<span className="text-xs font-normal text-[#8B7082]">/mo</span>
+              </p>
+              <p className="text-[10px] text-[#8B7082] mb-3" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                Billed annually ($168)
+              </p>
+              <ul className="space-y-2 mb-3">
+                {['Everything in Monthly', 'Save 18% on your subscription', 'Lock in your price for 12 months'].map((feature) => (
+                  <li key={feature} className="flex items-center gap-2 text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                    <Check className="w-3 h-3 text-[#612a4f]" />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+              {planType !== 'annual' && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full h-8 rounded-lg text-xs border-[#8B7082]/30 text-[#612a4f] hover:bg-[#612a4f]/5"
+                  style={{ fontFamily: "'DM Sans', sans-serif" }}
+                  onClick={() => setShowSwitchConfirm('annual')}
+                  disabled={switching}
+                >
+                  {switching ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
+                  Switch to Annual
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Cancel subscription (for active non-trial users) */}
+        {subscriptionStatus === 'active' && !isOnTrial && stripeSubscriptionId && (
+          <div className="mt-6 pt-4 border-t border-[#E8E4E6]">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs text-red-400 hover:text-red-500 hover:bg-red-50"
+              style={{ fontFamily: "'DM Sans', sans-serif" }}
+              onClick={() => setShowCancelConfirm(true)}
+              disabled={canceling}
+            >
+              {canceling ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
+              Cancel Subscription
+            </Button>
+          </div>
+        )}
       </div>
 
-      {/* Payment Method */}
-      <div
-        className="bg-white/80 rounded-[20px] p-6"
-        style={{
-          boxShadow: '0 4px 24px rgba(45, 42, 38, 0.04)',
-          border: '1px solid rgba(139, 115, 130, 0.06)',
-        }}
-      >
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-[#8B7082]/10 flex items-center justify-center">
-              <CreditCard className="w-4 h-4 text-[#612a4f]" />
-            </div>
-            <h3 className="text-sm font-medium text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-              Payment Method
-            </h3>
-          </div>
+      {/* No subscription state */}
+      {!subscriptionStatus && !isOnTrial && (
+        <div
+          className="bg-white/80 rounded-[20px] p-6 text-center"
+          style={{
+            boxShadow: '0 4px 24px rgba(45, 42, 38, 0.04)',
+            border: '1px solid rgba(139, 115, 130, 0.06)',
+          }}
+        >
+          <p className="text-sm text-[#8B7082] mb-4" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+            No active subscription
+          </p>
           <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 px-3 text-xs text-[#612a4f] hover:bg-[#612a4f]/5"
+            className="bg-[#612a4f] hover:bg-[#4d2140] text-white rounded-xl"
             style={{ fontFamily: "'DM Sans', sans-serif" }}
+            onClick={() => window.location.href = '/onboarding?step=payment-setup'}
           >
-            Edit
+            Subscribe
           </Button>
         </div>
-        <div className="flex items-center gap-3 p-4 rounded-xl border border-[#E8E4E6]">
-          <div className="w-12 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center">
-            <span className="text-[10px] font-bold text-white">VISA</span>
-          </div>
-          <div>
-            <p className="text-sm font-medium text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-              &bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; 4242
-            </p>
-            <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-              Expires 05/28
-            </p>
-          </div>
-        </div>
-      </div>
+      )}
 
-      {/* Invoices */}
-      <div
-        className="bg-white/80 rounded-[20px] p-6"
-        style={{
-          boxShadow: '0 4px 24px rgba(45, 42, 38, 0.04)',
-          border: '1px solid rgba(139, 115, 130, 0.06)',
-        }}
-      >
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-[#8B7082]/10 flex items-center justify-center">
-              <FileText className="w-4 h-4 text-[#612a4f]" />
-            </div>
-            <h3 className="text-sm font-medium text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-              Invoices
-            </h3>
-          </div>
-        </div>
-        <div className="space-y-2">
-          {[
-            { date: 'Apr 30, 2025', amount: '$17.00', status: 'Paid' },
-            { date: 'Mar 30, 2025', amount: '$17.00', status: 'Paid' },
-          ].map((invoice, idx) => (
-            <div key={idx} className="flex items-center justify-between p-3 rounded-xl bg-[#8B7082]/5">
+      {/* Cancel Confirmation Dialog */}
+      <AlertDialog open={showCancelConfirm} onOpenChange={setShowCancelConfirm}>
+        <AlertDialogContent className="rounded-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle style={{ fontFamily: "'Playfair Display', serif" }}>
+              {isOnTrial ? 'Cancel Free Trial?' : 'Cancel Subscription?'}
+            </AlertDialogTitle>
+            <AlertDialogDescription style={{ fontFamily: "'DM Sans', sans-serif" }}>
+              {isOnTrial
+                ? 'Your trial will be canceled and you will lose access to all features. You can resubscribe at any time.'
+                : 'You will retain access until the end of your current billing period. Your data will be kept safe and you can resubscribe at any time.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              className="rounded-xl"
+              style={{ fontFamily: "'DM Sans', sans-serif" }}
+            >
+              Keep Subscription
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleCancel}
+              disabled={canceling}
+              className="rounded-xl bg-red-500 hover:bg-red-600 text-white"
+              style={{ fontFamily: "'DM Sans', sans-serif" }}
+            >
+              {canceling ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              Yes, Cancel
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Switch Plan Confirmation Dialog */}
+      <AlertDialog open={!!showSwitchConfirm} onOpenChange={(open) => !open && setShowSwitchConfirm(null)}>
+        <AlertDialogContent className="rounded-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle style={{ fontFamily: "'Playfair Display', serif" }}>
+              Switch to {showSwitchConfirm === 'annual' ? 'Annual' : 'Monthly'}?
+            </AlertDialogTitle>
+            <AlertDialogDescription style={{ fontFamily: "'DM Sans', sans-serif" }} asChild>
               <div>
-                <p className="text-sm text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                  {invoice.date}
-                </p>
-                <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                  {invoice.amount}
-                </p>
+                {showSwitchConfirm === 'annual' ? (
+                  isOnTrial ? (
+                    <p>After your free trial ends on <strong>{formatDate(trialEndsAt)}</strong>, you will be billed <strong>$168/year</strong> ($14/month). You save 18% compared to monthly billing.</p>
+                  ) : (
+                    <p>Your plan will switch to annual billing at <strong>$168/year</strong> ($14/month). You'll receive a prorated credit for any unused time on your current monthly plan.</p>
+                  )
+                ) : (
+                  isOnTrial ? (
+                    <p>After your free trial ends on <strong>{formatDate(trialEndsAt)}</strong>, you will be billed <strong>$17/month</strong>.</p>
+                  ) : (
+                    <p>Your plan will switch to monthly billing at <strong>$17/month</strong>. The change takes effect at your next billing cycle.</p>
+                  )
+                )}
               </div>
-              <div className="flex items-center gap-2">
-                <span className="px-2 py-1 rounded-md text-[10px] font-medium bg-green-100 text-green-700">
-                  {invoice.status}
-                </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 px-2 text-xs text-[#612a4f]"
-                  style={{ fontFamily: "'DM Sans', sans-serif" }}
-                >
-                  Download
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              className="rounded-xl"
+              style={{ fontFamily: "'DM Sans', sans-serif" }}
+            >
+              Keep Current Plan
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (showSwitchConfirm) handleSwitchPlan(showSwitchConfirm);
+              }}
+              disabled={switching}
+              className="rounded-xl bg-[#612a4f] hover:bg-[#4d2140] text-white"
+              style={{ fontFamily: "'DM Sans', sans-serif" }}
+            >
+              {switching ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              Yes, Switch
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

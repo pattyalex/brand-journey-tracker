@@ -313,7 +313,7 @@ const Privacy = () => {
             </div>
             <div className="text-[15px] leading-relaxed text-[#4d3e48]">
               <p>
-                We retain your personal information as long as your account is active or as needed to provide you the Service. If you cancel your subscription, your data will be retained for 90 days after your billing period ends, during which time you may resubscribe to regain access to your account and content. After 90 days of inactivity, your data will be permanently deleted. If you choose to delete your account at any time, your data is deleted immediately and permanently. We strongly recommend exporting your data before deleting your account, as this action cannot be undone and all your content, settings, and account information will be gone the moment you confirm deletion.
+                We retain your personal information as long as your account is active or as needed to provide you the Service. If you cancel your subscription, your data will be retained until you explicitly request its deletion. You may resubscribe at any time to regain access to your account and content. If you choose to delete your account at any time, your data is deleted immediately and permanently. We strongly recommend exporting your data before deleting your account, as this action cannot be undone and all your content, settings, and account information will be gone the moment you confirm deletion.
               </p>
             </div>
           </section>
