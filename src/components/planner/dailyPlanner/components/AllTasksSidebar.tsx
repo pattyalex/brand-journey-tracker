@@ -78,30 +78,17 @@ export const AllTasksSidebar = ({
   const visiblePlaceholders = PLACEHOLDER_TASKS.filter(t => !dismissed[t.id]);
 
   const placeholderList = (
-    <div className="pt-[22vh]">
+    <div className="pt-1">
       {/* Empty state illustration */}
-      <div className="flex flex-col items-center text-center px-4 pt-4 pb-6 mb-2">
+      <div className="flex flex-col items-center text-center px-4 pt-2 pb-0 -mb-2">
         <div className="w-10 h-10 rounded-full flex items-center justify-center mb-3" style={{ background: 'rgba(97,42,79,0.07)' }}>
           <GripVertical className="w-5 h-5 text-[#612a4f]" />
         </div>
         <p className="text-[13px] font-medium text-gray-700" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-          Add your to-dos below, then drag into your timeline to schedule
+          This is your Task Calendar.<br />Add your to-dos below, then drag into your timeline to schedule.
         </p>
       </div>
 
-      {/* Example */}
-      <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-400 px-2 mb-1.5" style={{ fontFamily: "'DM Sans', sans-serif" }}>Example</p>
-      {visiblePlaceholders.map((task) => (
-        <div
-          key={task.id}
-          className="group flex items-center gap-2 px-2 py-2 rounded-lg opacity-85 hover:opacity-100 transition-opacity"
-        >
-          <GripVertical className="w-3.5 h-3.5 flex-shrink-0 text-gray-500" />
-          <span className="flex-1 text-[13px] text-gray-500 truncate" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-            {task.text}
-          </span>
-        </div>
-      ))}
     </div>
   );
 

@@ -9,6 +9,7 @@ import { TimezoneOption } from "../utils/plannerUtils";
 import { cn } from "@/lib/utils";
 import { getWeekStartsOn } from "@/lib/storage";
 import { ContentDisplayMode } from "../hooks/usePlannerState";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface PlannerHeaderProps {
   currentView: PlannerView;
@@ -148,85 +149,127 @@ export const PlannerHeader = ({
       {/* Bottom Row: View Tabs + Filter */}
       <div className="flex items-center justify-between pr-8">
         <div className="inline-flex items-center gap-0 bg-white rounded-xl shadow-sm border border-gray-200 p-0.5">
-          <button
-            onClick={() => setCurrentView('today')}
-            className={cn(
-              "px-3 py-1.5 rounded-xl text-xs font-medium transition-all duration-200 border-2",
-              currentView === 'today'
-                ? "bg-white text-[#612a4f] border-[#612a4f]/60 shadow-[0_2px_8px_rgba(139,112,130,0.4)]"
-                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50 border-transparent"
-            )}
-          >
-            Today
-          </button>
-          <button
-            onClick={() => setCurrentView('week')}
-            className={cn(
-              "px-3 py-1.5 rounded-xl text-xs font-medium transition-all duration-200 border-2",
-              currentView === 'week'
-                ? "bg-white text-[#612a4f] border-[#612a4f]/60 shadow-[0_2px_8px_rgba(139,112,130,0.4)]"
-                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50 border-transparent"
-            )}
-          >
-            Weekly
-          </button>
-          <button
-            onClick={() => setCurrentView('calendar')}
-            className={cn(
-              "px-3 py-1.5 rounded-xl text-xs font-medium transition-all duration-200 border-2",
-              currentView === 'calendar'
-                ? "bg-white text-[#612a4f] border-[#612a4f]/60 shadow-[0_2px_8px_rgba(139,112,130,0.4)]"
-                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50 border-transparent"
-            )}
-          >
-            Monthly
-          </button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => setCurrentView('today')}
+                className={cn(
+                  "px-3 py-1.5 rounded-xl text-xs font-medium transition-all duration-200 border-2",
+                  currentView === 'today'
+                    ? "bg-white text-[#612a4f] border-[#612a4f]/60 shadow-[0_2px_8px_rgba(139,112,130,0.4)]"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50 border-transparent"
+                )}
+              >
+                Today
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="top" sideOffset={6} className="text-xs text-white bg-gray-500 border-gray-500">
+              {contentDisplayMode === 'tasks' ? "Today's Tasks" : contentDisplayMode === 'content' ? "Today's Content" : "Today's Tasks + Content"}
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => setCurrentView('week')}
+                className={cn(
+                  "px-3 py-1.5 rounded-xl text-xs font-medium transition-all duration-200 border-2",
+                  currentView === 'week'
+                    ? "bg-white text-[#612a4f] border-[#612a4f]/60 shadow-[0_2px_8px_rgba(139,112,130,0.4)]"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50 border-transparent"
+                )}
+              >
+                Weekly
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="top" sideOffset={6} className="text-xs text-white bg-gray-500 border-gray-500">
+              {contentDisplayMode === 'tasks' ? "Weekly Tasks" : contentDisplayMode === 'content' ? "Weekly Content" : "Weekly Tasks + Content"}
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => setCurrentView('calendar')}
+                className={cn(
+                  "px-3 py-1.5 rounded-xl text-xs font-medium transition-all duration-200 border-2",
+                  currentView === 'calendar'
+                    ? "bg-white text-[#612a4f] border-[#612a4f]/60 shadow-[0_2px_8px_rgba(139,112,130,0.4)]"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50 border-transparent"
+                )}
+              >
+                Monthly
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="top" sideOffset={6} className="text-xs text-white bg-gray-500 border-gray-500">
+              {contentDisplayMode === 'tasks' ? "Monthly Tasks" : contentDisplayMode === 'content' ? "Monthly Content" : "Monthly Tasks + Content"}
+            </TooltipContent>
+          </Tooltip>
         </div>
 
         {/* Right: Filter Pills */}
         <div className="flex items-center gap-1.5">
-          <button
-            data-tour="planner-pill-all"
-            onClick={() => setContentDisplayMode('both')}
-            className={cn(
-              "flex items-center gap-1.5 px-[13px] py-[7px] rounded-full text-xs font-medium transition-all duration-200",
-              contentDisplayMode === 'both'
-                ? "bg-[#612a4f] text-white shadow-sm"
-                : "bg-white text-gray-500 border border-gray-200 hover:border-gray-300 hover:text-gray-700"
-            )}
-            style={{ fontFamily: "'DM Sans', sans-serif" }}
-          >
-            <LayoutGrid className="w-3 h-3" />
-            All
-          </button>
-          <button
-            data-tour="planner-pill-tasks"
-            onClick={() => setContentDisplayMode('tasks')}
-            className={cn(
-              "flex items-center gap-1.5 px-[13px] py-[7px] rounded-full text-xs font-medium transition-all duration-200",
-              contentDisplayMode === 'tasks'
-                ? "bg-[#612a4f] text-white shadow-sm"
-                : "bg-white text-gray-500 border border-gray-200 hover:border-gray-300 hover:text-gray-700"
-            )}
-            style={{ fontFamily: "'DM Sans', sans-serif" }}
-          >
-            <ListTodo className="w-3 h-3" />
-            Tasks
-          </button>
-          <button
-            data-tour="planner-pill-content"
-            onClick={() => setContentDisplayMode('content')}
-            className={cn(
-              "flex items-center gap-1.5 px-[13px] py-[7px] rounded-full text-xs font-medium transition-all duration-200",
-              contentDisplayMode === 'content'
-                ? "bg-[#612a4f] text-white shadow-sm"
-                : "bg-white text-gray-500 border border-gray-200 hover:border-gray-300 hover:text-gray-700"
-            )}
-            style={{ fontFamily: "'DM Sans', sans-serif" }}
-          >
-            <Send className="w-3 h-3" />
-            Content
-          </button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                data-tour="planner-pill-all"
+                onClick={() => setContentDisplayMode('both')}
+                className={cn(
+                  "flex items-center gap-1.5 px-[13px] py-[7px] rounded-full text-xs font-medium transition-all duration-200",
+                  contentDisplayMode === 'both'
+                    ? "bg-[#612a4f] text-white shadow-sm"
+                    : "bg-white text-gray-500 border border-gray-200 hover:border-gray-300 hover:text-gray-700"
+                )}
+                style={{ fontFamily: "'DM Sans', sans-serif" }}
+              >
+                <LayoutGrid className="w-3 h-3" />
+                All
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="top" sideOffset={6} className="text-xs text-white bg-gray-500 border-gray-500">
+              Tasks + Content
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                data-tour="planner-pill-tasks"
+                onClick={() => setContentDisplayMode('tasks')}
+                className={cn(
+                  "flex items-center gap-1.5 px-[13px] py-[7px] rounded-full text-xs font-medium transition-all duration-200",
+                  contentDisplayMode === 'tasks'
+                    ? "bg-[#612a4f] text-white shadow-sm"
+                    : "bg-white text-gray-500 border border-gray-200 hover:border-gray-300 hover:text-gray-700"
+                )}
+                style={{ fontFamily: "'DM Sans', sans-serif" }}
+              >
+                <ListTodo className="w-3 h-3" />
+                Tasks
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="top" sideOffset={6} className="text-xs text-white bg-gray-500 border-gray-500">
+              Task Calendar
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                data-tour="planner-pill-content"
+                onClick={() => setContentDisplayMode('content')}
+                className={cn(
+                  "flex items-center gap-1.5 px-[13px] py-[7px] rounded-full text-xs font-medium transition-all duration-200",
+                  contentDisplayMode === 'content'
+                    ? "bg-[#612a4f] text-white shadow-sm"
+                    : "bg-white text-gray-500 border border-gray-200 hover:border-gray-300 hover:text-gray-700"
+                )}
+                style={{ fontFamily: "'DM Sans', sans-serif" }}
+              >
+                <Send className="w-3 h-3" />
+                Content
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="top" sideOffset={6} className="text-xs text-white bg-gray-500 border-gray-500">
+              Content Calendar
+            </TooltipContent>
+          </Tooltip>
         </div>
       </div>
     </div>

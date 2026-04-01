@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Send, Calendar, Video, Image as ImageIcon, ChevronLeft, ChevronRight, GripVertical } from "lucide-react";
+import { Send, Calendar, CalendarCheck, Video, Image as ImageIcon, ChevronLeft, ChevronRight, GripVertical } from "lucide-react";
 import { SiInstagram, SiTiktok, SiYoutube, SiFacebook, SiLinkedin } from "react-icons/si";
 import { RiTwitterXLine, RiThreadsLine } from "react-icons/ri";
 import { cn } from "@/lib/utils";
@@ -180,25 +180,17 @@ export const ReadyToPostSidebar = ({
 
       {/* Cards list */}
       {readyCards.filter(c => !c.scheduledDate).length === 0 && !isDragOver ? (
-        <div className="pt-[22vh]">
+        <div className="pt-1">
           <div className="flex flex-col items-center text-center px-4 pt-4 pb-6 mb-2">
             <div className="w-10 h-10 rounded-full flex items-center justify-center mb-3" style={{ background: 'rgba(97,42,79,0.07)' }}>
-              <Send className="w-5 h-5 text-[#612a4f]" />
+              <CalendarCheck className="w-5 h-5 text-[#612a4f]" />
             </div>
             <p className="text-[13px] font-medium text-gray-700 mb-1" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-              Produce content in the Content Hub.
+              This is your Content Calendar.<br />Your finished content lands here.
             </p>
-            <p className="text-[13px] font-medium text-gray-700" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-              Move content to "Ready to Post" in the Content Hub and it'll appear here
+            <p className="text-[13px] font-medium text-gray-700 mt-3" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+              First, go to <button onClick={() => navigate('/production')} className="text-[#612a4f] underline underline-offset-2 hover:text-[#4d2140] transition-colors font-semibold">Content Hub</button> to produce your content, then come back here to schedule it.
             </p>
-          </div>
-          <div className="flex justify-center">
-            <button
-              onClick={() => navigate('/production')}
-              className="text-xs font-semibold text-[#612a4f] bg-[#612a4f]/10 hover:bg-[#612a4f]/15 px-3 py-1.5 rounded-lg transition-colors"
-            >
-              Go to Content Hub →
-            </button>
           </div>
         </div>
       ) : (
