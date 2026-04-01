@@ -37,7 +37,6 @@ const pageImports = {
   WeeklyContentTasks: () => import('./pages/WeeklyContentTasks'),
   Index: () => import('./pages/Index'),
   ResetPasswordPage: () => import('./pages/ResetPasswordPage'),
-  SubscriptionEnded: () => import('./pages/SubscriptionEnded'),
 };
 
 // Lazy load all pages for optimal code splitting
@@ -68,7 +67,6 @@ const Help = lazy(pageImports.Help);
 const WeeklyContentTasks = lazy(pageImports.WeeklyContentTasks);
 const Index = lazy(pageImports.Index);
 const ResetPasswordPage = lazy(pageImports.ResetPasswordPage);
-const SubscriptionEnded = lazy(pageImports.SubscriptionEnded);
 
 // Route-to-preload mapping so sidebar can trigger chunk downloads on hover
 const routePreloadMap: Record<string, () => Promise<unknown>> = {
@@ -134,8 +132,8 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   // Hasn't finished onboarding yet — let them through to onboarding
   if (!hasCompletedOnboarding) return <Navigate to="/onboarding" replace />;
 
-  // Subscription ended — redirect to subscription ended page
-  if (!hasActiveSubscription) return <Navigate to="/subscription-ended" replace />;
+  // Subscription ended — redirect to membership page
+  if (!hasActiveSubscription) return <Navigate to="/membership" replace />;
 
   return <>{children}</>;
 };
@@ -178,7 +176,6 @@ function App() {
               <Route path="/onboarding" element={<Suspense fallback={<PageLoader />}><OnboardingFlow /></Suspense>} />
               <Route path="/auth/callback" element={<Suspense fallback={<PageLoader />}><AuthCallback /></Suspense>} />
               <Route path="/reset-password" element={<Suspense fallback={<PageLoader />}><ResetPasswordPage /></Suspense>} />
-              <Route path="/subscription-ended" element={<Suspense fallback={<PageLoader />}><SubscriptionEnded /></Suspense>} />
               <Route path="/terms-and-conditions" element={<Suspense fallback={<PageLoader />}><TermsAndConditions /></Suspense>} />
               <Route path="/terms" element={<Suspense fallback={<PageLoader />}><Terms /></Suspense>} />
               <Route path="/privacy" element={<Suspense fallback={<PageLoader />}><Privacy /></Suspense>} />

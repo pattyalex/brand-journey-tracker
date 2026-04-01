@@ -163,7 +163,7 @@ const socialAccountsSchema = z.object({
 const OnboardingFlow: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { user, session, isAuthLoaded, hasCompletedOnboarding, isAuthenticated, hasUsedTrial } = useAuth();
+  const { user, session, isAuthLoaded, hasCompletedOnboarding, isAuthenticated, hasUsedTrial, refreshSubscription } = useAuth();
   const [currentStep, setCurrentStep] = useState<OnboardingStep>("account-creation");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<string>('');
@@ -180,13 +180,14 @@ const OnboardingFlow: React.FC = () => {
     }
   }, []);
 
-  // Redirect users who have already completed onboarding
+  // Redirect users who have already completed onboarding (unless resubscribing)
   useEffect(() => {
-    if (isAuthenticated && hasCompletedOnboarding) {
+    const stepParam = searchParams.get('step');
+    if (isAuthenticated && hasCompletedOnboarding && stepParam !== 'payment-entry') {
       console.log('✅ User has already completed onboarding, redirecting to dashboard');
       navigate('/home-page');
     }
-  }, [isAuthenticated, hasCompletedOnboarding, navigate]);
+  }, [isAuthenticated, hasCompletedOnboarding, navigate, searchParams]);
 
   // Check URL parameters on mount to determine initial step
   useEffect(() => {
@@ -627,7 +628,14 @@ const OnboardingFlow: React.FC = () => {
         return (
           <PaymentSetupStep
             user={user}
-            onSuccess={() => setCurrentStep("user-goals")}
+            onSuccess={async () => {
+              if (hasCompletedOnboarding) {
+                await refreshSubscription();
+                navigate("/home-page");
+              } else {
+                setCurrentStep("user-goals");
+              }
+            }}
             onBack={() => setCurrentStep("plan-selection")}
             showPaymentForm={true}
             hasUsedTrial={hasUsedTrial}

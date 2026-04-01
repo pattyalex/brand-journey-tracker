@@ -202,7 +202,7 @@ const MembershipSection = () => {
               size="sm"
               className="h-8 px-4 rounded-lg text-xs bg-[#612a4f] hover:bg-[#4d2140] text-white"
               style={{ fontFamily: "'DM Sans', sans-serif" }}
-              onClick={() => window.location.href = '/onboarding?step=payment-setup'}
+              onClick={() => window.location.href = '/onboarding?step=payment-entry'}
             >
               Resubscribe
             </Button>
@@ -510,7 +510,7 @@ const MembershipSection = () => {
           <Button
             className="bg-[#612a4f] hover:bg-[#4d2140] text-white rounded-xl"
             style={{ fontFamily: "'DM Sans', sans-serif" }}
-            onClick={() => window.location.href = '/onboarding?step=payment-setup'}
+            onClick={() => window.location.href = '/onboarding?step=payment-entry'}
           >
             Subscribe
           </Button>

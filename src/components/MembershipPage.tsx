@@ -213,29 +213,39 @@ export const MembershipPage: React.FC = () => {
     );
   }
 
+  // Active subscription — go to dashboard (manage membership via Settings)
+  if (subscriptionData?.subscription_status === 'active' || subscriptionData?.subscription_status === 'trialing') {
+    window.location.href = '/home-page';
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#f9f7f5' }}>
+        <Loader2 className="h-8 w-8 animate-spin" style={{ color: '#612a4f' }} />
+      </div>
+    );
+  }
+
   // No subscription or cancelled
   if (!subscriptionData?.stripe_subscription_id || subscriptionData?.subscription_status === 'canceled') {
     const isCancelled = subscriptionData?.subscription_status === 'canceled' || !!subscriptionData?.stripe_customer_id;
     return (
-      <div className="min-h-screen" style={{ background: '#f9f7f5', fontFamily: "'DM Sans', sans-serif" }}>
-        <div
-          className="relative overflow-hidden"
-          style={{ background: 'linear-gradient(135deg, #7a3868 0%, #612a4f 50%, #4e2040 100%)' }}
-        >
-          <div className="max-w-2xl mx-auto px-6 md:px-8 py-12 md:py-16 text-center">
-            <h1
-              className="text-3xl md:text-4xl text-white mb-3"
-              style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
-            >
-              {isCancelled ? 'Welcome Back' : 'Get Started'}
-            </h1>
-            <p className="text-white/60 text-sm">
-              {isCancelled
-                ? 'We\'re glad to see you again'
-                : 'Start your journey with HeyMeg'}
-            </p>
+      <div className={`min-h-screen ${isCancelled ? 'flex items-center justify-center' : ''}`} style={{ background: '#f9f7f5', fontFamily: "'DM Sans', sans-serif" }}>
+        {!isCancelled && (
+          <div
+            className="relative overflow-hidden"
+            style={{ background: 'linear-gradient(135deg, #7a3868 0%, #612a4f 50%, #4e2040 100%)' }}
+          >
+            <div className="max-w-2xl mx-auto px-6 md:px-8 py-12 md:py-16 text-center">
+              <h1
+                className="text-3xl md:text-4xl text-white mb-3"
+                style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
+              >
+                Get Started
+              </h1>
+              <p className="text-white/60 text-sm">
+                Start your journey with HeyMeg
+              </p>
+            </div>
           </div>
-        </div>
+        )}
         <div className="max-w-md mx-auto px-6 md:px-8 py-12">
           <div
             className="bg-white/80 rounded-[20px] p-8 text-center"
@@ -244,9 +254,12 @@ export const MembershipPage: React.FC = () => {
               border: '1px solid rgba(139, 115, 130, 0.06)',
             }}
           >
-            <div className="w-14 h-14 rounded-2xl mx-auto mb-5 flex items-center justify-center" style={{ background: isCancelled ? 'rgba(97, 42, 79, 0.08)' : 'rgba(97, 42, 79, 0.08)' }}>
+            <div className="w-14 h-14 rounded-2xl mx-auto mb-5 flex items-center justify-center" style={{
+              background: isCancelled ? 'linear-gradient(135deg, #7a3868 0%, #612a4f 50%, #4e2040 100%)' : 'rgba(97, 42, 79, 0.08)',
+              boxShadow: isCancelled ? '0 4px 16px rgba(97, 42, 79, 0.3)' : 'none',
+            }}>
               {isCancelled
-                ? <AlertCircle className="w-6 h-6" style={{ color: '#612a4f' }} />
+                ? <span style={{ fontFamily: "'Playfair Display', serif", fontSize: '22px', fontWeight: 700, color: 'white' }}>M</span>
                 : <CreditCard className="w-6 h-6" style={{ color: '#612a4f' }} />
               }
             </div>
@@ -258,7 +271,7 @@ export const MembershipPage: React.FC = () => {
             </h2>
             <p className="text-sm mb-2" style={{ color: '#8B7082' }}>
               {isCancelled
-                ? 'Your subscription has been cancelled. Your data is being securely retained for 90 days.'
+                ? 'Your subscription has been cancelled.'
                 : 'You don\'t have an active subscription yet.'}
             </p>
             <p className="text-sm mb-6" style={{ color: '#4d3e48' }}>
@@ -269,7 +282,7 @@ export const MembershipPage: React.FC = () => {
                   : 'Start your 14-day free trial to access all features.'}
             </p>
             <button
-              onClick={() => window.location.href = '/onboarding?step=payment-setup'}
+              onClick={() => window.location.href = '/onboarding?step=payment-entry'}
               className="w-full py-3 px-6 rounded-xl text-white font-medium text-sm transition-opacity hover:opacity-90"
               style={{ background: 'linear-gradient(135deg, #7a3868 0%, #612a4f 50%, #4e2040 100%)' }}
             >
