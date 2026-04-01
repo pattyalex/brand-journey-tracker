@@ -121,15 +121,18 @@ const ConceptEditorDialog: React.FC<ConceptEditorDialogProps> = ({
 
   const lastAssistantRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to the start of the latest assistant message
+  // Auto-scroll: show the start of the latest assistant message, or scroll to bottom for user messages
   useEffect(() => {
+    if (!chatMessagesRef.current) return;
     const lastMsg = megAIMessages[megAIMessages.length - 1];
     if (lastMsg?.role === 'assistant' && lastAssistantRef.current) {
-      lastAssistantRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    } else if (chatMessagesRef.current) {
+      const container = chatMessagesRef.current;
+      const msgEl = lastAssistantRef.current;
+      container.scrollTop = msgEl.offsetTop - container.offsetTop;
+    } else {
       chatMessagesRef.current.scrollTop = chatMessagesRef.current.scrollHeight;
     }
-  }, [megAIMessages, isAILoading]);
+  }, [megAIMessages]);
 
   // Initialize with one slide if empty
   useEffect(() => {

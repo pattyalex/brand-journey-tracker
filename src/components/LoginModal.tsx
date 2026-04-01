@@ -149,6 +149,9 @@ const LoginModal: React.FC = () => {
   const handleClose = () => {
     resetForm();
     closeLoginModal();
+    if (location.pathname === '/login') {
+      window.location.href = '/landing.html';
+    }
   };
 
   return (
@@ -167,7 +170,7 @@ const LoginModal: React.FC = () => {
             `
           }}
         />
-        <DialogPrimitive.Content className="fixed left-[50%] top-[50%] z-[201] w-full max-w-[400px] translate-x-[-50%] translate-y-[-50%] duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 p-0 border-0 overflow-hidden bg-transparent shadow-none outline-none">
+        <DialogPrimitive.Content className="fixed left-[50%] top-[50%] z-[10101] w-full max-w-[400px] translate-x-[-50%] translate-y-[-50%] duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 p-0 border-0 overflow-hidden bg-transparent shadow-none outline-none">
         <div
           className="relative rounded-2xl overflow-hidden"
           style={{

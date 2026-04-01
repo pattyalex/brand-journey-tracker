@@ -205,15 +205,18 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
 
   const lastAssistantRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to the start of the latest assistant message
+  // Auto-scroll: show the start of the latest assistant message, or scroll to bottom for user messages
   useEffect(() => {
+    if (!chatMessagesRef.current) return;
     const lastMsg = megAIMessages[megAIMessages.length - 1];
     if (lastMsg?.role === 'assistant' && lastAssistantRef.current) {
-      lastAssistantRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    } else if (chatMessagesRef.current) {
+      const container = chatMessagesRef.current;
+      const msgEl = lastAssistantRef.current;
+      container.scrollTop = msgEl.offsetTop - container.offsetTop;
+    } else {
       chatMessagesRef.current.scrollTop = chatMessagesRef.current.scrollHeight;
     }
-  }, [megAIMessages, isAILoading]);
+  }, [megAIMessages]);
 
   const getSystemPrompt = () => `You are MegAI, a helpful script writing assistant for social media content creators. You help improve scripts, suggest hooks, make content more engaging, and provide actionable feedback.
 
