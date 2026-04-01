@@ -186,17 +186,20 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
       console.log('Subscription created:', subscription.id);
 
       // Step 5: Update user profile in Supabase
+      // If user already used their trial, force is_on_trial=false regardless of Stripe response
+      const isTrialing = hasUsedTrial ? false : subscription.status === 'trialing';
+      const trialEnd = hasUsedTrial ? null : (subscription.trial_end
+        ? new Date(subscription.trial_end * 1000).toISOString()
+        : null);
       const { error: updateError } = await supabase
         .from('profiles')
         .update({
           stripe_customer_id: customerId,
           stripe_subscription_id: subscription.id,
-          subscription_status: subscription.status,
+          subscription_status: hasUsedTrial ? 'active' : subscription.status,
           plan_type: billingPlan,
-          is_on_trial: subscription.status === 'trialing',
-          trial_ends_at: subscription.trial_end
-            ? new Date(subscription.trial_end * 1000).toISOString()
-            : null,
+          is_on_trial: isTrialing,
+          trial_ends_at: trialEnd,
           has_used_trial: true,
         })
         .eq('id', userId);

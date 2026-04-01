@@ -183,7 +183,7 @@ const OnboardingFlow: React.FC = () => {
   // Redirect users who have already completed onboarding (unless resubscribing)
   useEffect(() => {
     const stepParam = searchParams.get('step');
-    if (isAuthenticated && hasCompletedOnboarding && stepParam !== 'payment-entry') {
+    if (isAuthenticated && hasCompletedOnboarding && stepParam !== 'payment-entry' && stepParam !== 'plan-selection') {
       console.log('✅ User has already completed onboarding, redirecting to dashboard');
       navigate('/home-page');
     }

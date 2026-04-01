@@ -9,7 +9,8 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 app.post('/api/create-subscription', async (req, res) => {
   try {
-    const { customerId, priceId, paymentMethodId, trialPeriodDays = 7 } = req.body;
+    const { customerId, priceId, paymentMethodId, trialPeriodDays: rawTrialDays } = req.body;
+    const trialPeriodDays = rawTrialDays != null ? rawTrialDays : 7;
 
     // Set the payment method as default
     await stripe.customers.update(customerId, {

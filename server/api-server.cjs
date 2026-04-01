@@ -172,18 +172,22 @@ app.post('/api/attach-payment-method', verifySupabaseAuth, async (req, res) => {
 // Create subscription endpoint
 app.post('/api/create-subscription', verifySupabaseAuth, async (req, res) => {
   try {
-    const { customerId, priceId, paymentMethodId } = req.body;
-    
-    console.log('Creating subscription:', { customerId, priceId, paymentMethodId });
-    
-    // Create subscription with trial
-    const subscription = await stripe.subscriptions.create({
+    const { customerId, priceId, paymentMethodId, trialPeriodDays } = req.body;
+    const effectiveTrialDays = trialPeriodDays != null ? trialPeriodDays : 7;
+
+    console.log('Creating subscription:', { customerId, priceId, paymentMethodId, trialPeriodDays: effectiveTrialDays });
+
+    // Create subscription (no trial if user already used one)
+    const subParams = {
       customer: customerId,
       items: [{ price: priceId }],
       default_payment_method: paymentMethodId,
-      trial_period_days: 7,
       expand: ['latest_invoice.payment_intent'],
-    });
+    };
+    if (effectiveTrialDays > 0) {
+      subParams.trial_period_days = effectiveTrialDays;
+    }
+    const subscription = await stripe.subscriptions.create(subParams);
     
     console.log('Subscription created:', subscription.id);
     

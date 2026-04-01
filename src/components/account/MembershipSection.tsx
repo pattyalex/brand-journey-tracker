@@ -70,9 +70,14 @@ const MembershipSection = () => {
     setCanceling(true);
     try {
       await cancelSubscription(stripeSubscriptionId);
-      // Don't update subscription_status here — Stripe uses cancel_at_period_end,
-      // so the user keeps access until the period ends. The Stripe webhook will
-      // update the status to 'canceled' when the subscription actually expires.
+      // Mark as canceled so the UI shows "Trial Canceled" banner.
+      // User still keeps access — AuthContext allows canceled users with remaining trial time.
+      if (user?.id) {
+        await supabase.from('profiles').update({
+          subscription_status: 'canceled',
+          has_used_trial: true,
+        }).eq('id', user.id);
+      }
       await refreshSubscription();
       toast.success('Subscription canceled. You will retain access until the end of your billing period.');
     } catch (err) {
@@ -200,7 +205,7 @@ const MembershipSection = () => {
               size="sm"
               className="h-8 px-4 rounded-lg text-xs bg-[#612a4f] hover:bg-[#4d2140] text-white"
               style={{ fontFamily: "'DM Sans', sans-serif" }}
-              onClick={() => window.location.href = '/onboarding?step=payment-entry'}
+              onClick={() => window.location.href = '/onboarding?step=plan-selection'}
             >
               {hasUsedTrial || isOnTrial ? 'Subscribe' : 'Resubscribe'}
             </Button>
@@ -508,7 +513,7 @@ const MembershipSection = () => {
           <Button
             className="bg-[#612a4f] hover:bg-[#4d2140] text-white rounded-xl"
             style={{ fontFamily: "'DM Sans', sans-serif" }}
-            onClick={() => window.location.href = '/onboarding?step=payment-entry'}
+            onClick={() => window.location.href = '/onboarding?step=plan-selection'}
           >
             Subscribe
           </Button>
@@ -524,7 +529,7 @@ const MembershipSection = () => {
             </AlertDialogTitle>
             <AlertDialogDescription style={{ fontFamily: "'DM Sans', sans-serif" }}>
               {isOnTrial
-                ? `You still have ${daysRemaining()} days left to explore HeyMeg. After your trial ends, you'll lose access to your account. You can always resubscribe later.`
+                ? `You still have ${daysRemaining()} days left to explore HeyMeg. After your trial ends, you'll lose access to your account.`
                 : 'You will retain access until the end of your current billing period. Your data will be kept safe and you can resubscribe at any time.'}
             </AlertDialogDescription>
           </AlertDialogHeader>

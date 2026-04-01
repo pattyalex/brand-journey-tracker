@@ -40,7 +40,8 @@ export default async function handler(req, res) {
   if (!key) return res.status(500).json({ error: 'Stripe secret key not configured' });
 
   try {
-    const { customerId, priceId, paymentMethodId, trialPeriodDays = 14 } = req.body;
+    const { customerId, priceId, paymentMethodId, trialPeriodDays: rawTrialDays } = req.body;
+    const trialPeriodDays = rawTrialDays != null ? rawTrialDays : 14;
 
     await stripeRequest(
       `/v1/customers/${customerId}`,
