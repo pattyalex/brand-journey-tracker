@@ -138,6 +138,14 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   return <>{children}</>;
 };
 
+// Auth-only route — checks login but allows canceled subscriptions (for settings/account pages)
+const AuthOnlyRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isAuthenticated, isAuthLoaded } = useAuth();
+  if (!isAuthLoaded) return null;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  return <>{children}</>;
+};
+
 // Shared layout for protected routes — sidebar stays mounted across navigations
 const ProtectedLayout = () => (
   <ProtectedRoute>
@@ -147,6 +155,17 @@ const ProtectedLayout = () => (
       </Suspense>
     </Layout>
   </ProtectedRoute>
+);
+
+// Layout for auth-only routes (no subscription check) — sidebar stays mounted
+const AuthOnlyLayout = () => (
+  <AuthOnlyRoute>
+    <Layout>
+      <Suspense fallback={<PageLoader />}>
+        <Outlet />
+      </Suspense>
+    </Layout>
+  </AuthOnlyRoute>
 );
 
 // Global error handlers
@@ -182,6 +201,12 @@ function App() {
               <Route path="/contact" element={<Suspense fallback={<PageLoader />}><Contact /></Suspense>} />
               <Route path="/membership" element={<Suspense fallback={<PageLoader />}><MembershipPage /></Suspense>} />
 
+              {/* Account pages — auth only, no subscription check (so user can manage billing after cancel) */}
+              <Route element={<AuthOnlyLayout />}>
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/my-account" element={<MyAccount />} />
+              </Route>
+
               {/* Protected routes — Layout (sidebar) stays mounted, only page content swaps */}
               <Route element={<ProtectedLayout />}>
                 <Route path="/app" element={<Dashboard />} />
@@ -193,8 +218,6 @@ function App() {
                 <Route path="/strategy-growth" element={<StrategyGrowth />} />
                 <Route path="/get-started" element={<GetStarted />} />
                 <Route path="/task-board" element={<TaskBoard />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="/my-account" element={<MyAccount />} />
                 <Route path="/help" element={<Help />} />
                 <Route path="/weekly-content" element={<WeeklyContentTasks />} />
                 <Route path="/collab-management" element={<CollabManagement />} />

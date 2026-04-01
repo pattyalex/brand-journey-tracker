@@ -69,13 +69,19 @@ const MembershipSection = () => {
     }
     setCanceling(true);
     try {
-      await cancelSubscription(stripeSubscriptionId);
-      // Mark as canceled so the UI shows "Trial Canceled" banner.
-      // User still keeps access — AuthContext allows canceled users with remaining trial time.
+      const result = await cancelSubscription(stripeSubscriptionId);
+      // Don't set subscription_status to 'canceled' — Stripe uses cancel_at_period_end,
+      // so the subscription stays active until the period ends. Setting it to 'canceled'
+      // here causes ProtectedRoute to kick the user out immediately.
+      // Instead, store the period end date and mark cancel_at_period_end.
       if (user?.id) {
+        const periodEnd = result?.subscription?.current_period_end
+          ? new Date(result.subscription.current_period_end * 1000).toISOString()
+          : trialEndsAt;
         await supabase.from('profiles').update({
           subscription_status: 'canceled',
           has_used_trial: true,
+          trial_ends_at: periodEnd,
         }).eq('id', user.id);
       }
       await refreshSubscription();
@@ -192,7 +198,7 @@ const MembershipSection = () => {
               <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0" />
               <div>
                 <p className="text-sm font-medium text-red-600" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                  {hasUsedTrial || isOnTrial ? 'Trial Canceled' : 'Subscription Canceled'}
+                  {isOnTrial ? 'Trial Canceled' : 'Subscription Canceled'}
                 </p>
                 <p className="text-xs text-red-400" style={{ fontFamily: "'DM Sans', sans-serif" }}>
                   {trialEndsAt && new Date(trialEndsAt) > new Date()
@@ -207,7 +213,7 @@ const MembershipSection = () => {
               style={{ fontFamily: "'DM Sans', sans-serif" }}
               onClick={() => window.location.href = '/onboarding?step=plan-selection'}
             >
-              {hasUsedTrial || isOnTrial ? 'Subscribe' : 'Resubscribe'}
+              {isOnTrial ? 'Subscribe' : 'Resubscribe'}
             </Button>
           </div>
         )}
@@ -530,7 +536,7 @@ const MembershipSection = () => {
             <AlertDialogDescription style={{ fontFamily: "'DM Sans', sans-serif" }}>
               {isOnTrial
                 ? `You still have ${daysRemaining()} days left to explore HeyMeg. After your trial ends, you'll lose access to your account.`
-                : 'You will retain access until the end of your current billing period. Your data will be kept safe and you can resubscribe at any time.'}
+                : 'You will retain access until the end of your current billing period. After that, you won\'t be able to access your account or data until you resubscribe.'}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
