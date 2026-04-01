@@ -210,6 +210,24 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
       }
 
       console.log('✅ Payment setup completed successfully!');
+
+      // Send confirmation email for resubscribes
+      if (hasUsedTrial) {
+        try {
+          await fetch('/api/send-resubscription-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: userEmail,
+              name: userName,
+              planType: billingPlan,
+            }),
+          });
+        } catch (emailErr) {
+          console.error('Failed to send resubscription email:', emailErr);
+        }
+      }
+
       succeeded = true;
       onSuccess();
     } catch (err: any) {

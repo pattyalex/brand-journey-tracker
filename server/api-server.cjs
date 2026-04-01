@@ -1698,6 +1698,59 @@ app.post('/api/send-subscription-cancelled', async (req, res) => {
   }
 });
 
+// Resubscription confirmation email
+app.post('/api/send-resubscription-email', async (req, res) => {
+  try {
+    const { email, name, planType } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    const firstName = name ? name.split(' ')[0] : 'there';
+    const planLabel = planType === 'annual' ? 'Annual' : 'Monthly';
+    const priceLabel = planType === 'annual' ? '$14/month (billed annually at $168)' : '$17/month';
+
+    const { data, error } = await resend.emails.send({
+      from: 'HeyMeg <noreply@heymeg.ai>',
+      to: email,
+      subject: `Welcome back to HeyMeg!`,
+      html: `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+          <h1 style="color: #1a1a1a; font-size: 28px; margin-bottom: 8px;">Welcome Back!</h1>
+          <p style="color: #555; font-size: 16px; line-height: 1.6;">Hi ${firstName},</p>
+          <p style="color: #555; font-size: 16px; line-height: 1.6;">Your HeyMeg subscription is now active! You have full access to all your content and features.</p>
+          <p style="color: #555; font-size: 16px; line-height: 1.6;">Here's a summary of your subscription:</p>
+          <table style="border-collapse: collapse; margin: 20px 0; width: 100%; max-width: 400px;">
+            <tr><td style="padding: 8px 16px; font-weight: bold; color: #333;">Plan:</td><td style="padding: 8px 16px; color: #555;">HeyMeg ${planLabel}</td></tr>
+            <tr><td style="padding: 8px 16px; font-weight: bold; color: #333;">Amount charged:</td><td style="padding: 8px 16px; color: #555;">${planType === 'annual' ? '$168.00' : '$17.00'}</td></tr>
+            <tr><td style="padding: 8px 16px; font-weight: bold; color: #333;">Billing:</td><td style="padding: 8px 16px; color: #555;">${priceLabel}</td></tr>
+            <tr><td style="padding: 8px 16px; font-weight: bold; color: #333;">Date:</td><td style="padding: 8px 16px; color: #555;">${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</td></tr>
+          </table>
+          <div style="text-align: left; margin: 30px 0;">
+            <a href="https://heymeg.ai/home-page" style="display: inline-block; padding: 14px 32px; background-color: #612a4f; color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">Go to HeyMeg</a>
+          </div>
+          <p style="color: #555; font-size: 16px; line-height: 1.6;">If you have any questions, reach out to us at <a href="mailto:contact@heymeg.ai" style="color: #612a4f; text-decoration: none;">contact@heymeg.ai</a>.</p>
+          <p style="color: #555; font-size: 16px; line-height: 1.6;">We're happy to have you back!</p>
+          <p style="color: #555; font-size: 16px; line-height: 1.6;">— The HeyMeg Team</p>
+          <p style="color: #999; font-size: 12px; line-height: 1.4; margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px;">This is an automated message. Please do not reply to this email. If you need help, contact us at contact@heymeg.ai.</p>
+        </div>
+      `,
+    });
+
+    if (error) {
+      console.error('Resend error:', error);
+      return res.status(400).json({ error: error.message });
+    }
+
+    console.log('✅ Resubscription email sent to:', email);
+    res.json({ success: true, messageId: data.id });
+  } catch (err) {
+    console.error('Email send error:', err);
+    res.status(500).json({ error: 'Failed to send email' });
+  }
+});
+
 // Payment receipt/confirmation email
 app.post('/api/send-payment-receipt', async (req, res) => {
   try {
