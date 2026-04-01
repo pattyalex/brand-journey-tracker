@@ -70,13 +70,9 @@ const MembershipSection = () => {
     setCanceling(true);
     try {
       await cancelSubscription(stripeSubscriptionId);
-      // Update Supabase profile immediately so UI reflects the change
-      if (user?.id) {
-        await supabase.from('profiles').update({
-          subscription_status: 'canceled',
-          is_on_trial: false,
-        }).eq('id', user.id);
-      }
+      // Don't update subscription_status here — Stripe uses cancel_at_period_end,
+      // so the user keeps access until the period ends. The Stripe webhook will
+      // update the status to 'canceled' when the subscription actually expires.
       await refreshSubscription();
       toast.success('Subscription canceled. You will retain access until the end of your billing period.');
     } catch (err) {
@@ -191,10 +187,12 @@ const MembershipSection = () => {
               <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0" />
               <div>
                 <p className="text-sm font-medium text-red-600" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                  Subscription Canceled
+                  {hasUsedTrial || isOnTrial ? 'Trial Canceled' : 'Subscription Canceled'}
                 </p>
                 <p className="text-xs text-red-400" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                  {trialEndsAt ? `Access until ${formatDate(trialEndsAt)}` : 'Your access has ended'}
+                  {trialEndsAt && new Date(trialEndsAt) > new Date()
+                    ? `You can keep using HeyMeg until ${formatDate(trialEndsAt)}`
+                    : 'Your access has ended'}
                 </p>
               </div>
             </div>

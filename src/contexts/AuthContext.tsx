@@ -242,8 +242,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // User has access if subscription is active, trialing, or not yet set (during onboarding)
-  const hasActiveSubscription = subscriptionStatus === 'active' || subscriptionStatus === 'trialing' || subscriptionStatus === null;
+  // User has access if subscription is active, trialing, not yet set (during onboarding),
+  // or canceled but trial/billing period hasn't ended yet (cancel_at_period_end)
+  const canceledButStillHasTime = subscriptionStatus === 'canceled' && trialEndsAt && new Date(trialEndsAt) > new Date();
+  const hasActiveSubscription = subscriptionStatus === 'active' || subscriptionStatus === 'trialing' || subscriptionStatus === null || canceledButStillHasTime;
 
   const refreshSubscription = useCallback(async () => {
     if (!user) return;

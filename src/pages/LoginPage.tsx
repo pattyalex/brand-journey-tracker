@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { Mail } from 'lucide-react';
 
 const LoginPage: React.FC = () => {
-  const { openLoginModal, isAuthenticated, isAuthLoaded, loginOpen, logout } = useAuth();
+  const { openLoginModal, closeLoginModal, isAuthenticated, isAuthLoaded, loginOpen, logout } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [hasDecided, setHasDecided] = useState(false);
@@ -37,7 +37,8 @@ const LoginPage: React.FC = () => {
         clearTimeout(verifyTimeout);
         setVerifyingSession(false);
         if (user && !error) {
-          // Session is genuinely valid — redirect to home
+          // Session is genuinely valid — close modal (releases Radix scroll lock) and redirect
+          closeLoginModal();
           navigate('/home-page', { replace: true });
         } else {
           // Stale/expired session — clear it and show login
