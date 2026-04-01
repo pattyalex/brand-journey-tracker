@@ -44,7 +44,7 @@ const MyAccount = () => {
 
   const sections = [
     { id: 'account', label: 'Account', icon: User },
-    { id: 'membership', label: 'Membership', icon: Crown },
+    { id: 'membership', label: 'Subscription', icon: Crown },
     { id: 'preferences', label: 'Calendar', icon: Calendar },
     { id: 'integrations', label: 'Integrations', icon: Calendar },
     { id: 'data', label: 'Data', icon: Download },

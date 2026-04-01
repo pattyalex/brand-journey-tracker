@@ -133,10 +133,10 @@ const MembershipSection = () => {
           </div>
           <div>
             <h2 className="text-lg text-[#2d2a26]" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>
-              Membership
+              Subscription
             </h2>
             <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-              Manage your subscription
+              Manage your plan and billing
             </p>
           </div>
         </div>
@@ -202,7 +202,7 @@ const MembershipSection = () => {
               style={{ fontFamily: "'DM Sans', sans-serif" }}
               onClick={() => window.location.href = '/onboarding?step=payment-entry'}
             >
-              Resubscribe
+              {hasUsedTrial || isOnTrial ? 'Subscribe' : 'Resubscribe'}
             </Button>
           </div>
         )}
