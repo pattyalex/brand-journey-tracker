@@ -23,6 +23,7 @@ import ExpandedScheduleView from "@/pages/production/components/ExpandedSchedule
 import { TaskDialog } from "./dailyPlanner/components/TaskDialog";
 import { ContentDialog } from "./dailyPlanner/components/ContentDialog";
 import { ContentSummaryPanel } from "./dailyPlanner/components/ContentSummaryPanel";
+import PlannerTour from "./dailyPlanner/components/PlannerTour";
 import StandaloneContentFlow from "./dailyPlanner/components/StandaloneContentFlow";
 import { ProductionCard } from "@/pages/production/types";
 import {
@@ -94,6 +95,17 @@ export const DailyPlanner = () => {
 
   // State for mobile tasks accordion
   const [mobileTasksExpanded, setMobileTasksExpanded] = useState(false);
+
+  // Planner orientation tour
+  const [runPlannerTour, setRunPlannerTour] = useState(false);
+  const [plannerTourStep, setPlannerTourStep] = useState(-1);
+
+  useEffect(() => {
+    if (!localStorage.getItem("hasSeenPlannerTour")) {
+      const timer = setTimeout(() => setRunPlannerTour(true), 600);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   // State for "both" mode panel tab — persisted
   const [bothPanelTab, setBothPanelTabState] = useState<'tasks' | 'content'>(() => {
@@ -1351,6 +1363,17 @@ export const DailyPlanner = () => {
           <Plus size={24} strokeWidth={2.5} />
         </button>
       )}
+
+      {/* Planner Orientation Tour */}
+      <PlannerTour
+        run={runPlannerTour}
+        onComplete={() => {
+          setRunPlannerTour(false);
+          setPlannerTourStep(-1);
+          localStorage.setItem("hasSeenPlannerTour", "true");
+        }}
+        onStepChange={setPlannerTourStep}
+      />
     </div>
     </PlannerProvider>
   );

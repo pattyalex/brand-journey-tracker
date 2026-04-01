@@ -186,6 +186,7 @@ export const PlannerHeader = ({
         {/* Right: Filter Pills */}
         <div className="flex items-center gap-1.5">
           <button
+            data-tour="planner-pill-all"
             onClick={() => setContentDisplayMode('both')}
             className={cn(
               "flex items-center gap-1.5 px-[13px] py-[7px] rounded-full text-xs font-medium transition-all duration-200",
@@ -199,6 +200,7 @@ export const PlannerHeader = ({
             All
           </button>
           <button
+            data-tour="planner-pill-tasks"
             onClick={() => setContentDisplayMode('tasks')}
             className={cn(
               "flex items-center gap-1.5 px-[13px] py-[7px] rounded-full text-xs font-medium transition-all duration-200",
@@ -212,6 +214,7 @@ export const PlannerHeader = ({
             Tasks
           </button>
           <button
+            data-tour="planner-pill-content"
             onClick={() => setContentDisplayMode('content')}
             className={cn(
               "flex items-center gap-1.5 px-[13px] py-[7px] rounded-full text-xs font-medium transition-all duration-200",
