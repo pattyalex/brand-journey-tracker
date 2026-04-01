@@ -240,6 +240,62 @@ app.post('/api/update-subscription', async (req, res) => {
   }
 });
 
+// Get payment method for a customer
+app.get('/api/get-payment-method', async (req, res) => {
+  try {
+    const { customerId } = req.query;
+    if (!customerId) return res.status(400).json({ error: 'customerId is required' });
+
+    const paymentMethods = await stripe.paymentMethods.list({
+      customer: customerId,
+      type: 'card',
+      limit: 1,
+    });
+
+    const pm = paymentMethods.data[0];
+    res.json({
+      paymentMethod: pm ? {
+        id: pm.id,
+        brand: pm.card.brand,
+        last4: pm.card.last4,
+        expMonth: pm.card.exp_month,
+        expYear: pm.card.exp_year,
+      } : null,
+    });
+  } catch (error) {
+    console.error('Error fetching payment method:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get invoices for a customer
+app.get('/api/get-invoices', async (req, res) => {
+  try {
+    const { customerId } = req.query;
+    if (!customerId) return res.status(400).json({ error: 'customerId is required' });
+
+    const invoiceList = await stripe.invoices.list({
+      customer: customerId,
+      limit: 10,
+    });
+
+    const invoices = invoiceList.data.filter((inv) => inv.amount_paid > 0).map((inv) => ({
+      id: inv.id,
+      date: inv.created,
+      amount: inv.amount_paid,
+      currency: inv.currency,
+      status: inv.status,
+      invoicePdf: inv.invoice_pdf,
+      hostedUrl: inv.hosted_invoice_url,
+    }));
+
+    res.json({ invoices });
+  } catch (error) {
+    console.error('Error fetching invoices:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Get customer by email
 app.post('/api/get-customer-by-email', async (req, res) => {
   try {

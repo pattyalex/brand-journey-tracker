@@ -89,6 +89,36 @@ export const cancelSubscription = async (subscriptionId: string) => {
   return response.json();
 };
 
+export const getPaymentMethod = async (customerId: string) => {
+  const response = await fetch(`/api/get-payment-method?customerId=${customerId}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch payment method');
+  }
+
+  return response.json();
+};
+
+export const getInvoices = async (customerId: string) => {
+  const response = await fetch(`/api/get-invoices?customerId=${customerId}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch invoices');
+  }
+
+  return response.json();
+};
+
 export const updateSubscription = async (subscriptionId: string, newPriceId: string) => {
   const response = await fetch('/api/update-subscription', {
     method: 'POST',

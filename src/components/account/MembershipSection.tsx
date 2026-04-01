@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { CreditCard, Crown, Check, FileText, Loader2, AlertTriangle } from 'lucide-react';
+import { CreditCard, Crown, Check, FileText, Loader2, AlertTriangle, Download, ExternalLink } from 'lucide-react';
 import { useAuth } from "@/contexts/AuthContext";
-import { cancelSubscription, updateSubscription } from "@/api/stripe";
+import { cancelSubscription, updateSubscription, getPaymentMethod, getInvoices } from "@/api/stripe";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import {
@@ -19,13 +19,33 @@ import {
 const MembershipSection = () => {
   const {
     subscriptionStatus, isOnTrial, trialEndsAt, hasUsedTrial,
-    stripeSubscriptionId, planType, user, refreshSubscription,
+    stripeSubscriptionId, stripeCustomerId, planType, user, refreshSubscription,
   } = useAuth();
 
   const [canceling, setCanceling] = useState(false);
   const [switching, setSwitching] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [showSwitchConfirm, setShowSwitchConfirm] = useState<'monthly' | 'annual' | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<{
+    id: string; brand: string; last4: string; expMonth: number; expYear: number;
+  } | null>(null);
+  const [invoices, setInvoices] = useState<{
+    id: string; date: number; amount: number; currency: string; status: string;
+    invoicePdf: string | null; hostedUrl: string | null;
+  }[]>([]);
+  const [loadingBilling, setLoadingBilling] = useState(false);
+
+  useEffect(() => {
+    if (!stripeCustomerId) return;
+    setLoadingBilling(true);
+    Promise.all([
+      getPaymentMethod(stripeCustomerId).catch(() => ({ paymentMethod: null })),
+      getInvoices(stripeCustomerId).catch(() => ({ invoices: [] })),
+    ]).then(([pmResult, invResult]) => {
+      setPaymentMethod(pmResult.paymentMethod);
+      setInvoices(invResult.invoices || []);
+    }).finally(() => setLoadingBilling(false));
+  }, [stripeCustomerId]);
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return '';
@@ -335,6 +355,146 @@ const MembershipSection = () => {
         )}
       </div>
 
+      {/* Payment Method */}
+      {stripeCustomerId && (
+        <div
+          className="bg-white/80 rounded-[20px] p-6"
+          style={{
+            boxShadow: '0 4px 24px rgba(45, 42, 38, 0.04)',
+            border: '1px solid rgba(139, 115, 130, 0.06)',
+          }}
+        >
+          <div className="flex items-center gap-3 mb-4">
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center"
+              style={{
+                background: 'linear-gradient(145deg, #8b6a7e 0%, #4a3442 100%)',
+                boxShadow: '0 4px 12px rgba(107, 74, 94, 0.2)',
+              }}
+            >
+              <CreditCard className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h2 className="text-lg text-[#2d2a26]" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>
+                Payment Method
+              </h2>
+              <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                Your card on file
+              </p>
+            </div>
+          </div>
+
+          {loadingBilling ? (
+            <div className="flex items-center gap-2 text-sm text-[#8B7082] py-3">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Loading...
+            </div>
+          ) : paymentMethod ? (
+            <div className="flex items-center justify-between p-4 rounded-xl bg-[#8B7082]/5">
+              <div className="flex items-center gap-3">
+                <CreditCard className="w-5 h-5 text-[#612a4f]" />
+                <div>
+                  <p className="text-sm font-medium text-[#2d2a26] capitalize" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                    {paymentMethod.brand} ending in {paymentMethod.last4}
+                  </p>
+                  <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                    Expires {String(paymentMethod.expMonth).padStart(2, '0')}/{paymentMethod.expYear}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-[#8B7082] py-3" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+              {isOnTrial ? 'Your card will be charged when your trial ends.' : 'No payment method on file.'}
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Billing History */}
+      {stripeCustomerId && (
+        <div
+          className="bg-white/80 rounded-[20px] p-6"
+          style={{
+            boxShadow: '0 4px 24px rgba(45, 42, 38, 0.04)',
+            border: '1px solid rgba(139, 115, 130, 0.06)',
+          }}
+        >
+          <div className="flex items-center gap-3 mb-4">
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center"
+              style={{
+                background: 'linear-gradient(145deg, #8b6a7e 0%, #4a3442 100%)',
+                boxShadow: '0 4px 12px rgba(107, 74, 94, 0.2)',
+              }}
+            >
+              <FileText className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h2 className="text-lg text-[#2d2a26]" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>
+                Billing History
+              </h2>
+              <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                Past invoices and receipts
+              </p>
+            </div>
+          </div>
+
+          {loadingBilling ? (
+            <div className="flex items-center gap-2 text-sm text-[#8B7082] py-3">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Loading...
+            </div>
+          ) : invoices.length > 0 ? (
+            <div className="space-y-2">
+              {invoices.map((invoice) => (
+                <div
+                  key={invoice.id}
+                  className="flex items-center justify-between p-3 rounded-xl hover:bg-[#8B7082]/5 transition-colors"
+                >
+                  <div>
+                    <p className="text-sm text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                      {new Date(invoice.date * 1000).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                    </p>
+                    <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                      ${(invoice.amount / 100).toFixed(2)} — <span className="capitalize">{invoice.status}</span>
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {invoice.invoicePdf && (
+                      <a
+                        href={invoice.invoicePdf}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2 rounded-lg hover:bg-[#8B7082]/10 transition-colors"
+                        title="Download PDF"
+                      >
+                        <Download className="w-4 h-4 text-[#8B7082]" />
+                      </a>
+                    )}
+                    {invoice.hostedUrl && (
+                      <a
+                        href={invoice.hostedUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2 rounded-lg hover:bg-[#8B7082]/10 transition-colors"
+                        title="View invoice"
+                      >
+                        <ExternalLink className="w-4 h-4 text-[#8B7082]" />
+                      </a>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-[#8B7082] py-3" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+              {isOnTrial ? 'No invoices yet — your first invoice will be generated after your trial ends.' : 'No invoices found.'}
+            </p>
+          )}
+        </div>
+      )}
+
       {/* No subscription state */}
       {!subscriptionStatus && !isOnTrial && (
         <div
@@ -366,7 +526,7 @@ const MembershipSection = () => {
             </AlertDialogTitle>
             <AlertDialogDescription style={{ fontFamily: "'DM Sans', sans-serif" }}>
               {isOnTrial
-                ? 'Your trial will be canceled and you will lose access to all features. You can resubscribe at any time.'
+                ? `You still have ${daysRemaining()} days left to explore HeyMeg. After your trial ends, you'll lose access to your account. You can always resubscribe later.`
                 : 'You will retain access until the end of your current billing period. Your data will be kept safe and you can resubscribe at any time.'}
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -375,7 +535,7 @@ const MembershipSection = () => {
               className="rounded-xl"
               style={{ fontFamily: "'DM Sans', sans-serif" }}
             >
-              Keep Subscription
+              {isOnTrial ? 'Keep Trial' : 'Keep Subscription'}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleCancel}
