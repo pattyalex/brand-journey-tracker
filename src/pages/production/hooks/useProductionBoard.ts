@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { toast } from "sonner";
 import { StorageKeys, getString, setString } from "@/lib/storage";
 import { EVENTS, emit, on } from "@/lib/events";
-import { getUserProductionCards, upsertProductionCard, deleteProductionCard } from "@/services/productionService";
+import { getUserProductionCards, upsertProductionCard, deleteProductionCard, getArchivedProductionCards, archiveProductionCard, unarchiveProductionCard } from "@/services/productionService";
 import { KanbanColumn, ProductionCard, StageCompletions } from "../types";
 import { defaultColumns, DEFAULT_STAGE_COMPLETIONS, COLUMN_ORDER } from "../utils/productionConstants";
 
@@ -76,17 +76,7 @@ export function useProductionBoard(
   const supabaseReadyRef = useRef(false);
 
   // ── Archive state ─────────────────────────────────────────────────────
-  const [archivedCards, setArchivedCards] = useState<ProductionCard[]>(() => {
-    const saved = getString(StorageKeys.archivedContent);
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch {
-        return [];
-      }
-    }
-    return [];
-  });
+  const [archivedCards, setArchivedCards] = useState<ProductionCard[]>([]);
   const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false);
   const [lastArchivedCard, setLastArchivedCard] = useState<{ card: ProductionCard; sourceColumnId: string } | null>(null);
 
@@ -246,10 +236,15 @@ export function useProductionBoard(
   // EFFECTS — Archive
   // ═══════════════════════════════════════════════════════════════════════
 
-  // Save archived cards to localStorage when they change
+  // Load archived cards from Supabase
   useEffect(() => {
-    setString(StorageKeys.archivedContent, JSON.stringify(archivedCards));
-  }, [archivedCards]);
+    if (!userId) return;
+    getArchivedProductionCards(userId).then((cards) => {
+      setArchivedCards(cards);
+    }).catch((err) => {
+      console.error("Failed to load archived cards:", err);
+    });
+  }, [userId]);
 
   // Auto-hide undo archive button after 8 seconds
   useEffect(() => {
@@ -275,10 +270,15 @@ export function useProductionBoard(
       const { card } = event.detail || {};
       if (card) {
         setArchivedCards((prev) => [card, ...prev]);
+        if (userId) {
+          archiveProductionCard(card.id).catch(err =>
+            console.error('Failed to archive card in Supabase:', err)
+          );
+        }
       }
     });
     return cleanup;
-  }, []);
+  }, [userId]);
 
   // ═══════════════════════════════════════════════════════════════════════
   // EFFECTS — Drag-drop
@@ -596,10 +596,9 @@ export function useProductionBoard(
       setTimeout(() => ghost.remove(), 550);
     }
 
-    // Create archived copy
-    const archivedCopy: ProductionCard = {
+    // Mark as archived
+    const archivedCard: ProductionCard = {
       ...foundCard,
-      id: `archived-${foundCard.id}-${Date.now()}`,
       columnId: 'posted',
       schedulingStatus: undefined,
       archivedAt: new Date().toISOString(),
@@ -614,16 +613,26 @@ export function useProductionBoard(
       }))
     );
 
-    // Add to archive
-    setArchivedCards((prev) => [archivedCopy, ...prev]);
+    // Add to archive locally
+    setArchivedCards((prev) => [archivedCard, ...prev]);
+
+    // Persist to Supabase
+    if (userId) {
+      archiveProductionCard(foundCard.id).catch(err =>
+        console.error('Failed to archive card in Supabase:', err)
+      );
+    }
 
     toast.success("Posted! 🎉", {
       description: "Content saved in Archive"
     });
-  }, [columns]);
+  }, [columns, userId]);
 
   const handleDeleteArchivedContent = useCallback((card: ProductionCard) => {
     setArchivedCards((prev) => prev.filter((c) => c.id !== card.id));
+    deleteProductionCard(card.id).catch(err =>
+      console.error('Failed to delete archived card from Supabase:', err)
+    );
   }, []);
 
   const handleRepurposeContent = useCallback((card: ProductionCard) => {
@@ -684,6 +693,13 @@ export function useProductionBoard(
           : col
       )
     );
+
+    // Unarchive in Supabase
+    if (userId) {
+      unarchiveProductionCard(card.id).catch(err =>
+        console.error('Failed to unarchive card in Supabase:', err)
+      );
+    }
 
     // Clear the last archived card state if it matches
     if (lastArchivedCard?.card.id === card.id) {
@@ -813,6 +829,14 @@ export function useProductionBoard(
 
       // Add to archived cards
       setArchivedCards((prev) => [cardToArchive, ...prev]);
+
+      // Persist to Supabase
+      if (userId) {
+        archiveProductionCard(draggedCard.id).catch(err =>
+          console.error('Failed to archive card in Supabase:', err)
+        );
+      }
+
       setDraggedCard(null);
       return;
     }

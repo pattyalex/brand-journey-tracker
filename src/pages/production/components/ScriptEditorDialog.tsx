@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { callClaudeAPI } from "@/services/claudeService";
+import { updateProductionCard } from "@/services/productionService";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -197,8 +198,15 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
 
   const [shakeButton, setShakeButton] = useState(false);
   const [isMegAIOpen, setIsMegAIOpen] = useState(false);
-  const [megAIMessages, setMegAIMessages] = useState<{role: 'user' | 'assistant', content: string}[]>([]);
+  const [megAIMessages, setMegAIMessages] = useState<{role: 'user' | 'assistant', content: string}[]>(
+    card?.megaiChatMessages || []
+  );
   const [megAIInput, setMegAIInput] = useState("");
+
+  // Reset messages when card changes
+  useEffect(() => {
+    setMegAIMessages(card?.megaiChatMessages || []);
+  }, [card?.id]);
   const [isAILoading, setIsAILoading] = useState(false);
   const chatMessagesRef = useRef<HTMLDivElement>(null);
   const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
@@ -258,13 +266,25 @@ Guidelines:
     const messageToSend = directMessage || megAIInput.trim();
     if (!messageToSend || isAILoading) return;
 
-    setMegAIMessages(prev => [...prev, { role: 'user', content: messageToSend }]);
+    setMegAIMessages(prev => {
+      const updated = [...prev, { role: 'user' as const, content: messageToSend }];
+      if (card?.id) {
+        updateProductionCard(card.id, { megaiChatMessages: updated } as any).catch(console.error);
+      }
+      return updated;
+    });
     if (!directMessage) setMegAIInput("");
     setIsAILoading(true);
 
     try {
       const aiResponse = await callAI(messageToSend);
-      setMegAIMessages(prev => [...prev, { role: 'assistant', content: aiResponse }]);
+      setMegAIMessages(prev => {
+        const updated = [...prev, { role: 'assistant' as const, content: aiResponse }];
+        if (card?.id) {
+          updateProductionCard(card.id, { megaiChatMessages: updated } as any).catch(console.error);
+        }
+        return updated;
+      });
     } catch (error) {
       console.error("MegAI error:", error);
       toast.error("Failed to get AI response");
@@ -550,12 +570,28 @@ Guidelines:
                       <p className="text-[10px] text-white/70">Your content assistant</p>
                     </div>
                   </div>
-                  <button
-                    onClick={() => setIsMegAIOpen(false)}
-                    className="p-1 hover:bg-white/10 rounded transition-colors"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
+                  <div className="flex items-center gap-1">
+                    {megAIMessages.length > 0 && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setMegAIMessages([]);
+                          if (card?.id) {
+                            updateProductionCard(card.id, { megaiChatMessages: [] } as any).catch(console.error);
+                          }
+                        }}
+                        className="px-2 py-1 text-[10px] font-medium bg-white/15 hover:bg-white/25 rounded transition-colors"
+                      >
+                        Clear chat
+                      </button>
+                    )}
+                    <button
+                      onClick={() => setIsMegAIOpen(false)}
+                      className="p-1 hover:bg-white/10 rounded transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
 
                 {/* Chat Messages */}

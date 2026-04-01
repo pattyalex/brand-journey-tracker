@@ -114,6 +114,7 @@ export interface ProductionCard {
   lastUpdated?: string; // ISO timestamp of last edit
   stageCompletions?: StageCompletions; // User-controlled stage completion tracking
   manualColumnOverride?: boolean; // When true, auto-move on step completion is disabled (set by drag-and-drop)
+  megaiChatMessages?: {role: 'user' | 'assistant', content: string}[];
 }
 
 export interface KanbanColumn {

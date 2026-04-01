@@ -139,6 +139,7 @@ interface DbProductionCard {
   image_mode: string | null;
   last_updated: string | null;
   manual_column_override: boolean;
+  megai_chat_messages: any[] | null;
 }
 
 // =====================================================
@@ -192,6 +193,7 @@ const dbToProductionCard = (db: DbProductionCard): ProductionCard => ({
   imageMode: (db.image_mode as 'image' | 'carousel') || undefined,
   lastUpdated: db.last_updated || undefined,
   manualColumnOverride: db.manual_column_override || false,
+  megaiChatMessages: db.megai_chat_messages || [],
 });
 
 const productionCardToDb = (userId: string, card: Omit<ProductionCard, 'id'>) => ({
@@ -241,6 +243,8 @@ const productionCardToDb = (userId: string, card: Omit<ProductionCard, 'id'>) =>
   image_mode: card.imageMode || null,
   last_updated: card.lastUpdated || null,
   manual_column_override: card.manualColumnOverride || false,
+  is_archived: (card as any).isArchived || false,
+  megai_chat_messages: (card as any).megaiChatMessages || [],
 });
 
 // =====================================================
@@ -253,6 +257,18 @@ export const getUserProductionCards = async (userId: string): Promise<Production
     userId,
     orderBy: 'display_order',
     ascending: true,
+    filters: { is_archived: false },
+  });
+  return data.map(dbToProductionCard);
+};
+
+// Get archived production cards
+export const getArchivedProductionCards = async (userId: string): Promise<ProductionCard[]> => {
+  const data = await fetchAll<DbProductionCard>('production_cards', {
+    userId,
+    orderBy: 'updated_at',
+    ascending: false,
+    filters: { is_archived: true },
   });
   return data.map(dbToProductionCard);
 };
@@ -325,6 +341,7 @@ export const updateProductionCard = async (
   if (updates.calendarOnly !== undefined) dbUpdates.calendar_only = updates.calendarOnly;
   if (updates.stageCompletions !== undefined) dbUpdates.stage_completions = updates.stageCompletions;
   if (updates.displayOrder !== undefined) dbUpdates.display_order = updates.displayOrder;
+  if ((updates as any).megaiChatMessages !== undefined) dbUpdates.megai_chat_messages = (updates as any).megaiChatMessages;
 
   const data = await updateOne<DbProductionCard>('production_cards', cardId, dbUpdates);
   return dbToProductionCard(data);
@@ -407,6 +424,16 @@ export const upsertProductionCard = async (
     console.error('Error upserting production card:', error);
     throw error;
   }
+};
+
+// Archive a production card
+export const archiveProductionCard = async (cardId: string): Promise<void> => {
+  await updateOne('production_cards', cardId, { is_archived: true });
+};
+
+// Unarchive a production card
+export const unarchiveProductionCard = async (cardId: string): Promise<void> => {
+  await updateOne('production_cards', cardId, { is_archived: false });
 };
 
 // Batch create production cards

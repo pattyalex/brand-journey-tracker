@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from '@/contexts/AuthContext';
 import { Coffee, Sun, Moon } from "lucide-react";
 import { StorageKeys, getString, setString, setJSON, getJSON } from "@/lib/storage";
+import { getUserHabits, createHabit as createHabitInDb, updateHabit as updateHabitInDb, deleteHabit as deleteHabitInDb } from "@/services/habitsService";
 import { EVENTS, emit, on } from "@/lib/events";
 import { KanbanColumn } from "@/pages/production/types";
 import {
@@ -516,17 +517,8 @@ export const useHomePageState = () => {
   const [connectedPlatforms, setConnectedPlatforms] = useState<string[]>([]);
 
   // Habit Tracker state
-  const [habits, setHabits] = useState<Habit[]>(() => {
-    const saved = getString('workHabits');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch {
-        return [];
-      }
-    }
-    return [];
-  });
+  const [habits, setHabits] = useState<Habit[]>([]);
+  const habitsLoadedRef = useRef(false);
   const [habitWeekOffset, setHabitWeekOffset] = useState(0);
   const [isAddingHabit, setIsAddingHabit] = useState(false);
   const [newHabitName, setNewHabitName] = useState("");
@@ -1478,10 +1470,36 @@ export const useHomePageState = () => {
     setString('todaysPriorities', JSON.stringify(priorities));
   }, [priorities]);
 
-  // Save habits
+  // Load habits from Supabase
   useEffect(() => {
-    setString('workHabits', JSON.stringify(habits));
-  }, [habits]);
+    if (!user?.id) return;
+    getUserHabits(user.id).then((loaded) => {
+      if (loaded.length > 0) {
+        setHabits(loaded);
+      } else {
+        // Migrate from localStorage if Supabase is empty
+        const saved = getString('workHabits');
+        if (saved) {
+          try {
+            const local: Habit[] = JSON.parse(saved);
+            if (local.length > 0) {
+              setHabits(local);
+              local.forEach((h, i) => {
+                createHabitInDb(user.id!, {
+                  name: h.name,
+                  goal: h.goal,
+                  displayOrder: i,
+                }).then(created => {
+                  setHabits(prev => prev.map(p => p.id === h.id ? { ...p, id: created.id } : p));
+                }).catch(console.error);
+              });
+            }
+          } catch { /* ignore */ }
+        }
+      }
+      habitsLoadedRef.current = true;
+    }).catch(console.error);
+  }, [user?.id]);
 
   // Habit Tracker Functions
   const getWeekDays = (offset: number = 0) => {
@@ -1522,50 +1540,62 @@ export const useHomePageState = () => {
   };
 
   const toggleHabit = (habitId: string, dateStr: string) => {
-    setHabits(prev => prev.map(habit => {
-      if (habit.id === habitId) {
-        const isCompleted = habit.completedDates.includes(dateStr);
-        return {
-          ...habit,
-          completedDates: isCompleted
+    setHabits(prev => {
+      const updated = prev.map(habit => {
+        if (habit.id === habitId) {
+          const isCompleted = habit.completedDates.includes(dateStr);
+          const newDates = isCompleted
             ? habit.completedDates.filter(d => d !== dateStr)
-            : [...habit.completedDates, dateStr]
-        };
-      }
-      return habit;
-    }));
+            : [...habit.completedDates, dateStr];
+          updateHabitInDb(habitId, { completedDates: newDates }).catch(console.error);
+          return { ...habit, completedDates: newDates };
+        }
+        return habit;
+      });
+      return updated;
+    });
   };
 
   const addHabit = () => {
     if (newHabitName.trim()) {
-      const newHabit: Habit = {
-        id: `habit_${Date.now()}`,
-        name: newHabitName.trim(),
-        completedDates: []
-      };
+      const tempId = `habit_${Date.now()}`;
+      const goal = newHabitGoalTarget && parseInt(newHabitGoalTarget) > 0
+        ? { target: parseInt(newHabitGoalTarget), period: newHabitGoalPeriod as 'week' | 'month' }
+        : undefined;
 
-      if (newHabitGoalTarget && parseInt(newHabitGoalTarget) > 0) {
-        newHabit.goal = {
-          target: parseInt(newHabitGoalTarget),
-          period: newHabitGoalPeriod
-        };
-      }
+      const newHabit: Habit = {
+        id: tempId,
+        name: newHabitName.trim(),
+        completedDates: [],
+        goal,
+      };
 
       setHabits(prev => [...prev, newHabit]);
       setNewHabitName("");
       setNewHabitGoalTarget("");
       setNewHabitGoalPeriod('week');
       setIsAddingHabit(false);
+
+      if (user?.id) {
+        createHabitInDb(user.id, { name: newHabit.name, goal, displayOrder: habits.length })
+          .then(created => {
+            setHabits(prev => prev.map(h => h.id === tempId ? { ...h, id: created.id } : h));
+          }).catch(console.error);
+      }
     }
   };
 
   const deleteHabit = (habitId: string) => {
     setHabits(prev => prev.filter(h => h.id !== habitId));
+    if (!habitId.startsWith('habit_')) {
+      deleteHabitInDb(habitId).catch(console.error);
+    }
   };
 
   const keepPlaceholderHabit = (name: string, key: string) => {
+    const tempId = `habit_${Date.now()}`;
     const newHabit: Habit = {
-      id: `habit_${Date.now()}`,
+      id: tempId,
       name,
       completedDates: [],
     };
@@ -1575,6 +1605,12 @@ export const useHomePageState = () => {
       localStorage.setItem(`dismissedDashboardPlaceholders_${user?.id}`, JSON.stringify(next));
       return next;
     });
+    if (user?.id) {
+      createHabitInDb(user.id, { name, displayOrder: habits.length })
+        .then(created => {
+          setHabits(prev => prev.map(h => h.id === tempId ? { ...h, id: created.id } : h));
+        }).catch(console.error);
+    }
   };
 
   const keepPlaceholderGoal = (text: string, status: string, key: string) => {
@@ -1612,11 +1648,15 @@ export const useHomePageState = () => {
 
   const saveEditingHabit = () => {
     if (editingHabitId && editingHabitName.trim()) {
+      const newName = editingHabitName.trim();
       setHabits(prev => prev.map(h =>
         h.id === editingHabitId
-          ? { ...h, name: editingHabitName.trim() }
+          ? { ...h, name: newName }
           : h
       ));
+      if (!editingHabitId.startsWith('habit_')) {
+        updateHabitInDb(editingHabitId, { name: newName }).catch(console.error);
+      }
     }
     setEditingHabitId(null);
     setEditingHabitName("");
@@ -1681,6 +1721,9 @@ export const useHomePageState = () => {
             ? { ...h, goal: { target, period: editingGoalPeriod } }
             : h
         ));
+        if (!editingGoalHabitId.startsWith('habit_')) {
+          updateHabitInDb(editingGoalHabitId, { goalTarget: target, goalPeriod: editingGoalPeriod }).catch(console.error);
+        }
       }
     }
     setEditingGoalHabitId(null);
@@ -1692,6 +1735,9 @@ export const useHomePageState = () => {
         ? { ...h, goal: undefined }
         : h
     ));
+    if (!habitId.startsWith('habit_')) {
+      updateHabitInDb(habitId, { goalTarget: null, goalPeriod: null }).catch(console.error);
+    }
     setEditingGoalHabitId(null);
   };
 

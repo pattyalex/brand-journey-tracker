@@ -11,6 +11,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { toast } from "sonner";
 import { StorageKeys, getString, setString, setJSON, getJSON, remove } from "@/lib/storage";
 import { getUserPreferences, updateUserPreferences } from "@/services/preferencesService";
+
 import { EVENTS, on } from "@/lib/events";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProductionBoard } from "./production/hooks/useProductionBoard";
@@ -309,9 +310,6 @@ const Production = () => {
   const outfitInputRef = useRef<HTMLTextAreaElement>(null);
   const propsInputRef = useRef<HTMLTextAreaElement>(null);
   const notesInputRef = useRef<HTMLTextAreaElement>(null);
-  const [bankIdeas, setBankIdeas] = useState<Array<{ id: string; text: string; isPlaceholder?: boolean }>>([]);
-  const [newBankIdeaText, setNewBankIdeaText] = useState("");
-  const [addedBankIdeaId, setAddedBankIdeaId] = useState<string | null>(null);
   const [pillars, setPillars] = useState<string[]>(["Mental Health", "Nutrition", "Fitness", "Sleep & Recovery"]);
   const [formats, setFormats] = useState<string[]>(["Talking head", "Carousel", "B-roll", "Tutorial"]);
   const [isAngleDialogOpen, setIsAngleDialogOpen] = useState(false);
@@ -531,30 +529,6 @@ const Production = () => {
     }
   }, [searchParams]);
 
-  // Load Bank of Ideas from localStorage
-  useEffect(() => {
-    const savedBankIdeas = getString(StorageKeys.bankOfIdeas);
-    if (savedBankIdeas) {
-      try {
-        const parsed = JSON.parse(savedBankIdeas);
-        const realIdeas = parsed.filter((idea: any) => !idea.isPlaceholder);
-        setBankIdeas(realIdeas);
-      } catch (error) {
-        console.error("Failed to load bank ideas:", error);
-        setBankIdeas([]);
-      }
-    } else {
-      setBankIdeas([]);
-    }
-  }, []);
-
-
-  // Save Bank of Ideas to localStorage
-  useEffect(() => {
-    if (bankIdeas.length > 0) {
-      setString(StorageKeys.bankOfIdeas, JSON.stringify(bankIdeas));
-    }
-  }, [bankIdeas]);
 
   // Remove isNew flag after closing content ideation dialogs and viewing cards
   useEffect(() => {
@@ -1937,58 +1911,6 @@ const Production = () => {
     setNewCardTitle("");
     setNewCardDescription("");
     setSelectedColumnId("");
-  };
-
-  // Bank of Ideas handlers
-  const handleAddBankIdea = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newBankIdeaText.trim()) return;
-
-    // Remove placeholders when adding a real idea
-    const realIdeas = bankIdeas.filter(idea => !idea.isPlaceholder);
-    const newIdea = {
-      id: `idea-${Date.now()}`,
-      text: newBankIdeaText.trim(),
-      isPlaceholder: false,
-    };
-
-    setBankIdeas([newIdea, ...realIdeas]);
-    setNewBankIdeaText("");
-  };
-
-  const handleDeleteBankIdea = (ideaId: string) => {
-    const updatedIdeas = bankIdeas.filter(idea => idea.id !== ideaId);
-    setBankIdeas(updatedIdeas);
-  };
-
-  const handleMoveBankIdeaToProduction = (ideaId: string, ideaText: string) => {
-    // Create card in Ideate column
-    const newCard: ProductionCard = {
-      id: `card-${Date.now()}`,
-      title: ideaText,
-      columnId: 'ideate',
-      isCompleted: false,
-      isNew: true,
-      addedFrom: 'bank-of-ideas',
-      stageCompletions: { ...DEFAULT_STAGE_COMPLETIONS, ideate: true },
-    };
-
-    setColumns((prev) =>
-      prev.map((col) =>
-        col.id === 'ideate' ? { ...col, cards: [...col.cards, newCard] } : col
-      )
-    );
-
-    // Show success state briefly before removing
-    setAddedBankIdeaId(ideaId);
-    setTimeout(() => {
-      // Remove the idea from bank (triggers exit animation)
-      const updatedIdeas = bankIdeas.filter(idea => idea.id !== ideaId);
-      setBankIdeas(updatedIdeas);
-      setAddedBankIdeaId(null);
-    }, 500);
-
-    // Don't close dialog - user may want to add more ideas
   };
 
   // Mobile view handlers
@@ -3639,6 +3561,7 @@ const Production = () => {
               brainDumpSuggestion={brainDumpSuggestion}
               showBrainDumpSuggestion={showBrainDumpSuggestion}
               setShowBrainDumpSuggestion={handleBrainDumpDismiss}
+              card={contentFlowCard}
             />
           )}
 
@@ -3708,6 +3631,9 @@ const Production = () => {
               onNavigateToStep={handleNavigateToStep}
               onClose={handleCloseContentFlowDialog}
               onConfirmReady={() => {
+                // Mark readyToPost stage as complete
+                const currentCompletions = contentFlowCard.stageCompletions || DEFAULT_STAGE_COMPLETIONS;
+                const updatedCompletions = { ...currentCompletions, readyToPost: true };
                 // Move card to ready-to-post column
                 setColumns((prev) => {
                   let sourceColumnId: string | undefined;
@@ -3718,12 +3644,18 @@ const Production = () => {
                     }
                   }
                   if (sourceColumnId === 'ready-to-post') {
-                    // Already in ready-to-post, no move needed
-                    return prev;
+                    // Already in ready-to-post, just update stageCompletions
+                    return prev.map(col => ({
+                      ...col,
+                      cards: col.cards.map(c =>
+                        c.id === contentFlowCard.id ? { ...c, stageCompletions: updatedCompletions } : c
+                      ),
+                    }));
                   }
                   const updatedCard: ProductionCard = {
                     ...contentFlowCard,
                     columnId: 'ready-to-post',
+                    stageCompletions: updatedCompletions,
                   };
                   if (sourceColumnId) {
                     return prev.map((col) => {
@@ -3739,7 +3671,7 @@ const Production = () => {
                   return prev;
                 });
                 // Update the content flow card reference
-                setContentFlowCard({ ...contentFlowCard, columnId: 'ready-to-post' });
+                setContentFlowCard({ ...contentFlowCard, columnId: 'ready-to-post', stageCompletions: updatedCompletions });
               }}
               onSaveAndExit={handleCloseContentFlowDialog}
               completedSteps={getCompletedSteps(contentFlowCard)}
@@ -3747,8 +3679,60 @@ const Production = () => {
               onToggleComplete={handleToggleStepComplete}
             />
           )}
-          {/* Step 6: Schedule (video) — or step 4 for image is handled above */}
-          {((activeContentFlowStep === 6 && contentType === 'video') || (activeContentFlowStep === 4 && contentType === 'image')) && contentFlowCard && (
+          {/* Step 4: Ready to Post (image only) */}
+          {activeContentFlowStep === 4 && contentType === 'image' && contentFlowCard && (
+            <ReadyToPostStep
+              onNavigateToStep={handleNavigateToStep}
+              onClose={handleCloseContentFlowDialog}
+              onConfirmReady={() => {
+                // Mark readyToPost stage as complete
+                const currentCompletions = contentFlowCard.stageCompletions || DEFAULT_STAGE_COMPLETIONS;
+                const updatedCompletions = { ...currentCompletions, readyToPost: true };
+                // Move card to ready-to-post column
+                setColumns((prev) => {
+                  let sourceColumnId: string | undefined;
+                  for (const col of prev) {
+                    if (col.cards.find(c => c.id === contentFlowCard.id)) {
+                      sourceColumnId = col.id;
+                      break;
+                    }
+                  }
+                  if (sourceColumnId === 'ready-to-post') {
+                    return prev.map(col => ({
+                      ...col,
+                      cards: col.cards.map(c =>
+                        c.id === contentFlowCard.id ? { ...c, stageCompletions: updatedCompletions } : c
+                      ),
+                    }));
+                  }
+                  const updatedCard: ProductionCard = {
+                    ...contentFlowCard,
+                    columnId: 'ready-to-post',
+                    stageCompletions: updatedCompletions,
+                  };
+                  if (sourceColumnId) {
+                    return prev.map((col) => {
+                      if (col.id === sourceColumnId) {
+                        return { ...col, cards: col.cards.filter(c => c.id !== contentFlowCard.id) };
+                      }
+                      if (col.id === 'ready-to-post') {
+                        return { ...col, cards: [...col.cards, updatedCard] };
+                      }
+                      return col;
+                    });
+                  }
+                  return prev;
+                });
+                setContentFlowCard({ ...contentFlowCard, columnId: 'ready-to-post', stageCompletions: updatedCompletions });
+              }}
+              onSaveAndExit={handleCloseContentFlowDialog}
+              completedSteps={getCompletedSteps(contentFlowCard)}
+              contentType="image"
+              onToggleComplete={handleToggleStepComplete}
+            />
+          )}
+          {/* Step 6: Schedule (video) — or step 5 for image */}
+          {((activeContentFlowStep === 6 && contentType === 'video') || (activeContentFlowStep === 5 && contentType === 'image')) && contentFlowCard && (
             <ExpandedScheduleView
               embedded={true}
               singleCard={contentFlowCard}

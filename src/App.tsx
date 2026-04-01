@@ -31,12 +31,10 @@ const pageImports = {
   Terms: () => import("./pages/Terms"),
   Privacy: () => import("./pages/Privacy"),
   Contact: () => import("./pages/Contact"),
-  Analytics: () => import('./pages/Analytics'),
   Settings: () => import('./pages/Settings'),
   MyAccount: () => import('./pages/MyAccount'),
   Help: () => import('./pages/Help'),
   WeeklyContentTasks: () => import('./pages/WeeklyContentTasks'),
-  SocialMediaScheduler: () => import('./pages/SocialMediaScheduler'),
   Index: () => import('./pages/Index'),
   ResetPasswordPage: () => import('./pages/ResetPasswordPage'),
   SubscriptionEnded: () => import('./pages/SubscriptionEnded'),
@@ -64,12 +62,10 @@ const TermsAndConditions = lazy(pageImports.TermsAndConditions);
 const Terms = lazy(pageImports.Terms);
 const Privacy = lazy(pageImports.Privacy);
 const Contact = lazy(pageImports.Contact);
-const Analytics = lazy(pageImports.Analytics);
 const Settings = lazy(pageImports.Settings);
 const MyAccount = lazy(pageImports.MyAccount);
 const Help = lazy(pageImports.Help);
 const WeeklyContentTasks = lazy(pageImports.WeeklyContentTasks);
-const SocialMediaScheduler = lazy(pageImports.SocialMediaScheduler);
 const Index = lazy(pageImports.Index);
 const ResetPasswordPage = lazy(pageImports.ResetPasswordPage);
 const SubscriptionEnded = lazy(pageImports.SubscriptionEnded);
@@ -88,10 +84,8 @@ const routePreloadMap: Record<string, () => Promise<unknown>> = {
   '/help': pageImports.Help,
   '/content-ideation': pageImports.ContentIdeation,
   '/content-planning': pageImports.ContentPlanning,
-  '/analytics': pageImports.Analytics,
   '/collab-management': pageImports.CollabManagement,
   '/weekly-content': pageImports.WeeklyContentTasks,
-  '/social-media-scheduler': pageImports.SocialMediaScheduler,
   '/get-started': pageImports.GetStarted,
   '/index': pageImports.Index,
   '/strategy-demo': pageImports.StrategyDemo,
@@ -200,14 +194,12 @@ function App() {
                 <Route path="/content-planning" element={<ContentPlanning />} />
                 <Route path="/production" element={<Production />} />
                 <Route path="/strategy-growth" element={<StrategyGrowth />} />
-                <Route path="/analytics" element={<Analytics />} />
                 <Route path="/get-started" element={<GetStarted />} />
                 <Route path="/task-board" element={<TaskBoard />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/my-account" element={<MyAccount />} />
                 <Route path="/help" element={<Help />} />
                 <Route path="/weekly-content" element={<WeeklyContentTasks />} />
-                <Route path="/social-media-scheduler" element={<SocialMediaScheduler />} />
                 <Route path="/collab-management" element={<CollabManagement />} />
                 <Route path="/brands" element={<Brands />} />
                 <Route path="/strategy-demo" element={<StrategyDemo />} />

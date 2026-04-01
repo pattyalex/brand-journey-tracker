@@ -76,7 +76,7 @@ const ReadyToPostStep: React.FC<ReadyToPostStepProps> = ({
       {/* Stepper Progress */}
       <div className="pt-6 pb-4">
         <ContentFlowProgress
-          currentStep={5}
+          currentStep={contentType === 'image' ? 4 : 5}
           contentType={contentType}
           onStepClick={onNavigateToStep}
           completedSteps={completedSteps}
