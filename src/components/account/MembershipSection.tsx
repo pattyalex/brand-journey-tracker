@@ -86,6 +86,24 @@ const MembershipSection = () => {
       }
       await refreshSubscription();
       toast.success('Subscription canceled. You will retain access until the end of your billing period.');
+
+      // Send cancellation confirmation email
+      try {
+        const periodEnd = result?.subscription?.current_period_end
+          ? new Date(result.subscription.current_period_end * 1000).toISOString()
+          : trialEndsAt;
+        await fetch('/api/send-subscription-cancelled', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: user?.email,
+            name: user?.user_metadata?.full_name || user?.user_metadata?.name,
+            accessEndsAt: periodEnd,
+          }),
+        });
+      } catch (emailErr) {
+        console.error('Failed to send cancellation email:', emailErr);
+      }
     } catch (err) {
       console.error('Cancel error:', err);
       toast.error('Failed to cancel subscription. Please try again.');
