@@ -97,7 +97,7 @@ export const DailyPlanner = () => {
   const [mobileTasksExpanded, setMobileTasksExpanded] = useState(false);
 
   // Planner orientation tour — start immediately if user hasn't seen it
-  const [runPlannerTour, setRunPlannerTour] = useState(() => !localStorage.getItem("hasSeenPlannerTour"));
+  const [runPlannerTour, setRunPlannerTour] = useState(() => !getString(StorageKeys.hasSeenPlannerTour));
   const [plannerTourStep, setPlannerTourStep] = useState(-1);
 
   // State for "both" mode panel tab — persisted
@@ -1365,7 +1365,7 @@ export const DailyPlanner = () => {
         onComplete={() => {
           setRunPlannerTour(false);
           setPlannerTourStep(-1);
-          localStorage.setItem("hasSeenPlannerTour", "true");
+          setString(StorageKeys.hasSeenPlannerTour, "true");
         }}
         onStepChange={setPlannerTourStep}
       />

@@ -68,7 +68,9 @@ export const StorageKeys = {
   googleCalendarLastSync: "google_calendar_last_sync",
   plannerCurrentView: "plannerCurrentView",
   plannerContentDisplayMode: "plannerContentDisplayMode",
-  plannerBothPanelTab: "plannerBothPanelTab"
+  plannerBothPanelTab: "plannerBothPanelTab",
+  hasSeenPlannerTour: "hasSeenPlannerTour",
+  hasSeenContentHubTour: "hasSeenContentHubTour"
 } as const;
 
 export const contentFormatsByPillar = (pillarId: string) => `content-formats-${pillarId}`;

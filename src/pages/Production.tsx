@@ -208,7 +208,7 @@ const Production = () => {
   } = board;
 
   // Onboarding tour state — start immediately if user hasn't seen it
-  const [runTour, setRunTour] = useState(() => !isMobile && !localStorage.getItem("hasSeenContentHubTour"));
+  const [runTour, setRunTour] = useState(() => !isMobile && !getString(StorageKeys.hasSeenContentHubTour));
   const [tourStepIndex, setTourStepIndex] = useState(-1);
 
   const [isAddCardDialogOpen, setIsAddCardDialogOpen] = useState(false);
@@ -2079,7 +2079,7 @@ const Production = () => {
           onComplete={() => {
             setRunTour(false);
             setTourStepIndex(-1);
-            localStorage.setItem("hasSeenContentHubTour", "true");
+            setString(StorageKeys.hasSeenContentHubTour, "true");
             // Scroll to the first column (Bank of Ideas)
             if (horizontalScrollRef.current) {
               horizontalScrollRef.current.scrollTo({ left: 0, behavior: "smooth" });

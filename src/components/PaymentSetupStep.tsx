@@ -103,6 +103,11 @@ export const PaymentSetupStep: React.FC<PaymentSetupStepProps> = ({
           <p className="text-sm" style={{ color: '#6b6478' }}>
             {hasUsedTrial ? 'Choose your plan. Cancel anytime.' : 'Start your 14-day free trial. Cancel anytime.'}
           </p>
+          {!hasUsedTrial && (
+            <p className="text-xs font-medium mt-2 px-3 py-1.5 rounded-full inline-block" style={{ color: '#612a4f', background: 'rgba(97, 42, 79, 0.08)' }}>
+              Your card won't be charged until after your 14-day trial.
+            </p>
+          )}
         </div>
 
         <div className="px-8 pb-8">
@@ -209,10 +214,12 @@ export const PaymentSetupStep: React.FC<PaymentSetupStepProps> = ({
             </button>
           </div>
 
-          {/* Trial notice */}
-          <p className="text-center text-sm mb-6" style={{ color: '#8a7a85' }}>
-            {hasUsedTrial ? 'Your card will be charged immediately.' : 'Your card won\'t be charged until after your 14-day trial.'}
-          </p>
+          {/* Trial notice for returning users */}
+          {hasUsedTrial && (
+            <p className="text-center text-sm mb-6" style={{ color: '#8a7a85' }}>
+              Your card will be charged immediately.
+            </p>
+          )}
 
           {/* Trust Badges */}
           <div className="flex items-center justify-center gap-4 mb-6">
