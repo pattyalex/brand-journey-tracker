@@ -35,8 +35,8 @@ export interface UserStrategy {
   visionBoardData: {
     images: VisionBoardImage[];
     pinterestUrl: string;
-    threeYearVision?: string;
   };
+  threeYearVision: string;
   strategyNotes: string;
   strategyNoteLinks: { url: string; title: string }[];
   strategyNoteFiles: { name: string; data: string }[];
@@ -59,8 +59,8 @@ interface DbUserStrategy {
   vision_board_data: {
     images: VisionBoardImage[];
     pinterestUrl: string;
-    threeYearVision?: string;
   } | null;
+  three_year_vision: string | null;
   strategy_notes: string | null;
   strategy_note_links: { url: string; title: string }[] | null;
   strategy_note_files: { name: string; data: string }[] | null;
@@ -94,6 +94,7 @@ const dbToUserStrategy = (db: DbUserStrategy): UserStrategy => ({
   brandValues: db.brand_values || [],
   missionStatement: db.mission_statement || '',
   visionBoardData: db.vision_board_data || { images: [], pinterestUrl: '' },
+  threeYearVision: db.three_year_vision || '',
   strategyNotes: db.strategy_notes || '',
   strategyNoteLinks: db.strategy_note_links || [],
   strategyNoteFiles: db.strategy_note_files || [],
@@ -138,6 +139,7 @@ export const createUserStrategy = async (userId: string): Promise<UserStrategy> 
     brand_values: [],
     mission_statement: '',
     vision_board_data: { images: [], pinterestUrl: '' },
+    three_year_vision: '',
     strategy_notes: '',
     strategy_note_links: [],
     strategy_note_files: [],
@@ -159,6 +161,7 @@ export const updateUserStrategy = async (
   if (updates.brandValues !== undefined) dbUpdates.brand_values = updates.brandValues;
   if (updates.missionStatement !== undefined) dbUpdates.mission_statement = updates.missionStatement;
   if (updates.visionBoardData !== undefined) dbUpdates.vision_board_data = updates.visionBoardData;
+  if (updates.threeYearVision !== undefined) dbUpdates.three_year_vision = updates.threeYearVision;
   if (updates.strategyNotes !== undefined) dbUpdates.strategy_notes = updates.strategyNotes;
   if (updates.strategyNoteLinks !== undefined) dbUpdates.strategy_note_links = updates.strategyNoteLinks;
   if (updates.strategyNoteFiles !== undefined) dbUpdates.strategy_note_files = updates.strategyNoteFiles;

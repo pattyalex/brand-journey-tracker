@@ -125,7 +125,6 @@ export function useStrategyState() {
       visionBoardData: {
         images: visionBoardImages.map(src => ({ type: 'image' as const, content: src })),
         pinterestUrl,
-        threeYearVision,
       }
     });
   }, [visionBoardImages, pinterestUrl]);
@@ -133,13 +132,7 @@ export function useStrategyState() {
   // Save 3-year vision
   useEffect(() => {
     setString('threeYearVision', threeYearVision);
-    scheduleStrategySave({
-      visionBoardData: {
-        images: visionBoardImages.map(src => ({ type: 'image' as const, content: src })),
-        pinterestUrl,
-        threeYearVision,
-      }
-    });
+    scheduleStrategySave({ threeYearVision });
   }, [threeYearVision]);
 
   // Selected month for pill selector
@@ -420,8 +413,8 @@ export function useStrategyState() {
             visionBoardData: {
               images: localVisionImages.map((src: string) => ({ type: 'image' as const, content: src })),
               pinterestUrl: localPinterestUrl,
-              threeYearVision: localThreeYearVision,
             },
+            threeYearVision: localThreeYearVision,
           }).catch(console.error);
         }
       } else {
@@ -439,8 +432,8 @@ export function useStrategyState() {
           const imgs = (vbd.images || []).map((img: { type: string; content: string }) => img.content);
           if (imgs.length > 0) setVisionBoardImages(imgs);
           if (vbd.pinterestUrl) setPinterestUrl(vbd.pinterestUrl);
-          if (vbd.threeYearVision) setThreeYearVision(vbd.threeYearVision);
         }
+        if (strategy.threeYearVision) setThreeYearVision(strategy.threeYearVision);
       }
 
       if (goals.length === 0) {
@@ -953,8 +946,8 @@ export function useStrategyState() {
       visionBoardData: {
         images: visionBoardImages.map(src => ({ type: 'image' as const, content: src })),
         pinterestUrl,
-        threeYearVision,
       },
+      threeYearVision,
     }).catch(console.error);
   }, [user?.id, missionStatement, brandValues, selectedTones, audienceAgeRanges, audienceStruggles, audienceDesires, additionalNotes, noteLinks, noteFiles, visionBoardImages, pinterestUrl, threeYearVision]);
 

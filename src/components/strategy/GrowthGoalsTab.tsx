@@ -17,7 +17,7 @@ import { TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
-  Target, TrendingUp, Plus, Trash2,
+  Target, TrendingUp, Plus, Trash2, X,
   Check, Calendar, GripVertical
 } from "lucide-react";
 import EmptyState from "@/components/ui/EmptyState";
@@ -290,7 +290,7 @@ const GrowthGoalsTab: React.FC<GrowthGoalsTabProps> = (props) => {
             return (
               <div
                 key={goal.id}
-                className="relative group transition-all duration-300 hover:shadow-md"
+                className="relative group transition-all duration-300 hover:shadow-md overflow-hidden"
                 style={{
                   background: scheme.bg,
                   borderRadius: '16px',
@@ -298,7 +298,7 @@ const GrowthGoalsTab: React.FC<GrowthGoalsTabProps> = (props) => {
                 }}
               >
                 <span
-                  className="absolute top-4 right-5"
+                  className="absolute top-[38px] right-5"
                   style={{
                     fontFamily: "'Playfair Display', serif",
                     fontSize: '32px',
@@ -396,13 +396,13 @@ const GrowthGoalsTab: React.FC<GrowthGoalsTabProps> = (props) => {
                       }
                       return button;
                     })}
-                    <button
-                      onClick={() => handleDeleteShortTermGoal(goal.id)}
-                      className="p-1.5 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all ml-auto"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
                 </div>
+                <button
+                  onClick={() => handleDeleteShortTermGoal(goal.id)}
+                  className="absolute top-5 right-5 w-5 h-5 flex items-center justify-center rounded-full text-[#8B7082]/50 hover:text-[#8B7082] hover:bg-white/80 opacity-0 group-hover:opacity-100 transition-all"
+                >
+                  <X className="w-3 h-3" />
+                </button>
               </div>
             );
           })}
