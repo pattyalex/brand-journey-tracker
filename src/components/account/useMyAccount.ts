@@ -10,10 +10,11 @@ export function useMyAccount() {
   const navigate = useNavigate();
   const { user, session, openLoginModal, logout } = useAuth();
 
-  // Profile state
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  // Profile state — initialize from auth user to avoid empty flash
+  const userMeta = user?.user_metadata || {};
+  const [name, setName] = useState(userMeta.full_name || userMeta.name || '');
+  const [email, setEmail] = useState(user?.email || '');
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(userMeta.avatar_url || userMeta.picture || null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState('account');
