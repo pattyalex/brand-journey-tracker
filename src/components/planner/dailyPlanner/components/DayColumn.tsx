@@ -10,6 +10,7 @@ import { StorageKeys, getString, setString } from "@/lib/storage";
 import { EVENTS, emit } from "@/lib/events";
 import { cn } from "@/lib/utils";
 import { TransformedGoogleEvent } from "@/types/google-calendar";
+import { adjustItemsForTimezone, getAdjacentDate, convertTime } from "@/utils/timezoneUtils";
 
 interface DayColumnProps {
   day: Date;
@@ -79,6 +80,7 @@ interface DayColumnProps {
   } | null) => void;
   googleConnection: { isConnected: boolean; showEvents: boolean };
   googleEvents: TransformedGoogleEvent[];
+  resolvedTimezone: string;
 }
 
 export const DayColumn = ({
@@ -128,10 +130,19 @@ export const DayColumn = ({
   setContentTooltip,
   googleConnection,
   googleEvents,
+  resolvedTimezone,
 }: DayColumnProps) => {
   const isToday = isSameDay(day, new Date());
   const isPast = day < new Date() && !isToday;
   const dayColor = isToday ? 'bg-white' : 'bg-white';
+
+  // Timezone-adjusted items: collect from adjacent days for boundary crossing
+  const prevDate = getAdjacentDate(dayString, -1);
+  const nextDate = getAdjacentDate(dayString, 1);
+  const prevItems = plannerData.find(d => d.date === prevDate)?.items || [];
+  const nextItems = plannerData.find(d => d.date === nextDate)?.items || [];
+  const allDayItems = [...prevItems, ...(dayData?.items || []), ...nextItems];
+  const adjustedItems = adjustItemsForTimezone(allDayItems, dayString, resolvedTimezone);
 
   return (
     <div
@@ -233,6 +244,7 @@ export const DayColumn = ({
                             card.schedulingStatus = 'scheduled';
                             card.scheduledStartTime = newStartTime;
                             card.scheduledEndTime = newEndTime;
+                            card.scheduledTimezone = resolvedTimezone;
                             setString(StorageKeys.productionKanban, JSON.stringify(columns));
                             emit(window, EVENTS.productionKanbanUpdated);
                             emit(window, EVENTS.scheduledContentUpdated);
@@ -462,8 +474,18 @@ export const DayColumn = ({
 
           return timedContent.map((content) => {
             // Use scheduled times if available, otherwise use planned times
-            const startTimeStr = content.scheduledStartTime || content.plannedStartTime!;
-            const endTimeStr = content.scheduledEndTime || content.plannedEndTime!;
+            let startTimeStr = content.scheduledStartTime || content.plannedStartTime!;
+            let endTimeStr = content.scheduledEndTime || content.plannedEndTime!;
+
+            // Convert content times for timezone display
+            const contentTz = content.scheduledTimezone || content.plannedTimezone;
+            if (contentTz && contentTz !== resolvedTimezone) {
+              const contentDate = content.scheduledDate || content.plannedDate || dayString;
+              const convertedStart = convertTime(startTimeStr, contentDate, contentTz, resolvedTimezone);
+              const convertedEnd = convertTime(endTimeStr, contentDate, contentTz, resolvedTimezone);
+              startTimeStr = convertedStart.time;
+              endTimeStr = convertedEnd.time;
+            }
 
             const [startHour, startMinute] = startTimeStr.split(':').map(Number);
             const [endHour, endMinute] = endTimeStr.split(':').map(Number);
@@ -593,7 +615,7 @@ export const DayColumn = ({
 
         {/* Tasks positioned absolutely by time */}
         {showTasks && (() => {
-          const tasksWithTimes = (dayData?.items || []).filter(item => item.startTime && item.endTime);
+          const tasksWithTimes = adjustedItems.filter(item => item.startTime && item.endTime);
 
           // Calculate time ranges and detect overlaps
           const tasksWithLayout = tasksWithTimes.map((task) => {
@@ -1173,7 +1195,7 @@ export const DayColumn = ({
 
           {/* Tasks without time */}
           {showTasks && (() => {
-            const tasksWithoutTimes = (dayData?.items || []).filter(item => !item.startTime || !item.endTime);
+            const tasksWithoutTimes = adjustedItems.filter(item => !item.startTime || !item.endTime);
             return tasksWithoutTimes.map((item) => {
               // Use preview color if this task is being edited
               const isBeingEdited = editingTask?.id === item.id;

@@ -100,6 +100,7 @@ interface UsePlannerActionsArgs {
   setWeeklyEditingTitle: React.Dispatch<React.SetStateAction<boolean>>;
   setIsDraggingOverAllTasks: React.Dispatch<React.SetStateAction<boolean>>;
   setDraggingTaskText: React.Dispatch<React.SetStateAction<string>>;
+  resolvedTimezone: string;
   savePlannerData: (data: PlannerDay[]) => void;
   saveAllTasks: (tasks: PlannerItem[]) => void;
   saveScheduledContent: (data: any[]) => void;
@@ -184,6 +185,7 @@ export const usePlannerActions = (args: UsePlannerActionsArgs) => {
     setWeeklyEditingTitle: args.setWeeklyEditingTitle,
     savePlannerData: args.savePlannerData,
     saveAllTasks: args.saveAllTasks,
+    resolvedTimezone: args.resolvedTimezone,
   });
 
   // Dialogs: task dialog state, editing fields, content calendar items
@@ -219,6 +221,7 @@ export const usePlannerActions = (args: UsePlannerActionsArgs) => {
     saveAllTasks: args.saveAllTasks,
     saveScheduledContent: args.saveScheduledContent,
     handleEditItem: taskCRUD.handleEditItem,
+    resolvedTimezone: args.resolvedTimezone,
   });
 
   // Drag-to-create: drag-to-create state and handlers for today and weekly views

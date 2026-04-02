@@ -13,6 +13,7 @@ export interface PlannerItem {
   order?: number; // Optional order for manual sorting (lower numbers appear first)
   isContentCalendar?: boolean; // Optional flag to include in content calendar
   isPlaceholder?: boolean; // Optional flag for placeholder/example tasks
+  timezone?: string; // IANA timezone the item was created in (e.g., 'America/Los_Angeles')
 }
 
 export interface PlannerDay {

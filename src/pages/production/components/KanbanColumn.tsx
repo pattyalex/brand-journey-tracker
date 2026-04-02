@@ -605,7 +605,7 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
                               </div>
 
                               <p className="text-[13px] leading-[1.9]" style={{ color: '#9B8F94' }}>
-                                {column.id === 'ideate' ? <>Your starting point.<br /><span className="font-bold text-[15px]" style={{ color: '#4A3D45', fontFamily: "'Playfair Display', serif" }}>Add ideas</span> or <span className="font-bold text-[15px]" style={{ color: columnAccentColors[column.id]?.accent, fontFamily: "'Playfair Display', serif" }}>let MegAI help</span></> :
+                                {column.id === 'ideate' ? <>Your starting point.<br /><span className="font-bold text-[15px]" style={{ color: '#4A3D45', fontFamily: "'Playfair Display', serif" }}>Add ideas</span> or <span className="font-bold text-[15px]" style={{ color: '#4A3D45', fontFamily: "'Playfair Display', serif" }}>let MegAI help</span></> :
                                  column.id === 'shape-ideas' ? <>Drag ideas here when<br />they need a <span className="font-bold text-[15px]" style={{ color: '#4A3D45', fontFamily: "'Playfair Display', serif" }}>script</span> or <span className="font-bold text-[15px]" style={{ color: '#4A3D45', fontFamily: "'Playfair Display', serif" }}>concept</span></> :
                                  column.id === 'to-film' ? <>Drag content here when it's scripted and <span className="font-bold text-[15px]" style={{ color: '#4A3D45', fontFamily: "'Playfair Display', serif" }}>ready to film</span> or <span className="font-bold text-[15px]" style={{ color: '#4A3D45', fontFamily: "'Playfair Display', serif" }}>photograph</span></> :
                                  column.id === 'to-edit' ? <>Drag content here once it's been filmed and <span className="font-bold text-[15px]" style={{ color: '#4A3D45', fontFamily: "'Playfair Display', serif" }}>needs editing</span></> :
@@ -671,18 +671,22 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
                                 setSelectedIdeateCard(null);
                                 setIsIdeateDialogOpen(true);
                               }}
-                              className="w-full flex items-center justify-center gap-2 py-3 rounded-[12px] text-[13px] font-medium transition-all duration-200 mt-2"
+                              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-[12px] text-[13px] font-medium transition-all duration-200 mt-2"
                               style={{
-                                color: '#8B7082',
-                                backgroundColor: 'transparent',
+                                color: '#6B4F63',
+                                backgroundColor: 'rgba(139, 112, 130, 0.08)',
                               }}
                               onMouseEnter={(e) => {
-                                e.currentTarget.style.backgroundColor = 'rgba(139, 112, 130, 0.1)';
+                                e.currentTarget.style.backgroundColor = 'rgba(139, 112, 130, 0.15)';
                                 e.currentTarget.style.color = '#5A3D52';
+                                e.currentTarget.style.transform = 'translateY(-1px)';
+                                e.currentTarget.style.boxShadow = '0 4px 12px rgba(139, 112, 130, 0.15)';
                               }}
                               onMouseLeave={(e) => {
-                                e.currentTarget.style.backgroundColor = 'transparent';
+                                e.currentTarget.style.backgroundColor = 'rgba(139, 112, 130, 0.08)';
                                 e.currentTarget.style.color = '#6B4F63';
+                                e.currentTarget.style.transform = 'translateY(0)';
+                                e.currentTarget.style.boxShadow = 'none';
                               }}
                             >
                               <Sparkles className="w-3.5 h-3.5" style={{ strokeWidth: 2 }} />
@@ -824,18 +828,22 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
                         setSelectedIdeateCard(null);
                         setIsIdeateDialogOpen(true);
                       }}
-                      className="w-full flex items-center justify-center gap-2 py-3 rounded-[12px] text-[13px] font-medium transition-all duration-200"
+                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-[12px] text-[13px] font-medium transition-all duration-200"
                       style={{
-                        color: '#8B7082',
-                        backgroundColor: 'transparent',
+                        color: '#6B4F63',
+                        backgroundColor: 'rgba(139, 112, 130, 0.08)',
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = 'rgba(139, 112, 130, 0.1)';
+                        e.currentTarget.style.backgroundColor = 'rgba(139, 112, 130, 0.15)';
                         e.currentTarget.style.color = '#5A3D52';
+                        e.currentTarget.style.transform = 'translateY(-1px)';
+                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(139, 112, 130, 0.15)';
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = 'transparent';
-                        e.currentTarget.style.color = '#8B7082';
+                        e.currentTarget.style.backgroundColor = 'rgba(139, 112, 130, 0.08)';
+                        e.currentTarget.style.color = '#6B4F63';
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = 'none';
                       }}
                     >
                       <Sparkles className="w-3.5 h-3.5" style={{ strokeWidth: 2 }} />

@@ -98,11 +98,13 @@ export interface ProductionCard {
   scheduledStartTime?: string; // Start time for scheduled content (e.g., "09:00" in 24-hour format)
   scheduledEndTime?: string; // End time for scheduled content (e.g., "10:00" in 24-hour format)
   scheduledColor?: 'indigo' | 'rose' | 'amber' | 'emerald' | 'sky' | 'violet' | 'orange' | 'cyan' | 'sage';
+  scheduledTimezone?: string; // IANA timezone for scheduled time
   fromCalendar?: boolean; // True if this idea originated from the Content Calendar
   plannedDate?: string; // The date this idea is tentatively planned for (used in Ideate column)
   plannedColor?: 'indigo' | 'rose' | 'amber' | 'emerald' | 'sky' | 'violet' | 'orange' | 'cyan' | 'sage'; // Color for planned items on calendar
   plannedStartTime?: string; // Start time for planned content (e.g., "9:00 am")
   plannedEndTime?: string; // End time for planned content (e.g., "10:00 am")
+  plannedTimezone?: string; // IANA timezone for planned time
   brainDumpHandledText?: string; // The notes text that was already appended or dismissed in script editor
   calendarOnly?: boolean; // If true, this content only appears on calendar, not in Kanban Ideate column
   contentType?: ContentType; // 'video' (default) or 'image'

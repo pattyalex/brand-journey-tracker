@@ -33,6 +33,7 @@ interface UsePlannerDialogsArgs {
   saveAllTasks: (tasks: PlannerItem[]) => void;
   saveScheduledContent: (data: any[]) => void;
   handleEditItem: (id: string, newText: string, startTime?: string, endTime?: string, color?: string, description?: string, isCompleted?: boolean, taskDate?: string, isContentCalendar?: boolean) => void;
+  resolvedTimezone: string;
 }
 
 export const usePlannerDialogs = ({
@@ -67,6 +68,7 @@ export const usePlannerDialogs = ({
   saveAllTasks,
   saveScheduledContent,
   handleEditItem,
+  resolvedTimezone,
 }: UsePlannerDialogsArgs) => {
 
   const handleOpenTaskDialog = (hour: number, itemToEdit?: PlannerItem, startTime?: string, endTime?: string) => {
@@ -140,7 +142,8 @@ export const usePlannerDialogs = ({
         endTime: endTime24,
         color: dialogTaskColor,
         description: dialogTaskDescription,
-        isContentCalendar: dialogAddToContentCalendar
+        isContentCalendar: dialogAddToContentCalendar,
+        timezone: resolvedTimezone,
       };
 
       const dayIndex = plannerData.findIndex(day => day.date === newItem.date);

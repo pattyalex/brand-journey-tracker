@@ -34,6 +34,7 @@ interface TimeGridProps {
   savePlannerData: (data: PlannerDay[]) => void;
   saveAllTasks: (tasks: PlannerItem[]) => void;
   onOpenTimePickerDialog?: (content: ProductionCard, type: 'scheduled' | 'planned') => void;
+  resolvedTimezone: string;
 }
 
 export const TimeGrid = ({
@@ -55,6 +56,7 @@ export const TimeGrid = ({
   savePlannerData,
   saveAllTasks,
   onOpenTimePickerDialog,
+  resolvedTimezone,
 }: TimeGridProps) => {
   return (
     <>
@@ -124,6 +126,7 @@ export const TimeGrid = ({
                                   // Default 1 hour duration
                                   const endHour = Math.min(hour + 1, 23);
                                   card.scheduledEndTime = `${endHour.toString().padStart(2, '0')}:${minuteStr}`;
+                                  card.scheduledTimezone = resolvedTimezone;
                                   scheduledCard = { ...card };
                                 }
                               });
@@ -197,7 +200,8 @@ export const TimeGrid = ({
                             date: dateString,
                             startTime: newStartTime,
                             endTime: newEndTime,
-                            section: "morning"
+                            section: "morning",
+                            timezone: resolvedTimezone,
                           };
 
                           console.log('New task object:', newTask);

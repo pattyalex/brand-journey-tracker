@@ -92,6 +92,7 @@ interface WeekViewProps {
   onOpenContentDialog?: (content: ProductionCard, type: 'scheduled' | 'planned') => void;
   onOpenTimePickerDialog?: (content: ProductionCard, type: 'scheduled' | 'planned') => void;
   onOpenContentFlow?: (cardId: string) => void;
+  resolvedTimezone: string;
 }
 
 export const WeekView = ({
@@ -143,6 +144,7 @@ export const WeekView = ({
   onOpenContentDialog,
   onOpenTimePickerDialog,
   onOpenContentFlow,
+  resolvedTimezone,
 }: WeekViewProps) => {
   // Extract state/handlers into custom hook
   const viewState = useWeekViewState({
@@ -267,6 +269,7 @@ export const WeekView = ({
                         setContentTooltip={viewState.setContentTooltip}
                         googleConnection={viewState.googleConnection}
                         googleEvents={viewState.googleEvents}
+                        resolvedTimezone={resolvedTimezone}
                       />
                     );
                   })}

@@ -19,6 +19,7 @@ import { useTodayViewState } from "../hooks/useTodayViewState";
 import { TodayHeader } from "./TodayHeader";
 import { TimeGrid } from "./TimeGrid";
 import { TimeSlotTask, calculateTaskLayout } from "./TimeSlotTask";
+import { adjustItemsForTimezone, getAdjacentDate, convertTime } from "@/utils/timezoneUtils";
 
 interface TodayViewProps {
   state: PlannerState;
@@ -91,7 +92,7 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
     productionContent,
   } = state;
 
-  const { dateString, currentDay, colors, getTimezoneDisplay } = derived;
+  const { dateString, currentDay, colors, getTimezoneDisplay, resolvedTimezone } = derived;
   const { todayScrollRef, isResizingRef } = refs;
   const { convert24To12Hour, loadProductionContent } = helpers;
   const {
@@ -296,6 +297,7 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
               savePlannerData={savePlannerData}
               saveAllTasks={saveAllTasks}
               onOpenTimePickerDialog={onOpenTimePickerDialog}
+              resolvedTimezone={resolvedTimezone}
             />
 
         {/* Time labels are handled by hour labels only */}
@@ -304,7 +306,14 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
         {showTasks && (
         <div className="absolute top-0 left-2 right-2" style={{ zIndex: 10 }}>
           {(() => {
-            const tasksWithLayout = calculateTaskLayout(currentDay.items);
+            // Collect items from adjacent days that may cross into this day after timezone conversion
+            const prevDate = getAdjacentDate(dateString, -1);
+            const nextDate = getAdjacentDate(dateString, 1);
+            const prevItems = plannerData.find(d => d.date === prevDate)?.items || [];
+            const nextItems = plannerData.find(d => d.date === nextDate)?.items || [];
+            const allItems = [...prevItems, ...currentDay.items, ...nextItems];
+            const adjustedItems = adjustItemsForTimezone(allItems, dateString, resolvedTimezone);
+            const tasksWithLayout = calculateTaskLayout(adjustedItems);
 
             return tasksWithLayout.map((layoutInfo) => (
               <TimeSlotTask
@@ -343,8 +352,18 @@ export const TodayView = ({ state, derived, refs, helpers, setters, actions, tod
 
             return timedContent.map((content) => {
               // Use scheduled times if available, otherwise use planned times
-              const startTimeStr = content.scheduledStartTime || content.plannedStartTime!;
-              const endTimeStr = content.scheduledEndTime || content.plannedEndTime!;
+              let startTimeStr = content.scheduledStartTime || content.plannedStartTime!;
+              let endTimeStr = content.scheduledEndTime || content.plannedEndTime!;
+
+              // Convert content times for timezone display
+              const contentTz = content.scheduledTimezone || content.plannedTimezone;
+              if (contentTz && contentTz !== resolvedTimezone) {
+                const contentDate = content.scheduledDate || content.plannedDate || dateString;
+                const convertedStart = convertTime(startTimeStr, contentDate, contentTz, resolvedTimezone);
+                const convertedEnd = convertTime(endTimeStr, contentDate, contentTz, resolvedTimezone);
+                startTimeStr = convertedStart.time;
+                endTimeStr = convertedEnd.time;
+              }
 
               const [startHour, startMinute] = startTimeStr.split(':').map(Number);
               const [endHour, endMinute] = endTimeStr.split(':').map(Number);

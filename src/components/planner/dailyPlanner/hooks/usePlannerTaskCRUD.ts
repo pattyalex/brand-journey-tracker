@@ -31,6 +31,7 @@ interface UsePlannerTaskCRUDArgs {
   savePlannerData: (data: PlannerDay[]) => void;
   saveAllTasks: (tasks: PlannerItem[]) => void;
   weeklyEditText: string;
+  resolvedTimezone: string;
 }
 
 export const usePlannerTaskCRUD = ({
@@ -63,6 +64,7 @@ export const usePlannerTaskCRUD = ({
   setWeeklyEditingTitle,
   savePlannerData,
   saveAllTasks,
+  resolvedTimezone,
 }: UsePlannerTaskCRUDArgs) => {
 
   const getTasksWithTimes = (dayString: string) => {
@@ -78,7 +80,8 @@ export const usePlannerTaskCRUD = ({
       isCompleted: false,
       date: dateString,
       startTime,
-      endTime
+      endTime,
+      timezone: resolvedTimezone,
     };
 
     const dayIndex = plannerData.findIndex(day => day.date === dateString);
@@ -110,6 +113,7 @@ export const usePlannerTaskCRUD = ({
       section: "morning",
       isCompleted: false,
       date: dayString,
+      timezone: resolvedTimezone,
     };
 
     const dayIndex = plannerData.findIndex(day => day.date === dayString);
@@ -291,7 +295,9 @@ export const usePlannerTaskCRUD = ({
         color: color !== undefined ? color : updatedPlannerData[dayIndex].items[itemIndex].color,
         description: description !== undefined ? description : updatedPlannerData[dayIndex].items[itemIndex].description,
         isCompleted: isCompleted !== undefined ? isCompleted : updatedPlannerData[dayIndex].items[itemIndex].isCompleted,
-        isContentCalendar: isContentCalendar !== undefined ? isContentCalendar : updatedPlannerData[dayIndex].items[itemIndex].isContentCalendar
+        isContentCalendar: isContentCalendar !== undefined ? isContentCalendar : updatedPlannerData[dayIndex].items[itemIndex].isContentCalendar,
+        // When times change, update timezone to user's current timezone
+        timezone: (startTime !== undefined || endTime !== undefined) ? resolvedTimezone : updatedPlannerData[dayIndex].items[itemIndex].timezone,
       };
       setPlannerData(updatedPlannerData);
       savePlannerData(updatedPlannerData);
@@ -383,6 +389,7 @@ export const usePlannerTaskCRUD = ({
       section: "morning",
       isCompleted: false,
       // No date field for All Tasks items
+      timezone: resolvedTimezone,
     };
     setAllTasks([...allTasks, newTask]);
   };

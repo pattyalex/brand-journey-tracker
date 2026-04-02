@@ -96,16 +96,9 @@ export const DailyPlanner = () => {
   // State for mobile tasks accordion
   const [mobileTasksExpanded, setMobileTasksExpanded] = useState(false);
 
-  // Planner orientation tour
-  const [runPlannerTour, setRunPlannerTour] = useState(false);
+  // Planner orientation tour — start immediately if user hasn't seen it
+  const [runPlannerTour, setRunPlannerTour] = useState(() => !localStorage.getItem("hasSeenPlannerTour"));
   const [plannerTourStep, setPlannerTourStep] = useState(-1);
-
-  useEffect(() => {
-    if (!localStorage.getItem("hasSeenPlannerTour")) {
-      const timer = setTimeout(() => setRunPlannerTour(true), 600);
-      return () => clearTimeout(timer);
-    }
-  }, []);
 
   // State for "both" mode panel tab — persisted
   const [bothPanelTab, setBothPanelTabState] = useState<'tasks' | 'content'>(() => {
@@ -356,6 +349,7 @@ export const DailyPlanner = () => {
     setWeeklyEditingTitle: setters.setWeeklyEditingTitle,
     setIsDraggingOverAllTasks: setters.setIsDraggingOverAllTasks,
     setDraggingTaskText: setters.setDraggingTaskText,
+    resolvedTimezone: derived.resolvedTimezone,
     savePlannerData: persistence.savePlannerData,
     saveAllTasks: persistence.saveAllTasks,
     saveScheduledContent: persistence.saveScheduledContent,
@@ -874,6 +868,7 @@ export const DailyPlanner = () => {
               onOpenContentDialog={handleOpenContentDialog}
               onOpenTimePickerDialog={handleOpenTimePickerDialog}
               onOpenContentFlow={handleOpenContentFlow}
+              resolvedTimezone={derived.resolvedTimezone}
             />
           </div>
         )}

@@ -8,6 +8,7 @@ import { PlannerView, TimezoneOption } from "../types";
 import { getDateString } from "../utils/plannerUtils";
 import { parseTimeTo24 } from "../utils/timeUtils";
 import { defaultScheduledColor, getTaskColorByHex, isColorDark } from "../utils/colorConstants";
+import { adjustItemsForTimezone, getAdjacentDate, resolveTimezone } from "@/utils/timezoneUtils";
 import { useColorPalette } from "../hooks/useColorPalette";
 import { ProductionCard, KanbanColumn } from "@/pages/production/types";
 import { defaultColumns } from "@/pages/production/utils/productionConstants";
@@ -730,8 +731,14 @@ export const CalendarView = ({
               const isFirstOfMonth = day.getDate() === 1;
               const isPast = isBefore(startOfDay(day), startOfDay(new Date())) && !isToday;
 
-              // Get tasks for this day
-              const tasks = dayData?.items || [];
+              // Get tasks for this day (timezone-adjusted)
+              const resolvedTz = resolveTimezone(selectedTimezone);
+              const prevDate = getAdjacentDate(dayString, -1);
+              const nextDate = getAdjacentDate(dayString, 1);
+              const prevItems = plannerData.find(d => d.date === prevDate)?.items || [];
+              const nextItems = plannerData.find(d => d.date === nextDate)?.items || [];
+              const allItems = [...prevItems, ...(dayData?.items || []), ...nextItems];
+              const tasks = adjustItemsForTimezone(allItems, dayString, resolvedTz);
 
               // Get content for this day
               const scheduledContent = productionContent.scheduled.filter(c =>

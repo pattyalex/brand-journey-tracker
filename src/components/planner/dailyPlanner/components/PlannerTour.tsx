@@ -100,7 +100,11 @@ const PlannerTour: React.FC<PlannerTourProps> = ({ run, onComplete, onStepChange
     const tasksPill = document.querySelector<HTMLElement>('[data-tour="planner-pill-tasks"]');
     const contentPill = document.querySelector<HTMLElement>('[data-tour="planner-pill-content"]');
 
-    if (stepIndex === 1) {
+    if (stepIndex === 0) {
+      // Tasks active, All inactive
+      if (tasksPill) applyStyle(tasksPill, ACTIVE_STYLE);
+      if (allPill) applyStyle(allPill, INACTIVE_STYLE);
+    } else if (stepIndex === 1) {
       // Content active, Tasks + All inactive
       if (contentPill) applyStyle(contentPill, ACTIVE_STYLE);
       if (tasksPill) applyStyle(tasksPill, INACTIVE_STYLE);
@@ -186,7 +190,7 @@ const PlannerTour: React.FC<PlannerTourProps> = ({ run, onComplete, onStepChange
         }}
       >
         <div style={{ position: "relative" }}>
-          {/* Arrow pointing up */}
+          {/* Arrow pointing up — centered on the pill */}
           <div
             style={{
               position: "absolute",
@@ -209,17 +213,18 @@ const PlannerTour: React.FC<PlannerTourProps> = ({ run, onComplete, onStepChange
                 position: "absolute",
                 bottom: -10,
                 left: 4,
-                boxShadow: "0 8px 30px rgba(93,63,90,0.12)",
+                boxShadow: "0 -3px 10px rgba(93,63,90,0.35)",
               }}
             />
           </div>
           <div
             className="rounded-2xl bg-white p-6"
             style={{
-              boxShadow: "0 8px 30px rgba(93,63,90,0.12), 0 -8px 30px rgba(93,63,90,0.1)",
+              boxShadow: "0 12px 40px rgba(93,63,90,0.2), 0 4px 16px rgba(0,0,0,0.08)",
               border: "1px solid rgba(93,63,90,0.08)",
-              maxWidth: 380,
-              minWidth: 300,
+              maxWidth: 440,
+              minWidth: 360,
+              ...(!alignRight && { position: "relative" as const, right: 100 }),
             }}
           >
             <h3
@@ -268,8 +273,8 @@ const PlannerTour: React.FC<PlannerTourProps> = ({ run, onComplete, onStepChange
       {/* Step 0 — Tasks pill */}
       {run && stepIndex === 0 && pillPos && renderTooltip(
         0,
-        "Your Tasks Calendar",
-        "This is your planner. Use it to manage your daily to-dos — from filming days to admin work.",
+        "Your Task Calendar",
+        "This is your planner. Use it to manage your daily to-dos, from filming days to admin work.",
         pillPos,
       )}
 
@@ -309,7 +314,7 @@ const PlannerTour: React.FC<PlannerTourProps> = ({ run, onComplete, onStepChange
             primaryColor: "#612A4F",
             zIndex: 10000,
             arrowColor: "#FFFFFF",
-            overlayColor: "rgba(250, 247, 245, 0.45)",
+            overlayColor: "rgba(250, 247, 245, 0.65)",
           },
           spotlight: {
             borderRadius: 50,

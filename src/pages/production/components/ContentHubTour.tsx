@@ -770,7 +770,7 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
           primaryColor: "#612A4F",
           zIndex: 10000,
           arrowColor: "#FFFFFF",
-          overlayColor: "rgba(250, 247, 245, 0.92)",
+          overlayColor: "rgba(250, 247, 245, 0.65)",
         },
         spotlight: {
           borderRadius: 20,

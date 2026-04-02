@@ -6,6 +6,7 @@ import { TIMEZONES, getDateString } from "../utils/plannerUtils";
 import { StorageKeys, getString } from "@/lib/storage";
 import { KanbanColumn, ProductionCard } from "@/pages/production/types";
 import { EVENTS, on } from "@/lib/events";
+import { resolveTimezone } from "@/utils/timezoneUtils";
 
 // Initialize planner data from localStorage to prevent flash
 const getInitialPlannerData = (): PlannerDay[] => {
@@ -279,13 +280,18 @@ export const usePlannerState = ({
     { name: 'Orange', value: '#fed7aa' }
   ];
 
+  // Resolve 'auto' to real IANA timezone
+  const resolvedTimezone = useMemo(() => resolveTimezone(selectedTimezone), [selectedTimezone]);
+
   // Get timezone display
   const getTimezoneDisplay = useCallback(() => {
-    if (selectedTimezone === 'auto') {
-      return new Date().toLocaleTimeString('en-US', { timeZoneName: 'short' }).split(' ').pop() || 'PST';
+    // For any timezone (auto or specific), get the short abbreviation from Intl
+    const tz = selectedTimezone === 'auto' ? undefined : selectedTimezone;
+    try {
+      return new Date().toLocaleTimeString('en-US', { timeZone: tz, timeZoneName: 'short' }).split(' ').pop() || 'UTC';
+    } catch {
+      return 'UTC';
     }
-    const tz = TIMEZONES.find(t => t.value === selectedTimezone);
-    return tz?.label || 'PST';
   }, [selectedTimezone]);
 
   useEffect(() => {
@@ -518,6 +524,7 @@ export const usePlannerState = ({
       colors,
       colorOptions,
       getTimezoneDisplay,
+      resolvedTimezone,
     },
     helpers: {
       convert24To12Hour,

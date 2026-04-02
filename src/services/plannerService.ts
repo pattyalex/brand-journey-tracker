@@ -24,6 +24,7 @@ export interface PlannerItem {
   isContentCalendar?: boolean;
   isPlaceholder?: boolean;
   isGlobalTask?: boolean;
+  timezone?: string;
 }
 
 export interface PlannerDay {
@@ -69,6 +70,7 @@ interface DbPlannerItem {
   is_content_calendar: boolean;
   is_placeholder: boolean;
   is_global_task: boolean;
+  timezone: string | null;
 }
 
 // =====================================================
@@ -90,6 +92,7 @@ const dbToPlannerItem = (db: DbPlannerItem): PlannerItem => ({
   isContentCalendar: db.is_content_calendar || false,
   isPlaceholder: db.is_placeholder || false,
   isGlobalTask: db.is_global_task || false,
+  timezone: db.timezone || undefined,
 });
 
 const plannerItemToDb = (
@@ -112,6 +115,7 @@ const plannerItemToDb = (
   is_content_calendar: item.isContentCalendar || false,
   is_placeholder: item.isPlaceholder || false,
   is_global_task: item.isGlobalTask || false,
+  timezone: item.timezone || null,
 });
 
 // =====================================================
@@ -312,6 +316,7 @@ export const updatePlannerItem = async (
   if (updates.isContentCalendar !== undefined) dbUpdates.is_content_calendar = updates.isContentCalendar;
   if (updates.isPlaceholder !== undefined) dbUpdates.is_placeholder = updates.isPlaceholder;
   if (updates.isGlobalTask !== undefined) dbUpdates.is_global_task = updates.isGlobalTask;
+  if (updates.timezone !== undefined) dbUpdates.timezone = updates.timezone;
 
   const data = await updateOne<DbPlannerItem>('planner_items', itemId, dbUpdates);
   return dbToPlannerItem(data);
@@ -359,6 +364,7 @@ interface LocalPlannerDay {
     order?: number;
     isContentCalendar?: boolean;
     isPlaceholder?: boolean;
+    timezone?: string;
   }>;
   greatDay?: string;
   grateful?: string;
@@ -379,6 +385,7 @@ interface LocalPlannerItem {
   order?: number;
   isContentCalendar?: boolean;
   isPlaceholder?: boolean;
+  timezone?: string;
 }
 
 /**
@@ -440,6 +447,7 @@ export const syncPlannerDay = async (
         is_content_calendar: item.isContentCalendar || false,
         is_placeholder: item.isPlaceholder || false,
         is_global_task: false,
+        timezone: item.timezone || null,
       }));
 
       const { error: insertError } = await supabase
@@ -543,6 +551,7 @@ export const syncAllTasksToSupabase = async (
         is_content_calendar: item.isContentCalendar || false,
         is_placeholder: item.isPlaceholder || false,
         is_global_task: true,
+        timezone: item.timezone || null,
       }));
 
       const { error: insertError } = await supabase
@@ -607,6 +616,7 @@ export const loadPlannerDataFromSupabase = async (
       order: item.display_order || 0,
       isContentCalendar: item.is_content_calendar || false,
       isPlaceholder: item.is_placeholder || false,
+      timezone: item.timezone || undefined,
     };
 
     if (item.is_global_task) {

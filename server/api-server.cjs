@@ -1411,15 +1411,84 @@ app.post('/api/save-onboarding-responses', verifySupabaseAuth, async (req, res) 
   }
 });
 
-// Delete a user's auth account (requires service role)
+// Delete a user's account and ALL associated data
 app.post('/api/delete-user', verifySupabaseAuth, async (req, res) => {
   try {
     const userId = req.user.id;
+    console.log('🗑️ Starting full account deletion for user:', userId);
+
+    // 1. Cancel active Stripe subscription if exists
+    const { data: profile } = await supabaseAdmin
+      .from('profiles')
+      .select('stripe_subscription_id, stripe_customer_id')
+      .eq('id', userId)
+      .single();
+
+    if (profile?.stripe_subscription_id) {
+      try {
+        await stripe.subscriptions.cancel(profile.stripe_subscription_id);
+        console.log('✅ Stripe subscription canceled:', profile.stripe_subscription_id);
+      } catch (stripeErr) {
+        console.error('Stripe cancel error (continuing):', stripeErr.message);
+      }
+    }
+
+    // 2. Delete all user data from every table
+    // brand_deal_deliverables has no user_id — it cascades from brand_deals
+    // planner_items cascades from planner_days if FK is set, but delete explicitly to be safe
+    const tablesToDelete = [
+      'brand_deals',
+      'planner_items',
+      'planner_days',
+      'content_items',
+      'content_ideas',
+      'content_pillars',
+      'calendar_events',
+      'collaborations',
+      'collab_brands',
+      'collab_columns',
+      'tasks',
+      'production_cards',
+      'notes',
+      'quick_notes',
+      'user_strategy',
+      'user_goals',
+      'analytics',
+      'social_accounts',
+      'settings',
+      'user_preferences',
+      'vision_board_items',
+      'research_items',
+      'user_onboarding_responses',
+      'work_habits',
+    ];
+
+    for (const table of tablesToDelete) {
+      try {
+        const { error } = await supabaseAdmin.from(table).delete().eq('user_id', userId);
+        if (error) {
+          console.warn(`Warning deleting from ${table}:`, error.message);
+        } else {
+          console.log(`✅ Deleted from ${table}`);
+        }
+      } catch (tableErr) {
+        console.warn(`Error deleting from ${table}:`, tableErr.message);
+      }
+    }
+
+    // 3. Delete profile and users table entries (use 'id' not 'user_id')
+    await supabaseAdmin.from('users').delete().eq('id', userId);
+    await supabaseAdmin.from('profiles').delete().eq('id', userId);
+    console.log('✅ All user data deleted from database');
+
+    // 4. Delete the auth user
     const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
     if (error) {
       console.error('Error deleting auth user:', error);
       return res.status(500).json({ error: error.message });
     }
+
+    console.log('✅ Account fully deleted for user:', userId);
     res.json({ success: true });
   } catch (err) {
     console.error('Error in delete-user endpoint:', err);

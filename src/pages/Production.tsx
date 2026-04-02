@@ -207,15 +207,9 @@ const Production = () => {
     handleSkipColumnChoice,
   } = board;
 
-  // Onboarding tour state
-  const [runTour, setRunTour] = useState(false);
+  // Onboarding tour state — start immediately if user hasn't seen it
+  const [runTour, setRunTour] = useState(() => !isMobile && !localStorage.getItem("hasSeenContentHubTour"));
   const [tourStepIndex, setTourStepIndex] = useState(-1);
-  useEffect(() => {
-    if (!isMobile && !localStorage.getItem("hasSeenContentHubTour")) {
-      const timer = setTimeout(() => setRunTour(true), 600);
-      return () => clearTimeout(timer);
-    }
-  }, [isMobile]);
 
   const [isAddCardDialogOpen, setIsAddCardDialogOpen] = useState(false);
   const [selectedColumnId, setSelectedColumnId] = useState<string>("");
@@ -2086,6 +2080,10 @@ const Production = () => {
             setRunTour(false);
             setTourStepIndex(-1);
             localStorage.setItem("hasSeenContentHubTour", "true");
+            // Scroll to the first column (Bank of Ideas)
+            if (horizontalScrollRef.current) {
+              horizontalScrollRef.current.scrollTo({ left: 0, behavior: "smooth" });
+            }
           }}
           onStepChange={setTourStepIndex}
         />

@@ -359,23 +359,23 @@ export function useMyAccount() {
         // Continue with deletion even if emails fail
       }
 
-      if (user?.id) {
-        await supabase.from('profiles').delete().eq('id', user?.id);
-        await supabase.from('users').delete().eq('id', user?.id);
-      }
-      Object.keys(localStorage).forEach(k => { if (k.startsWith('sb-') || k.startsWith(user?.id ?? '___')) localStorage.removeItem(k); });
-      localStorage.clear();
+      // Server handles everything: Stripe cancellation, all table cleanup, auth user deletion
       const session = await supabase.auth.getSession();
       const token = session.data.session?.access_token;
       if (token) {
-        await fetch('/api/delete-user', {
+        const res = await fetch('/api/delete-user', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`,
           },
         });
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error || 'Failed to delete account');
+        }
       }
+      localStorage.clear();
       await supabase.auth.signOut();
       window.location.replace('/login?deleted=true');
     } catch (err) {
