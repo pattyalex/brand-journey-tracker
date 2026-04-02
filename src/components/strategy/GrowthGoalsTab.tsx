@@ -357,14 +357,14 @@ const GrowthGoalsTab: React.FC<GrowthGoalsTabProps> = (props) => {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1 mt-4">
+                <div className="flex items-center gap-1 mt-4 flex-wrap">
                     {progressStatuses.map((status) => {
                       const isActive = goal.status === status.value;
                       const button = (
                         <button
                           key={status.value}
                           onClick={() => handleChangeShortTermGoalStatus(goal.id, status.value)}
-                          className="transition-all duration-200"
+                          className="transition-all duration-200 cursor-pointer"
                           style={{
                             padding: '4px 8px',
                             borderRadius: '6px',
@@ -375,34 +375,41 @@ const GrowthGoalsTab: React.FC<GrowthGoalsTabProps> = (props) => {
                             border: isActive ? `1px solid ${status.color}40` : '1px solid transparent',
                             whiteSpace: 'nowrap' as const,
                           }}
+                          onMouseEnter={(e) => {
+                            if (!isActive) {
+                              e.currentTarget.style.background = 'rgba(139,115,130,0.08)';
+                              e.currentTarget.style.color = '#8B7082';
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isActive) {
+                              e.currentTarget.style.background = 'transparent';
+                              e.currentTarget.style.color = '#b0a8ac';
+                            }
+                          }}
                         >
                           {status.label}
                         </button>
                       );
 
-                      if (status.value === 'completed') {
-                        return (
-                          <TooltipProvider key={status.value}>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                {button}
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>Impeccable Work, Congrats!</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        );
-                      }
                       return button;
                     })}
                 </div>
-                <button
-                  onClick={() => handleDeleteShortTermGoal(goal.id)}
-                  className="absolute top-5 right-5 w-5 h-5 flex items-center justify-center rounded-full text-[#8B7082]/50 hover:text-[#8B7082] hover:bg-white/80 opacity-0 group-hover:opacity-100 transition-all"
-                >
-                  <X className="w-3 h-3" />
-                </button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => handleDeleteShortTermGoal(goal.id)}
+                        className="absolute top-5 right-5 w-5 h-5 flex items-center justify-center rounded-full text-[#8B7082]/50 hover:text-[#8B7082] hover:bg-white/80 opacity-0 group-hover:opacity-100 transition-all"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent className="bg-gray-500 text-white text-xs border-0">
+                      <p>Delete</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             );
           })}
