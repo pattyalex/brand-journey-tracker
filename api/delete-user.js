@@ -11,7 +11,7 @@ function supabaseRequest(url, method, token, body) {
       method,
       headers: {
         'Authorization': `Bearer ${token}`,
-        'apikey': token,
+        'apikey': process.env.VITE_SUPABASE_ANON_KEY,
         'Content-Type': 'application/json',
         ...(data ? { 'Content-Length': Buffer.byteLength(data) } : {}),
       },

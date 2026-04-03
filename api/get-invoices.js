@@ -27,9 +27,10 @@ function stripeGet(path, key) {
 function supabaseVerify(token, supabaseUrl) {
   return new Promise((resolve, reject) => {
     const parsed = new URL(`${supabaseUrl}/auth/v1/user`);
+    const anonKey = process.env.VITE_SUPABASE_ANON_KEY;
     const options = {
       hostname: parsed.hostname, port: 443, path: parsed.pathname, method: 'GET',
-      headers: { 'Authorization': `Bearer ${token}`, 'apikey': token },
+      headers: { 'Authorization': `Bearer ${token}`, 'apikey': anonKey },
     };
     const req = https.request(options, (res) => {
       let data = '';
