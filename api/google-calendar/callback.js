@@ -87,7 +87,7 @@ export default async function handler(req, res) {
             localStorage.setItem('google_calendar_connected', 'true');
 
             if (window.opener) {
-              window.opener.postMessage({ type: 'google-calendar-callback', ...data }, '*');
+              window.opener.postMessage({ type: 'google-calendar-callback', ...data }, 'https://www.heymeg.ai');
               setTimeout(() => window.close(), 2000);
             } else {
               // No opener - just try to close, user can close manually

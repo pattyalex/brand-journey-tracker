@@ -92,9 +92,13 @@ const MembershipSection = () => {
         const periodEnd = result?.subscription?.current_period_end
           ? new Date(result.subscription.current_period_end * 1000).toISOString()
           : trialEndsAt;
+        const { data: { session: cancelSession } } = await supabase.auth.getSession();
         await fetch('/api/send-subscription-cancelled', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            ...(cancelSession?.access_token ? { 'Authorization': `Bearer ${cancelSession.access_token}` } : {}),
+          },
           body: JSON.stringify({
             email: user?.email,
             name: user?.user_metadata?.full_name || user?.user_metadata?.name,

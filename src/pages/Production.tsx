@@ -14,6 +14,7 @@ import { getUserPreferences, updateUserPreferences } from "@/services/preference
 
 import { EVENTS, on } from "@/lib/events";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/lib/supabase";
 import { useProductionBoard } from "./production/hooks/useProductionBoard";
 import {
   DropdownMenu,
@@ -414,9 +415,14 @@ const Production = () => {
   // Helper function to generate sub-categories using server API (key stays hidden)
   const generateSubCategoriesWithAI = async (pillarName: string, existingCategories?: string[]): Promise<string[]> => {
     try {
+      const { data: { session: aiSession } } = await supabase.auth.getSession();
+      const aiHeaders = {
+        'Content-Type': 'application/json',
+        ...(aiSession?.access_token ? { 'Authorization': `Bearer ${aiSession.access_token}` } : {}),
+      };
       const response = await fetch('http://localhost:3001/api/generate-subcategories', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: aiHeaders,
         body: JSON.stringify({ pillarName, existingCategories }),
       });
       if (!response.ok) return [];
@@ -431,9 +437,14 @@ const Production = () => {
   // Helper function to generate content ideas using server API (key stays hidden)
   const generateContentIdeasWithAI = async (pillarName: string, subCategory: string, count?: number, direction?: string): Promise<string[]> => {
     try {
+      const { data: { session: ideasSession } } = await supabase.auth.getSession();
+      const ideasHeaders = {
+        'Content-Type': 'application/json',
+        ...(ideasSession?.access_token ? { 'Authorization': `Bearer ${ideasSession.access_token}` } : {}),
+      };
       const response = await fetch('http://localhost:3001/api/generate-content-ideas', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: ideasHeaders,
         body: JSON.stringify({
           pillarName,
           subCategory,
@@ -584,10 +595,12 @@ const Production = () => {
       }
 
       // Call analyze-content API with direct URL for Puppeteer capture
+      const { data: { session: analyzeSession } } = await supabase.auth.getSession();
       const analyzeResponse = await fetch('http://localhost:3001/api/analyze-content', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...(analyzeSession?.access_token ? { 'Authorization': `Bearer ${analyzeSession.access_token}` } : {}),
         },
         body: JSON.stringify({
           directUrl: wwContentLink,

@@ -107,9 +107,13 @@ export async function signUp(email: string, password: string, fullName: string):
 
     // Admin notification sent at signup (fire and forget)
     const apiBase = import.meta.env.DEV ? 'http://localhost:3001' : '';
+    const { data: { session: signupSession } } = await supabase.auth.getSession();
     fetch(`${apiBase}/api/send-signup-admin-notification`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(signupSession?.access_token ? { 'Authorization': `Bearer ${signupSession.access_token}` } : {}),
+      },
       body: JSON.stringify({ email: userEnteredEmail, name: fullName, userId }),
     }).catch(err => console.error('Failed to send signup admin notification:', err));
 

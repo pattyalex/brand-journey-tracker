@@ -315,9 +315,13 @@ export function useMyAccount() {
       const firstName = name ? name.split(' ')[0] : 'there';
       try {
         // Email to the user
+        const authHeaders = {
+          'Content-Type': 'application/json',
+          ...(session?.access_token ? { 'Authorization': `Bearer ${session.access_token}` } : {}),
+        };
         await fetch('http://localhost:3001/api/send-email', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: authHeaders,
           body: JSON.stringify({
             to: email,
             subject: 'Your HeyMeg account has been deleted',
@@ -337,7 +341,7 @@ export function useMyAccount() {
         // Email to Patricia (admin notification)
         await fetch('http://localhost:3001/api/send-email', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: authHeaders,
           body: JSON.stringify({
             to: 'contact@heymeg.ai',
             subject: `Account Deleted: ${name || 'Unknown'} (${email})`,

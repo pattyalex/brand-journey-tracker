@@ -30,10 +30,13 @@ export interface ClaudeResponse {
  */
 export async function callClaudeAPI(options: ClaudeRequestOptions): Promise<ClaudeResponse> {
   try {
+    const { supabase } = await import('@/lib/supabase');
+    const { data: { session } } = await supabase.auth.getSession();
     const response = await fetch("http://localhost:3001/api/claude", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        ...(session?.access_token ? { "Authorization": `Bearer ${session.access_token}` } : {}),
       },
       body: JSON.stringify({
         model: options.model ?? DEFAULT_MODEL,

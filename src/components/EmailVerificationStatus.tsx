@@ -55,10 +55,14 @@ const EmailVerificationStatus: React.FC<EmailVerificationStatusProps> = ({
         // Send welcome email now that email is verified (fire and forget)
         const apiBase = import.meta.env.DEV ? 'http://localhost:3001' : '';
         const { data: { user: verifiedUser } } = await supabase.auth.getUser();
+        const { data: { session: welcomeSession } } = await supabase.auth.getSession();
         const userName = verifiedUser?.user_metadata?.full_name || verifiedUser?.user_metadata?.name || '';
         fetch(`${apiBase}/api/send-welcome-email`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            ...(welcomeSession?.access_token ? { 'Authorization': `Bearer ${welcomeSession.access_token}` } : {}),
+          },
           body: JSON.stringify({ email, name: userName }),
         }).catch(err => console.error('Failed to send welcome email:', err));
 
