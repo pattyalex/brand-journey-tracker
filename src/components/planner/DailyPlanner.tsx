@@ -491,11 +491,11 @@ export const DailyPlanner = () => {
         "flex h-full transition-colors duration-300",
         (currentView === 'today' || currentView === 'week' || currentView === 'calendar') && (
           contentDisplayMode === 'content'
-            ? "bg-gradient-to-br from-[#E5E8F4] via-white to-[#E5E8F4]"
+            ? "bg-gradient-to-br from-[#E8EBF2] via-white to-[#E8EBF2]"
             : contentDisplayMode === 'tasks'
               ? "bg-gradient-to-br from-[#F0EAED] via-white to-[#F0EAED]"
               : bothPanelTab === 'content'
-                ? "bg-gradient-to-br from-[#E5E8F4] via-white to-[#E5E8F4]"
+                ? "bg-gradient-to-br from-[#E8EBF2] via-white to-[#E8EBF2]"
                 : "bg-gradient-to-br from-[#F0EAED] via-white to-[#F0EAED]"
         )
       )}>
