@@ -23,7 +23,6 @@ import ExpandedScheduleView from "@/pages/production/components/ExpandedSchedule
 import { TaskDialog } from "./dailyPlanner/components/TaskDialog";
 import { ContentDialog } from "./dailyPlanner/components/ContentDialog";
 import { ContentSummaryPanel } from "./dailyPlanner/components/ContentSummaryPanel";
-import PlannerTour from "./dailyPlanner/components/PlannerTour";
 import StandaloneContentFlow from "./dailyPlanner/components/StandaloneContentFlow";
 import { ProductionCard } from "@/pages/production/types";
 import {
@@ -97,8 +96,6 @@ export const DailyPlanner = () => {
   const [mobileTasksExpanded, setMobileTasksExpanded] = useState(false);
 
   // Planner orientation tour — start immediately if user hasn't seen it
-  const [runPlannerTour, setRunPlannerTour] = useState(() => !getString(StorageKeys.hasSeenPlannerTour));
-  const [plannerTourStep, setPlannerTourStep] = useState(-1);
 
   // State for "both" mode panel tab — persisted
   const [bothPanelTab, setBothPanelTabState] = useState<'tasks' | 'content'>(() => {
@@ -1359,16 +1356,6 @@ export const DailyPlanner = () => {
         </button>
       )}
 
-      {/* Planner Orientation Tour */}
-      <PlannerTour
-        run={runPlannerTour}
-        onComplete={() => {
-          setRunPlannerTour(false);
-          setPlannerTourStep(-1);
-          setString(StorageKeys.hasSeenPlannerTour, "true");
-        }}
-        onStepChange={setPlannerTourStep}
-      />
     </div>
     </PlannerProvider>
   );

@@ -218,7 +218,7 @@ const PlannerTour: React.FC<PlannerTourProps> = ({ run, onComplete, onStepChange
             />
           </div>
           <div
-            className="rounded-2xl bg-white p-6"
+            className="rounded-2xl bg-white p-6 relative"
             style={{
               boxShadow: "0 12px 40px rgba(93,63,90,0.2), 0 4px 16px rgba(0,0,0,0.08)",
               border: "1px solid rgba(93,63,90,0.08)",
@@ -227,6 +227,12 @@ const PlannerTour: React.FC<PlannerTourProps> = ({ run, onComplete, onStepChange
               ...(!alignRight && { position: "relative" as const, right: 100 }),
             }}
           >
+            <button
+              onClick={onComplete}
+              className="absolute top-3 right-3 w-6 h-6 flex items-center justify-center rounded-full text-[#8B7082]/50 hover:text-[#8B7082] hover:bg-[#8B7082]/10 transition-all"
+            >
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 1l8 8M9 1L1 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+            </button>
             <h3
               className="text-[18px] mb-2 text-[#612A4F]"
               style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
