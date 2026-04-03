@@ -128,7 +128,7 @@ const MonthlyGoalsWidget: React.FC<MonthlyGoalsWidgetProps> = ({
                   </div>
                 );
               })}
-              <button onClick={() => navigate('/strategy-growth?tab=growth-goals#monthly-goals')} className="pt-1 text-xs font-semibold text-[#612a4f] hover:text-[#4a3442] transition-colors" style={{ fontFamily: "'DM Sans', sans-serif" }}>+ Set your first goal</button>
+              <button onClick={() => navigate('/strategy-growth?tab=growth-goals#monthly-goals')} className="text-xs font-semibold text-[#612a4f] hover:text-[#4a3442] transition-all duration-200 pt-1 px-3 py-1.5 -ml-3 rounded-lg hover:bg-[rgba(97,42,79,0.08)] hover:-translate-y-0.5 hover:shadow-sm" style={{ fontFamily: "'DM Sans', sans-serif" }}>+ Set your first goal</button>
             </div>
           );
         })()

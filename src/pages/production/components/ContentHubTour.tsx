@@ -465,7 +465,12 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
               className="rounded-2xl bg-white p-6 relative"
               style={{ boxShadow: "0 -6px 20px rgba(93,63,90,0.1), 0 4px 12px rgba(93,63,90,0.08)", border: "none", width: anatomyPos.width }}
             >
-              <TourCloseButton onClick={handleClose} />
+              <button
+                onClick={handleClose}
+                className="absolute top-1.5 right-2 w-5 h-5 flex items-center justify-center rounded-full text-[#8B7082]/50 hover:text-[#8B7082] hover:bg-[#8B7082]/10 transition-all"
+              >
+                <svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M1 1l8 8M9 1L1 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+              </button>
               <h3
                 className="text-[18px] text-[#612A4F] text-center"
                 style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}

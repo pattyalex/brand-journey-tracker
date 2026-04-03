@@ -135,7 +135,7 @@ const ContinueCreatingWidget: React.FC<ContinueCreatingWidgetProps> = ({
                     </div>
                   );
                 })}
-                <button onClick={() => navigate('/production')} className="mt-1 text-xs font-semibold text-[#612a4f] hover:text-[#4a3442] transition-colors text-left" style={{ fontFamily: "'DM Sans', sans-serif" }}>+ Start your first piece of content</button>
+                <button onClick={() => navigate('/production')} className="mt-1 text-xs font-semibold text-[#612a4f] hover:text-[#4a3442] transition-all duration-200 text-left px-3 py-1.5 -ml-3 rounded-lg hover:bg-[rgba(97,42,79,0.08)] hover:-translate-y-0.5 hover:shadow-sm" style={{ fontFamily: "'DM Sans', sans-serif", width: 'fit-content' }}>+ Start your first piece of content</button>
               </div>
             );
           })()

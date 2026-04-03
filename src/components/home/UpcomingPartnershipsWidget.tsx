@@ -94,7 +94,7 @@ const UpcomingPartnershipsWidget: React.FC<UpcomingPartnershipsWidgetProps> = ({
                     </div>
                   );
                 })}
-                <button onClick={() => navigate('/brands')} className="text-xs font-semibold text-[#612a4f] hover:text-[#4a3442] transition-colors pt-1" style={{ fontFamily: "'DM Sans', sans-serif" }}>+ Add your first brand deal</button>
+                <button onClick={() => navigate('/brands')} className="text-xs font-semibold text-[#612a4f] hover:text-[#4a3442] transition-all duration-200 pt-1 px-3 py-1.5 -ml-3 rounded-lg hover:bg-[rgba(97,42,79,0.08)] hover:-translate-y-0.5 hover:shadow-sm" style={{ fontFamily: "'DM Sans', sans-serif" }}>+ Add your first brand deal</button>
               </div>
             );
           })()

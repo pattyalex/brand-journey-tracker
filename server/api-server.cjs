@@ -1526,7 +1526,7 @@ app.post('/api/send-welcome-email', async (req, res) => {
             Hi ${firstName},
           </p>
           <p style="color: #555; font-size: 16px; line-height: 1.6;">
-            We're so excited to have you on board! Your 7-day free trial has started, and you now have full access to everything HeyMeg has to offer.
+            We're so excited to have you on board! Your 14-day free trial has started, and you now have full access to everything HeyMeg has to offer.
           </p>
           <p style="color: #555; font-size: 16px; line-height: 1.6;">
             Here's what you can do to get started:
