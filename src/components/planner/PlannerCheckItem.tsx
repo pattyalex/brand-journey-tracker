@@ -324,7 +324,7 @@ export const PlannerCheckItem = ({
                 <TooltipTrigger asChild>
                   <GripVertical className="w-3.5 h-3.5 mr-1 flex-shrink-0 text-gray-500 cursor-grab" />
                 </TooltipTrigger>
-                <TooltipContent side="top" sideOffset={8} className="bg-gray-600 text-white border-gray-600 z-[9999]">
+                <TooltipContent side="top" sideOffset={8} align="start" alignOffset={-16} avoidCollisions={true} collisionPadding={16} className="bg-gray-600 text-white border-gray-600 z-[9999]">
                   <p>Drag into timeline</p>
                 </TooltipContent>
               </Tooltip>
