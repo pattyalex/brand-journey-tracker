@@ -1,12 +1,24 @@
 
 // Client-side Stripe service that calls our backend endpoints
 
+import { supabase } from '@/lib/supabase';
+
+async function getAuthHeaders(): Promise<Record<string, string>> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.access_token) {
+    throw new Error('Not authenticated');
+  }
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${session.access_token}`,
+  };
+}
+
 export const createPaymentIntent = async (amount: number, currency: string = 'usd') => {
+  const headers = await getAuthHeaders();
   const response = await fetch('/api/create-payment-intent', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers,
     body: JSON.stringify({
       amount: amount * 100, // Convert to cents
       currency,
@@ -21,11 +33,10 @@ export const createPaymentIntent = async (amount: number, currency: string = 'us
 };
 
 export const createCustomer = async (email: string, name: string) => {
+  const headers = await getAuthHeaders();
   const response = await fetch('/api/create-customer', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers,
     body: JSON.stringify({
       email,
       name,
@@ -40,11 +51,10 @@ export const createCustomer = async (email: string, name: string) => {
 };
 
 export const createSubscription = async (customerId: string, priceId: string) => {
+  const headers = await getAuthHeaders();
   const response = await fetch('/api/create-subscription', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers,
     body: JSON.stringify({
       customerId,
       priceId,
@@ -59,11 +69,10 @@ export const createSubscription = async (customerId: string, priceId: string) =>
 };
 
 export const getSubscription = async (customerId: string) => {
+  const headers = await getAuthHeaders();
   const response = await fetch(`/api/subscription?customerId=${customerId}`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers,
   });
 
   if (!response.ok) {
@@ -74,11 +83,10 @@ export const getSubscription = async (customerId: string) => {
 };
 
 export const cancelSubscription = async (subscriptionId: string) => {
+  const headers = await getAuthHeaders();
   const response = await fetch('/api/cancel-subscription', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers,
     body: JSON.stringify({ subscriptionId }),
   });
 
@@ -90,11 +98,10 @@ export const cancelSubscription = async (subscriptionId: string) => {
 };
 
 export const getPaymentMethod = async (customerId: string) => {
+  const headers = await getAuthHeaders();
   const response = await fetch(`/api/get-payment-method?customerId=${customerId}`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers,
   });
 
   if (!response.ok) {
@@ -105,11 +112,10 @@ export const getPaymentMethod = async (customerId: string) => {
 };
 
 export const getInvoices = async (customerId: string) => {
+  const headers = await getAuthHeaders();
   const response = await fetch(`/api/get-invoices?customerId=${customerId}`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers,
   });
 
   if (!response.ok) {
@@ -120,11 +126,10 @@ export const getInvoices = async (customerId: string) => {
 };
 
 export const updateSubscription = async (subscriptionId: string, newPriceId: string) => {
+  const headers = await getAuthHeaders();
   const response = await fetch('/api/update-subscription', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers,
     body: JSON.stringify({ subscriptionId, newPriceId }),
   });
 

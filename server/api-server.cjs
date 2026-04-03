@@ -39,7 +39,7 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-app.use(cors());
+app.use(cors({ origin: ['https://www.heymeg.ai', 'http://localhost:5173'] }));
 app.use(express.json());
 
 // Auth middleware
@@ -199,7 +199,7 @@ app.post('/api/create-subscription', verifySupabaseAuth, async (req, res) => {
 });
 
 // Cancel subscription (at period end)
-app.post('/api/cancel-subscription', async (req, res) => {
+app.post('/api/cancel-subscription', verifySupabaseAuth, async (req, res) => {
   try {
     const { subscriptionId } = req.body;
     if (!subscriptionId) return res.status(400).json({ error: 'subscriptionId is required' });
@@ -217,7 +217,7 @@ app.post('/api/cancel-subscription', async (req, res) => {
 });
 
 // Update subscription (switch plan)
-app.post('/api/update-subscription', async (req, res) => {
+app.post('/api/update-subscription', verifySupabaseAuth, async (req, res) => {
   try {
     const { subscriptionId, newPriceId } = req.body;
     if (!subscriptionId || !newPriceId) {
@@ -245,7 +245,7 @@ app.post('/api/update-subscription', async (req, res) => {
 });
 
 // Get payment method for a customer
-app.get('/api/get-payment-method', async (req, res) => {
+app.get('/api/get-payment-method', verifySupabaseAuth, async (req, res) => {
   try {
     const { customerId } = req.query;
     if (!customerId) return res.status(400).json({ error: 'customerId is required' });
@@ -301,7 +301,7 @@ app.get('/api/get-invoices', async (req, res) => {
 });
 
 // Get customer by email
-app.post('/api/get-customer-by-email', async (req, res) => {
+app.post('/api/get-customer-by-email', verifySupabaseAuth, async (req, res) => {
   try {
     const { email } = req.body;
 
@@ -326,7 +326,7 @@ app.post('/api/get-customer-by-email', async (req, res) => {
 });
 
 // Get subscription for a customer
-app.post('/api/get-subscription', async (req, res) => {
+app.post('/api/get-subscription', verifySupabaseAuth, async (req, res) => {
   try {
     const { customerId } = req.body;
 
@@ -1873,7 +1873,26 @@ app.post('/api/send-payment-receipt', async (req, res) => {
 // ============================================================
 
 app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), async (req, res) => {
-  const event = req.body;
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  const sigHeader = req.headers['stripe-signature'];
+
+  if (!webhookSecret) {
+    console.error('STRIPE_WEBHOOK_SECRET is not configured');
+    return res.status(500).json({ error: 'Webhook secret not configured' });
+  }
+
+  if (!sigHeader) {
+    console.error('Missing stripe-signature header');
+    return res.status(400).json({ error: 'Missing signature' });
+  }
+
+  let event;
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sigHeader, webhookSecret);
+  } catch (err) {
+    console.error('Stripe webhook signature verification failed:', err.message);
+    return res.status(401).json({ error: 'Invalid signature' });
+  }
 
   console.log('📩 Stripe webhook received:', event.type);
 

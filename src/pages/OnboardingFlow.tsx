@@ -376,11 +376,19 @@ const OnboardingFlow: React.FC = () => {
 
       console.log('Using existing authenticated user:', user.id);
 
+      // Get auth token for API calls
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) throw new Error('No active session');
+      const authHeaders = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+      };
+
       // Step 2: Create Stripe customer
       console.log("Creating Stripe customer...");
       const customerResponse = await fetch('/api/create-customer', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders,
         body: JSON.stringify({
           email: user.email || accountData.email,
           name: accountData.name,
@@ -418,7 +426,7 @@ const OnboardingFlow: React.FC = () => {
       // Step 4: Attach payment method to customer
       const attachResponse = await fetch('/api/attach-payment-method', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders,
         body: JSON.stringify({
           paymentMethodId: paymentMethod.id,
           customerId: customerId
@@ -438,7 +446,7 @@ const OnboardingFlow: React.FC = () => {
 
       const subscriptionResponse = await fetch('/api/create-subscription', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders,
         body: JSON.stringify({
           customerId: customerId,
           priceId: priceId,

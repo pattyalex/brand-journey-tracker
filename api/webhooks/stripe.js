@@ -106,20 +106,24 @@ export default async function handler(req, res) {
 
     console.log('Webhook received, body length:', rawBody.length);
 
-    // Verify signature if webhook secret is configured
-    // TODO: Re-enable once raw body handling is confirmed working on Vercel
-    if (webhookSecret && req.headers['stripe-signature']) {
-      try {
-        const valid = verifyStripeSignature(rawBody, req.headers['stripe-signature'], webhookSecret);
-        if (!valid) {
-          console.warn('Signature verification failed, proceeding anyway for now');
-        } else {
-          console.log('Signature verified successfully');
-        }
-      } catch (sigErr) {
-        console.warn('Signature verification error:', sigErr.message);
-      }
+    // Verify Stripe webhook signature
+    if (!webhookSecret) {
+      console.error('STRIPE_WEBHOOK_SECRET is not configured');
+      return res.status(500).json({ error: 'Webhook secret not configured' });
     }
+
+    const sigHeader = req.headers['stripe-signature'];
+    if (!sigHeader) {
+      console.error('Missing stripe-signature header');
+      return res.status(400).json({ error: 'Missing signature' });
+    }
+
+    const valid = verifyStripeSignature(rawBody, sigHeader, webhookSecret);
+    if (!valid) {
+      console.error('Stripe webhook signature verification failed');
+      return res.status(401).json({ error: 'Invalid signature' });
+    }
+    console.log('Stripe signature verified successfully');
 
     const event = JSON.parse(rawBody);
     console.log('Stripe webhook event:', event.type);

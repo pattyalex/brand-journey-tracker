@@ -28,13 +28,43 @@ function stripeRequest(path, method, params, key) {
   });
 }
 
+function supabaseVerify(token, supabaseUrl) {
+  return new Promise((resolve, reject) => {
+    const parsed = new URL(`${supabaseUrl}/auth/v1/user`);
+    const options = {
+      hostname: parsed.hostname, port: 443, path: parsed.pathname, method: 'GET',
+      headers: { 'Authorization': `Bearer ${token}`, 'apikey': token },
+    };
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', (c) => { data += c; });
+      res.on('end', () => {
+        try { resolve({ status: res.statusCode, body: JSON.parse(data) }); }
+        catch (e) { resolve({ status: res.statusCode, body: {} }); }
+      });
+    });
+    req.on('error', reject);
+    req.end();
+  });
+}
+
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Origin', 'https://www.heymeg.ai');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+  // Verify auth
+  const authHeader = req.headers.authorization;
+  if (!authHeader) return res.status(401).json({ error: 'No authorization header' });
+  const userToken = authHeader.replace('Bearer ', '');
+  const supabaseUrl = process.env.VITE_SUPABASE_URL;
+  const verifyResult = await supabaseVerify(userToken, supabaseUrl);
+  if (verifyResult.status !== 200 || !verifyResult.body.id) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
 
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) return res.status(500).json({ error: 'Stripe secret key not configured' });
