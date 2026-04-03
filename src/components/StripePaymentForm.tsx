@@ -204,6 +204,13 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
         })
         .eq('id', userId);
 
+      // Record email in trial_history to prevent trial reuse after account deletion
+      if (!hasUsedTrial) {
+        supabase.from('trial_history').upsert({ email: userEmail }, { onConflict: 'email' }).then(({ error: thError }) => {
+          if (thError) console.error('Failed to record trial history:', thError);
+        });
+      }
+
       if (updateError) {
         console.error('Failed to update profile:', updateError);
         // Don't throw - subscription was created successfully
