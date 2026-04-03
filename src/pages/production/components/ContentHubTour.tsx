@@ -22,7 +22,7 @@ const TourTooltip: React.FC<TooltipRenderProps> = ({
   tooltipProps,
 }) => {
   // Hide tooltip on floating steps (big picture = 1, open card = 2, drag demo = 3, anatomy = 4, ready = 5)
-  if (index === 1 || index === 2 || index === 3 || index === 4 || index === 5) {
+  if (index === 1 || index === 2 || index === 3 || index === 4) {
     return <div {...tooltipProps} style={{ display: "none" }} />;
   }
 
@@ -49,7 +49,7 @@ const TourTooltip: React.FC<TooltipRenderProps> = ({
       <TourProgressDots currentStep={index} />
 
       <div className="flex items-center gap-2">
-        {index !== 0 && (
+        {index > 1 && (
           <button
             {...backProps}
             title=""
@@ -64,7 +64,7 @@ const TourTooltip: React.FC<TooltipRenderProps> = ({
           className="px-4 py-2 rounded-xl text-[13px] font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98] outline-none focus:outline-none"
           style={{ backgroundColor: "#612A4F" }}
         >
-          {isLastStep ? "Start creating!" : "Next"}
+          {isLastStep ? "Got it!" : "Next"}
         </button>
       </div>
     </div>
@@ -72,9 +72,10 @@ const TourTooltip: React.FC<TooltipRenderProps> = ({
   );
 };
 
-const TOTAL_STEPS = 6;
+const TOTAL_STEPS = 4;
 
 // Reusable progress dots for all tour popups
+// currentStep is the raw stepIndex (1-5), mapped to dot index (0-4)
 const TourProgressDots: React.FC<{ currentStep: number }> = ({ currentStep }) => (
   <div className="flex gap-1.5">
     {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
@@ -82,7 +83,7 @@ const TourProgressDots: React.FC<{ currentStep: number }> = ({ currentStep }) =>
         key={i}
         className="w-[6px] h-[6px] rounded-full transition-colors duration-200"
         style={
-          i <= currentStep
+          i <= currentStep - 1
             ? { backgroundColor: "#612A4F" }
             : { backgroundColor: "transparent", border: "1.5px solid #C4B5C9" }
         }
@@ -92,10 +93,21 @@ const TourProgressDots: React.FC<{ currentStep: number }> = ({ currentStep }) =>
 );
 
 // Banner card for the big picture step — matches popup design
+const TourCloseButton: React.FC<{ onClick: () => void }> = ({ onClick }) => (
+  <button
+    onClick={onClick}
+    className="absolute top-3 right-3 w-6 h-6 flex items-center justify-center rounded-full text-[#8B7082]/50 hover:text-[#8B7082] hover:bg-[#8B7082]/10 transition-all"
+  >
+    <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 1l8 8M9 1L1 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+  </button>
+);
+
 const BigPictureBanner: React.FC<{
   onNext: () => void;
   onBack: () => void;
-}> = ({ onNext, onBack }) =>
+  onClose: () => void;
+  showBack?: boolean;
+}> = ({ onNext, onBack, onClose, showBack = true }) =>
   createPortal(
     <>
       {/* Banner card */}
@@ -104,13 +116,14 @@ const BigPictureBanner: React.FC<{
         style={{ zIndex: 10004, bottom: 160 }}
       >
         <div
-          className="rounded-2xl bg-white p-6"
+          className="rounded-2xl bg-white p-6 relative"
           style={{
             boxShadow: "0 8px 30px rgba(93,63,90,0.12), 0 -8px 30px rgba(93,63,90,0.1)",
             border: "1px solid rgba(93,63,90,0.08)",
             maxWidth: 500,
           }}
         >
+          <TourCloseButton onClick={onClose} />
           <h3
             className="text-[18px] text-[#612A4F] mb-2"
             style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
@@ -126,13 +139,15 @@ const BigPictureBanner: React.FC<{
           <div className="flex items-center justify-between mt-5">
             <TourProgressDots currentStep={1} />
             <div className="flex items-center gap-2">
-              <button
-                onClick={onBack}
-                title=""
-                className="px-3 py-1.5 text-[13px] font-medium text-[#8B7082] hover:text-[#612A4F] transition-colors outline-none focus:outline-none"
-              >
-                Back
-              </button>
+              {showBack && (
+                <button
+                  onClick={onBack}
+                  title=""
+                  className="px-3 py-1.5 text-[13px] font-medium text-[#8B7082] hover:text-[#612A4F] transition-colors outline-none focus:outline-none"
+                >
+                  Back
+                </button>
+              )}
               <button
                 onClick={onNext}
                 title=""
@@ -152,9 +167,8 @@ const BigPictureBanner: React.FC<{
 const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStepChange }) => {
   // Lift spotlighted targets above the overlay so their content is visible
   const [currentTarget, setCurrentTarget] = useState<string | null>(null);
-  const [stepIndex, setStepIndex] = useState(0);
+  const [stepIndex, setStepIndex] = useState(1);
   const [anatomyPos, setAnatomyPos] = useState<{ top: number; left: number; width: number } | null>(null);
-  const [ideateCardPos, setIdeateCardPos] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
   const [boardPos, setBoardPos] = useState<{ left: number; width: number; top: number; height: number } | null>(null);
   const [readyColPos, setReadyColPos] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
 
@@ -175,8 +189,8 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
         });
       }
     };
-    // On steps that scroll the board (4, 5), clear stale position and only measure after scroll settles
-    if (stepIndex === 4 || stepIndex === 5) {
+    // On steps that scroll the board (2, 5), clear stale position and only measure after scroll settles
+    if (stepIndex === 2 || stepIndex === 4) {
       setBoardPos(null);
       const timer = setTimeout(update, 100);
       window.addEventListener("resize", update);
@@ -188,26 +202,10 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
     return () => { clearTimeout(timer); window.removeEventListener("resize", update); };
   }, [run, stepIndex]);
 
-  // Track ideate-card-2 position on step 2
-  useEffect(() => {
-    if (stepIndex !== 2) { setIdeateCardPos(null); return; }
-    const update = () => {
-      const el = document.querySelector<HTMLElement>('[data-tour="ideate-card-2"]');
-      if (el) {
-        const rect = el.getBoundingClientRect();
-        setIdeateCardPos({ top: rect.top, left: rect.left, width: rect.width, height: rect.height });
-      }
-    };
-    // Measure immediately and once more after a short delay
-    requestAnimationFrame(update);
-    const timer = setTimeout(update, 50);
-    window.addEventListener("resize", update);
-    return () => { clearTimeout(timer); window.removeEventListener("resize", update); };
-  }, [stepIndex]);
 
   // Track ready-to-post column position on step 5 (wait for scroll to complete)
   useEffect(() => {
-    if (stepIndex !== 5) { setReadyColPos(null); return; }
+    if (stepIndex !== 4) { setReadyColPos(null); return; }
     const update = () => {
       const el = document.querySelector<HTMLElement>('[data-tour="column-ready-to-post"]');
       if (el) {
@@ -221,9 +219,9 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
     return () => { clearTimeout(timer); window.removeEventListener("resize", update); };
   }, [stepIndex]);
 
-  // Track anatomy card position on step 4 — only show after scroll settles
+  // Track anatomy card position on step 2 — only show after scroll settles
   useEffect(() => {
-    if (stepIndex !== 4) { setAnatomyPos(null); return; }
+    if (stepIndex !== 2) { setAnatomyPos(null); return; }
     const update = () => {
       const el = document.querySelector<HTMLElement>('[data-tour="anatomy-card"]');
       if (el) {
@@ -255,10 +253,10 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
     }
   }, [currentTarget]);
 
-  // On steps 1-3 (big picture + drag demo + open card), elevate ALL columns above the overlay
-  // On step 4 (anatomy), give shape-ideas column a higher z-index so its overflow labels show above neighboring columns
+  // On steps 1-4 (big picture + anatomy + open card + drag demo), elevate ALL columns above the overlay
+  // On step 2 (anatomy), give shape-ideas column a higher z-index so its overflow labels show above neighboring columns
   React.useEffect(() => {
-    if (stepIndex !== 1 && stepIndex !== 2 && stepIndex !== 3 && stepIndex !== 4 && stepIndex !== 5) return;
+    if (stepIndex !== 1 && stepIndex !== 2 && stepIndex !== 3 && stepIndex !== 4) return;
     const cols = document.querySelectorAll<HTMLElement>('[data-tour^="column-"]');
     cols.forEach((el) => {
       el.style.position = "relative";
@@ -276,17 +274,15 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
         shapeCol.style.zIndex = "10002";
       }
     }
-    if (stepIndex === 4) {
+    if (stepIndex === 2) {
       const anatomyCol = document.querySelector<HTMLElement>('[data-tour="column-shape-ideas"]');
       if (anatomyCol) {
         anatomyCol.style.zIndex = "10002";
       }
     }
-    // Scroll to start for steps 1-3
-    // Reset scrollLeft on the kanban board AND all its ancestors — scrollIntoView
-    // from step 4 can shift a parent container (the sidebar is position:fixed so it
-    // stays put, but content shifts). This undoes that shift completely.
-    if (stepIndex >= 1 && stepIndex <= 3) {
+    // Scroll to start for steps 1 and 3
+    // Reset scrollLeft on the kanban board AND all its ancestors
+    if (stepIndex === 1 || stepIndex === 3) {
       setTimeout(() => {
         const kanban = document.querySelector<HTMLElement>('[data-tour="kanban-board"]');
         if (kanban) {
@@ -300,7 +296,7 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
       }, 0);
     }
     // Scroll to center the shape-ideas column for anatomy step (instant to avoid visible jump)
-    if (stepIndex === 4) {
+    if (stepIndex === 2) {
       requestAnimationFrame(() => {
         const shapeCol = document.querySelector<HTMLElement>('[data-tour="column-shape-ideas"]');
         if (shapeCol) {
@@ -309,7 +305,7 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
       });
     }
     // Scroll to show the last columns on step 5, hide columns after Ready to Post
-    if (stepIndex === 5) {
+    if (stepIndex === 4) {
       // Scroll so Ready to Post column is centered in view (leaves room for tooltip)
       requestAnimationFrame(() => {
         const readyCol = document.querySelector<HTMLElement>('[data-tour="column-ready-to-post"]');
@@ -339,57 +335,27 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
   }, [stepIndex]);
 
   const [steps] = useState<Step[]>([
-    {
-      target: '[data-tour="kanban-board"]',
-      title: "Welcome to Content Hub",
-      content: (
-        <p>
-          This is your production center. It's where you develop your ideas into ready-to-post content.
-        </p>
-      ),
-      placement: "center" as const,
-      disableBeacon: true,
-    },
-    {
-      target: '[data-tour="kanban-board"]',
-      title: "",
-      content: (<></>),
-      placement: "center" as const,
-      disableBeacon: true,
-    },
-    {
-      target: '[data-tour="kanban-board"]',
-      title: "",
-      content: (<></>),
-      placement: "center" as const,
-      disableBeacon: true,
-    },
-    {
-      target: '[data-tour="kanban-board"]',
-      title: "",
-      content: (<></>),
-      placement: "center" as const,
-      disableBeacon: true,
-    },
-    {
-      target: '[data-tour="kanban-board"]',
-      title: "",
-      content: (<></>),
-      placement: "center" as const,
-      disableBeacon: true,
-    },
-    {
-      target: '[data-tour="kanban-board"]',
-      title: "",
-      content: (<></>),
-      placement: "center" as const,
-      disableBeacon: true,
-    },
+    // Step 0: unused (skipped)
+    { target: '[data-tour="kanban-board"]', title: "", content: (<></>), placement: "center" as const, disableBeacon: true },
+    // Step 1: Columns overview
+    { target: '[data-tour="kanban-board"]', title: "", content: (<></>), placement: "center" as const, disableBeacon: true },
+    // Step 2: Anatomy of a card
+    { target: '[data-tour="kanban-board"]', title: "", content: (<></>), placement: "center" as const, disableBeacon: true },
+    // Step 3: Drag cards
+    { target: '[data-tour="kanban-board"]', title: "", content: (<></>), placement: "center" as const, disableBeacon: true },
+    // Step 4: Ready to post
+    { target: '[data-tour="kanban-board"]', title: "", content: (<></>), placement: "center" as const, disableBeacon: true },
   ]);
 
   const goToStep = (idx: number) => {
     setStepIndex(idx);
     onStepChange?.(idx);
+  };
+
+  const handleClose = () => {
+    setCurrentTarget(null);
+    setStepIndex(-1);
+    onComplete();
   };
 
   const handleCallback = (data: CallBackProps) => {
@@ -401,8 +367,9 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
       onStepChange?.(data.index);
     }
 
-    // Advance step on Next click (for non-floating steps)
-    if (type === EVENTS.STEP_AFTER) {
+    // Advance step on Next click (only for step 0 which uses Joyride's built-in tooltip)
+    // Steps 1-5 are floating custom portals that handle their own navigation
+    if (type === EVENTS.STEP_AFTER && data.index === 0) {
       if (action === "next") {
         goToStep(data.index + 1);
       } else if (action === "prev") {
@@ -422,102 +389,10 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
     {run && stepIndex === 1 && (
       <BigPictureBanner
         onNext={() => goToStep(2)}
-        onBack={() => goToStep(0)}
+        onBack={() => {}}
+        onClose={handleClose}
+        showBack={false}
       />
-    )}
-    {/* Step 2 — "Click on a card to open it" positioned next to ideate-card-2 */}
-    {run && stepIndex === 2 && createPortal(
-      <>
-        {ideateCardPos && (
-          <div
-            className="fixed"
-            style={{
-              zIndex: 10004,
-              top: ideateCardPos.top,
-              left: ideateCardPos.left + ideateCardPos.width + 16,
-            }}
-          >
-            <div
-              className="rounded-2xl bg-white p-6"
-              style={{
-                boxShadow: "0 8px 30px rgba(93,63,90,0.12), 0 -8px 30px rgba(93,63,90,0.1)",
-                border: "1px solid rgba(93,63,90,0.08)",
-                maxWidth: 380,
-                position: "relative",
-              }}
-            >
-              <h3
-                className="text-[18px] mb-2 text-[#612A4F]"
-                style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
-              >
-                Each card = one piece of content
-              </h3>
-              <div className="text-[14px] leading-relaxed text-[#4A3D45]">
-                <p>Click on a card to open it. That's where you can develop your idea:</p>
-                <ul className="mt-3 space-y-1.5 text-[13px] text-[#4A3D45]">
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#612A4F] flex-shrink-0" />
-                    Prepare the concept
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#612A4F] flex-shrink-0" />
-                    Write the script
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#612A4F] flex-shrink-0" />
-                    Create the filming/shooting plan
-                  </li>
-                </ul>
-              </div>
-              <div className="flex items-center justify-between mt-5">
-                <TourProgressDots currentStep={2} />
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => goToStep(1)}
-                    title=""
-                    className="px-3 py-1.5 text-[13px] font-medium text-[#8B7082] hover:text-[#612A4F] transition-colors outline-none focus:outline-none"
-                  >
-                    Back
-                  </button>
-                  <button
-                    onClick={() => goToStep(3)}
-                    title=""
-                    className="px-4 py-2 rounded-xl text-[13px] font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98] outline-none focus:outline-none"
-                    style={{ backgroundColor: "#612A4F" }}
-                  >
-                    Next
-                  </button>
-                </div>
-              </div>
-              {/* Arrow pointing left */}
-              <div
-                style={{
-                  position: "absolute",
-                  left: -14,
-                  top: 24,
-                  width: 14,
-                  height: 28,
-                  overflow: "hidden",
-                }}
-              >
-                <div
-                  style={{
-                    width: 20,
-                    height: 20,
-                    backgroundColor: "#FFFFFF",
-                    transform: "rotate(45deg)",
-                    position: "absolute",
-                    right: -10,
-                    top: 4,
-                    boxShadow: "0 8px 30px rgba(93,63,90,0.12)",
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        )}
-      </>,
-      document.body
     )}
     {/* Step 3 — "Drag cards to advance them" centered in visible board area */}
     {run && stepIndex === 3 && boardPos && createPortal(
@@ -531,13 +406,14 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
         }}
       >
         <div
-          className="rounded-2xl bg-white p-6"
+          className="rounded-2xl bg-white p-6 relative"
           style={{
             boxShadow: "0 8px 30px rgba(93,63,90,0.12), 0 -8px 30px rgba(93,63,90,0.1)",
             border: "1px solid rgba(93,63,90,0.08)",
             maxWidth: 380,
           }}
         >
+          <TourCloseButton onClick={handleClose} />
           <h3
             className="text-[18px] text-[#612A4F] mb-2"
             style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
@@ -571,8 +447,8 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
       </div>,
       document.body
     )}
-    {/* Step 4 — Anatomy card labels */}
-    {run && stepIndex === 4 && createPortal(
+    {/* Step 2 — Anatomy card labels */}
+    {run && stepIndex === 2 && createPortal(
       <>
         {/* Title + subtitle above the card */}
         {anatomyPos && <div
@@ -586,9 +462,10 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
         >
           <div style={{ position: "relative" }}>
             <div
-              className="rounded-2xl bg-white p-6"
+              className="rounded-2xl bg-white p-6 relative"
               style={{ boxShadow: "0 -6px 20px rgba(93,63,90,0.1), 0 4px 12px rgba(93,63,90,0.08)", border: "none", width: anatomyPos.width }}
             >
+              <TourCloseButton onClick={handleClose} />
               <h3
                 className="text-[18px] text-[#612A4F] text-center"
                 style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
@@ -623,32 +500,33 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
             </div>
           </div>
         </div>}
-        {/* Back / Next buttons at the bottom — centered in visible board area */}
+        {/* Back / Next buttons at the bottom — centered in visible board area, right-aligned on small screens */}
         {boardPos && (
           <div
             className="fixed"
             style={{
               zIndex: 10004,
               bottom: 160,
-              left: boardPos.left + boardPos.width / 2,
-              transform: "translateX(-50%)",
+              ...(window.innerWidth < 1200
+                ? { right: 24 }
+                : { left: boardPos.left + boardPos.width / 2, transform: "translateX(-50%)" }),
             }}
           >
             <div
               className="flex items-center gap-5 px-5 py-3 rounded-2xl bg-white"
               style={{ boxShadow: "0 8px 30px rgba(93,63,90,0.12)", border: "1px solid rgba(93,63,90,0.08)" }}
             >
-              <TourProgressDots currentStep={4} />
+              <TourProgressDots currentStep={2} />
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => goToStep(3)}
+                  onClick={() => goToStep(1)}
                   title=""
                   className="px-3 py-1.5 text-[13px] font-medium text-[#8B7082] hover:text-[#612A4F] transition-colors outline-none focus:outline-none"
                 >
                   Back
                 </button>
                 <button
-                  onClick={() => goToStep(5)}
+                  onClick={() => goToStep(3)}
                   title=""
                   className="px-4 py-2 rounded-xl text-[13px] font-semibold text-white outline-none focus:outline-none transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
                   style={{ backgroundColor: "#612A4F" }}
@@ -663,25 +541,26 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
       document.body
     )}
     {/* Step 5 — "Ready to go" positioned next to ready-to-post column (only render once position is known) */}
-    {run && stepIndex === 5 && readyColPos && createPortal(
+    {run && stepIndex === 4 && readyColPos && createPortal(
       <div
         className="fixed"
         style={{
           zIndex: 10004,
           top: "47%",
           transform: "translateY(-50%)",
-          left: Math.max(16, readyColPos.left - 420),
+          left: Math.max(16, readyColPos.left - 460),
         }}
       >
         <div style={{ position: "relative" }}>
         <div
-          className="rounded-2xl bg-white p-6"
+          className="rounded-2xl bg-white p-6 relative"
           style={{
             boxShadow: "0 8px 30px rgba(93,63,90,0.12), 0 -8px 30px rgba(93,63,90,0.1)",
             border: "1px solid rgba(93,63,90,0.08)",
-            maxWidth: 440,
+            maxWidth: 470,
           }}
         >
+          <TourCloseButton onClick={handleClose} />
           <h3
             className="text-[18px] text-[#612A4F] mb-2 whitespace-nowrap"
             style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
@@ -695,10 +574,10 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
             From this point, head to your Calendar to schedule it for posting.
           </p>
           <div className="flex items-center justify-between mt-5">
-            <TourProgressDots currentStep={5} />
+            <TourProgressDots currentStep={4} />
             <div className="flex items-center gap-2">
               <button
-                onClick={() => goToStep(4)}
+                onClick={() => goToStep(3)}
                 title=""
                 className="px-3 py-1.5 text-[13px] font-medium text-[#8B7082] hover:text-[#612A4F] transition-colors outline-none focus:outline-none"
               >
@@ -710,7 +589,7 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
                 className="px-4 py-2 rounded-xl text-[13px] font-semibold text-white outline-none focus:outline-none transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
                 style={{ backgroundColor: "#612A4F" }}
               >
-                Start creating!
+                Got it!
               </button>
             </div>
           </div>

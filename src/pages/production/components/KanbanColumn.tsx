@@ -344,7 +344,7 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
   return (
     <div
       key={column.id}
-      className={`flex-shrink-0 w-[340px] ${isTourActive && (column.id === 'shape-ideas' || tourStepIndex === 4 || (tourStepIndex === 3 && column.id === 'shape-ideas')) ? 'overflow-visible' : ''}`}
+      className={`flex-shrink-0 w-[340px] ${isTourActive && (column.id === 'shape-ideas' || tourStepIndex === 2 || (tourStepIndex === 3 && column.id === 'shape-ideas')) ? 'overflow-visible' : ''}`}
       data-tour={`column-${column.id}`}
       onDragOver={(e) => handleDragOver(e, column.id)}
       onDragLeave={handleDragLeave}
@@ -356,7 +356,7 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
         }}
         className={cn(
           "flex flex-col transition-all duration-300 max-h-[calc(100vh-48px)] rounded-[20px]",
-          isTourActive && (tourStepIndex === 4 || (tourStepIndex === 3 && column.id === 'shape-ideas')) && "overflow-visible",
+          isTourActive && (tourStepIndex === 2 || (tourStepIndex === 3 && column.id === 'shape-ideas')) && "overflow-visible",
           draggedOverColumn === column.id && draggedCard
             ? column.id === "ideate" && columns.find(col => col.cards.some(c => c.id === draggedCard.id))?.id !== "ideate"
               ? "opacity-60"
@@ -374,7 +374,7 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
             borderRadius: 20,
             ...(tourStepIndex === 1 ? {
               border: '2px solid rgba(97, 42, 79, 0.35)',
-            } : tourStepIndex === 5 && column.id === 'ready-to-post' ? {
+            } : tourStepIndex === 4 && column.id === 'ready-to-post' ? {
               border: '2px solid rgba(97, 42, 79, 0.35)',
             } : tourStepIndex === 3 ? {
               border: 'none',
@@ -407,9 +407,9 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
         {/* Scrollable Cards Area - beige background */}
         {(() => {
           const realCards = column.cards.filter(c => c.title && c.title.trim() && !c.title.toLowerCase().includes('add quick idea')).length > 0;
-          const hasCards = realCards || (isTourActive && (tourStepIndex === 1 || tourStepIndex === 2 || tourStepIndex === 3 || tourStepIndex === 4 || tourStepIndex === 5 || column.id === 'ideate' || column.id === 'shape-ideas'));
+          const hasCards = realCards || (isTourActive && (tourStepIndex === 1 || tourStepIndex === 2 || tourStepIndex === 3 || tourStepIndex === 4 || column.id === 'ideate' || column.id === 'shape-ideas'));
           return (
-            <div className={`flex-1 ${isTourActive && (column.id === 'shape-ideas' || tourStepIndex === 4 || (tourStepIndex === 3 && column.id === 'shape-ideas')) ? 'overflow-visible' : 'overflow-y-auto'} px-3 pt-3 pb-3 space-y-3 hide-scrollbar hover:hide-scrollbar relative rounded-[16px]`} style={{ minHeight: 'calc(100vh - 120px)', border: hasCards ? '1.5px solid rgba(180, 168, 175, 0.2)' : '1.5px dashed rgba(180, 168, 175, 0.25)', backgroundColor: hasCards ? 'rgba(255, 252, 250, 0.7)' : 'rgba(255, 255, 255, 0.1)' }}>
+            <div className={`flex-1 ${isTourActive && (column.id === 'shape-ideas' || tourStepIndex === 2 || (tourStepIndex === 3 && column.id === 'shape-ideas')) ? 'overflow-visible' : 'overflow-y-auto'} px-3 pt-3 pb-3 space-y-3 hide-scrollbar hover:hide-scrollbar relative rounded-[16px]`} style={{ minHeight: 'calc(100vh - 120px)', border: hasCards ? '1.5px solid rgba(180, 168, 175, 0.2)' : '1.5px dashed rgba(180, 168, 175, 0.25)', backgroundColor: hasCards ? 'rgba(255, 252, 250, 0.7)' : 'rgba(255, 255, 255, 0.1)' }}>
               {/* Not Allowed Overlay for Ideate Column */}
               <AnimatePresence>
                 {(() => {
@@ -428,8 +428,8 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
                     return 0;
                   });
 
-                  // Anatomy inline step (step 3) — show anatomy card on shape-ideas, faded cards elsewhere
-                  if (isTourActive && tourStepIndex === 4) {
+                  // Anatomy inline step — show anatomy card on shape-ideas, faded cards elsewhere
+                  if (isTourActive && tourStepIndex === 2) {
                     if (column.id === 'shape-ideas') {
                       return (
                         <div className="overflow-visible">
@@ -507,7 +507,7 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
                     );
                   }
                   // Big picture step (step 1), opening card step (step 2), ready step (step 5) — show faded demo cards in ALL columns
-                  if (isTourActive && (tourStepIndex === 1 || tourStepIndex === 2 || tourStepIndex === 5)) {
+                  if (isTourActive && (tourStepIndex === 1 || tourStepIndex === 4)) {
                     const cards =
                       column.id === 'ideate' ? TOUR_DEMO_CARDS :
                       column.id === 'shape-ideas' ? TOUR_SHAPE_CARDS :
@@ -515,37 +515,12 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
                       column.id === 'to-edit' ? TOUR_TOEDIT_CARDS :
                       column.id === 'ready-to-post' ? TOUR_READYTOPOST_CARDS : [];
 
-                    // On step 2, the second ideate card gets purple outline + full opacity
-                    if (tourStepIndex === 2 && column.id === 'ideate') {
-                      return (
-                        <>
-                          {cards.map((card, i) => (
-                            <div
-                              key={i}
-                              className={i > 0 ? "mt-3" : ""}
-                              style={{ opacity: i === 1 ? 1 : 0.55 }}
-                              {...(i === 1 ? { 'data-tour': 'ideate-card-2' } : {})}
-                            >
-                              <div style={i === 1 ? { border: '2px solid rgba(97, 42, 79, 0.5)', borderRadius: 14 } : {}}>
-                                <TourDemoCard title={card.title} filled={card.filled} format={(card as any).format} platforms={(card as any).platforms} />
-                              </div>
-                            </div>
-                          ))}
-                        </>
-                      );
-                    }
-
-                    // On step 2, hide the first shape-ideas card so the tooltip isn't blocked
-                    const filteredCards = (tourStepIndex === 2 && column.id === 'shape-ideas')
-                      ? []
-                      : cards;
-
-                    // On step 5, show Schedule on Calendar button in ready-to-post column
-                    if (tourStepIndex === 5 && column.id === 'ready-to-post') {
+                    // On step 4, show Schedule on Calendar button in ready-to-post column
+                    if (tourStepIndex === 4 && column.id === 'ready-to-post') {
                       return (
                         <>
                           <div style={{ opacity: 0.55 }}>
-                            {filteredCards.map((card, i) => (
+                            {cards.map((card, i) => (
                               <div key={i} className={i > 0 ? "mt-3" : ""}>
                                 <TourDemoCard title={card.title} filled={card.filled} format={(card as any).format} platforms={(card as any).platforms} />
                               </div>
@@ -566,7 +541,7 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
 
                     return (
                       <div style={{ opacity: 0.55 }}>
-                        {filteredCards.map((card, i) => (
+                        {cards.map((card, i) => (
                           <div key={i} className={i > 0 ? "mt-3" : ""}>
                             <TourDemoCard title={card.title} filled={card.filled} format={(card as any).format} platforms={(card as any).platforms} />
                           </div>
@@ -772,7 +747,7 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
               </AnimatePresence>
 
               {/* Buttons Area - right below cards (hidden on anatomy step) */}
-              {!(isTourActive && (tourStepIndex === 1 || tourStepIndex === 2 || tourStepIndex === 3 || tourStepIndex === 4 || tourStepIndex === 5)) && (column.cards.filter(c => c.title && c.title.trim() && !c.title.toLowerCase().includes('add quick idea')).length > 0 || (draggedOverColumn === 'ready-to-post' && column.id === 'ready-to-post')) && (
+              {!(isTourActive && (tourStepIndex === 1 || tourStepIndex === 2 || tourStepIndex === 3 || tourStepIndex === 4)) && (column.cards.filter(c => c.title && c.title.trim() && !c.title.toLowerCase().includes('add quick idea')).length > 0 || (draggedOverColumn === 'ready-to-post' && column.id === 'ready-to-post')) && (
                 <div className="px-1 pt-2 space-y-2">
                   {addingToColumn === column.id ? (
                     <div key={`inline-input-${column.id}`}>
