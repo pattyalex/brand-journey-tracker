@@ -40,15 +40,29 @@ export function useStrategyState() {
   const [keywordInput, setKeywordInput] = useState("");
   const [audienceAgeRanges, setAudienceAgeRanges] = useState<string[]>(() => {
     const saved = getString("audienceAgeRanges");
-    if (saved) { try { return JSON.parse(saved); } catch { return ["25-34"]; } }
-    return ["25-34"];
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        // Strip old default that was persisted before we stopped pre-selecting
+        if (parsed.length === 1 && parsed[0] === '25-34') return [];
+        return parsed;
+      } catch { return []; }
+    }
+    return [];
   });
   const [audienceStruggles, setAudienceStruggles] = useState(() => getString("audienceStruggles") || "");
   const [audienceDesires, setAudienceDesires] = useState(() => getString("audienceDesires") || "");
   const [selectedTones, setSelectedTones] = useState<string[]>(() => {
     const saved = getString("selectedTones");
-    if (saved) { try { return JSON.parse(saved); } catch { return ["relatable"]; } }
-    return ["relatable"];
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        // Strip old default that was persisted before we stopped pre-selecting
+        if (parsed.length === 1 && parsed[0] === 'relatable') return [];
+        return parsed;
+      } catch { return []; }
+    }
+    return [];
   });
   const [brandValues, setBrandValues] = useState<string[]>(() => {
     const saved = getString(StorageKeys.brandValues);
@@ -423,8 +437,11 @@ export function useStrategyState() {
         if (strategy.strategyNotes) setAdditionalNotes(strategy.strategyNotes);
         if (strategy.strategyNoteLinks.length > 0) setNoteLinks(strategy.strategyNoteLinks);
         if (strategy.strategyNoteFiles.length > 0) setNoteFiles(strategy.strategyNoteFiles);
-        if (strategy.selectedTones.length > 0) setSelectedTones(strategy.selectedTones);
-        if (strategy.audienceAgeRanges.length > 0) setAudienceAgeRanges(strategy.audienceAgeRanges);
+        // Strip old defaults that were persisted before we stopped pre-selecting
+        const isOldToneDefault = strategy.selectedTones.length === 1 && strategy.selectedTones[0] === 'relatable';
+        if (strategy.selectedTones.length > 0 && !isOldToneDefault) setSelectedTones(strategy.selectedTones);
+        const isOldAgeDefault = strategy.audienceAgeRanges.length === 1 && strategy.audienceAgeRanges[0] === '25-34';
+        if (strategy.audienceAgeRanges.length > 0 && !isOldAgeDefault) setAudienceAgeRanges(strategy.audienceAgeRanges);
         if (strategy.audienceStruggles) setAudienceStruggles(strategy.audienceStruggles);
         if (strategy.audienceDesires) setAudienceDesires(strategy.audienceDesires);
         const vbd = strategy.visionBoardData;
