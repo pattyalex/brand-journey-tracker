@@ -7,6 +7,7 @@ const Stripe = require('stripe');
 const puppeteer = require('puppeteer');
 const { createClient } = require('@supabase/supabase-js');
 const { Resend } = require('resend');
+const rateLimit = require('express-rate-limit');
 
 const app = express();
 const port = 3001;
@@ -41,6 +42,25 @@ const supabaseAdmin = createClient(
 
 app.use(cors({ origin: ['https://www.heymeg.ai', 'http://localhost:5173'] }));
 app.use(express.json());
+
+// Rate limiters
+const aiLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 60, // 60 AI requests per hour per IP
+  message: { error: 'Too many requests. Please try again later.' },
+});
+
+const emailLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 10, // 10 emails per hour per IP
+  message: { error: 'Too many requests. Please try again later.' },
+});
+
+const paymentLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20, // 20 payment requests per 15 min per IP
+  message: { error: 'Too many requests. Please try again later.' },
+});
 
 // Auth middleware
 async function verifySupabaseAuth(req, res, next) {
@@ -82,7 +102,7 @@ function authOrInternal(req, res, next) {
 // ============================================================
 // CLAUDE API PROXY (keeps API key server-side only)
 // ============================================================
-app.post('/api/claude', verifySupabaseAuth, async (req, res) => {
+app.post('/api/claude', aiLimiter, verifySupabaseAuth, async (req, res) => {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     return res.status(500).json({ error: 'Anthropic API key not configured' });
@@ -121,7 +141,7 @@ app.post('/api/claude', verifySupabaseAuth, async (req, res) => {
 });
 
 // Create customer endpoint
-app.post('/api/create-customer', verifySupabaseAuth, async (req, res) => {
+app.post('/api/create-customer', paymentLimiter, verifySupabaseAuth, async (req, res) => {
   try {
     const { email, name, userId } = req.body;
 
@@ -188,7 +208,7 @@ app.post('/api/attach-payment-method', verifySupabaseAuth, async (req, res) => {
 });
 
 // Create subscription endpoint
-app.post('/api/create-subscription', verifySupabaseAuth, async (req, res) => {
+app.post('/api/create-subscription', paymentLimiter, verifySupabaseAuth, async (req, res) => {
   try {
     const { customerId, priceId, paymentMethodId, trialPeriodDays } = req.body;
     const effectiveTrialDays = trialPeriodDays != null ? trialPeriodDays : 7;
@@ -514,7 +534,7 @@ async function captureScreenshot(url, contentType) {
 }
 
 // Claude API endpoint for analyzing content with vision
-app.post('/api/analyze-content', verifySupabaseAuth, async (req, res) => {
+app.post('/api/analyze-content', aiLimiter, verifySupabaseAuth, async (req, res) => {
   try {
     const { contentUrl, contentType, imageData: providedImageData, mediaType: providedMediaType, directUrl } = req.body;
     const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -655,7 +675,7 @@ CRITICAL INSTRUCTIONS:
 });
 
 // Claude API endpoint for generating content ideas
-app.post('/api/generate-ideas', verifySupabaseAuth, async (req, res) => {
+app.post('/api/generate-ideas', aiLimiter, verifySupabaseAuth, async (req, res) => {
   try {
     const { prompt } = req.body;
     const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -700,7 +720,7 @@ app.post('/api/generate-ideas', verifySupabaseAuth, async (req, res) => {
 });
 
 // Generate sub-categories for a content pillar
-app.post('/api/generate-subcategories', verifySupabaseAuth, async (req, res) => {
+app.post('/api/generate-subcategories', aiLimiter, verifySupabaseAuth, async (req, res) => {
   try {
     const { pillarName, existingCategories } = req.body;
     const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -779,7 +799,7 @@ Return JSON array only.`
 });
 
 // Generate content ideas for a pillar + sub-category
-app.post('/api/generate-content-ideas', verifySupabaseAuth, async (req, res) => {
+app.post('/api/generate-content-ideas', aiLimiter, verifySupabaseAuth, async (req, res) => {
   try {
     const { pillarName, subCategory, count, direction, allThemes, previousIdeas } = req.body;
     const ideaCount = count || 7;
@@ -874,7 +894,7 @@ Return only a JSON array of strings.`
 });
 
 // Shot suggestion endpoint for storyboard
-app.post('/api/suggest-shots', verifySupabaseAuth, async (req, res) => {
+app.post('/api/suggest-shots', aiLimiter, verifySupabaseAuth, async (req, res) => {
   try {
     const { sceneTitle, sceneVisualNotes, scriptExcerpt, format, platform, shotTemplates, apiKey: clientApiKey } = req.body;
     // Use client-provided API key first, fallback to environment variable
@@ -990,7 +1010,7 @@ Remember: Only use template IDs from the provided list.`;
 });
 
 // Generate storyboard from script endpoint
-app.post('/api/generate-storyboard', verifySupabaseAuth, async (req, res) => {
+app.post('/api/generate-storyboard', aiLimiter, verifySupabaseAuth, async (req, res) => {
   try {
     const { script, format, platform, shotTemplates, apiKey: clientApiKey } = req.body;
     // Use client-provided API key first, fallback to environment variable
@@ -1523,7 +1543,7 @@ app.get('/health', (req, res) => {
 // ============================================================
 
 // Send welcome email when a new user signs up
-app.post('/api/send-welcome-email', authOrInternal, async (req, res) => {
+app.post('/api/send-welcome-email', emailLimiter, authOrInternal, async (req, res) => {
   try {
     const { email, name } = req.body;
 
@@ -1582,7 +1602,7 @@ app.post('/api/send-welcome-email', authOrInternal, async (req, res) => {
 });
 
 // Generic send email endpoint
-app.post('/api/send-email', verifySupabaseAuth, async (req, res) => {
+app.post('/api/send-email', emailLimiter, verifySupabaseAuth, async (req, res) => {
   try {
     const { to, subject, html } = req.body;
 
@@ -1610,7 +1630,7 @@ app.post('/api/send-email', verifySupabaseAuth, async (req, res) => {
 });
 
 // New user signup - admin notification
-app.post('/api/send-signup-admin-notification', authOrInternal, async (req, res) => {
+app.post('/api/send-signup-admin-notification', emailLimiter, authOrInternal, async (req, res) => {
   try {
     const { email, name, userId } = req.body;
 
@@ -1737,7 +1757,7 @@ app.post('/api/send-payment-failed', internalOnly, async (req, res) => {
 });
 
 // Subscription cancelled email
-app.post('/api/send-subscription-cancelled', authOrInternal, async (req, res) => {
+app.post('/api/send-subscription-cancelled', emailLimiter, authOrInternal, async (req, res) => {
   try {
     const { email, name, accessEndsAt } = req.body;
 
@@ -1786,7 +1806,7 @@ app.post('/api/send-subscription-cancelled', authOrInternal, async (req, res) =>
 });
 
 // Resubscription confirmation email
-app.post('/api/send-resubscription-email', verifySupabaseAuth, async (req, res) => {
+app.post('/api/send-resubscription-email', emailLimiter, verifySupabaseAuth, async (req, res) => {
   try {
     const { email, name, planType } = req.body;
 
