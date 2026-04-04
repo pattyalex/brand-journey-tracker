@@ -12,7 +12,7 @@ const LandingPage = () => {
   const handleStartFreeTrial = () => {
     // If user is already logged in, redirect to dashboard
     if (isAuthenticated) {
-      navigate("/home-page");
+      navigate("/production");
       return;
     }
 

@@ -39,7 +39,7 @@ const LoginPage: React.FC = () => {
         if (user && !error) {
           // Session is genuinely valid — close modal (releases Radix scroll lock) and redirect
           closeLoginModal();
-          navigate('/home-page', { replace: true });
+          navigate('/production', { replace: true });
         } else {
           // Stale/expired session — clear it and show login
           supabase.auth.signOut();

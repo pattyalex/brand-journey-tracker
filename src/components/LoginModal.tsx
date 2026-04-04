@@ -113,7 +113,7 @@ const LoginModal: React.FC = () => {
       if (result.success) {
         login();
         closeLoginModal();
-        navigate('/home-page');
+        navigate('/production');
       } else {
         if (result.needsVerification) {
           setShowEmailVerification(true);
@@ -134,7 +134,7 @@ const LoginModal: React.FC = () => {
     setPendingVerificationEmail('');
     login();
     closeLoginModal();
-    navigate('/home-page');
+    navigate('/production');
   };
 
   const resetForm = () => {

@@ -185,7 +185,7 @@ const OnboardingFlow: React.FC = () => {
     const stepParam = searchParams.get('step');
     if (isAuthenticated && hasCompletedOnboarding && stepParam !== 'payment-entry' && stepParam !== 'plan-selection') {
       console.log('✅ User has already completed onboarding, redirecting to dashboard');
-      navigate('/home-page');
+      navigate('/production');
     }
   }, [isAuthenticated, hasCompletedOnboarding, navigate, searchParams]);
 
@@ -539,7 +539,7 @@ const OnboardingFlow: React.FC = () => {
   };
 
   const goToHomePage = () => {
-    navigate("/home-page");
+    navigate("/production");
   };
 
   // Get auth context at component level, not inside the function
@@ -551,7 +551,7 @@ const OnboardingFlow: React.FC = () => {
     completeOnboarding(); // Mark onboarding as completed
 
     // Then redirect to Home Page
-    navigate("/home-page");
+    navigate("/production");
   };
 
   // Render the current step
@@ -639,7 +639,7 @@ const OnboardingFlow: React.FC = () => {
             onSuccess={async () => {
               if (hasCompletedOnboarding) {
                 await refreshSubscription();
-                navigate("/home-page");
+                navigate("/production");
               } else {
                 setCurrentStep("user-goals");
               }

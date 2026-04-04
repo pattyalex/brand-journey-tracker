@@ -3,14 +3,13 @@ import { Home, FolderOpen, FileText, Settings, CreditCard, TrendingUp, BarChart,
 import { MenuItem } from '@/types/sidebar';
 
 export const defaultMenuItems: MenuItem[] = [
-  { title: 'Dashboard', icon: Home, url: '/home-page', isDeletable: false },
-  { title: 'Planner and Calendar', icon: Calendar, url: '/task-board', isDeletable: false },
   {
     title: 'Content Hub',
     icon: Clapperboard,
     url: '/production',
     isDeletable: false
   },
+  { title: 'Planner and Calendar', icon: Calendar, url: '/task-board', isDeletable: false },
   {
     title: 'Partnerships',
     icon: Handshake,

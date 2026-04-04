@@ -121,7 +121,7 @@ const ResetPasswordPage: React.FC = () => {
                 Your password has been successfully changed.
               </p>
               <a
-                href="/home-page"
+                href="/production"
                 className="inline-flex items-center justify-center gap-2 py-3 px-8 rounded-xl text-white font-medium transition-all"
                 style={{
                   background: 'linear-gradient(135deg, #7a3868 0%, #612a4f 50%, #4e2040 100%)',

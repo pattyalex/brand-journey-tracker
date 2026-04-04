@@ -4,7 +4,6 @@ import { Home, Clapperboard, Calendar, Handshake } from 'lucide-react';
 import { preloadRoute } from '@/App';
 
 const navItems = [
-  { label: 'Home', icon: Home, path: '/home-page' },
   { label: 'Content', icon: Clapperboard, path: '/production' },
   { label: 'Calendar', icon: Calendar, path: '/task-board' },
   { label: 'Deals', icon: Handshake, path: '/brands' },

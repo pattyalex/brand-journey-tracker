@@ -114,7 +114,7 @@ export const MembershipPage: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           customerId: subscriptionData?.stripe_customer_id,
-          returnUrl: window.location.origin + '/home-page'
+          returnUrl: window.location.origin + '/production'
         })
       });
 
@@ -215,7 +215,7 @@ export const MembershipPage: React.FC = () => {
 
   // Active subscription — go to dashboard (manage membership via Settings)
   if (subscriptionData?.subscription_status === 'active' || subscriptionData?.subscription_status === 'trialing') {
-    window.location.href = '/home-page';
+    window.location.href = '/production';
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: '#f9f7f5' }}>
         <Loader2 className="h-8 w-8 animate-spin" style={{ color: '#612a4f' }} />

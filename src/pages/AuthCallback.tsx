@@ -36,7 +36,7 @@ export default function AuthCallback() {
             console.log('✅ Profile email synced to:', user.email);
           }
         }
-        navigate('/home-page');
+        navigate('/production');
         return;
       }
 
@@ -90,7 +90,7 @@ export default function AuthCallback() {
           navigate('/onboarding');
         } else {
           // Returning user who completed onboarding — go to dashboard
-          navigate('/home-page');
+          navigate('/production');
         }
       } else {
         navigate('/login');

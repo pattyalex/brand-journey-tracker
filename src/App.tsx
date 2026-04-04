@@ -70,9 +70,7 @@ const ResetPasswordPage = lazy(pageImports.ResetPasswordPage);
 
 // Route-to-preload mapping so sidebar can trigger chunk downloads on hover
 const routePreloadMap: Record<string, () => Promise<unknown>> = {
-  '/home-page': pageImports.HomePage,
-  '/dashboard': pageImports.Dashboard,
-  '/app': pageImports.Dashboard,
+  '/home-page': pageImports.Production,
   '/task-board': pageImports.TaskBoard,
   '/production': pageImports.Production,
   '/brands': pageImports.Brands,
@@ -209,9 +207,9 @@ function App() {
 
               {/* Protected routes — Layout (sidebar) stays mounted, only page content swaps */}
               <Route element={<ProtectedLayout />}>
-                <Route path="/app" element={<Dashboard />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/home-page" element={<HomePage />} />
+                <Route path="/app" element={<Navigate to="/production" replace />} />
+                <Route path="/dashboard" element={<Navigate to="/production" replace />} />
+                <Route path="/home-page" element={<Navigate to="/production" replace />} />
                 <Route path="/content-ideation" element={<ContentIdeation />} />
                 <Route path="/content-planning" element={<ContentPlanning />} />
                 <Route path="/production" element={<Production />} />
