@@ -185,7 +185,8 @@ export function useStrategyState() {
   const [isAddingShortTermGoal, setIsAddingShortTermGoal] = useState(false);
   const [newLongTermGoal, setNewLongTermGoal] = useState("");
 
-  const [selectedYear, setSelectedYear] = useState(2026);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [selectedShortTermYear, setSelectedShortTermYear] = useState(new Date().getFullYear());
   const [expandedMonths, setExpandedMonths] = useState<string[]>(["January"]);
 
   // Dismissed placeholder state
@@ -499,6 +500,7 @@ export function useStrategyState() {
         text: g.text,
         status: g.status as GoalStatus,
         progressNote: g.progressNote,
+        year: g.year,
       };
       goalIdMapRef.current.set(g.id, g.id);
       if (g.goalType === 'short-term') {
@@ -739,11 +741,11 @@ export function useStrategyState() {
   const handleAddShortTermGoal = () => {
     if (newShortTermGoal.trim()) {
       const tempId = newTempId();
-      const newGoal: Goal = { id: tempId, text: newShortTermGoal.trim(), status: 'not-started' as GoalStatus };
+      const newGoal: Goal = { id: tempId, text: newShortTermGoal.trim(), status: 'not-started' as GoalStatus, year: selectedShortTermYear };
       setShortTermGoals(prev => [...prev, newGoal]);
       setNewShortTermGoal("");
       if (user?.id) {
-        createGoal(user.id, { goalType: 'short-term', text: newGoal.text, displayOrder: shortTermGoals.length })
+        createGoal(user.id, { goalType: 'short-term', text: newGoal.text, year: selectedShortTermYear, displayOrder: shortTermGoals.length })
           .then(created => {
             goalIdMapRef.current.set(tempId, created.id);
             setShortTermGoals(prev => prev.map(g => g.id === tempId ? { ...g, id: created.id } : g));
@@ -1014,6 +1016,7 @@ export function useStrategyState() {
     newLongTermGoal, setNewLongTermGoal,
     newMonthlyGoalInputs, setNewMonthlyGoalInputs,
     selectedYear, setSelectedYear,
+    selectedShortTermYear, setSelectedShortTermYear,
     selectedMonthPill, setSelectedMonthPill,
     expandedMonths, toggleMonth,
     dismissedGoalPlaceholders, dismissGoalPlaceholder,

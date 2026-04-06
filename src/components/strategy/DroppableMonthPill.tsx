@@ -35,10 +35,11 @@ const DroppableMonthPill: React.FC<DroppableMonthPillProps> = ({
           background: showDropHighlight
             ? 'linear-gradient(145deg, #b8a0ae 0%, #a08090 100%)'
             : isSelected
-            ? 'linear-gradient(145deg, #612A4F 0%, #4d2140 100%)'
-            : 'white',
-          color: showDropHighlight || isSelected ? 'white' : '#8B7082',
-          border: showDropHighlight || isSelected ? 'none' : '1px solid #E8E4E6',
+            ? 'white'
+            : 'rgba(255,255,255,0.1)',
+          color: showDropHighlight || isSelected ? '#612A4F' : 'white',
+          fontWeight: isSelected ? 700 : 500,
+          border: showDropHighlight || isSelected ? 'none' : '1px solid rgba(255,255,255,0.15)',
           boxShadow: showDropHighlight
             ? '0 4px 12px rgba(160, 128, 144, 0.4)'
             : isSelected

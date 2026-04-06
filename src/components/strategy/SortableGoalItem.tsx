@@ -65,20 +65,29 @@ const SortableGoalItem: React.FC<SortableGoalItemProps> = ({
         ...style,
         padding: '14px 16px',
         borderRadius: '14px',
-        border: '1px solid rgba(139, 115, 130, 0.1)',
-        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.02)',
+        border: '1px solid rgba(139, 115, 130, 0.25)',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
         background: 'white',
       }}
       className={`flex items-center gap-3 group bg-white hover:shadow-md transition-shadow duration-200`}
     >
       {/* Drag Handle */}
-      <div
-        {...attributes}
-        {...listeners}
-        className="flex-shrink-0 cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-500 transition-colors"
-      >
-        <GripVertical className="w-4 h-4" />
-      </div>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div
+              {...attributes}
+              {...listeners}
+              className="flex-shrink-0 cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-500 transition-colors"
+            >
+              <GripVertical className="w-4 h-4" />
+            </div>
+          </TooltipTrigger>
+          <TooltipContent className="bg-gray-500 text-white text-xs border-0">
+            <p>Reorder or move between months</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
 
       {/* Goal Text */}
       <div className="flex-1 min-w-0">

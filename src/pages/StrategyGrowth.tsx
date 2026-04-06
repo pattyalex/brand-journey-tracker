@@ -88,6 +88,8 @@ const StrategyGrowth = () => {
               editingShortTermText={state.editingShortTermText}
               setEditingShortTermText={state.setEditingShortTermText}
               setEditingShortTermId={state.setEditingShortTermId}
+              selectedShortTermYear={state.selectedShortTermYear}
+              setSelectedShortTermYear={state.setSelectedShortTermYear}
               selectedYear={state.selectedYear}
               setSelectedYear={state.setSelectedYear}
               selectedMonthPill={state.selectedMonthPill}

@@ -80,6 +80,10 @@ export default {
         'slide-in': {
           '0%': { transform: 'translateX(-100%)' },
           '100%': { transform: 'translateX(0)' }
+        },
+        'megai-pulse': {
+          '0%, 100%': { transform: 'scale(1)', boxShadow: '0 4px 6px -1px rgba(97, 42, 79, 0.3)' },
+          '50%': { transform: 'scale(1.08)', boxShadow: '0 8px 15px -3px rgba(97, 42, 79, 0.5)' }
         }
       },
       animation: {

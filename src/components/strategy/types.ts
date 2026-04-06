@@ -17,6 +17,7 @@ export interface Goal {
   progressNote?: string;
   progress?: { current: number; target: number };
   linkedGoalId?: string; // For monthly goals to link to annual goals
+  year?: number; // For 1-year goals to filter by year
 }
 
 export interface MonthlyGoalsData {

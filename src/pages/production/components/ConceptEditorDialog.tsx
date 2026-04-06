@@ -633,29 +633,21 @@ Guidelines:
                     onChange={(e) => setScriptContent?.(e.target.value)}
                     onClick={(e) => e.stopPropagation()}
                     placeholder="Write your script or talking points here..."
-                    className="min-h-[120px] resize-none border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#612A4F] focus:border-[#612A4F] transition-all text-sm leading-relaxed bg-white placeholder:text-gray-400 shadow-[0_1px_3px_rgba(0,0,0,0.06)] pr-12"
+                    className="min-h-[200px] resize-none border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#612A4F] focus:border-[#612A4F] transition-all text-sm leading-relaxed bg-white placeholder:text-gray-400 shadow-[0_1px_3px_rgba(0,0,0,0.06)] pr-12"
                   />
                   {/* MegAI Button */}
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <button
-                          onClick={() => setIsMegAIOpen(!isMegAIOpen)}
-                          className={cn(
-                            "absolute bottom-3 right-3 w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-lg",
-                            isMegAIOpen
-                              ? "bg-[#612A4F] text-white"
-                              : "bg-gradient-to-br from-[#8B7082] to-[#612A4F] text-white hover:scale-105"
-                          )}
-                        >
-                          <Sparkles className="w-4 h-4" />
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent side="left">
-                        <p>Ask MegAI for help</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                  <button
+                    onClick={() => setIsMegAIOpen(!isMegAIOpen)}
+                    className={cn(
+                      "absolute bottom-3 right-3 flex items-center gap-1.5 px-3 py-2 rounded-full transition-all shadow-lg",
+                      isMegAIOpen
+                        ? "bg-[#612A4F] text-white"
+                        : "bg-gradient-to-br from-[#8B7082] to-[#612A4F] text-white hover:scale-105 animate-[megai-pulse_2s_ease-in-out_3]"
+                    )}
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    <span className="text-xs font-medium">Ask MegAI</span>
+                  </button>
                 </div>
               </div>
             )}
@@ -670,7 +662,7 @@ Guidelines:
                 onChange={(e) => setCaption(e.target.value)}
                 onClick={(e) => e.stopPropagation()}
                 placeholder="Write your post caption here..."
-                className="min-h-[200px] resize-none border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#612A4F] focus:border-[#612A4F] transition-all text-sm leading-relaxed bg-white placeholder:text-gray-400 shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
+                className="min-h-[120px] resize-none border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#612A4F] focus:border-[#612A4F] transition-all text-sm leading-relaxed bg-white placeholder:text-gray-400 shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
               />
             </div>
           </div>

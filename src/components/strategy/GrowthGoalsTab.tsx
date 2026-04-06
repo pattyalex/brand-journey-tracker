@@ -44,6 +44,8 @@ interface GrowthGoalsTabProps {
   editingShortTermText: string;
   setEditingShortTermText: (v: string) => void;
   setEditingShortTermId: (v: string | null) => void;
+  selectedShortTermYear: number;
+  setSelectedShortTermYear: (v: number) => void;
   // Monthly Goals
   selectedYear: number;
   setSelectedYear: (v: number) => void;
@@ -85,6 +87,7 @@ const GrowthGoalsTab: React.FC<GrowthGoalsTabProps> = (props) => {
     handleEditShortTermGoal,
     handleSaveShortTermGoal,
     editingShortTermId, editingShortTermText, setEditingShortTermText, setEditingShortTermId,
+    selectedShortTermYear, setSelectedShortTermYear,
     selectedYear, setSelectedYear,
     selectedMonthPill, setSelectedMonthPill,
     getMonthlyGoals,
@@ -101,6 +104,11 @@ const GrowthGoalsTab: React.FC<GrowthGoalsTabProps> = (props) => {
     handleDragEndMonthlyGoals, handleDragCancel,
   } = props;
 
+  const [showMonthlyInput, setShowMonthlyInput] = React.useState(false);
+
+  const currentYear = new Date().getFullYear();
+  const filteredShortTermGoals = shortTermGoals.filter(g => (g.year ?? currentYear) === selectedShortTermYear);
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -112,12 +120,14 @@ const GrowthGoalsTab: React.FC<GrowthGoalsTabProps> = (props) => {
   return (
     <TabsContent value="growth-goals" className="space-y-8 mt-0">
 
-      {/* SECTION 1: 3-Year Vision Hero Banner */}
+      {/* SECTION 1: Monthly Goals */}
       <div
-        className="relative overflow-hidden p-10 shadow-[0_8px_32px_rgba(97,42,79,0.25)]"
+        id="monthly-goals"
+        className="relative overflow-hidden p-6"
         style={{
           background: 'linear-gradient(135deg, #4a3442 0%, #6b4a5e 50%, #8b6a7e 100%)',
-          borderRadius: '24px'
+          borderRadius: '24px',
+          boxShadow: '0_8px_32px_rgba(97,42,79,0.25)'
         }}
       >
         <div className="absolute top-0 right-0 w-80 h-80 rounded-full -translate-y-1/3 translate-x-1/3" style={{ background: 'rgba(255,255,255,0.05)' }} />
@@ -126,48 +136,249 @@ const GrowthGoalsTab: React.FC<GrowthGoalsTabProps> = (props) => {
         <div className="absolute bottom-1/4 right-1/3 w-20 h-20 rounded-full" style={{ background: 'rgba(255,255,255,0.05)' }} />
 
         <div className="relative z-10">
-          <div className="flex items-center gap-4 mb-1">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4">
             <div
-              className="flex items-center justify-center backdrop-blur-sm"
+              className="flex items-center justify-center text-white backdrop-blur-sm"
               style={{
-                width: '44px',
-                height: '44px',
+                width: '48px',
+                height: '48px',
                 borderRadius: '14px',
                 background: 'rgba(255,255,255,0.15)'
               }}
             >
-              <TrendingUp className="w-5 h-5 text-white" />
+              <Calendar className="w-5 h-5" />
             </div>
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.15em] mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
-                Your North Star
-              </p>
-              <h2 className="text-[32px] font-semibold text-white leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
-                3-Year Vision
-              </h2>
-            </div>
+            <h3 className="text-xl font-semibold text-white" style={{ fontFamily: "'Playfair Display', serif" }}>Monthly Goals</h3>
           </div>
-          <p className="text-sm mb-6 ml-[60px]" style={{ color: 'rgba(255,255,255,0.7)', fontFamily: "'DM Sans', sans-serif" }}>
-            Where do you see yourself and your brand in 3 years? Dream big.
-          </p>
-
-          <div
-            className="backdrop-blur-sm"
-            style={{
-              background: 'rgba(255,255,255,0.1)',
-              borderRadius: '16px',
-              padding: '4px'
-            }}
+          <select
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(Number(e.target.value))}
+            className="px-4 py-2 text-sm border border-white/20 bg-white/10 text-white font-medium focus:outline-none focus:border-white/40"
+            style={{ borderRadius: '12px' }}
           >
-            <textarea
-              value={threeYearVision}
-              onChange={(e) => setThreeYearVision(e.target.value)}
-              placeholder="In 3 years, I want to..."
-              className="w-full min-h-[160px] bg-transparent border-0 rounded-xl p-5 text-white placeholder:text-white/40 text-base leading-relaxed resize-none focus:outline-none transition-all duration-200"
-              style={{ fontFamily: "'DM Sans', sans-serif" }}
-            />
-          </div>
+            {[...Array(5)].map((_, i) => {
+              const year = 2026 + i;
+              return <option key={year} value={year}>{year}</option>;
+            })}
+          </select>
         </div>
+
+        {/* Month Pill Selector and Goals with Cross-Month Drag and Drop */}
+        <DndContext
+          sensors={sensors}
+          collisionDetection={pointerWithin}
+          onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
+          onDragEnd={handleDragEndMonthlyGoals}
+          onDragCancel={handleDragCancel}
+        >
+          <div className="flex flex-wrap gap-2" style={{ marginBottom: '-60px' }}>
+            {["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"].map((month) => {
+              const fullMonth = monthShortToFull[month];
+              const isSelected = selectedMonthPill === month;
+              const isDropTarget = dragOverMonth === fullMonth;
+
+              return (
+                <DroppableMonthPill
+                  key={month}
+                  month={month}
+                  fullMonth={fullMonth}
+                  isSelected={isSelected}
+                  isDropTarget={isDropTarget}
+                  onClick={() => setSelectedMonthPill(month)}
+                />
+              );
+            })}
+          </div>
+
+          {/* Expanded Month View */}
+          {(() => {
+            const fullMonth = monthShortToFull[selectedMonthPill];
+            const goals = getMonthlyGoals(selectedYear, fullMonth);
+            const inputKey = `${selectedYear}-${fullMonth}`;
+            const completedCount = goals.filter(g => g.status === 'completed').length;
+
+            return (
+              <div
+                style={{
+                  background: 'white',
+                  borderRadius: '18px',
+                  padding: '24px',
+                  border: 'none'
+                }}
+              >
+                <div className="flex items-center justify-between mb-5">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-5 h-5 text-[#612A4F]" />
+                    <h4 className="text-xl text-[#612A4F]" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>
+                      {fullMonth} {selectedYear}
+                    </h4>
+                  </div>
+                  {goals.length > 0 && (
+                    <span className="text-sm font-medium" style={{ color: '#7a9a7a' }}>
+                      {completedCount}/{goals.length} completed
+                    </span>
+                  )}
+                </div>
+
+                {goals.length === 0 ? (
+                  !dismissedGoalPlaceholders[`mg-${fullMonth}`] ? (
+                    <div className="flex flex-col lg:flex-row items-center gap-8 py-2">
+                      <div className="group relative w-full lg:w-72 flex-shrink-0 flex items-center gap-3 px-4 py-3.5 rounded-xl border-2 border-dashed border-[#D8C8D3] opacity-50 hover:opacity-70 transition-opacity">
+                        <div className="w-5 h-5 rounded-full border-2 border-[#D8C8D3] flex-shrink-0" />
+                        <span className="text-sm font-medium text-[#3d3a38] flex-1" style={{ fontFamily: "'DM Sans', sans-serif" }}>Post 3x per week consistently</span>
+                        <span className="text-[9px] font-semibold uppercase tracking-wide text-[#8B7082] bg-[#8B7082]/10 px-1.5 py-0.5 rounded flex-shrink-0">Example</span>
+                        <button
+                          onClick={(e) => dismissGoalPlaceholder(`mg-${fullMonth}`, e)}
+                          className="w-5 h-5 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-200 transition-all opacity-50 hover:opacity-100 flex-shrink-0"
+                          title="Dismiss"
+                        >
+                          <svg width="7" height="7" viewBox="0 0 8 8" fill="none"><path d="M1 1l6 6M7 1L1 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                        </button>
+                      </div>
+
+                      <div className="hidden lg:block w-px self-stretch bg-gradient-to-b from-transparent via-[#D8C8D3] to-transparent" />
+
+                      <div className="flex flex-col gap-3 max-w-xs">
+                        <h3 className="text-xl font-bold text-[#2d2a26]" style={{ fontFamily: "'Playfair Display', serif" }}>No goals set yet</h3>
+                        <p className="text-sm text-[#8B7082] leading-relaxed" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                          Set your intentions for {fullMonth}. Break big goals into monthly wins.
+                        </p>
+                        <button
+                          onClick={() => {
+                            setShowMonthlyInput(true);
+                          }}
+                          className="w-fit h-10 px-5 rounded-xl bg-gradient-to-r from-[#612a4f] to-[#4d2140] hover:from-[#4d2140] hover:to-[#3a1830] text-white text-sm font-semibold shadow-[0_4px_16px_rgba(97,42,79,0.3)] hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2"
+                          style={{ fontFamily: "'DM Sans', sans-serif" }}
+                        >
+                          <Plus className="w-4 h-4" />
+                          Add your first goal
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <EmptyState
+                      icon={Target}
+                      title="No goals set yet"
+                      description="Define your monthly goals to stay focused on what matters most for your growth."
+                    />
+                  )
+                ) : (
+                  <SortableContext
+                    items={goals.map(g => g.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <div className="space-y-3">
+                      {goals.map((goal) => (
+                        <SortableGoalItem
+                          key={goal.id}
+                          goal={goal}
+                          onStatusChange={(status) => handleChangeMonthlyGoalStatus(selectedYear, fullMonth, goal.id, status)}
+                          onEdit={() => handleEditMonthlyGoal(goal.id, goal.text)}
+                          onDelete={() => handleDeleteMonthlyGoal(selectedYear, fullMonth, goal.id)}
+                          isEditing={editingMonthlyId === goal.id}
+                          editingText={editingMonthlyText}
+                          onEditingTextChange={setEditingMonthlyText}
+                          onSave={() => handleSaveMonthlyGoal(selectedYear, fullMonth)}
+                          onCancelEdit={() => setEditingMonthlyId(null)}
+                          linkedGoalIndex={goal.linkedGoalId ? shortTermGoals.findIndex(g => g.id === goal.linkedGoalId) : undefined}
+                        />
+                      ))}
+                    </div>
+                  </SortableContext>
+                )}
+
+                {/* Add Goal Input */}
+                {showMonthlyInput ? (
+                  <div className="flex gap-3 mt-5">
+                    <Input
+                      id={`monthly-goal-input-${inputKey}`}
+                      placeholder={`Add a goal for ${fullMonth}...`}
+                      value={newMonthlyGoalInputs[inputKey] || ''}
+                      onChange={(e) => setNewMonthlyGoalInputs(prev => ({ ...prev, [inputKey]: e.target.value }))}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && (newMonthlyGoalInputs[inputKey] || '').trim()) {
+                          handleAddMonthlyGoal(selectedYear, fullMonth);
+                          setShowMonthlyInput(false);
+                        }
+                        if (e.key === 'Escape') {
+                          setShowMonthlyInput(false);
+                        }
+                      }}
+                      autoFocus
+                      className="flex-1 h-12 text-sm bg-white border border-[#E8E4E6] focus:outline-none focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)]"
+                      style={{ borderRadius: '14px' }}
+                    />
+                    <button
+                      onClick={() => {
+                        if ((newMonthlyGoalInputs[inputKey] || '').trim()) {
+                          handleAddMonthlyGoal(selectedYear, fullMonth);
+                        }
+                        setShowMonthlyInput(false);
+                      }}
+                      className="flex items-center justify-center text-white transition-all"
+                      style={{
+                        width: '48px',
+                        height: '48px',
+                        borderRadius: '14px',
+                        background: 'linear-gradient(145deg, #612A4F 0%, #4d2140 100%)'
+                      }}
+                    >
+                      <Check className="w-5 h-5" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setShowMonthlyInput(true)}
+                    className="group/add mt-5 w-9 h-9 hover:w-auto hover:px-4 text-sm font-medium text-[#612A4F] hover:bg-[#612A4F]/5 transition-all flex items-center justify-center gap-2 overflow-hidden"
+                    style={{ borderRadius: '12px' }}
+                  >
+                    <Plus className="w-4 h-4 flex-shrink-0" />
+                    <span className="hidden group-hover/add:inline whitespace-nowrap">Add Goal</span>
+                  </button>
+                )}
+              </div>
+            );
+          })()}
+
+          {/* Drag Overlay for visual feedback */}
+          <DragOverlay>
+            {draggedGoal ? (
+              dragOverMonth ? (
+                <div
+                  style={{
+                    padding: '8px 12px',
+                    borderRadius: '10px',
+                    border: '1px solid #612A4F',
+                    boxShadow: '0 8px 20px rgba(97, 42, 79, 0.3)',
+                    background: 'white',
+                    maxWidth: '200px',
+                  }}
+                  className="flex items-center gap-2"
+                >
+                  <GripVertical className="w-3 h-3 text-gray-400 flex-shrink-0" />
+                  <span className="text-xs text-[#3d3a38] truncate">{draggedGoal.text}</span>
+                </div>
+              ) : (
+                <div
+                  style={{
+                    padding: '14px 16px',
+                    borderRadius: '14px',
+                    border: '1px solid #612A4F',
+                    boxShadow: '0 12px 28px rgba(97, 42, 79, 0.25)',
+                    background: 'white',
+                  }}
+                  className="flex items-center gap-3"
+                >
+                  <GripVertical className="w-4 h-4 text-gray-400" />
+                  <span className="text-sm text-[#3d3a38]">{draggedGoal.text}</span>
+                </div>
+              )
+            ) : null}
+          </DragOverlay>
+        </DndContext>
+      </div>
       </div>
 
       {/* SECTION 2: 1-Year Goals */}
@@ -193,13 +404,25 @@ const GrowthGoalsTab: React.FC<GrowthGoalsTabProps> = (props) => {
             </div>
             <div>
               <h3 className="text-xl font-semibold text-[#612A4F]" style={{ fontFamily: "'Playfair Display', serif" }}>1-Year Goals</h3>
-              {shortTermGoals.length > 0 && (
+              {filteredShortTermGoals.length > 0 && (
                 <span className="text-xs text-[#7a9a7a]">
-                  {shortTermGoals.filter(g => g.status === 'completed').length}/{shortTermGoals.length} completed
+                  {filteredShortTermGoals.filter(g => g.status === 'completed').length}/{filteredShortTermGoals.length} completed
                 </span>
               )}
             </div>
           </div>
+          <div className="flex items-center gap-3">
+          <select
+            value={selectedShortTermYear}
+            onChange={(e) => setSelectedShortTermYear(Number(e.target.value))}
+            className="px-4 py-2 text-sm border border-[#E8E4E6] bg-white text-[#612A4F] font-medium focus:outline-none focus:border-[#612a4f]"
+            style={{ borderRadius: '12px' }}
+          >
+            {[...Array(5)].map((_, i) => {
+              const year = new Date().getFullYear() + i;
+              return <option key={year} value={year}>{year}</option>;
+            })}
+          </select>
           {isAddingShortTermGoal ? (
             <div className="flex gap-2">
               <Input
@@ -259,11 +482,12 @@ const GrowthGoalsTab: React.FC<GrowthGoalsTabProps> = (props) => {
               Add Goal
             </button>
           )}
+          </div>
         </div>
 
         {/* Goal Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {shortTermGoals.map((goal, index) => {
+          {filteredShortTermGoals.map((goal, index) => {
             const softColors = [
               { bg: 'rgba(180, 140, 165, 0.12)', accent: '#a07090', accentRgb: '180, 140, 165' },
               { bg: 'rgba(165, 180, 190, 0.09)', accent: '#8a9ba5', accentRgb: '165, 180, 190' },
@@ -415,7 +639,7 @@ const GrowthGoalsTab: React.FC<GrowthGoalsTabProps> = (props) => {
           })}
 
           {/* Empty State / Placeholders */}
-          {shortTermGoals.length === 0 && (
+          {filteredShortTermGoals.length === 0 && (
             <div className="col-span-full">
               {!dismissedGoalPlaceholders['stg-0'] ? (
                 <div className="flex flex-col lg:flex-row items-center gap-10 py-4 px-2">
@@ -470,235 +694,62 @@ const GrowthGoalsTab: React.FC<GrowthGoalsTabProps> = (props) => {
         </div>
       </div>
 
-      {/* SECTION 3: Monthly Goals */}
+      {/* SECTION 3: 3-Year Vision Hero Banner */}
       <div
-        id="monthly-goals"
-        className="bg-white p-6"
+        className="relative overflow-hidden p-10 shadow-[0_8px_32px_rgba(97,42,79,0.25)]"
         style={{
-          borderRadius: '24px',
-          boxShadow: '0 4px 24px rgba(45, 42, 38, 0.04)'
+          background: 'linear-gradient(135deg, #4a3442 0%, #6b4a5e 50%, #8b6a7e 100%)',
+          borderRadius: '24px'
         }}
       >
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
+        <div className="absolute top-0 right-0 w-80 h-80 rounded-full -translate-y-1/3 translate-x-1/3" style={{ background: 'rgba(255,255,255,0.05)' }} />
+        <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full translate-y-1/2 -translate-x-1/3" style={{ background: 'rgba(255,255,255,0.03)' }} />
+        <div className="absolute top-1/2 right-1/4 w-32 h-32 rounded-full" style={{ background: 'rgba(255,255,255,0.03)' }} />
+        <div className="absolute bottom-1/4 right-1/3 w-20 h-20 rounded-full" style={{ background: 'rgba(255,255,255,0.05)' }} />
+
+        <div className="relative z-10">
+          <div className="flex items-center gap-4 mb-1">
             <div
-              className="flex items-center justify-center text-white"
+              className="flex items-center justify-center backdrop-blur-sm"
               style={{
-                width: '48px',
-                height: '48px',
+                width: '44px',
+                height: '44px',
                 borderRadius: '14px',
-                background: 'linear-gradient(145deg, #612A4F 0%, #4d2140 100%)'
+                background: 'rgba(255,255,255,0.15)'
               }}
             >
-              <Calendar className="w-5 h-5" />
+              <TrendingUp className="w-5 h-5 text-white" />
             </div>
-            <h3 className="text-xl font-semibold text-[#612A4F]" style={{ fontFamily: "'Playfair Display', serif" }}>Monthly Goals</h3>
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.15em] mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                Your North Star
+              </p>
+              <h2 className="text-[32px] font-semibold text-white leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
+                3-Year Vision
+              </h2>
+            </div>
           </div>
-          <select
-            value={selectedYear}
-            onChange={(e) => setSelectedYear(Number(e.target.value))}
-            className="px-4 py-2 text-sm border border-[#E8E4E6] bg-white text-[#612A4F] font-medium focus:outline-none focus:border-[#612a4f]"
-            style={{ borderRadius: '12px' }}
+          <p className="text-sm mb-6 ml-[60px]" style={{ color: 'rgba(255,255,255,0.7)', fontFamily: "'DM Sans', sans-serif" }}>
+            Where do you see yourself and your brand in 3 years? Dream big.
+          </p>
+
+          <div
+            className="backdrop-blur-sm"
+            style={{
+              background: 'rgba(255,255,255,0.1)',
+              borderRadius: '16px',
+              padding: '4px'
+            }}
           >
-            {[...Array(5)].map((_, i) => {
-              const year = 2026 + i;
-              return <option key={year} value={year}>{year}</option>;
-            })}
-          </select>
-        </div>
-
-        {/* Month Pill Selector and Goals with Cross-Month Drag and Drop */}
-        <DndContext
-          sensors={sensors}
-          collisionDetection={pointerWithin}
-          onDragStart={handleDragStart}
-          onDragOver={handleDragOver}
-          onDragEnd={handleDragEndMonthlyGoals}
-          onDragCancel={handleDragCancel}
-        >
-          <div className="flex flex-wrap gap-2" style={{ marginBottom: '-60px' }}>
-            {["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"].map((month) => {
-              const fullMonth = monthShortToFull[month];
-              const isSelected = selectedMonthPill === month;
-              const isDropTarget = dragOverMonth === fullMonth;
-
-              return (
-                <DroppableMonthPill
-                  key={month}
-                  month={month}
-                  fullMonth={fullMonth}
-                  isSelected={isSelected}
-                  isDropTarget={isDropTarget}
-                  onClick={() => setSelectedMonthPill(month)}
-                />
-              );
-            })}
+            <textarea
+              value={threeYearVision}
+              onChange={(e) => setThreeYearVision(e.target.value)}
+              placeholder="In 3 years, I want to..."
+              className="w-full min-h-[160px] bg-transparent border-0 rounded-xl p-5 text-white placeholder:text-white/40 text-base leading-relaxed resize-none focus:outline-none transition-all duration-200"
+              style={{ fontFamily: "'DM Sans', sans-serif" }}
+            />
           </div>
-
-          {/* Expanded Month View */}
-          {(() => {
-            const fullMonth = monthShortToFull[selectedMonthPill];
-            const goals = getMonthlyGoals(selectedYear, fullMonth);
-            const inputKey = `${selectedYear}-${fullMonth}`;
-            const completedCount = goals.filter(g => g.status === 'completed').length;
-
-            return (
-              <div
-                style={{
-                  background: 'linear-gradient(145deg, rgba(139, 115, 130, 0.03) 0%, rgba(139, 115, 130, 0.06) 100%)',
-                  borderRadius: '18px',
-                  padding: '24px',
-                  border: '1px solid rgba(139, 115, 130, 0.08)'
-                }}
-              >
-                <div className="flex items-center justify-between mb-5">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-5 h-5 text-[#612A4F]" />
-                    <h4 className="text-xl text-[#612A4F]" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>
-                      {fullMonth} {selectedYear}
-                    </h4>
-                  </div>
-                  {goals.length > 0 && (
-                    <span className="text-sm font-medium" style={{ color: '#7a9a7a' }}>
-                      {completedCount}/{goals.length} completed
-                    </span>
-                  )}
-                </div>
-
-                {goals.length === 0 ? (
-                  !dismissedGoalPlaceholders[`mg-${fullMonth}`] ? (
-                    <div className="flex flex-col lg:flex-row items-center gap-8 py-2">
-                      <div className="group relative w-full lg:w-72 flex-shrink-0 flex items-center gap-3 px-4 py-3.5 rounded-xl border-2 border-dashed border-[#D8C8D3] opacity-50 hover:opacity-70 transition-opacity">
-                        <div className="w-5 h-5 rounded-full border-2 border-[#D8C8D3] flex-shrink-0" />
-                        <span className="text-sm font-medium text-[#3d3a38] flex-1" style={{ fontFamily: "'DM Sans', sans-serif" }}>Post 3x per week consistently</span>
-                        <span className="text-[9px] font-semibold uppercase tracking-wide text-[#8B7082] bg-[#8B7082]/10 px-1.5 py-0.5 rounded flex-shrink-0">Example</span>
-                        <button
-                          onClick={(e) => dismissGoalPlaceholder(`mg-${fullMonth}`, e)}
-                          className="w-5 h-5 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-200 transition-all opacity-50 hover:opacity-100 flex-shrink-0"
-                          title="Dismiss"
-                        >
-                          <svg width="7" height="7" viewBox="0 0 8 8" fill="none"><path d="M1 1l6 6M7 1L1 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
-                        </button>
-                      </div>
-
-                      <div className="hidden lg:block w-px self-stretch bg-gradient-to-b from-transparent via-[#D8C8D3] to-transparent" />
-
-                      <div className="flex flex-col gap-3 max-w-xs">
-                        <h3 className="text-xl font-bold text-[#2d2a26]" style={{ fontFamily: "'Playfair Display', serif" }}>No goals set yet</h3>
-                        <p className="text-sm text-[#8B7082] leading-relaxed" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                          Set your intentions for {fullMonth}. Break big goals into monthly wins.
-                        </p>
-                        <button
-                          onClick={() => {
-                            const el = document.getElementById(`monthly-goal-input-${inputKey}`);
-                            el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            el?.focus();
-                          }}
-                          className="w-fit h-10 px-5 rounded-xl bg-gradient-to-r from-[#612a4f] to-[#4d2140] hover:from-[#4d2140] hover:to-[#3a1830] text-white text-sm font-semibold shadow-[0_4px_16px_rgba(97,42,79,0.3)] hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2"
-                          style={{ fontFamily: "'DM Sans', sans-serif" }}
-                        >
-                          <Plus className="w-4 h-4" />
-                          Add your first goal
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <EmptyState
-                      icon={Target}
-                      title="No goals set yet"
-                      description="Define your monthly goals to stay focused on what matters most for your growth."
-                    />
-                  )
-                ) : (
-                  <SortableContext
-                    items={goals.map(g => g.id)}
-                    strategy={verticalListSortingStrategy}
-                  >
-                    <div className="space-y-3">
-                      {goals.map((goal) => (
-                        <SortableGoalItem
-                          key={goal.id}
-                          goal={goal}
-                          onStatusChange={(status) => handleChangeMonthlyGoalStatus(selectedYear, fullMonth, goal.id, status)}
-                          onEdit={() => handleEditMonthlyGoal(goal.id, goal.text)}
-                          onDelete={() => handleDeleteMonthlyGoal(selectedYear, fullMonth, goal.id)}
-                          isEditing={editingMonthlyId === goal.id}
-                          editingText={editingMonthlyText}
-                          onEditingTextChange={setEditingMonthlyText}
-                          onSave={() => handleSaveMonthlyGoal(selectedYear, fullMonth)}
-                          onCancelEdit={() => setEditingMonthlyId(null)}
-                          linkedGoalIndex={goal.linkedGoalId ? shortTermGoals.findIndex(g => g.id === goal.linkedGoalId) : undefined}
-                        />
-                      ))}
-                    </div>
-                  </SortableContext>
-                )}
-
-                {/* Add Goal Input */}
-                <div className="flex gap-3 mt-5">
-                  <Input
-                    id={`monthly-goal-input-${inputKey}`}
-                    placeholder={`Add a goal for ${fullMonth}...`}
-                    value={newMonthlyGoalInputs[inputKey] || ''}
-                    onChange={(e) => setNewMonthlyGoalInputs(prev => ({ ...prev, [inputKey]: e.target.value }))}
-                    onKeyDown={(e) => e.key === 'Enter' && handleAddMonthlyGoal(selectedYear, fullMonth)}
-                    className="flex-1 h-12 text-sm bg-white border border-[#E8E4E6] focus:outline-none focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)]"
-                    style={{ borderRadius: '14px' }}
-                  />
-                  <button
-                    onClick={() => handleAddMonthlyGoal(selectedYear, fullMonth)}
-                    disabled={!(newMonthlyGoalInputs[inputKey] || '').trim()}
-                    className="flex items-center justify-center text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                    style={{
-                      width: '48px',
-                      height: '48px',
-                      borderRadius: '14px',
-                      background: 'linear-gradient(145deg, #612A4F 0%, #4d2140 100%)'
-                    }}
-                  >
-                    <Plus className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-            );
-          })()}
-
-          {/* Drag Overlay for visual feedback */}
-          <DragOverlay>
-            {draggedGoal ? (
-              dragOverMonth ? (
-                <div
-                  style={{
-                    padding: '8px 12px',
-                    borderRadius: '10px',
-                    border: '1px solid #612A4F',
-                    boxShadow: '0 8px 20px rgba(97, 42, 79, 0.3)',
-                    background: 'white',
-                    maxWidth: '200px',
-                  }}
-                  className="flex items-center gap-2"
-                >
-                  <GripVertical className="w-3 h-3 text-gray-400 flex-shrink-0" />
-                  <span className="text-xs text-[#3d3a38] truncate">{draggedGoal.text}</span>
-                </div>
-              ) : (
-                <div
-                  style={{
-                    padding: '14px 16px',
-                    borderRadius: '14px',
-                    border: '1px solid #612A4F',
-                    boxShadow: '0 12px 28px rgba(97, 42, 79, 0.25)',
-                    background: 'white',
-                  }}
-                  className="flex items-center gap-3"
-                >
-                  <GripVertical className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm text-[#3d3a38]">{draggedGoal.text}</span>
-                </div>
-              )
-            ) : null}
-          </DragOverlay>
-        </DndContext>
+        </div>
       </div>
 
     </TabsContent>

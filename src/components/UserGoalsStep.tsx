@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Check } from 'lucide-react';
 
 interface UserGoalsStepProps {
@@ -7,9 +7,9 @@ interface UserGoalsStepProps {
 
 interface UserGoalsAnswers {
   postFrequency: string;
-  ideationMethod: string;
+  ideationMethod: string[];
   teamStructure: string;
-  creatorDream: string;
+  creatorDream: string[];
   platforms: string[];
   stuckAreas: string[];
   otherStuckArea?: string;
@@ -30,7 +30,8 @@ const questions = [
   {
     id: 'ideationMethod',
     question: 'How do you come up with content ideas?',
-    type: 'single',
+    subtitle: 'Select all that apply',
+    type: 'multiple',
     options: [
       { value: 'plan_ahead', label: 'I plan them ahead' },
       { value: 'wing_it', label: 'I wing it day by day' },
@@ -52,7 +53,8 @@ const questions = [
   {
     id: 'creatorDream',
     question: "What's your biggest dream as a creator?",
-    type: 'single',
+    subtitle: 'Select all that apply',
+    type: 'multiple',
     options: [
       { value: 'quit_job', label: 'Quitting my job and going full-time' },
       { value: 'grow_followers', label: 'Growing my followers and engagement' },
@@ -81,11 +83,11 @@ const questions = [
     type: 'multiple',
     hasOther: true,
     options: [
-      { value: 'consistency', label: 'Staying consistent' },
+      { value: 'consistency', label: 'Posting consistently' },
       { value: 'overwhelmed', label: 'Feeling overwhelmed with planning' },
       { value: 'ideas', label: 'Coming up with ideas' },
-      { value: 'partnerships', label: 'Managing brand deals' },
-      { value: 'analytics', label: 'Tracking growth and analytics' },
+      { value: 'brand_visibility', label: 'Getting brands to notice me' },
+      { value: 'negotiating_deals', label: 'Negotiating partnerships' },
       { value: 'organization', label: 'Keeping everything organized' },
       { value: 'other', label: 'Other' },
     ],
@@ -93,10 +95,36 @@ const questions = [
 ];
 
 export const UserGoalsStep: React.FC<UserGoalsStepProps> = ({ onComplete }) => {
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
-  const [selectedMultiple, setSelectedMultiple] = useState<string[]>([]);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(() => {
+    const saved = localStorage.getItem('onboarding_question_index');
+    return saved ? Math.min(parseInt(saved, 10), questions.length - 1) : 0;
+  });
+  const [answers, setAnswers] = useState<Record<string, string | string[]>>(() => {
+    const saved = localStorage.getItem('onboarding_answers');
+    return saved ? JSON.parse(saved) : {};
+  });
+  const [selectedMultiple, setSelectedMultiple] = useState<string[]>(() => {
+    const savedAnswers = localStorage.getItem('onboarding_answers');
+    const savedIndex = localStorage.getItem('onboarding_question_index');
+    if (savedAnswers && savedIndex) {
+      const parsedAnswers = JSON.parse(savedAnswers);
+      const q = questions[Math.min(parseInt(savedIndex, 10), questions.length - 1)];
+      if (q?.type === 'multiple' && parsedAnswers[q.id]) {
+        return parsedAnswers[q.id] as string[];
+      }
+    }
+    return [];
+  });
   const [otherText, setOtherText] = useState('');
+
+  // Persist progress to localStorage
+  useEffect(() => {
+    localStorage.setItem('onboarding_question_index', String(currentQuestionIndex));
+  }, [currentQuestionIndex]);
+
+  useEffect(() => {
+    localStorage.setItem('onboarding_answers', JSON.stringify(answers));
+  }, [answers]);
 
   const brandGradient = 'linear-gradient(135deg, #7a3868 0%, #612a4f 50%, #4e2040 100%)';
   const currentQuestion = questions[currentQuestionIndex];
@@ -141,6 +169,8 @@ export const UserGoalsStep: React.FC<UserGoalsStepProps> = ({ onComplete }) => {
       setOtherText('');
     } else {
       // Last question - complete
+      localStorage.removeItem('onboarding_question_index');
+      localStorage.removeItem('onboarding_answers');
       onComplete(finalAnswers as unknown as UserGoalsAnswers);
     }
   };
@@ -203,10 +233,10 @@ export const UserGoalsStep: React.FC<UserGoalsStepProps> = ({ onComplete }) => {
                 className="text-2xl font-normal mb-2"
                 style={{ color: '#1a1523', fontFamily: "'Instrument Serif', serif" }}
               >
-                Let's get to know you
+                Help us build the right features for you
               </h1>
               <p className="text-sm" style={{ color: '#6b6478' }}>
-                Answer a few quick questions so we can better support your creator journey and improve your experience with HeyMeg.
+                This takes less than a minute
               </p>
             </div>
           )}

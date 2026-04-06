@@ -2732,8 +2732,23 @@ const Production = () => {
               {/* Step 1: Pillars */}
               <div className="mb-8">
                 <div className="flex flex-wrap gap-3 mb-4">
-                  {/* Show example pillars when user hasn't added any */}
-                  {userPillars.length === 0 && !hasSeenPillarsExample && (
+                  <button
+                    onClick={() => {
+                      const newPillarName = "";
+                      const newIndex = userPillars.length;
+                      setUserPillars([...userPillars, newPillarName]);
+                      setSelectedUserPillar(newPillarName);
+                      setSelectedSubCategory("");
+                      setCascadeIdeas([]);
+                      setNewPillarIndex(newIndex);
+                      setHasSeenPillarsExample(true);
+                    }}
+                    className="px-6 py-3 rounded-xl font-medium bg-white/60 text-[#5D8A7A] hover:bg-white/80 hover:shadow-sm transition-all border-2 border-dashed border-[#B8D4CA] hover:border-[#7BA393]"
+                  >
+                    + Add Theme
+                  </button>
+                  {/* Show example pillars only when user has no themes yet */}
+                  {userPillars.length === 0 && !selectedUserPillar && cascadeIdeas.length === 0 && (
                     <>
                       {["Wellness", "Travel", "Productivity"].map((example) => (
                         <div
@@ -2850,8 +2865,30 @@ const Production = () => {
                         onClick={(e) => {
                           e.stopPropagation();
                           if (selectedUserPillar === pillar) {
-                            setSelectedUserPillar(null);
+                            setSelectedUserPillar("");
+                            setSelectedSubCategory("");
+                            setCascadeIdeas([]);
                           }
+                          // Clean up all data associated with this theme
+                          setPillarSubCategories(prev => {
+                            const updated = { ...prev };
+                            delete updated[pillar];
+                            return updated;
+                          });
+                          setPillarIdeasMap(prev => {
+                            const updated = { ...prev };
+                            Object.keys(updated).forEach(key => {
+                              if (key.startsWith(`${pillar}::`)) {
+                                delete updated[key];
+                              }
+                            });
+                            return updated;
+                          });
+                          setPillarLastSubCategoryMap(prev => {
+                            const updated = { ...prev };
+                            delete updated[pillar];
+                            return updated;
+                          });
                           setUserPillars(userPillars.filter((_, i) => i !== index));
                         }}
                         className="absolute -top-1 -right-1 w-4 h-4 bg-white border border-gray-400 hover:border-gray-600 text-gray-500 hover:text-gray-700 rounded-full opacity-0 group-hover:opacity-100 transition-all text-xs flex items-center justify-center"
@@ -2860,21 +2897,6 @@ const Production = () => {
                       </button>
                     </div>
                   ))}
-                  <button
-                    onClick={() => {
-                      const newPillarName = "";
-                      const newIndex = userPillars.length;
-                      setUserPillars([...userPillars, newPillarName]);
-                      setSelectedUserPillar(newPillarName);
-                      setSelectedSubCategory("");
-                      setCascadeIdeas([]);
-                      setNewPillarIndex(newIndex);
-                      setHasSeenPillarsExample(true);
-                    }}
-                    className="px-6 py-3 rounded-xl font-medium bg-white/60 text-[#5D8A7A] hover:bg-white/80 hover:shadow-sm transition-all border-2 border-dashed border-[#B8D4CA] hover:border-[#7BA393]"
-                  >
-                    + Add Theme
-                  </button>
                 </div>
               </div>
 

@@ -145,9 +145,9 @@ const userGoalsSchema = z.object({
     other: z.boolean().default(false)
   }),
   otherStuckArea: z.string().optional(),
-  ideationMethod: z.enum(["plan_ahead", "wing_it", "follow_trends", "struggle"]),
+  ideationMethod: z.array(z.enum(["plan_ahead", "wing_it", "follow_trends", "struggle"])),
   teamStructure: z.enum(["solo", "has_assistant", "team_agency", "other"]),
-  creatorDream: z.enum(["quit_job", "grow_followers", "build_brand", "launch_products", "inspire_others", "other"]),
+  creatorDream: z.array(z.enum(["quit_job", "grow_followers", "build_brand", "launch_products", "inspire_others", "other"])),
   otherTeamStructure: z.string().optional(),
   otherCreatorDream: z.string().optional(),
 });
@@ -258,9 +258,9 @@ const OnboardingFlow: React.FC = () => {
         organization: false,
         other: false
       },
-      ideationMethod: "plan_ahead",
+      ideationMethod: [],
       teamStructure: "solo",
-      creatorDream: "grow_followers"
+      creatorDream: []
     }
   });
 
