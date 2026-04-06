@@ -317,7 +317,13 @@ const DealCard = ({ deal, selectedMonth, isYearView, showArchived, onDragStart, 
                       paidDate: checked ? new Date().toISOString() : undefined
                     } : d
                   );
-                  onQuickUpdate(deal.id, { deliverables: updatedDeliverables });
+                  // Auto-set "Fully Paid" when all deliverables are paid
+                  const allPaid = updatedDeliverables.every(d => d.isPaid);
+                  onQuickUpdate(deal.id, {
+                    deliverables: updatedDeliverables,
+                    paymentReceived: allPaid,
+                    paymentReceivedDate: allPaid ? new Date().toISOString() : null as unknown as string,
+                  });
                 }}
                 className="h-4 w-4 rounded-full border-[#8B7082]/30 data-[state=checked]:bg-gradient-to-b data-[state=checked]:from-[#6B9B6B] data-[state=checked]:to-[#4A7A4A] data-[state=checked]:border-[#4A7A4A] data-[state=checked]:shadow-[0_2px_8px_rgba(74,122,74,0.4),inset_0_1px_0_rgba(255,255,255,0.2)]"
               />

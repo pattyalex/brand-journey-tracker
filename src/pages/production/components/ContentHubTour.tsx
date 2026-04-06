@@ -110,6 +110,18 @@ const BigPictureBanner: React.FC<{
 }> = ({ onNext, onBack, onClose, showBack = true }) =>
   createPortal(
     <>
+      <style>{`
+@keyframes tourBounceIn {
+  0% { opacity: 0; transform: scale(0.85) translateY(20px); }
+  30% { opacity: 1; transform: scale(1) translateY(0); }
+  40% { transform: translateY(-30px); }
+  50% { transform: translateY(0); }
+  60% { transform: translateY(-18px); }
+  70% { transform: translateY(0); }
+  80% { transform: translateY(-8px); }
+  90%, 100% { transform: translateY(0); }
+}
+`}</style>
       {/* Banner card */}
       <div
         className="fixed left-0 right-0 flex justify-center"
@@ -121,6 +133,7 @@ const BigPictureBanner: React.FC<{
             boxShadow: "0 8px 30px rgba(93,63,90,0.12), 0 -8px 30px rgba(93,63,90,0.1)",
             border: "1px solid rgba(93,63,90,0.08)",
             maxWidth: 500,
+            animation: "tourBounceIn 1.2s ease-out",
           }}
         >
           <TourCloseButton onClick={onClose} />
@@ -128,13 +141,10 @@ const BigPictureBanner: React.FC<{
             className="text-[18px] text-[#612A4F] mb-2"
             style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}
           >
-            Columns = Big picture view
+            Your Content Pipeline
           </h3>
           <p className="text-[14px] leading-relaxed text-[#4A3D45]">
-            This is where you can see <span style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600, fontStyle: "italic", color: "#612A4F", fontSize: "16px" }}>all your ideas</span> at a glance.
-          </p>
-          <p className="text-[14px] leading-relaxed text-[#4A3D45] mt-2">
-            Each column represents a step in the content production process.
+            Each column represents a step in the content production process so you can see <span className="font-bold">all your ideas</span> at a glance.
           </p>
           <div className="flex items-center justify-between mt-5">
             <TourProgressDots currentStep={1} />

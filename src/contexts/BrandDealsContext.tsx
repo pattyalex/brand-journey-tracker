@@ -85,15 +85,22 @@ export const BrandDealsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       toast.error('You must be logged in to update deals');
       return;
     }
+
+    // Optimistic update: apply changes to UI immediately
+    const previousDeals = deals;
+    setDeals(prev => prev.map(d => d.id === id ? { ...d, ...updates } : d));
+
     try {
       const updatedDeal = await updateBrandDealWithDeliverables(id, updates);
       setDeals(prev => prev.map(d => d.id === id ? updatedDeal : d));
     } catch (err) {
       console.error('Error updating brand deal:', err);
+      // Revert on failure
+      setDeals(previousDeals);
       toast.error('Failed to update brand deal');
       throw err;
     }
-  }, [user?.id]);
+  }, [user?.id, deals]);
 
   const deleteDeal = useCallback(async (id: string) => {
     if (!user?.id) {

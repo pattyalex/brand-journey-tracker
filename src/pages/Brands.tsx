@@ -15,6 +15,7 @@ import BrandsFilters from "@/components/brands/BrandsFilters";
 import BrandsKanban from "@/components/brands/BrandsKanban";
 import BrandDealDialog from "@/components/brands/BrandDealDialog";
 import { BrandDeal } from "@/components/brands/brandsTypes";
+import { useBrandDealsContext } from "@/contexts/BrandDealsContext";
 
 const Brands = () => {
   const {
@@ -48,6 +49,7 @@ const Brands = () => {
     handleDragOver,
     handleDrop,
   } = useBrandsPage();
+  const { updateDeal } = useBrandDealsContext();
 
   return (
       <div className="min-h-screen bg-gradient-to-br from-[#F0EAED] via-[#F8F6F6] to-[#FFFAF3]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
@@ -205,6 +207,9 @@ const Brands = () => {
                 } else {
                   handleAddDeal(deal as Omit<BrandDeal, 'id' | 'createdAt'>);
                 }
+              }}
+              onQuickUpdate={(id, updates) => {
+                updateDeal(id, updates);
               }}
             />
         </div>

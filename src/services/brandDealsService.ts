@@ -346,8 +346,18 @@ export const updateBrandDealWithDeliverables = async (
 ): Promise<BrandDeal> => {
   const { deliverables, ...dealUpdates } = updates;
 
-  // Update the deal itself
-  const updatedDeal = await updateBrandDeal(dealId, dealUpdates);
+  // Update the deal itself (skip if no deal-level changes)
+  const hasDealUpdates = Object.keys(dealUpdates).length > 0;
+  const updatedDeal = hasDealUpdates
+    ? await updateBrandDeal(dealId, dealUpdates)
+    : await (async () => {
+        const { data, error } = await supabase.from('brand_deals').select().eq('id', dealId).single();
+        if (error) throw error;
+        const deliverables = await fetchAll<DbDeliverable>('brand_deal_deliverables', {
+          orderBy: 'created_at', ascending: true, filters: { brand_deal_id: dealId },
+        });
+        return dbToBrandDeal(data as DbBrandDeal, deliverables.map(dbToDeliverable));
+      })();
 
   // If deliverables are provided, sync them
   if (deliverables !== undefined) {

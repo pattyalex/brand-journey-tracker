@@ -40,9 +40,10 @@ interface DealDialogProps {
   onOpenChange: (open: boolean) => void;
   deal: BrandDeal | null;
   onSave: (deal: Partial<BrandDeal>) => void;
+  onQuickUpdate?: (id: string, updates: Partial<BrandDeal>) => void;
 }
 
-const BrandDealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) => {
+const BrandDealDialog = ({ open, onOpenChange, deal, onSave, onQuickUpdate }: DealDialogProps) => {
   const [formData, setFormData] = useState<Partial<BrandDeal>>({
     brandName: '',
     productCampaign: '',
@@ -341,7 +342,7 @@ const BrandDealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) 
                         {formData.finalPaymentDueDate ? format(parseISO(formData.finalPaymentDueDate), "MMM d") : "Select"}
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 z-[9999]" sideOffset={5}>
+                    <PopoverContent className="w-auto p-0 z-[10200]" sideOffset={5}>
                       <Calendar
                         mode="single"
                         selected={formData.finalPaymentDueDate ? parseISO(formData.finalPaymentDueDate) : undefined}
@@ -401,7 +402,21 @@ const BrandDealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) 
                 {/* Final Payment */}
                 <button
                   type="button"
-                  onClick={() => setFormData(prev => ({ ...prev, paymentReceived: !prev.paymentReceived, paymentReceivedDate: !prev.paymentReceived ? new Date().toISOString() : undefined }))}
+                  onClick={() => {
+                    const newPaymentReceived = !formData.paymentReceived;
+                    const updated = {
+                      ...formData,
+                      paymentReceived: newPaymentReceived,
+                      paymentReceivedDate: newPaymentReceived ? new Date().toISOString() : undefined,
+                      deliverables: (formData.deliverables || []).map(d => ({
+                        ...d,
+                        isPaid: newPaymentReceived,
+                        paidDate: newPaymentReceived ? (d.paidDate || new Date().toISOString()) : undefined,
+                      })),
+                    };
+                    setFormData(updated);
+                    if (deal && onQuickUpdate) onQuickUpdate(deal.id, updated);
+                  }}
                   className={cn(
                     "flex-1 flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all",
                     formData.paymentReceived
@@ -547,7 +562,7 @@ const BrandDealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) 
                               {deliverable.submissionDeadline ? format(parseISO(deliverable.submissionDeadline), "MMM d, yyyy") : "Select date"}
                             </Button>
                           </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0 z-[9999]" sideOffset={5}>
+                          <PopoverContent className="w-auto p-0 z-[10200]" sideOffset={5}>
                             <Calendar
                               mode="single"
                               selected={deliverable.submissionDeadline ? parseISO(deliverable.submissionDeadline) : undefined}
@@ -571,14 +586,14 @@ const BrandDealDialog = ({ open, onOpenChange, deal, onSave }: DealDialogProps) 
                             <span className="text-[10px] text-[#8B7082]">Done</span>
                           </label>
                         </div>
-                        <Popover>
+                        <Popover modal={true}>
                           <PopoverTrigger asChild>
                             <Button variant="outline" className="w-full justify-start text-left font-normal rounded-[10px] border-l-4 border-l-[#8B7082] border-[#E8E4E6] hover:border-[#D5CDD2] hover:bg-[#EDE8EB] focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] bg-[#F5F0F3] h-9 text-sm transition-shadow duration-200">
                               <CalendarIcon className="mr-2 h-3.5 w-3.5 text-[#8B7082]" />
                               {deliverable.publishDeadline ? format(parseISO(deliverable.publishDeadline), "MMM d, yyyy") : "Select date"}
                             </Button>
                           </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0 z-[9999]" sideOffset={5}>
+                          <PopoverContent className="w-auto p-0 z-[10200]" side="bottom" sideOffset={5}>
                             <Calendar
                               mode="single"
                               selected={deliverable.publishDeadline ? parseISO(deliverable.publishDeadline) : undefined}
