@@ -1,13 +1,31 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { RotateCw, Handshake, Lightbulb, CheckCircle } from "lucide-react";
+import { RotateCw, Handshake, Lightbulb, CheckCircle, ChevronUp, ChevronDown } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import Layout from "@/components/Layout";
 
 const LandingPage = () => {
   const navigate = useNavigate();
   const { openLoginModal, isAuthenticated } = useAuth();
+
+  const [showUp, setShowUp] = useState(false);
+  const [showDown, setShowDown] = useState(true);
+
+  useEffect(() => {
+    const main = document.querySelector('main');
+    if (!main) return;
+    const handleScroll = () => {
+      const scrollTop = main.scrollTop;
+      const scrollHeight = main.scrollHeight - main.clientHeight;
+      setShowUp(scrollTop > 200);
+      setShowDown(scrollTop < scrollHeight - 100);
+    };
+    main.addEventListener('scroll', handleScroll);
+    handleScroll();
+    return () => main.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleStartFreeTrial = () => {
     // If user is already logged in, redirect to dashboard
@@ -189,6 +207,25 @@ const LandingPage = () => {
           </div>
         </div>
       </footer>
+      {/* Scroll navigation arrows */}
+      <div className="fixed right-6 bottom-8 flex flex-col gap-2 z-50">
+        {showUp && (
+          <button
+            onClick={() => document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="w-9 h-9 rounded-full bg-white/80 backdrop-blur-sm border border-gray-200 shadow-sm flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-white transition-all"
+          >
+            <ChevronUp className="w-4 h-4" />
+          </button>
+        )}
+        {showDown && (
+          <button
+            onClick={() => { const m = document.querySelector('main'); m?.scrollTo({ top: m.scrollHeight, behavior: 'smooth' }); }}
+            className="w-9 h-9 rounded-full bg-white/80 backdrop-blur-sm border border-gray-200 shadow-sm flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-white transition-all"
+          >
+            <ChevronDown className="w-4 h-4" />
+          </button>
+        )}
+      </div>
     </Layout>
   );
 };
