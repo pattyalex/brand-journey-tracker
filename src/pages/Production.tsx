@@ -209,9 +209,21 @@ const Production = () => {
     handleSkipColumnChoice,
   } = board;
 
-  // Onboarding tour state — start immediately if user hasn't seen it
+  // Onboarding tour state — only show for genuinely new users (no existing cards)
   const [runTour, setRunTour] = useState(() => !isMobile && !getString(StorageKeys.hasSeenContentHubTour));
   const [tourStepIndex, setTourStepIndex] = useState(-1);
+
+  // Auto-dismiss tour for existing users: if they have real cards, they're not new
+  const tourDismissedRef = useRef(false);
+  useEffect(() => {
+    if (!runTour || tourDismissedRef.current) return;
+    const hasCards = columns.some(col => col.cards.length > 0);
+    if (hasCards) {
+      tourDismissedRef.current = true;
+      setRunTour(false);
+      setString(StorageKeys.hasSeenContentHubTour, "true");
+    }
+  }, [runTour, columns]);
 
   const [isAddCardDialogOpen, setIsAddCardDialogOpen] = useState(false);
   const [selectedColumnId, setSelectedColumnId] = useState<string>("");
