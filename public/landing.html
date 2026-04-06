@@ -7183,5 +7183,113 @@
       });
     })();
   </script>
+
+  <!-- Scroll navigation arrows -->
+  <div id="scroll-nav" style="
+    position: fixed;
+    right: 24px;
+    bottom: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 9999;
+  ">
+    <button id="scroll-up-btn" onclick="window.scrollTo({ top: 0, behavior: 'smooth' })" style="
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid rgba(107, 47, 90, 0.15);
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(107, 47, 90, 0.4);
+      transition: all 0.25s ease;
+      opacity: 0;
+      pointer-events: none;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    " aria-label="Scroll to top">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+    </button>
+    <button id="scroll-down-btn" onclick="window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' })" style="
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid rgba(107, 47, 90, 0.15);
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(107, 47, 90, 0.4);
+      transition: all 0.25s ease;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      opacity: 0;
+      pointer-events: none;
+    " aria-label="Scroll to bottom">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+  </div>
+
+  <script>
+    (function() {
+      var upBtn = document.getElementById('scroll-up-btn');
+      var downBtn = document.getElementById('scroll-down-btn');
+      var fadeTimer = null;
+
+      function showArrows() {
+        var scrollTop = window.scrollY || document.documentElement.scrollTop;
+        var scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+        // Up arrow: only when not at top
+        if (scrollTop > 300) {
+          upBtn.style.opacity = '1';
+          upBtn.style.pointerEvents = 'auto';
+        } else {
+          upBtn.style.opacity = '0';
+          upBtn.style.pointerEvents = 'none';
+        }
+        // Down arrow: only when not at top and not at bottom
+        if (scrollTop > 300 && scrollTop < scrollHeight - 100) {
+          downBtn.style.opacity = '1';
+          downBtn.style.pointerEvents = 'auto';
+        } else {
+          downBtn.style.opacity = '0';
+          downBtn.style.pointerEvents = 'none';
+        }
+      }
+
+      function hideArrows() {
+        upBtn.style.opacity = '0';
+        upBtn.style.pointerEvents = 'none';
+        downBtn.style.opacity = '0';
+        downBtn.style.pointerEvents = 'none';
+      }
+
+      window.addEventListener('scroll', function() {
+        showArrows();
+        clearTimeout(fadeTimer);
+        fadeTimer = setTimeout(hideArrows, 1500);
+      }, { passive: true });
+
+      // Hover effects
+      [upBtn, downBtn].forEach(function(btn) {
+        btn.addEventListener('mouseenter', function() {
+          btn.style.color = 'rgba(107, 47, 90, 0.7)';
+          btn.style.borderColor = 'rgba(107, 47, 90, 0.3)';
+          btn.style.background = 'rgba(255, 255, 255, 0.95)';
+        });
+        btn.addEventListener('mouseleave', function() {
+          btn.style.color = 'rgba(107, 47, 90, 0.4)';
+          btn.style.borderColor = 'rgba(107, 47, 90, 0.15)';
+          btn.style.background = 'rgba(255, 255, 255, 0.85)';
+        });
+      });
+    })();
+  </script>
 </body>
 </html>
