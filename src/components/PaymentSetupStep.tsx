@@ -148,15 +148,15 @@ export const PaymentSetupStep: React.FC<PaymentSetupStepProps> = ({
                       className="px-2 py-0.5 rounded-full text-xs font-medium"
                       style={{ background: '#dcfce7', color: '#166534' }}
                     >
-                      Save 18%
+                      Save 25%
                     </span>
                   </div>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-2xl font-bold" style={{ color: '#1a1523' }}>$14</span>
+                    <span className="text-2xl font-bold" style={{ color: '#1a1523' }}>$21</span>
                     <span className="text-sm" style={{ color: '#6b6478' }}>/month</span>
                   </div>
                   <p className="text-xs mt-1" style={{ color: '#8a7a85' }}>
-                    Billed annually ($168/year)
+                    Billed annually ($252/year)
                   </p>
                 </div>
                 <div
@@ -194,7 +194,7 @@ export const PaymentSetupStep: React.FC<PaymentSetupStepProps> = ({
                     Monthly Plan
                   </span>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-2xl font-bold" style={{ color: '#1a1523' }}>$17</span>
+                    <span className="text-2xl font-bold" style={{ color: '#1a1523' }}>$29</span>
                     <span className="text-sm" style={{ color: '#6b6478' }}>/month</span>
                   </div>
                   <p className="text-xs mt-1" style={{ color: '#8a7a85' }}>

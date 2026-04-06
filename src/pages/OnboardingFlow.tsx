@@ -162,13 +162,28 @@ const socialAccountsSchema = z.object({
 
 const OnboardingFlow: React.FC = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const { user, session, isAuthLoaded, hasCompletedOnboarding, isAuthenticated, hasUsedTrial, refreshSubscription } = useAuth();
-  const [currentStep, setCurrentStep] = useState<OnboardingStep>("account-creation");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { user, session, isAuthLoaded, hasCompletedOnboarding, isAuthenticated, hasUsedTrial, refreshSubscription, subscriptionStatus } = useAuth();
+  const stepParam = searchParams.get('step');
+  const validSteps: OnboardingStep[] = ['account-creation', 'plan-selection', 'payment-entry', 'user-goals', 'welcome'];
+  const [currentStep, setCurrentStepRaw] = useState<OnboardingStep>(
+    stepParam && validSteps.includes(stepParam as OnboardingStep) ? stepParam as OnboardingStep : "account-creation"
+  );
+  const setCurrentStep = (step: OnboardingStep) => {
+    setCurrentStepRaw(step);
+    setSearchParams({ step }, { replace: true });
+  };
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<string>('');
   const [pendingVerificationEmail, setPendingVerificationEmail] = useState<string>('');
   const [consentAccepted, setConsentAccepted] = useState(false);
+
+  // Brief loading screen so refresh is visually apparent
+  const [showLoading, setShowLoading] = useState(true);
+  useEffect(() => {
+    const timer = setTimeout(() => setShowLoading(false), 600);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Load Google Fonts for landing page consistency
   useEffect(() => {
@@ -182,36 +197,24 @@ const OnboardingFlow: React.FC = () => {
 
   // Redirect users who have already completed onboarding (unless resubscribing)
   useEffect(() => {
-    const stepParam = searchParams.get('step');
     if (isAuthenticated && hasCompletedOnboarding && stepParam !== 'payment-entry' && stepParam !== 'plan-selection') {
       console.log('✅ User has already completed onboarding, redirecting to dashboard');
       navigate('/production');
     }
   }, [isAuthenticated, hasCompletedOnboarding, navigate, searchParams]);
 
-  // Check URL parameters on mount to determine initial step
-  useEffect(() => {
-    const stepParam = searchParams.get('step');
-    if (stepParam && ['account-creation', 'plan-selection', 'payment-entry', 'user-goals', 'welcome'].includes(stepParam)) {
-      console.log('🔗 Setting initial step from URL parameter:', stepParam);
-      setCurrentStep(stepParam as OnboardingStep);
-    }
-  }, [searchParams]);
-
-  // Auto-advance to plan selection ONLY on initial load if user is already signed in
-  // (not when they explicitly navigate back)
+  // Auto-advance on initial load only if no step in URL
   const [hasInitialized, setHasInitialized] = useState(false);
   useEffect(() => {
-    if (!hasInitialized && isAuthenticated && currentStep === "account-creation") {
-      // Only auto-advance on first load, not when user clicks Back
-      const stepParam = searchParams.get('step');
-      if (!stepParam) {
-        console.log('✅ User is signed in, advancing to plan selection');
+    if (!hasInitialized && isAuthenticated && !stepParam && currentStep === "account-creation") {
+      if (subscriptionStatus === 'active' || subscriptionStatus === 'trialing') {
+        setCurrentStep("user-goals");
+      } else {
         setCurrentStep("plan-selection");
       }
-      setHasInitialized(true);
     }
-  }, [isAuthenticated, currentStep, hasInitialized, searchParams]);
+    if (isAuthenticated) setHasInitialized(true);
+  }, [isAuthenticated, hasInitialized]);
 
   // Account Creation Form
   const accountForm = useForm<z.infer<typeof accountCreationSchema>>({
@@ -327,6 +330,10 @@ const OnboardingFlow: React.FC = () => {
 
       if (signUpResult.success) {
         console.log('✅ Account creation successful');
+
+        // Clear any leftover onboarding data from previous users
+        localStorage.removeItem('onboarding_answers');
+        localStorage.removeItem('onboarding_question_index');
 
         // Check if email verification is needed
         if (signUpResult.needsVerification) {
@@ -760,8 +767,21 @@ const OnboardingFlow: React.FC = () => {
   };
 
   // Don't render anything until auth is loaded (prevents flash)
-  if (!isAuthLoaded) {
-    return <div className="min-h-screen bg-gradient-to-b from-white to-gray-100" />;
+  if (!isAuthLoaded || showLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#fcf9fe' }}>
+        <div style={{
+          width: 48, height: 48, borderRadius: 12,
+          background: 'linear-gradient(135deg, #c9a3bb, #8B7082)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          animation: 'pulse 1s ease-in-out infinite',
+          color: 'white', fontFamily: "'Instrument Serif', serif", fontSize: 22
+        }}>
+          M
+        </div>
+        <style>{`@keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(0.92); } }`}</style>
+      </div>
+    );
   }
 
   // Brand gradient for stepper

@@ -375,7 +375,7 @@ export const MembershipPage: React.FC = () => {
                 </p>
               </div>
               <p className="text-sm font-semibold" style={{ color: '#2d2a26' }}>
-                {subscriptionData.plan_type === 'annual' ? '$168/year' : '$17/month'}
+                {subscriptionData.plan_type === 'annual' ? '$252/year' : '$29/month'}
               </p>
             </div>
 

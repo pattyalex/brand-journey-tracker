@@ -73,14 +73,54 @@ const LandingPage = () => {
             Start with our 14-day free trial and discover how our platform can transform your content creation workflow
           </p>
 
-          <div className="max-w-md mx-auto">
-            <Card className="border-2 border-primary p-8">
+          <div className="max-w-3xl mx-auto grid md:grid-cols-2 gap-6">
+            <Card className="border-2 border-muted p-8">
               <div className="text-center mb-6">
-                <h3 className="text-2xl font-bold">Pro Plan</h3>
+                <h3 className="text-2xl font-bold">Monthly</h3>
                 <div className="my-4">
-                  <span className="text-4xl font-bold">$19</span>
+                  <span className="text-4xl font-bold">$29</span>
                   <span className="text-muted-foreground">/month</span>
                 </div>
+              </div>
+
+              <div className="space-y-3 mb-8">
+                {[
+                  "Complete content management tools",
+                  "Performance analytics",
+                  "Income tracking",
+                  "Brand deal management",
+                  "Content calendar",
+                  "Unlimited projects"
+                ].map((feature, index) => (
+                  <div key={index} className="flex items-center">
+                    <CheckCircle className="h-5 w-5 text-primary mr-2" />
+                    <span>{feature}</span>
+                  </div>
+                ))}
+              </div>
+
+              <Button
+                className="w-full py-6"
+                onClick={handleStartFreeTrial}
+              >
+                {isAuthenticated ? "Go to Dashboard" : "Start 14-Day Free Trial"}
+              </Button>
+              <p className="text-xs text-center text-muted-foreground mt-4">
+                Cancel anytime.
+              </p>
+            </Card>
+
+            <Card className="border-2 border-primary p-8 relative">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full">
+                Save 25%
+              </div>
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold">Yearly</h3>
+                <div className="my-4">
+                  <span className="text-4xl font-bold">$252</span>
+                  <span className="text-muted-foreground">/year</span>
+                </div>
+                <p className="text-sm text-muted-foreground">$21/month, billed annually</p>
               </div>
 
               <div className="space-y-3 mb-8">

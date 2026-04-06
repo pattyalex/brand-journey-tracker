@@ -6350,7 +6350,7 @@
     <!-- Centered header -->
     <div class="merged-header">
       <h2 class="merged-h2">You don't need a team.<br><em>You need a better system.</em></h2>
-      <p class="ribbons-subtitle">We built it. $14/month. Everything included.</p>
+      <p class="ribbons-subtitle">We built it. $29/month. Everything included.</p>
     </div>
 
     <!-- Side-by-side layout -->
@@ -6408,7 +6408,7 @@
       <div class="merged-pricing">
         <div class="pricing-toggle-wrapper">
           <span class="toggle-label" id="monthly-label" onclick="selectMonthly()">Monthly</span>
-          <span class="toggle-label active" id="yearly-label" onclick="selectYearly()">Yearly <span class="save-badge">Save 18%</span></span>
+          <span class="toggle-label active" id="yearly-label" onclick="selectYearly()">Yearly <span class="save-badge">Save 25%</span></span>
         </div>
 
         <div class="pricing-cards">
@@ -6422,11 +6422,11 @@
             <div class="price-wrapper">
               <div class="price">
                 <span class="currency">$</span>
-                <span class="amount" id="price-amount">14</span>
+                <span class="amount" id="price-amount">21</span>
                 <span class="price-mo">/mo</span>
               </div>
 
-              <span class="price-note" id="price-note">Billed as $168/year</span>
+              <span class="price-note" id="price-note">Billed as $252/year</span>
             </div>
 
             <ul class="pricing-features">
@@ -6731,7 +6731,7 @@
       const yearlyLabel = document.getElementById('yearly-label');
       const popularTag = document.getElementById('popular-tag');
 
-      priceAmount.textContent = '17';
+      priceAmount.textContent = '29';
       priceNote.textContent = 'Billed monthly';
       priceNote.style.color = '#7a9a7a';
       monthlyLabel.classList.add('active');
@@ -6746,8 +6746,8 @@
       const yearlyLabel = document.getElementById('yearly-label');
       const popularTag = document.getElementById('popular-tag');
 
-      priceAmount.textContent = '14';
-      priceNote.textContent = 'Billed as $168/year';
+      priceAmount.textContent = '21';
+      priceNote.textContent = 'Billed as $252/year';
       monthlyLabel.classList.remove('active');
       yearlyLabel.classList.add('active');
       popularTag.style.display = 'block';

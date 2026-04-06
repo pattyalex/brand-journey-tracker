@@ -1816,7 +1816,7 @@ app.post('/api/send-resubscription-email', emailLimiter, verifySupabaseAuth, asy
 
     const firstName = name ? name.split(' ')[0] : 'there';
     const planLabel = planType === 'annual' ? 'Annual' : 'Monthly';
-    const priceLabel = planType === 'annual' ? '$14/month (billed annually at $168)' : '$17/month';
+    const priceLabel = planType === 'annual' ? '$21/month (billed annually at $252)' : '$29/month';
 
     const { data, error } = await resend.emails.send({
       from: 'HeyMeg <noreply@heymeg.ai>',
@@ -1830,7 +1830,7 @@ app.post('/api/send-resubscription-email', emailLimiter, verifySupabaseAuth, asy
           <p style="color: #555; font-size: 16px; line-height: 1.6;">Here's a summary of your subscription:</p>
           <table style="border-collapse: collapse; margin: 20px 0; width: 100%; max-width: 400px;">
             <tr><td style="padding: 8px 16px; font-weight: bold; color: #333;">Plan:</td><td style="padding: 8px 16px; color: #555;">HeyMeg ${planLabel}</td></tr>
-            <tr><td style="padding: 8px 16px; font-weight: bold; color: #333;">Amount charged:</td><td style="padding: 8px 16px; color: #555;">${planType === 'annual' ? '$168.00' : '$17.00'}</td></tr>
+            <tr><td style="padding: 8px 16px; font-weight: bold; color: #333;">Amount charged:</td><td style="padding: 8px 16px; color: #555;">${planType === 'annual' ? '$252.00' : '$29.00'}</td></tr>
             <tr><td style="padding: 8px 16px; font-weight: bold; color: #333;">Billing:</td><td style="padding: 8px 16px; color: #555;">${priceLabel}</td></tr>
             <tr><td style="padding: 8px 16px; font-weight: bold; color: #333;">Date:</td><td style="padding: 8px 16px; color: #555;">${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</td></tr>
           </table>
@@ -1868,7 +1868,7 @@ app.post('/api/send-payment-receipt', internalOnly, async (req, res) => {
     }
 
     const firstName = name ? name.split(' ')[0] : 'there';
-    const formattedAmount = amount ? `$${(amount / 100).toFixed(2)}` : (planType === 'annual' ? '$168.00' : '$17.00');
+    const formattedAmount = amount ? `$${(amount / 100).toFixed(2)}` : (planType === 'annual' ? '$252.00' : '$29.00');
     const planLabel = planType === 'annual' ? 'Annual' : 'Monthly';
     const paidDate = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 

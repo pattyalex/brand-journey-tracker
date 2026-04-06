@@ -96,16 +96,16 @@ const questions = [
 
 export const UserGoalsStep: React.FC<UserGoalsStepProps> = ({ onComplete }) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(() => {
-    const saved = localStorage.getItem('onboarding_question_index');
+    const saved = sessionStorage.getItem('onboarding_question_index');
     return saved ? Math.min(parseInt(saved, 10), questions.length - 1) : 0;
   });
   const [answers, setAnswers] = useState<Record<string, string | string[]>>(() => {
-    const saved = localStorage.getItem('onboarding_answers');
+    const saved = sessionStorage.getItem('onboarding_answers');
     return saved ? JSON.parse(saved) : {};
   });
   const [selectedMultiple, setSelectedMultiple] = useState<string[]>(() => {
-    const savedAnswers = localStorage.getItem('onboarding_answers');
-    const savedIndex = localStorage.getItem('onboarding_question_index');
+    const savedAnswers = sessionStorage.getItem('onboarding_answers');
+    const savedIndex = sessionStorage.getItem('onboarding_question_index');
     if (savedAnswers && savedIndex) {
       const parsedAnswers = JSON.parse(savedAnswers);
       const q = questions[Math.min(parseInt(savedIndex, 10), questions.length - 1)];
@@ -117,13 +117,12 @@ export const UserGoalsStep: React.FC<UserGoalsStepProps> = ({ onComplete }) => {
   });
   const [otherText, setOtherText] = useState('');
 
-  // Persist progress to localStorage
   useEffect(() => {
-    localStorage.setItem('onboarding_question_index', String(currentQuestionIndex));
+    sessionStorage.setItem('onboarding_question_index', String(currentQuestionIndex));
   }, [currentQuestionIndex]);
 
   useEffect(() => {
-    localStorage.setItem('onboarding_answers', JSON.stringify(answers));
+    sessionStorage.setItem('onboarding_answers', JSON.stringify(answers));
   }, [answers]);
 
   const brandGradient = 'linear-gradient(135deg, #7a3868 0%, #612a4f 50%, #4e2040 100%)';

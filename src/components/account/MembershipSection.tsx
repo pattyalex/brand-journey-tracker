@@ -59,7 +59,7 @@ const MembershipSection = () => {
   };
 
   const planLabel = planType === 'annual' ? 'Premium Annual' : 'Premium Monthly';
-  const priceAmount = planType === 'annual' ? '$14' : '$17';
+  const priceAmount = planType === 'annual' ? '$21' : '$29';
   const priceInterval = planType === 'annual' ? '/month (billed annually)' : '/month';
 
   const handleCancel = async () => {
@@ -302,7 +302,7 @@ const MembershipSection = () => {
                 Monthly
               </p>
               <p className="text-xl font-semibold text-[#612a4f]" style={{ fontFamily: "'Playfair Display', serif" }}>
-                $17<span className="text-xs font-normal text-[#8B7082]">/mo</span>
+                $29<span className="text-xs font-normal text-[#8B7082]">/mo</span>
               </p>
               <p className="text-[10px] text-[#8B7082] mb-3">&nbsp;</p>
               <ul className="space-y-2">
@@ -334,17 +334,17 @@ const MembershipSection = () => {
                   Annual
                 </p>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-green-100 text-green-700">
-                  Save 18%
+                  Save 25%
                 </span>
               </div>
               <p className="text-xl font-semibold text-[#2d2a26]" style={{ fontFamily: "'Playfair Display', serif" }}>
-                $14<span className="text-xs font-normal text-[#8B7082]">/mo</span>
+                $21<span className="text-xs font-normal text-[#8B7082]">/mo</span>
               </p>
               <p className="text-[10px] text-[#8B7082] mb-3" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                Billed annually ($168)
+                Billed annually ($252)
               </p>
               <ul className="space-y-2 mb-3">
-                {['Everything in Monthly', 'Save 18% on your subscription', 'Lock in your price for 12 months'].map((feature) => (
+                {['Everything in Monthly', 'Save 25% on your subscription', 'Lock in your price for 12 months'].map((feature) => (
                   <li key={feature} className="flex items-center gap-2 text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
                     <Check className="w-3 h-3 text-[#612a4f]" />
                     {feature}
@@ -592,15 +592,15 @@ const MembershipSection = () => {
               <div>
                 {showSwitchConfirm === 'annual' ? (
                   isOnTrial ? (
-                    <p>After your free trial ends on <strong>{formatDate(trialEndsAt)}</strong>, you will be billed <strong>$168/year</strong> ($14/month). You save 18% compared to monthly billing.</p>
+                    <p>After your free trial ends on <strong>{formatDate(trialEndsAt)}</strong>, you will be billed <strong>$252/year</strong> ($21/month). You save 28% compared to monthly billing.</p>
                   ) : (
-                    <p>Your plan will switch to annual billing at <strong>$168/year</strong> ($14/month). You'll receive a prorated credit for any unused time on your current monthly plan.</p>
+                    <p>Your plan will switch to annual billing at <strong>$252/year</strong> ($21/month). You'll receive a prorated credit for any unused time on your current monthly plan.</p>
                   )
                 ) : (
                   isOnTrial ? (
-                    <p>After your free trial ends on <strong>{formatDate(trialEndsAt)}</strong>, you will be billed <strong>$17/month</strong>.</p>
+                    <p>After your free trial ends on <strong>{formatDate(trialEndsAt)}</strong>, you will be billed <strong>$29/month</strong>.</p>
                   ) : (
-                    <p>Your plan will switch to monthly billing at <strong>$17/month</strong>. The change takes effect at your next billing cycle.</p>
+                    <p>Your plan will switch to monthly billing at <strong>$29/month</strong>. The change takes effect at your next billing cycle.</p>
                   )
                 )}
               </div>

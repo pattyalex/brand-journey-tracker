@@ -225,6 +225,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (key.startsWith('sb-')) localStorage.removeItem(key);
       });
       remove(StorageKeys.user);
+      localStorage.removeItem('onboarding_answers');
+      localStorage.removeItem('onboarding_question_index');
+      sessionStorage.removeItem('onboarding_current_step');
+      sessionStorage.removeItem('onboarding_answers');
+      sessionStorage.removeItem('onboarding_question_index');
       setActiveUserId(null);
       setHasCompletedOnboarding(false);
       window.location.replace('/landing.html');
@@ -232,6 +237,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const completeOnboarding = () => {
+    sessionStorage.removeItem('onboarding_current_step');
+    sessionStorage.removeItem('onboarding_answers');
+    sessionStorage.removeItem('onboarding_question_index');
     setHasCompletedOnboarding(true);
     if (user?.id) {
       setString(getOnboardingKey(user.id), 'true');
