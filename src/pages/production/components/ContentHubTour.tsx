@@ -523,7 +523,7 @@ const ContentHubTour: React.FC<ContentHubTourProps> = ({ run, onComplete, onStep
               zIndex: 10004,
               bottom: 160,
               ...(window.innerWidth < 1200
-                ? { right: 24 }
+                ? { right: 80 }
                 : { left: boardPos.left + boardPos.width / 2, transform: "translateX(-50%)" }),
             }}
           >
