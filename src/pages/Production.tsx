@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { StorageKeys, getString, setString, setJSON, getJSON, remove } from "@/lib/storage";
 import { getUserPreferences, updateUserPreferences } from "@/services/preferencesService";
 
+import { API_BASE } from "@/lib/api-base";
 import { EVENTS, on } from "@/lib/events";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
@@ -420,7 +421,7 @@ const Production = () => {
         'Content-Type': 'application/json',
         ...(aiSession?.access_token ? { 'Authorization': `Bearer ${aiSession.access_token}` } : {}),
       };
-      const response = await fetch('http://localhost:3001/api/generate-subcategories', {
+      const response = await fetch(`${API_BASE}/api/generate-subcategories`, {
         method: 'POST',
         headers: aiHeaders,
         body: JSON.stringify({ pillarName, existingCategories }),
@@ -442,7 +443,7 @@ const Production = () => {
         'Content-Type': 'application/json',
         ...(ideasSession?.access_token ? { 'Authorization': `Bearer ${ideasSession.access_token}` } : {}),
       };
-      const response = await fetch('http://localhost:3001/api/generate-content-ideas', {
+      const response = await fetch(`${API_BASE}/api/generate-content-ideas`, {
         method: 'POST',
         headers: ideasHeaders,
         body: JSON.stringify({
@@ -596,7 +597,7 @@ const Production = () => {
 
       // Call analyze-content API with direct URL for Puppeteer capture
       const { data: { session: analyzeSession } } = await supabase.auth.getSession();
-      const analyzeResponse = await fetch('http://localhost:3001/api/analyze-content', {
+      const analyzeResponse = await fetch(`${API_BASE}/api/analyze-content`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

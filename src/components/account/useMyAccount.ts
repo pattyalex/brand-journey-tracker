@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { getCurrentUser, updateUserProfile, updateUserPassword, supabase } from '@/lib/supabase';
 import { StorageKeys, getString, setString } from "@/lib/storage";
 import { getUserPreferences, updateTimezone } from '@/services/preferencesService';
+import { API_BASE } from '@/lib/api-base';
 
 export function useMyAccount() {
   const navigate = useNavigate();
@@ -319,7 +320,7 @@ export function useMyAccount() {
           'Content-Type': 'application/json',
           ...(session?.access_token ? { 'Authorization': `Bearer ${session.access_token}` } : {}),
         };
-        await fetch('http://localhost:3001/api/send-email', {
+        await fetch(`${API_BASE}/api/send-email`, {
           method: 'POST',
           headers: authHeaders,
           body: JSON.stringify({
@@ -339,7 +340,7 @@ export function useMyAccount() {
           }),
         });
         // Email to Patricia (admin notification)
-        await fetch('http://localhost:3001/api/send-email', {
+        await fetch(`${API_BASE}/api/send-email`, {
           method: 'POST',
           headers: authHeaders,
           body: JSON.stringify({

@@ -32,7 +32,8 @@ export async function callClaudeAPI(options: ClaudeRequestOptions): Promise<Clau
   try {
     const { supabase } = await import('@/lib/supabase');
     const { data: { session } } = await supabase.auth.getSession();
-    const response = await fetch("http://localhost:3001/api/claude", {
+    const { API_BASE } = await import('@/lib/api-base');
+    const response = await fetch(`${API_BASE}/api/claude`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, CreditCard, Calendar, AlertCircle, ArrowLeft, ExternalLink } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE } from '@/lib/api-base';
 
 interface SubscriptionData {
   stripe_customer_id: string | null;
@@ -67,7 +68,7 @@ export const MembershipPage: React.FC = () => {
 
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:3001/api/get-subscription', {
+      const response = await fetch(`${API_BASE}/api/get-subscription`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ customerId: subscriptionData.stripe_customer_id })
@@ -109,7 +110,7 @@ export const MembershipPage: React.FC = () => {
   const handleManageBilling = async () => {
     setPortalLoading(true);
     try {
-      const response = await fetch('http://localhost:3001/api/create-portal-session', {
+      const response = await fetch(`${API_BASE}/api/create-portal-session`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
