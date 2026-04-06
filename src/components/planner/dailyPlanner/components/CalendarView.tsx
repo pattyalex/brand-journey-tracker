@@ -307,11 +307,8 @@ export const CalendarView = ({
       setTaskDialogPosition({ x: e.clientX, y: e.clientY });
       setIsTaskDialogOpen(true);
     } else if (contentDisplayMode === 'content') {
-      // Content mode: open dialog with content tab
-      setAddDialogDate(dayString);
-      setAddDialogTab('content');
-      resetFormState();
-      openAddDialog();
+      // Content mode: scheduling happens only via drag-and-drop
+      toast("Drag and drop a content card from the sidebar to schedule it on this date.", { duration: 3000 });
     } else if (contentDisplayMode === 'both') {
       // Both mode: open TaskDialog (for tasks)
       setEditingTask({ id: '', text: '', date: dayString } as PlannerItem);
