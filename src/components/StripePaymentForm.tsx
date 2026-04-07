@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { CardNumberElement, CardExpiryElement, CardCvcElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Lock, ShieldCheck } from 'lucide-react';
+import { Loader2, Lock, ShieldCheck, Tag, Check, X } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -51,6 +51,12 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cardholderName, setCardholderName] = useState('');
+  const [promoCode, setPromoCode] = useState('');
+  const [promoLoading, setPromoLoading] = useState(false);
+  const [promoError, setPromoError] = useState<string | null>(null);
+  const [appliedPromo, setAppliedPromo] = useState<{ id: string; discountText: string; fullDiscount: boolean } | null>(null);
+
+  const skipCardFields = appliedPromo?.fullDiscount === true;
 
   const fetchWithTimeout = async (url: string, options: RequestInit, ms = 15000) => {
     const controller = new AbortController();
@@ -61,6 +67,38 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
     } finally {
       clearTimeout(id);
     }
+  };
+
+  const handleApplyPromo = async () => {
+    if (!promoCode.trim()) return;
+    setPromoLoading(true);
+    setPromoError(null);
+    try {
+      const res = await fetchWithTimeout('/api/validate-promo-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: promoCode.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setPromoError(data.error || 'Invalid promotion code');
+        setAppliedPromo(null);
+      } else {
+        setAppliedPromo({ id: data.promotionCodeId, discountText: data.discountText, fullDiscount: data.fullDiscount });
+        setPromoError(null);
+      }
+    } catch {
+      setPromoError('Failed to validate code. Please try again.');
+      setAppliedPromo(null);
+    } finally {
+      setPromoLoading(false);
+    }
+  };
+
+  const handleRemovePromo = () => {
+    setAppliedPromo(null);
+    setPromoCode('');
+    setPromoError(null);
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -77,11 +115,6 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
     let succeeded = false;
 
     try {
-      const cardNumberElement = elements.getElement(CardNumberElement);
-      if (!cardNumberElement) {
-        throw new Error('Card element not found');
-      }
-
       // Check price IDs are configured
       const priceId = billingPlan === 'annual'
         ? import.meta.env.VITE_STRIPE_PRICE_ANNUAL
@@ -119,47 +152,58 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
       const { customerId } = await customerResponse.json();
       console.log('Customer created:', customerId);
 
-      // Step 2: Create payment method
-      console.log('Creating payment method...');
-      const pmResult = await Promise.race([
-        stripe.createPaymentMethod({
-          type: 'card',
-          card: cardNumberElement,
-          billing_details: {
-            name: cardholderName || userName,
-            email: userEmail,
+      let paymentMethodId: string | undefined;
+
+      // Only create and attach payment method if card details are needed
+      if (!skipCardFields) {
+        const cardNumberElement = elements.getElement(CardNumberElement);
+        if (!cardNumberElement) {
+          throw new Error('Card element not found');
+        }
+
+        // Step 2: Create payment method
+        console.log('Creating payment method...');
+        const pmResult = await Promise.race([
+          stripe.createPaymentMethod({
+            type: 'card',
+            card: cardNumberElement,
+            billing_details: {
+              name: cardholderName || userName,
+              email: userEmail,
+            },
+          }),
+          new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Payment method creation timed out')), 15000))
+        ]);
+        const { error: pmError, paymentMethod } = pmResult as Awaited<ReturnType<typeof stripe.createPaymentMethod>>;
+
+        if (pmError) {
+          throw new Error(pmError.message || 'Failed to create payment method');
+        }
+
+        paymentMethodId = paymentMethod!.id;
+        console.log('Payment method created:', paymentMethodId);
+
+        // Step 3: Attach payment method to customer
+        console.log('Attaching payment method to customer...');
+        const attachResponse = await fetchWithTimeout('/api/attach-payment-method', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`
           },
-        }),
-        new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Payment method creation timed out')), 15000))
-      ]);
-      const { error: pmError, paymentMethod } = pmResult as Awaited<ReturnType<typeof stripe.createPaymentMethod>>;
+          body: JSON.stringify({
+            paymentMethodId: paymentMethodId,
+            customerId: customerId,
+          }),
+        });
 
-      if (pmError) {
-        throw new Error(pmError.message || 'Failed to create payment method');
+        if (!attachResponse.ok) {
+          const errorText = await attachResponse.text();
+          throw new Error(`Failed to attach payment method: ${errorText}`);
+        }
+
+        console.log('Payment method attached successfully');
       }
-
-      console.log('Payment method created:', paymentMethod!.id);
-
-      // Step 3: Attach payment method to customer
-      console.log('Attaching payment method to customer...');
-      const attachResponse = await fetchWithTimeout('/api/attach-payment-method', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`
-        },
-        body: JSON.stringify({
-          paymentMethodId: paymentMethod!.id,
-          customerId: customerId,
-        }),
-      });
-
-      if (!attachResponse.ok) {
-        const errorText = await attachResponse.text();
-        throw new Error(`Failed to attach payment method: ${errorText}`);
-      }
-
-      console.log('Payment method attached successfully');
 
       // Step 4: Create subscription with trial
       console.log('Creating subscription with price:', priceId);
@@ -172,8 +216,9 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
         body: JSON.stringify({
           customerId: customerId,
           priceId: priceId,
-          paymentMethodId: paymentMethod!.id,
+          ...(paymentMethodId ? { paymentMethodId } : {}),
           trialPeriodDays: hasUsedTrial ? 0 : 14,
+          ...(appliedPromo ? { promotionCodeId: appliedPromo.id } : {}),
         }),
       });
 
@@ -262,82 +307,148 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
         </Alert>
       )}
 
-      {/* Cardholder Name */}
+      {/* Card fields - hidden when 100% coupon is applied */}
+      {!skipCardFields && (
+        <>
+          {/* Cardholder Name */}
+          <div className="space-y-1.5">
+            <label
+              htmlFor="cardholder-name"
+              className="text-sm font-medium"
+              style={{ color: '#1a1523' }}
+            >
+              Cardholder Name
+            </label>
+            <input
+              id="cardholder-name"
+              type="text"
+              placeholder="Name on card"
+              value={cardholderName}
+              onChange={(e) => setCardholderName(e.target.value)}
+              required
+              className="w-full px-3.5 py-2.5 rounded-lg border transition-all outline-none text-sm"
+              style={{
+                borderColor: '#e5e5e5',
+                color: '#1a1523',
+              }}
+              onFocus={(e) => e.currentTarget.style.borderColor = '#8B7082'}
+              onBlur={(e) => e.currentTarget.style.borderColor = '#e5e5e5'}
+            />
+          </div>
+
+          {/* Card Number */}
+          <div className="space-y-1.5">
+            <label
+              className="text-sm font-medium"
+              style={{ color: '#1a1523' }}
+            >
+              Card Number
+            </label>
+            <div
+              className="w-full px-3.5 py-2.5 rounded-lg border transition-all"
+              style={{ borderColor: '#e5e5e5' }}
+            >
+              <CardNumberElement options={CARD_ELEMENT_OPTIONS} />
+            </div>
+          </div>
+
+          {/* Expiry and CVC Row */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label
+                className="text-sm font-medium"
+                style={{ color: '#1a1523' }}
+              >
+                Expiration Date
+              </label>
+              <div
+                className="w-full px-3.5 py-2.5 rounded-lg border transition-all"
+                style={{ borderColor: '#e5e5e5' }}
+              >
+                <CardExpiryElement options={CARD_ELEMENT_OPTIONS} />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label
+                className="text-sm font-medium"
+                style={{ color: '#1a1523' }}
+              >
+                CVC
+              </label>
+              <div
+                className="w-full px-3.5 py-2.5 rounded-lg border transition-all"
+                style={{ borderColor: '#e5e5e5' }}
+              >
+                <CardCvcElement options={CARD_ELEMENT_OPTIONS} />
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Coupon Code */}
       <div className="space-y-1.5">
         <label
-          htmlFor="cardholder-name"
-          className="text-sm font-medium"
-          style={{ color: '#1a1523' }}
+          className="text-sm font-medium flex items-center gap-1.5"
+          style={{ color: '#6b6478' }}
         >
-          Cardholder Name
+          <Tag size={13} />
+          Have a coupon code?
         </label>
-        <input
-          id="cardholder-name"
-          type="text"
-          placeholder="Name on card"
-          value={cardholderName}
-          onChange={(e) => setCardholderName(e.target.value)}
-          required
-          className="w-full px-3.5 py-2.5 rounded-lg border transition-all outline-none text-sm"
-          style={{
-            borderColor: '#e5e5e5',
-            color: '#1a1523',
-          }}
-          onFocus={(e) => e.currentTarget.style.borderColor = '#8B7082'}
-          onBlur={(e) => e.currentTarget.style.borderColor = '#e5e5e5'}
-        />
-      </div>
-
-      {/* Card Number */}
-      <div className="space-y-1.5">
-        <label
-          className="text-sm font-medium"
-          style={{ color: '#1a1523' }}
-        >
-          Card Number
-        </label>
-        <div
-          className="w-full px-3.5 py-2.5 rounded-lg border transition-all"
-          style={{ borderColor: '#e5e5e5' }}
-        >
-          <CardNumberElement options={CARD_ELEMENT_OPTIONS} />
-        </div>
-      </div>
-
-      {/* Expiry and CVC Row */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-1.5">
-          <label
-            className="text-sm font-medium"
-            style={{ color: '#1a1523' }}
-          >
-            Expiration Date
-          </label>
+        {appliedPromo ? (
           <div
-            className="w-full px-3.5 py-2.5 rounded-lg border transition-all"
-            style={{ borderColor: '#e5e5e5' }}
+            className="flex items-center justify-between px-3.5 py-2.5 rounded-lg border"
+            style={{ borderColor: '#612A4F', backgroundColor: 'rgba(97, 42, 79, 0.04)' }}
           >
-            <CardExpiryElement options={CARD_ELEMENT_OPTIONS} />
+            <div className="flex items-center gap-2">
+              <Check size={14} style={{ color: '#612A4F' }} />
+              <span className="text-sm font-medium" style={{ color: '#612A4F' }}>
+                {promoCode.toUpperCase()}
+              </span>
+              <span className="text-xs" style={{ color: '#8B7082' }}>
+                — applied
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={handleRemovePromo}
+              className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+            >
+              <X size={14} style={{ color: '#8B7082' }} />
+            </button>
           </div>
-        </div>
-
-        <div className="space-y-1.5">
-          <label
-            className="text-sm font-medium"
-            style={{ color: '#1a1523' }}
-          >
-            CVC
-          </label>
-          <div
-            className="w-full px-3.5 py-2.5 rounded-lg border transition-all"
-            style={{ borderColor: '#e5e5e5' }}
-          >
-            <CardCvcElement options={CARD_ELEMENT_OPTIONS} />
+        ) : (
+          <div className="flex gap-2">
+            <input
+              type="text"
+              placeholder="Enter code"
+              value={promoCode}
+              onChange={(e) => { setPromoCode(e.target.value); setPromoError(null); }}
+              className="flex-1 px-3.5 py-2.5 rounded-lg border transition-all outline-none text-sm"
+              style={{ borderColor: promoError ? '#ef4444' : '#e5e5e5', color: '#1a1523' }}
+              onFocus={(e) => { if (!promoError) e.currentTarget.style.borderColor = '#8B7082'; }}
+              onBlur={(e) => { if (!promoError) e.currentTarget.style.borderColor = '#e5e5e5'; }}
+              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleApplyPromo(); } }}
+            />
+            <button
+              type="button"
+              onClick={handleApplyPromo}
+              disabled={!promoCode.trim() || promoLoading}
+              className="px-4 py-2.5 rounded-lg text-sm font-medium transition-all disabled:opacity-40"
+              style={{
+                backgroundColor: 'rgba(97, 42, 79, 0.08)',
+                color: '#612A4F',
+              }}
+            >
+              {promoLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Apply'}
+            </button>
           </div>
-        </div>
+        )}
+        {promoError && (
+          <p className="text-xs" style={{ color: '#ef4444' }}>{promoError}</p>
+        )}
       </div>
-
-      {/* Test Card Info */}
 
       <div className="flex items-center gap-3">
         <button
@@ -377,7 +488,7 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
               Processing...
             </>
           ) : (
-            hasUsedTrial ? 'Subscribe Now' : 'Start 14-Day Free Trial'
+            skipCardFields ? 'Next' : hasUsedTrial ? 'Subscribe Now' : 'Start 14-Day Free Trial'
           )}
         </button>
       </div>

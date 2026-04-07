@@ -71,23 +71,34 @@ export default async function handler(req, res) {
   if (!key) return res.status(500).json({ error: 'Stripe secret key not configured' });
 
   try {
-    const { customerId, priceId, paymentMethodId, trialPeriodDays: rawTrialDays } = req.body;
+    const { customerId, priceId, paymentMethodId, trialPeriodDays: rawTrialDays, promotionCodeId } = req.body;
     const trialPeriodDays = rawTrialDays != null ? rawTrialDays : 14;
 
-    await stripeRequest(
-      `/v1/customers/${customerId}`,
-      'POST',
-      { 'invoice_settings[default_payment_method]': paymentMethodId },
-      key
-    );
+    if (paymentMethodId) {
+      await stripeRequest(
+        `/v1/customers/${customerId}`,
+        'POST',
+        { 'invoice_settings[default_payment_method]': paymentMethodId },
+        key
+      );
+    }
 
-    const result = await stripeRequest('/v1/subscriptions', 'POST', {
+    const subscriptionParams = {
       'customer': customerId,
       'items[0][price]': priceId,
-      'default_payment_method': paymentMethodId,
       'trial_period_days': String(trialPeriodDays),
       'expand[]': 'latest_invoice.payment_intent',
-    }, key);
+    };
+
+    if (paymentMethodId) {
+      subscriptionParams['default_payment_method'] = paymentMethodId;
+    }
+
+    if (promotionCodeId) {
+      subscriptionParams['discounts[0][promotion_code]'] = promotionCodeId;
+    }
+
+    const result = await stripeRequest('/v1/subscriptions', 'POST', subscriptionParams, key);
 
     if (result.status !== 200) {
       return res.status(500).json({ error: result.body.error?.message || 'Failed to create subscription' });

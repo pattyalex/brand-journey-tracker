@@ -210,20 +210,25 @@ app.post('/api/attach-payment-method', verifySupabaseAuth, async (req, res) => {
 // Create subscription endpoint
 app.post('/api/create-subscription', paymentLimiter, verifySupabaseAuth, async (req, res) => {
   try {
-    const { customerId, priceId, paymentMethodId, trialPeriodDays } = req.body;
+    const { customerId, priceId, paymentMethodId, trialPeriodDays, promotionCodeId } = req.body;
     const effectiveTrialDays = trialPeriodDays != null ? trialPeriodDays : 7;
 
-    console.log('Creating subscription:', { customerId, priceId, paymentMethodId, trialPeriodDays: effectiveTrialDays });
+    console.log('Creating subscription:', { customerId, priceId, paymentMethodId, trialPeriodDays: effectiveTrialDays, promotionCodeId });
 
     // Create subscription (no trial if user already used one)
     const subParams = {
       customer: customerId,
       items: [{ price: priceId }],
-      default_payment_method: paymentMethodId,
       expand: ['latest_invoice.payment_intent'],
     };
+    if (paymentMethodId) {
+      subParams.default_payment_method = paymentMethodId;
+    }
     if (effectiveTrialDays > 0) {
       subParams.trial_period_days = effectiveTrialDays;
+    }
+    if (promotionCodeId) {
+      subParams.discounts = [{ promotion_code: promotionCodeId }];
     }
     const subscription = await stripe.subscriptions.create(subParams);
     
@@ -232,6 +237,52 @@ app.post('/api/create-subscription', paymentLimiter, verifySupabaseAuth, async (
     res.json({ subscription });
   } catch (error) {
     console.error('Error creating subscription:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Validate promotion code
+app.post('/api/validate-promo-code', async (req, res) => {
+  try {
+    const { code } = req.body;
+    if (!code || !code.trim()) {
+      return res.status(400).json({ error: 'Promotion code is required' });
+    }
+
+    const promoCodes = await stripe.promotionCodes.list({
+      code: code.trim(),
+      active: true,
+      limit: 1,
+    });
+
+    if (!promoCodes.data || promoCodes.data.length === 0) {
+      return res.status(404).json({ error: 'Invalid or expired promotion code' });
+    }
+
+    const promoCode = promoCodes.data[0];
+    const coupon = promoCode.coupon;
+
+    if (!coupon || !coupon.valid) {
+      return res.status(404).json({ error: 'This promotion code is no longer valid' });
+    }
+
+    let discountText = '';
+    if (coupon.percent_off) {
+      discountText = `${coupon.percent_off}% off`;
+    } else if (coupon.amount_off) {
+      discountText = `$${(coupon.amount_off / 100).toFixed(2)} off`;
+    }
+    if (coupon.duration === 'once') {
+      discountText += ' (first payment)';
+    } else if (coupon.duration === 'repeating' && coupon.duration_in_months) {
+      discountText += ` for ${coupon.duration_in_months} months`;
+    } else if (coupon.duration === 'forever') {
+      discountText += ' forever';
+    }
+
+    res.json({ valid: true, promotionCodeId: promoCode.id, discountText, fullDiscount: coupon.percent_off === 100 });
+  } catch (error) {
+    console.error('Error validating promo code:', error);
     res.status(500).json({ error: error.message });
   }
 });
