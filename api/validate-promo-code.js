@@ -60,12 +60,15 @@ export default async function handler(req, res) {
     const couponId = typeof promoCode.coupon === 'string' ? promoCode.coupon : promoCode.coupon?.id;
 
     if (!couponId) {
+      console.error('No couponId found. promoCode.coupon:', JSON.stringify(promoCode.coupon));
       return res.status(404).json({ error: 'This promotion code is no longer valid' });
     }
 
     // Fetch the full coupon object
     const couponResult = await stripeRequest(`/v1/coupons/${couponId}`, 'GET', {}, key);
+    console.log('Coupon fetch result:', JSON.stringify({ status: couponResult.status, valid: couponResult.body.valid, id: couponResult.body.id }));
     if (couponResult.status !== 200 || !couponResult.body.valid) {
+      console.error('Coupon validation failed. Full response:', JSON.stringify(couponResult));
       return res.status(404).json({ error: 'This promotion code is no longer valid' });
     }
 
