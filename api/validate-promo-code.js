@@ -45,11 +45,12 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Promotion code is required' });
     }
 
-    // Look up the promotion code by its customer-facing code
+    // Look up the promotion code by its customer-facing code (expand coupon)
     const result = await stripeRequest('/v1/promotion_codes', 'GET', {
       'code': code.trim(),
       'active': 'true',
       'limit': '1',
+      'expand[]': 'data.coupon',
     }, key);
 
     if (result.status !== 200 || !result.body.data || result.body.data.length === 0) {
@@ -57,7 +58,16 @@ export default async function handler(req, res) {
     }
 
     const promoCode = result.body.data[0];
-    const coupon = promoCode.coupon;
+    let coupon = promoCode.coupon;
+
+    // If coupon is just a string ID (not expanded), fetch it
+    if (typeof coupon === 'string') {
+      const couponResult = await stripeRequest(`/v1/coupons/${coupon}`, 'GET', {}, key);
+      if (couponResult.status !== 200) {
+        return res.status(404).json({ error: 'This promotion code is no longer valid' });
+      }
+      coupon = couponResult.body;
+    }
 
     if (!coupon || !coupon.valid) {
       return res.status(404).json({ error: 'This promotion code is no longer valid' });
