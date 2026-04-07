@@ -747,7 +747,7 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
               </AnimatePresence>
 
               {/* Buttons Area - right below cards (hidden on anatomy step) */}
-              {!(isTourActive && (tourStepIndex === 1 || tourStepIndex === 2 || tourStepIndex === 3 || tourStepIndex === 4)) && (column.cards.filter(c => c.title && c.title.trim() && !c.title.toLowerCase().includes('add quick idea')).length > 0 || (draggedOverColumn === 'ready-to-post' && column.id === 'ready-to-post')) && (
+              {!(isTourActive && (tourStepIndex === 1 || tourStepIndex === 2 || tourStepIndex === 3 || tourStepIndex === 4)) && (column.cards.filter(c => c.title && c.title.trim() && !c.title.toLowerCase().includes('add quick idea') && !(column.id === 'ideate' && c.calendarOnly)).length > 0 || (draggedOverColumn === 'ready-to-post' && column.id === 'ready-to-post')) && (
                 <div className="px-1 pt-2 space-y-2">
                   {addingToColumn === column.id ? (
                     <div key={`inline-input-${column.id}`}>

@@ -482,7 +482,7 @@ const ProductionCardItem: React.FC<ProductionCardItemProps> = ({
         })()}
         {/* Stage completion progress dots + scheduled label */}
         <div className="mt-2 pt-2 border-t border-[#E8E2E5] flex items-center justify-between">
-          <ProgressDots stageCompletions={card.stageCompletions} hasContentType={!!card.contentType} />
+          <ProgressDots stageCompletions={card.stageCompletions} hasContentType={!!card.contentType} contentType={card.contentType} />
           {columnId === 'ready-to-post' && card.scheduledDate && (
             <div className="flex items-center gap-1">
               <CalendarDays className="w-3 h-3" style={{ color: '#8B7082', strokeWidth: 1.5 }} />

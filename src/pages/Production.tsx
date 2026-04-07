@@ -1085,13 +1085,22 @@ const Production = () => {
     'ready-to-post': 5,
   };
 
-  const stepToColumn: Record<number, string> = {
+  const videoStepToColumn: Record<number, string> = {
     1: 'ideate',
     2: 'shape-ideas',
     3: 'to-film',
     4: 'to-edit',
     5: 'ready-to-post',
   };
+
+  const imageStepToColumn: Record<number, string> = {
+    1: 'ideate',
+    2: 'shape-ideas',
+    3: 'to-edit',
+    4: 'ready-to-post',
+  };
+
+  const stepToColumn = contentType === 'image' ? imageStepToColumn : videoStepToColumn;
 
   // Determine appropriate column based on card content
   const determineColumnByContent = (card: Partial<ProductionCard>): string => {
