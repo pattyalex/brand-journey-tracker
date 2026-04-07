@@ -449,7 +449,9 @@ const OnboardingFlow: React.FC = () => {
 
       // Step 5: Create subscription
       const planData = paymentForm.getValues();
-      const priceId = values.billingPlan === 'annual' ? 'price_annual' : 'price_monthly';
+      const priceId = values.billingPlan === 'annual'
+        ? import.meta.env.VITE_STRIPE_PRICE_ANNUAL
+        : import.meta.env.VITE_STRIPE_PRICE_MONTHLY;
 
       const subscriptionResponse = await fetch('/api/create-subscription', {
         method: 'POST',
