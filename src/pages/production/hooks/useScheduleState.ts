@@ -770,7 +770,7 @@ export function useScheduleState(props: ExpandedScheduleViewProps) {
     Object.entries(scheduledCardsByDate).forEach(([dateKey, scheduledCards]) => {
       const sd = new Date(dateKey);
       sd.setHours(23, 59, 59, 999);
-      if (sd < now) cardsToAutoArchive.push(...scheduledCards);
+      if (sd < now) cardsToAutoArchive.push(...scheduledCards.filter(c => !c.isCompleted));
     });
 
     if (cardsToAutoArchive.length > 0) {

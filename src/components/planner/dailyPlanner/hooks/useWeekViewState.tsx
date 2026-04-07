@@ -457,8 +457,7 @@ export const useWeekViewState = ({
             archived.unshift(archivedCopy);
             setString(StorageKeys.archivedContent, JSON.stringify(archived));
 
-            // Remove card from ready-to-post column
-            toScheduleColumn.cards.splice(cardIndex, 1);
+            card.isCompleted = true;
             setString(StorageKeys.productionKanban, JSON.stringify(columns));
 
             // Emit events

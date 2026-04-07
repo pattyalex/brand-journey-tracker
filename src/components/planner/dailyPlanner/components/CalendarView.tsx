@@ -567,7 +567,7 @@ export const CalendarView = ({
             archived.unshift(archivedCopy);
             setString(StorageKeys.archivedContent, JSON.stringify(archived));
 
-            toScheduleColumn.cards.splice(cardIndex, 1);
+            card.isCompleted = true;
             setString(StorageKeys.productionKanban, JSON.stringify(columns));
 
             emit(window, EVENTS.productionKanbanUpdated);
