@@ -61,6 +61,7 @@ export const useWeekViewState = ({
   savePlannerData,
 }: UseWeekViewStateParams) => {
   const navigate = useNavigate();
+  const [showScheduleHint, setShowScheduleHint] = useState(false);
 
   // Google Calendar integration
   const {
@@ -224,6 +225,12 @@ export const useWeekViewState = ({
   // Sync state when dialog opens
   useEffect(() => {
     if (addDialogOpen) {
+      // Content-only mode: show schedule hint instead
+      if (contentDisplayMode === 'content') {
+        closeAddDialog();
+        setShowScheduleHint(true);
+        return;
+      }
       // Reset drag offset when dialog opens
       setDialogDragOffset({ x: 0, y: 0 });
       // Set times for both tasks and content
@@ -232,11 +239,7 @@ export const useWeekViewState = ({
       setContentStartTime(addDialogStartTime);
       setContentEndTime(addDialogEndTime);
       // Set correct tab based on mode
-      if (contentDisplayMode === 'content') {
-        setAddDialogTab('content');
-      } else {
-        setAddDialogTab('task');
-      }
+      setAddDialogTab('task');
     }
   }, [addDialogOpen, addDialogStartTime, addDialogEndTime, contentDisplayMode]);
 
@@ -306,12 +309,7 @@ export const useWeekViewState = ({
   // Handle creating planned content from the dialog
   const handleCreateContentFromDialog = () => {
     if (!contentHook.trim()) {
-      toast.error('Please enter a hook/title for your content');
-      return;
-    }
-
-    if (!contentStartTime.trim() || !contentEndTime.trim()) {
-      toast.error('Please select a time slot for your content');
+      toast.error('Please enter a reminder for your content');
       return;
     }
 
@@ -338,7 +336,6 @@ export const useWeekViewState = ({
         plannedEndTime: parseTimeTo24(contentEndTime) || undefined,
         isNew: true,
         addedFrom: 'calendar',
-        calendarOnly: !addToContentHub,
       };
       ideateColumn.cards.push(newCard);
       setString(StorageKeys.productionKanban, JSON.stringify(columns));
@@ -349,7 +346,6 @@ export const useWeekViewState = ({
           ...prev,
           planned: [...prev.planned, newCard]
         };
-        console.log('WeekView: Updated productionContent.planned:', updated.planned.length, 'items');
         return updated;
       });
 
@@ -357,7 +353,7 @@ export const useWeekViewState = ({
       emit(window, EVENTS.productionKanbanUpdated);
       emit(window, EVENTS.scheduledContentUpdated);
 
-      toast.success('Content idea added for ' + format(new Date(addDialogDate + 'T12:00:00'), 'MMM d'));
+      toast.success('Content added for ' + format(new Date(addDialogDate + 'T12:00:00'), 'MMM d'));
     } catch (err) {
       console.error('Error adding planned content:', err);
     }
@@ -412,7 +408,7 @@ export const useWeekViewState = ({
             </span>
           );
         } else {
-          toast.success('Idea removed from calendar');
+          toast.success('Content removed from calendar');
         }
       } catch (err) {
         console.error('Error removing content:', err);
@@ -531,5 +527,7 @@ export const useWeekViewState = ({
     handleCreateContentFromDialog,
     handleDeleteContent,
     handleToggleComplete,
+    showScheduleHint,
+    setShowScheduleHint,
   };
 };

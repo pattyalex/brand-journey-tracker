@@ -35,6 +35,7 @@ interface TimeGridProps {
   saveAllTasks: (tasks: PlannerItem[]) => void;
   onOpenTimePickerDialog?: (content: ProductionCard, type: 'scheduled' | 'planned') => void;
   resolvedTimezone: string;
+  onScheduleHint?: () => void;
 }
 
 export const TimeGrid = ({
@@ -57,6 +58,7 @@ export const TimeGrid = ({
   saveAllTasks,
   onOpenTimePickerDialog,
   resolvedTimezone,
+  onScheduleHint,
 }: TimeGridProps) => {
   return (
     <>
@@ -83,6 +85,11 @@ export const TimeGrid = ({
                       onMouseDown={(e) => {
                         // Don't allow drag-to-create when dialog is open
                         if (addDialogOpen) return;
+                        // Content-only mode: show schedule hint
+                        if (onScheduleHint) {
+                          onScheduleHint();
+                          return;
+                        }
                         // Only start drag create if clicking directly on the slot (not on a task)
                         if (e.target === e.currentTarget || (e.currentTarget.contains(e.target as Node) && (e.target as HTMLElement).classList.contains('pointer-events-none'))) {
                           e.preventDefault();

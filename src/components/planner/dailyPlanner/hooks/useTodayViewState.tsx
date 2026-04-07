@@ -42,6 +42,7 @@ export const useTodayViewState = ({
   setTodayAddDialogState,
 }: UseTodayViewStateParams) => {
   const navigate = useNavigate();
+  const [showScheduleHint, setShowScheduleHint] = useState(false);
 
   const {
     selectedDate,
@@ -182,6 +183,12 @@ export const useTodayViewState = ({
   // Sync times and tab when dialog opens
   useEffect(() => {
     if (addDialogOpen) {
+      // Content-only mode: show schedule hint instead
+      if (contentDisplayMode === 'content') {
+        closeAddDialog();
+        setShowScheduleHint(true);
+        return;
+      }
       // Reset drag offset when dialog opens
       setDialogDragOffset({ x: 0, y: 0 });
       // Set times from dialog state
@@ -190,9 +197,7 @@ export const useTodayViewState = ({
       setContentStartTime(addDialogStartTime);
       setContentEndTime(addDialogEndTime);
       // Set default tab based on display mode
-      if (contentDisplayMode === 'content') {
-        setAddDialogTab('content');
-      } else if (contentDisplayMode === 'tasks') {
+      if (contentDisplayMode === 'tasks') {
         setAddDialogTab('task');
       }
       // For 'both' mode, keep the current tab
@@ -227,17 +232,19 @@ export const useTodayViewState = ({
   // Sync state when dialog opens
   useEffect(() => {
     if (addDialogOpen) {
+      // Content-only mode: show schedule hint instead
+      if (contentDisplayMode === 'content') {
+        closeAddDialog();
+        setShowScheduleHint(true);
+        return;
+      }
       // Set times for both tasks and content
       setTaskStartTime(addDialogStartTime);
       setTaskEndTime(addDialogEndTime);
       setContentStartTime(addDialogStartTime);
       setContentEndTime(addDialogEndTime);
       // Set correct tab based on mode
-      if (contentDisplayMode === 'content') {
-        setAddDialogTab('content');
-      } else {
-        setAddDialogTab('task');
-      }
+      setAddDialogTab('task');
     }
   }, [addDialogOpen, addDialogStartTime, addDialogEndTime, contentDisplayMode]);
 
@@ -304,12 +311,7 @@ export const useTodayViewState = ({
   // Handle creating planned content from the dialog
   const handleCreateContentFromDialog = () => {
     if (!contentHook.trim()) {
-      toast.error('Please enter a hook/title for your content');
-      return;
-    }
-
-    if (!contentStartTime.trim() || !contentEndTime.trim()) {
-      toast.error('Please select a time slot for your content');
+      toast.error('Please enter a reminder for your content');
       return;
     }
 
@@ -336,7 +338,6 @@ export const useTodayViewState = ({
         plannedEndTime: parseTimeTo24(contentEndTime) || undefined,
         isNew: true,
         addedFrom: 'calendar',
-        calendarOnly: !addToContentHub,
       };
       ideateColumn.cards.push(newCard);
       setString(StorageKeys.productionKanban, JSON.stringify(columns));
@@ -347,8 +348,6 @@ export const useTodayViewState = ({
           ...prev,
           planned: [...prev.planned, newCard]
         };
-        console.log('TodayView: Updated productionContent.planned:', updated.planned.length, 'items');
-        console.log('TodayView: New card:', newCard);
         return updated;
       });
 
@@ -356,7 +355,7 @@ export const useTodayViewState = ({
       emit(window, EVENTS.productionKanbanUpdated);
       emit(window, EVENTS.scheduledContentUpdated);
 
-      toast.success('Content idea added for ' + format(selectedDate, 'MMM d'));
+      toast.success('Content added for ' + format(selectedDate, 'MMM d'));
     } catch (err) {
       console.error('Error adding planned content:', err);
     }
@@ -411,7 +410,7 @@ export const useTodayViewState = ({
             </span>
           );
         } else {
-          toast.success('Idea removed from calendar');
+          toast.success('Content removed from calendar');
         }
       } catch (err) {
         console.error('Error removing content:', err);
@@ -522,5 +521,7 @@ export const useTodayViewState = ({
     handleCreateContentFromDialog,
     handleDeleteContent,
     handleToggleComplete,
+    showScheduleHint,
+    setShowScheduleHint,
   };
 };

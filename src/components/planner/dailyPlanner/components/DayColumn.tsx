@@ -81,6 +81,7 @@ interface DayColumnProps {
   googleConnection: { isConnected: boolean; showEvents: boolean };
   googleEvents: TransformedGoogleEvent[];
   resolvedTimezone: string;
+  onScheduleHint?: () => void;
 }
 
 export const DayColumn = ({
@@ -131,6 +132,7 @@ export const DayColumn = ({
   googleConnection,
   googleEvents,
   resolvedTimezone,
+  onScheduleHint,
 }: DayColumnProps) => {
   const isToday = isSameDay(day, new Date());
   const isPast = day < new Date() && !isToday;
@@ -167,6 +169,11 @@ export const DayColumn = ({
               onMouseDown={(e) => {
                 // Don't allow drag-to-create when dialog is open
                 if (isTaskDialogOpen || addDialogOpen) return;
+                // Content-only mode: show schedule hint instead of drag-to-create
+                if (showContent && !showTasks) {
+                  onScheduleHint?.();
+                  return;
+                }
 
                 // Only start drag create if clicking directly on this div (not on a task)
                 const target = e.target as HTMLElement;
@@ -1121,7 +1128,7 @@ export const DayColumn = ({
                     }
                     setContentTooltip({
                       text: content.hook || content.title || '',
-                      timeStr: isPlanned ? 'Planned · No time set' : 'Scheduled · No time set',
+                      timeStr: isPlanned ? '' : 'Scheduled',
                       isPlanned,
                       platforms: content.platforms || [],
                       formats: derivedFormats,

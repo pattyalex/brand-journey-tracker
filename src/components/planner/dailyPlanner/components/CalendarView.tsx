@@ -210,12 +210,15 @@ export const CalendarView = ({
   const [contentNotes, setContentNotes] = useState("");
   const [contentStartTime, setContentStartTime] = useState("");
   const [contentEndTime, setContentEndTime] = useState("");
-  const [addToContentHub, setAddToContentHub] = useState(true);
+  const [addToContentHub, setAddToContentHub] = useState(false);
 
   // Color palette management (shared hook)
   const contentColorPalette = useColorPalette();
   const contentColor = contentColorPalette.selectedColor;
   const setContentColor = contentColorPalette.setSelectedColor;
+
+  // Schedule hint dialog
+  const [showScheduleHint, setShowScheduleHint] = useState(false);
 
   // View content dialog state
   const [viewContentDialog, setViewContentDialog] = useState<ProductionCard | null>(null);
@@ -279,7 +282,7 @@ export const CalendarView = ({
     setContentColor("");
     setContentStartTime("");
     setContentEndTime("");
-    setAddToContentHub(true);
+    setAddToContentHub(false);
     // Reset color picker popover states
     contentColorPalette.resetPickerState();
   };
@@ -307,8 +310,9 @@ export const CalendarView = ({
       setTaskDialogPosition({ x: e.clientX, y: e.clientY });
       setIsTaskDialogOpen(true);
     } else if (contentDisplayMode === 'content') {
-      // Content mode: scheduling happens only via drag-and-drop
-      toast("Drag and drop a content card from the sidebar to schedule it on this date.", { duration: 3000 });
+      // Content mode: show scheduling hint dialog
+      setShowScheduleHint(true);
+      return;
     } else if (contentDisplayMode === 'both') {
       // Both mode: open TaskDialog (for tasks)
       setEditingTask({ id: '', text: '', date: dayString } as PlannerItem);
@@ -384,12 +388,7 @@ export const CalendarView = ({
   // Handle creating planned content
   const handleCreateContent = () => {
     if (!contentHook.trim()) {
-      toast.error('Please enter a hook/title for your content');
-      return;
-    }
-
-    if (!contentStartTime.trim() || !contentEndTime.trim()) {
-      toast.error('Please select a time slot for your content');
+      toast.error('Please enter a reminder for your content');
       return;
     }
 
@@ -416,7 +415,6 @@ export const CalendarView = ({
         plannedEndTime: parseTimeTo24(contentEndTime) || undefined,
         isNew: true,
         addedFrom: 'calendar',
-        calendarOnly: !addToContentHub,
       };
       ideateColumn.cards.push(newCard);
       setString(StorageKeys.productionKanban, JSON.stringify(columns));
@@ -435,7 +433,7 @@ export const CalendarView = ({
       emit(window, EVENTS.productionKanbanUpdated);
       emit(window, EVENTS.scheduledContentUpdated);
 
-      toast.success('Content idea added for ' + format(new Date(addDialogDate + 'T12:00:00'), 'MMM d'));
+      toast.success('Content added for ' + format(new Date(addDialogDate + 'T12:00:00'), 'MMM d'));
     } catch (err) {
       console.error('Error adding planned content:', err);
     }
@@ -477,6 +475,7 @@ export const CalendarView = ({
 
   // Handle deleting content from calendar
   const handleDeleteContent = (contentId: string, type: 'scheduled' | 'planned') => {
+    setContentTooltip(null);
     const savedData = getString(StorageKeys.productionKanban);
     if (savedData) {
       try {
@@ -523,7 +522,7 @@ export const CalendarView = ({
             </span>
           );
         } else {
-          toast.success('Idea removed from calendar');
+          toast.success('Content removed from calendar');
         }
       } catch (err) {
         console.error('Error removing content:', err);
@@ -862,7 +861,7 @@ export const CalendarView = ({
                               text: content.hook || content.title || '',
                               timeStr: content.scheduledStartTime
                                 ? `${content.scheduledStartTime}${content.scheduledEndTime ? ' – ' + content.scheduledEndTime : ''}`
-                                : 'Scheduled · No time set',
+                                : 'Scheduled',
                               isPlanned: false,
                               platforms: content.platforms || [],
                               formats: derivedFormats,
@@ -955,7 +954,7 @@ export const CalendarView = ({
                             text: content.hook || content.title || '',
                             timeStr: content.plannedStartTime
                               ? `${content.plannedStartTime}${content.plannedEndTime ? ' – ' + content.plannedEndTime : ''}`
-                              : 'Planned · No time set',
+                              : '',
                             isPlanned: true,
                             platforms: content.platforms || [],
                             formats: derivedFormats,
@@ -1164,11 +1163,11 @@ export const CalendarView = ({
             </div>
             {/* Content Form */}
             <div className="px-6 pb-4 space-y-4">
-                {/* Hook/Title */}
+                {/* Reminder text */}
                 <div>
                   <input
                     type="text"
-                    placeholder="Add hook"
+                    placeholder="Add content reminder"
                     value={contentHook}
                     onChange={(e) => setContentHook(e.target.value)}
                     className="w-full text-lg border-b border-gray-200 pb-2 focus:outline-none placeholder:text-gray-400"
@@ -1176,84 +1175,9 @@ export const CalendarView = ({
                   />
                 </div>
 
-                {/* Time inputs */}
-                <div className="flex items-center gap-3">
-                  <Clock className="w-5 h-5 text-gray-400" />
-                  <TimePicker
-                    value={contentStartTime}
-                    onChange={setContentStartTime}
-                    placeholder="Start time"
-                    className="flex-1"
-                  />
-                  <span className="text-gray-400">—</span>
-                  <TimePicker
-                    value={contentEndTime}
-                    onChange={setContentEndTime}
-                    placeholder="End time"
-                    className="flex-1"
-                  />
-                </div>
-
-                {/* Description */}
-                <div className="flex items-start gap-3">
-                  <FileText className="w-5 h-5 text-gray-400 mt-2" />
-                  <textarea
-                    placeholder="Add description"
-                    value={contentNotes}
-                    onChange={(e) => setContentNotes(e.target.value)}
-                    rows={3}
-                    className="flex-1 px-3 py-2 border border-input rounded-md text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-none"
-                  />
-                </div>
-
-
-                {/* Add to Content Hub checkbox */}
-                <div
-                  className={cn(
-                    "flex items-center gap-3 p-4 rounded-xl border-2 transition-all duration-200",
-                    addToContentHub
-                      ? "bg-gradient-to-r from-[#F5F0F3] to-[#EDE5EA] border-[#8B7082]/30 shadow-[0_2px_8px_rgba(139,112,130,0.15)]"
-                      : "bg-gray-50/50 border-gray-200 hover:border-gray-300"
-                  )}
-                >
-                  <Checkbox
-                    id="addToContentHubCalendar"
-                    checked={addToContentHub}
-                    onCheckedChange={(checked) => setAddToContentHub(checked as boolean)}
-                    className={cn(
-                      "h-5 w-5 border-2 cursor-pointer transition-all",
-                      addToContentHub
-                        ? "data-[state=checked]:bg-[#612a4f] data-[state=checked]:border-[#612a4f]"
-                        : "border-gray-300"
-                    )}
-                  />
-                  <div className="flex-1">
-                    <label htmlFor="addToContentHubCalendar" className={cn(
-                      "text-sm font-medium cursor-pointer transition-colors",
-                      addToContentHub ? "text-[#4a2a3f]" : "text-gray-600"
-                    )}>
-                      Add to{' '}
-                      <span
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          navigate('/production');
-                        }}
-                        className="text-[#612a4f] hover:text-[#8B7082] underline underline-offset-2 decoration-[#8B7082]/50 cursor-pointer font-semibold"
-                      >
-                        Content Hub
-                      </span>
-                      {' '}for production
-                    </label>
-                    <p className={cn(
-                      "text-xs mt-0.5 transition-colors",
-                      addToContentHub ? "text-[#8B7082]" : "text-gray-400"
-                    )}>
-                      Uncheck for quick content like Stories
-                    </p>
-                  </div>
-                </div>
-
+                <p className="text-xs text-gray-400">
+                  This is a quick calendar note. To schedule content, drag cards from Ready to Post on the left.
+                </p>
             </div>
 
             {/* Actions - Outside content form */}
@@ -1430,6 +1354,28 @@ export const CalendarView = ({
         </div>
       )}
 
+      {/* Schedule hint dialog */}
+      {showScheduleHint && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/20" onClick={() => setShowScheduleHint(false)} />
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 p-6 text-center">
+            <h3 className="text-[16px] font-semibold text-[#612A4F] mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
+              Schedule via Drag & Drop
+            </h3>
+            <p className="text-[14px] text-[#4A3D45] leading-relaxed">
+              To schedule content, drag a card from <span className="font-semibold">Ready to Post</span> on the left and drop it onto a date.
+            </p>
+            <button
+              onClick={() => setShowScheduleHint(false)}
+              className="mt-5 px-5 py-2 rounded-xl text-[13px] font-semibold text-white transition-all hover:-translate-y-0.5 active:scale-[0.98]"
+              style={{ backgroundColor: "#612A4F" }}
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Fixed-position content tooltip — renders above all stacking contexts */}
       {contentTooltip && (() => {
         const platformIconMap: Record<string, React.ReactNode> = {
@@ -1459,7 +1405,7 @@ export const CalendarView = ({
             }}
           >
             <p className="font-semibold whitespace-normal">{contentTooltip.text}</p>
-            <p className="opacity-75 mt-0.5 text-[10px]">{contentTooltip.timeStr}</p>
+            {contentTooltip.timeStr && <p className="opacity-75 mt-0.5 text-[10px]">{contentTooltip.timeStr}</p>}
 
             {/* Formats */}
             {formats.length > 0 && (
