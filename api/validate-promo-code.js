@@ -57,18 +57,22 @@ export default async function handler(req, res) {
     }
 
     const promoCode = result.body.data[0];
-    const couponId = typeof promoCode.coupon === 'string' ? promoCode.coupon : promoCode.coupon?.id;
+
+    // Extract coupon ID — handle both direct coupon field and nested promotion.coupon
+    let couponId = null;
+    if (promoCode.coupon) {
+      couponId = typeof promoCode.coupon === 'string' ? promoCode.coupon : promoCode.coupon.id;
+    } else if (promoCode.promotion?.coupon) {
+      couponId = typeof promoCode.promotion.coupon === 'string' ? promoCode.promotion.coupon : promoCode.promotion.coupon.id;
+    }
 
     if (!couponId) {
-      console.error('No couponId found. promoCode.coupon:', JSON.stringify(promoCode.coupon));
       return res.status(404).json({ error: 'This promotion code is no longer valid' });
     }
 
     // Fetch the full coupon object
     const couponResult = await stripeRequest(`/v1/coupons/${couponId}`, 'GET', {}, key);
-    console.log('Coupon fetch result:', JSON.stringify({ status: couponResult.status, valid: couponResult.body.valid, id: couponResult.body.id }));
     if (couponResult.status !== 200 || !couponResult.body.valid) {
-      console.error('Coupon validation failed. Full response:', JSON.stringify(couponResult));
       return res.status(404).json({ error: 'This promotion code is no longer valid' });
     }
 
