@@ -86,16 +86,19 @@ export default async function handler(req, res) {
     const subscriptionParams = {
       'customer': customerId,
       'items[0][price]': priceId,
-      'trial_period_days': String(trialPeriodDays),
       'expand[]': 'latest_invoice.payment_intent',
     };
+
+    if (trialPeriodDays > 0) {
+      subscriptionParams['trial_period_days'] = String(trialPeriodDays);
+    }
 
     if (paymentMethodId) {
       subscriptionParams['default_payment_method'] = paymentMethodId;
     }
 
     if (promotionCodeId) {
-      subscriptionParams['discounts[0][promotion_code]'] = promotionCodeId;
+      subscriptionParams['promotion_code'] = promotionCodeId;
     }
 
     const result = await stripeRequest('/v1/subscriptions', 'POST', subscriptionParams, key);
