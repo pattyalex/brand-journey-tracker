@@ -372,6 +372,29 @@ const ProductionCardItem: React.FC<ProductionCardItemProps> = ({
             </TooltipProvider>
           </div>
         </div>
+        {/* Media type badge for ideate cards */}
+        {columnId === "ideate" && card.contentType && (
+          <div className="mt-1.5">
+            <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full text-[#8B7082]/70 font-normal bg-[#8B7082]/[0.06]">
+              {card.contentType === 'video' ? (
+                <>
+                  <Video className="w-3 h-3" />
+                  {card.formats && card.formats.length > 0 ? card.formats[0] : 'Video'}
+                </>
+              ) : card.imageMode === 'carousel' ? (
+                <>
+                  <Layers className="w-3 h-3" />
+                  Carousel
+                </>
+              ) : (
+                <>
+                  <ImageIcon className="w-3 h-3" />
+                  Image
+                </>
+              )}
+            </span>
+          </div>
+        )}
         {/* Tags for cards with metadata */}
         {columnId !== "ideate" && ((card.formats && card.formats.length > 0) || card.contentType === 'image' || card.schedulingStatus || (card.platforms && card.platforms.length > 0)) && (() => {
           const formats = card.formats || [];

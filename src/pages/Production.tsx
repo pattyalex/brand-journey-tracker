@@ -709,6 +709,12 @@ const Production = () => {
     setCardStatus(card.status || 'to-start');
     setCustomVideoFormats(card.customVideoFormats || []);
     setCustomPhotoFormats(card.customPhotoFormats || []);
+    // Initialize image-specific state from card data
+    setCaption(card.caption || "");
+    setVisualReferences(card.visualReferences || []);
+    setLinkPreviews(card.linkPreviews || []);
+    setSlides(card.slides || []);
+    setImageMode(card.imageMode || 'image');
     // Check if card has brain dump notes from Ideate column
     // Only show if notes exist AND haven't already been handled (dismissed or appended)
     const notesText = card.description?.trim() || "";
@@ -1239,6 +1245,32 @@ const Production = () => {
     setEditingIdeateCard(null);
     setEditingScriptCard(null);
     setSchedulingCard(null);
+    // Reset local editor working-copy state to prevent stale data from
+    // contaminating cards opened or moved after this dialog closes
+    setCardTitle("");
+    setCardHook("");
+    setScriptContent("");
+    setPlatformTags([]);
+    setFormatTags([]);
+    setIdeateCardTitle("");
+    setIdeateCardNotes("");
+    setLocationChecked(false);
+    setLocationText("");
+    setOutfitChecked(false);
+    setOutfitText("");
+    setPropsChecked(false);
+    setPropsText("");
+    setFilmingNotes("");
+    setCardStatus('to-start');
+    setCaption("");
+    setVisualReferences([]);
+    setLinkPreviews([]);
+    setSlides([]);
+    setImageMode('image');
+    setCustomVideoFormats([]);
+    setCustomPhotoFormats([]);
+    setBrainDumpSuggestion("");
+    setShowBrainDumpSuggestion(false);
   };
 
   // Handle content type toggle (Video <-> Image)

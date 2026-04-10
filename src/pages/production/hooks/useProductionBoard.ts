@@ -871,7 +871,9 @@ export function useProductionBoard(
   ) => {
     const isSameColumn = sourceColId === targetColId;
 
-    const updatedColumns = columns.map((column) => {
+    // Use functional update to always read the latest columns state,
+    // preventing stale closure from overwriting pending saves
+    setColumns((prevColumns) => prevColumns.map((column) => {
       const filterCard = (c: ProductionCard) =>
         c.title && c.title.trim() && !c.title.toLowerCase().includes('add quick idea');
 
@@ -882,21 +884,26 @@ export function useProductionBoard(
         const withoutDragged = filtered.filter((c) => c.id !== card.id);
         let actualDropIndex = pos.index;
         if (actualDropIndex > draggedIndex) actualDropIndex--;
-        withoutDragged.splice(actualDropIndex, 0, { ...card, columnId: column.id, lastUpdated: new Date().toISOString() });
+        // Use the latest version of the card from columns, preserving any pending saves
+        const latestCard = column.cards.find((c) => c.id === card.id) || card;
+        withoutDragged.splice(actualDropIndex, 0, { ...latestCard, columnId: column.id, lastUpdated: new Date().toISOString() });
         return { ...column, cards: withoutDragged };
       } else if (column.id === sourceColId) {
         return { ...column, cards: column.cards.filter((c) => c.id !== card.id) };
       } else if (column.id === targetColId) {
         const filtered = column.cards.filter(filterCard);
-        let cardToAdd = { ...card, columnId: column.id, lastUpdated: new Date().toISOString(), manualColumnOverride: true };
+        // Use the latest version of the card from the source column, preserving any pending saves
+        const sourceCol = prevColumns.find((c) => c.id === sourceColId);
+        const latestCard = sourceCol?.cards.find((c) => c.id === card.id) || card;
+        let cardToAdd = { ...latestCard, columnId: column.id, lastUpdated: new Date().toISOString(), manualColumnOverride: true };
 
-        if (column.id === 'shape-ideas' && !card.status) {
+        if (column.id === 'shape-ideas' && !latestCard.status) {
           cardToAdd = { ...cardToAdd, status: 'to-start' as const };
         }
         if (column.id === 'to-film') {
           cardToAdd = { ...cardToAdd, status: 'to-start' as const };
         }
-        if (column.id === 'posted' && card.isPinned) {
+        if (column.id === 'posted' && latestCard.isPinned) {
           cardToAdd = { ...cardToAdd, isPinned: false };
           toast.info("Auto-unpinned", { description: "Posted content is removed from your dashboard" });
         }
@@ -916,10 +923,8 @@ export function useProductionBoard(
         return { ...column, cards: filtered };
       }
       return column;
-    });
-
-    setColumns(updatedColumns);
-  }, [columns]);
+    }));
+  }, []);
 
   // Handle skip-column confirmation
   const handleSkipColumnChoice = useCallback((confirmed: boolean) => {
