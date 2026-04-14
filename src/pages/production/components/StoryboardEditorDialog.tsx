@@ -114,7 +114,7 @@ interface StoryboardEditorDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   card: ProductionCard | null;
-  onSave: (storyboard: StoryboardScene[], title?: string, script?: string, hook?: string, status?: "to-start" | "needs-work" | "ready" | null) => void;
+  onSave: (storyboard: StoryboardScene[], title?: string, script?: string, hook?: string, status?: "to-start" | "needs-work" | "ready" | null, cardId?: string) => void;
   onNavigateToStep?: (step: number, savedCardData?: Partial<ProductionCard>) => void;
   slideDirection?: 'left' | 'right';
   embedded?: boolean;
@@ -392,7 +392,7 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
     return () => {
       if (cardRef.current) {
         const d = latestDataRef.current;
-        onSaveRef.current(d.scenes, d.cardTitle, d.scriptContent, d.hookContent, d.filmingStatus);
+        onSaveRef.current(d.scenes, d.cardTitle, d.scriptContent, d.hookContent, d.filmingStatus, cardRef.current.id);
       }
     };
   }, []);
@@ -425,7 +425,7 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
   // Save on close
   const handleClose = useCallback((open: boolean) => {
     if (!open && card) {
-      onSave(scenes, cardTitle, scriptContent, hookContent, filmingStatus);
+      onSave(scenes, cardTitle, scriptContent, hookContent, filmingStatus, card?.id);
     }
     onOpenChange(open);
   }, [card, scenes, cardTitle, scriptContent, hookContent, filmingStatus, onSave, onOpenChange]);

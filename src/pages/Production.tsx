@@ -845,8 +845,9 @@ const Production = () => {
     }
   };
 
-  const handleSaveStoryboard = (storyboard: StoryboardScene[], title?: string, script?: string, hook?: string, status?: "to-start" | "needs-work" | "ready" | null) => {
-    if (!editingStoryboardCard) return;
+  const handleSaveStoryboard = (storyboard: StoryboardScene[], title?: string, script?: string, hook?: string, status?: "to-start" | "needs-work" | "ready" | null, cardId?: string) => {
+    const targetId = cardId || editingStoryboardCard?.id;
+    if (!targetId) return;
 
     // Update card data in place (keep it in its current column)
     const now = new Date().toISOString();
@@ -854,7 +855,7 @@ const Production = () => {
       prev.map((col) => ({
         ...col,
         cards: col.cards.map((card) =>
-          card.id === editingStoryboardCard.id
+          card.id === targetId
             ? {
                 ...card,
                 storyboard,
@@ -883,8 +884,9 @@ const Production = () => {
     }
   };
 
-  const handleSaveEditChecklist = (checklist: EditingChecklist, title?: string, hook?: string, script?: string) => {
-    if (!editingEditCard) return;
+  const handleSaveEditChecklist = (checklist: EditingChecklist, title?: string, hook?: string, script?: string, cardId?: string) => {
+    const targetId = cardId || editingEditCard?.id;
+    if (!targetId) return;
 
     // Update card data in place (keep it in its current column)
     const now = new Date().toISOString();
@@ -892,7 +894,7 @@ const Production = () => {
       prev.map((col) => ({
         ...col,
         cards: col.cards.map((card) =>
-          card.id === editingEditCard.id
+          card.id === targetId
             ? {
                 ...card,
                 editingChecklist: checklist,
@@ -1244,13 +1246,14 @@ const Production = () => {
       }
     }
 
-    // Reset dialog state — note: editingStoryboardCard and editingEditCard are NOT
-    // reset here because their child dialogs need them during unmount cleanup saves.
-    // They get re-initialized when the next dialog opens via handleOpenContentFlowForCard.
+    // Reset all dialog state — child dialogs now pass cardId directly to save
+    // handlers, so they no longer depend on parent state refs during unmount cleanup.
     setActiveContentFlowStep(null);
     setContentFlowCard(null);
     setEditingIdeateCard(null);
     setEditingScriptCard(null);
+    setEditingStoryboardCard(null);
+    setEditingEditCard(null);
     setSchedulingCard(null);
     // Reset local editor working-copy state to prevent stale data from
     // contaminating cards opened or moved after this dialog closes

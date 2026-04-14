@@ -78,7 +78,7 @@ interface EditChecklistDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   card: ProductionCard | null;
-  onSave: (checklist: EditingChecklist, title?: string, hook?: string, script?: string) => void;
+  onSave: (checklist: EditingChecklist, title?: string, hook?: string, script?: string, cardId?: string) => void;
   onNavigateToStep?: (step: number, savedCardData?: Partial<ProductionCard>) => void;
   slideDirection?: 'left' | 'right';
   embedded?: boolean;
@@ -214,7 +214,7 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
           externalLinks: d.externalLinks,
           status: d.status,
         };
-        onSaveRef.current(checklist, d.title, d.hook, d.script);
+        onSaveRef.current(checklist, d.title, d.hook, d.script, cardRef.current.id);
       }
     };
   }, []);
@@ -271,7 +271,7 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
       externalLinks,
       status,
     };
-    onSave(checklist, title, hook, script);
+    onSave(checklist, title, hook, script, card?.id);
     onOpenChange(false);
   };
 
