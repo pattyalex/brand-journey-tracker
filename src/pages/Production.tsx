@@ -91,7 +91,14 @@ const KanbanContainer: React.FC<{
     const handleWheel = (e: WheelEvent) => {
       // If there's horizontal delta (trackpad), let it scroll naturally
       // If only vertical delta (mouse wheel), convert to horizontal
+      // But NOT if the user is scrolling inside a column card area
       if (Math.abs(e.deltaX) < Math.abs(e.deltaY)) {
+        const target = e.target as HTMLElement;
+        const scrollableColumn = target.closest('[data-kanban-scroll]');
+        if (scrollableColumn) {
+          // User is inside a column — let vertical scroll happen naturally
+          return;
+        }
         e.preventDefault();
         el.scrollLeft += e.deltaY;
       }

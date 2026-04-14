@@ -201,7 +201,9 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
   const onSaveRef = useRef(onSave);
   const cardRef = useRef(card);
   useEffect(() => { onSaveRef.current = onSave; }, [onSave]);
-  useEffect(() => { cardRef.current = card; }, [card]);
+  // Only update cardRef when card is non-null — preserve the last valid card
+  // so unmount cleanup can still save data when parent sets card to null before unmount
+  useEffect(() => { if (card) cardRef.current = card; }, [card]);
   useEffect(() => {
     return () => {
       if (cardRef.current) {
@@ -218,18 +220,26 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
   }, []);
 
   // Initialize content from card data when dialog opens
+  // Only re-initialize when a DIFFERENT card is opened (by tracking card ID),
+  // not when the same card object is updated (e.g., by toggling step complete).
+  // Skip re-initialization when card becomes null (dialog is closing) to
+  // preserve local edits for the unmount cleanup save.
+  const prevCardIdRef = useRef<string | null>(null);
   useEffect(() => {
+    if (!card) return;
+    if (card.id === prevCardIdRef.current) return;
+    prevCardIdRef.current = card.id;
     // Load global checklist items for this content type
     setGlobalItems(loadGlobalChecklist(contentType));
     // Load per-card notes and status
-    setNotes(card?.editingChecklist?.notes || "");
-    setShowNotesEditor(!!(card?.editingChecklist?.notes));
-    setExternalLinks(card?.editingChecklist?.externalLinks || []);
-    setStatus(card?.editingChecklist?.status || null);
-    setTitle(card?.hook || card?.title || "");
-    setHook(card?.hook || card?.title || "");
-    const slidesText = card?.slides?.map(s => s.content).filter(Boolean).join('\n\n') || '';
-    const scriptFromCard = card?.script?.trim() || '';
+    setNotes(card.editingChecklist?.notes || "");
+    setShowNotesEditor(!!(card.editingChecklist?.notes));
+    setExternalLinks(card.editingChecklist?.externalLinks || []);
+    setStatus(card.editingChecklist?.status || null);
+    setTitle(card.hook || card.title || "");
+    setHook(card.hook || card.title || "");
+    const slidesText = card.slides?.map(s => s.content).filter(Boolean).join('\n\n') || '';
+    const scriptFromCard = card.script?.trim() || '';
     setScript(slidesText || scriptFromCard || "");
   }, [card, isOpen]);
 

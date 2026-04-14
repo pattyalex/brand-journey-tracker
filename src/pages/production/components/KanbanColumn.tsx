@@ -355,7 +355,7 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
           if (el) columnRefs.current.set(column.id, el);
         }}
         className={cn(
-          "flex flex-col transition-all duration-300 max-h-[calc(100vh-48px)] rounded-[20px]",
+          "flex flex-col transition-all duration-300 h-[calc(100vh-48px)] rounded-[20px]",
           isTourActive && (tourStepIndex === 2 || (tourStepIndex === 3 && column.id === 'shape-ideas')) && "overflow-visible",
           draggedOverColumn === column.id && draggedCard
             ? column.id === "ideate" && columns.find(col => col.cards.some(c => c.id === draggedCard.id))?.id !== "ideate"
@@ -409,7 +409,7 @@ const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
           const realCards = column.cards.filter(c => c.title && c.title.trim() && !c.title.toLowerCase().includes('add quick idea')).length > 0;
           const hasCards = realCards || (isTourActive && (tourStepIndex === 1 || tourStepIndex === 2 || tourStepIndex === 3 || tourStepIndex === 4 || column.id === 'ideate' || column.id === 'shape-ideas'));
           return (
-            <div className={`flex-1 ${isTourActive && (column.id === 'shape-ideas' || tourStepIndex === 2 || (tourStepIndex === 3 && column.id === 'shape-ideas')) ? 'overflow-visible' : 'overflow-y-auto'} px-3 pt-3 pb-3 space-y-3 hide-scrollbar hover:hide-scrollbar relative rounded-[16px]`} style={{ minHeight: 'calc(100vh - 120px)', border: hasCards ? '1.5px solid rgba(180, 168, 175, 0.2)' : '1.5px dashed rgba(180, 168, 175, 0.25)', backgroundColor: hasCards ? 'rgba(255, 252, 250, 0.7)' : 'rgba(255, 255, 255, 0.1)' }}>
+            <div data-kanban-scroll className={`flex-1 min-h-0 ${isTourActive && (column.id === 'shape-ideas' || tourStepIndex === 2 || (tourStepIndex === 3 && column.id === 'shape-ideas')) ? 'overflow-visible' : 'overflow-y-auto'} px-3 pt-3 pb-3 space-y-3 hide-scrollbar hover:hide-scrollbar relative rounded-[16px]`} style={{ border: hasCards ? '1.5px solid rgba(180, 168, 175, 0.2)' : '1.5px dashed rgba(180, 168, 175, 0.25)', backgroundColor: hasCards ? 'rgba(255, 252, 250, 0.7)' : 'rgba(255, 255, 255, 0.1)' }}>
               {/* Not Allowed Overlay for Ideate Column */}
               <AnimatePresence>
                 {(() => {

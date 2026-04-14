@@ -385,7 +385,9 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
   const onSaveRef = useRef(onSave);
   const cardRef = useRef(card);
   useEffect(() => { onSaveRef.current = onSave; }, [onSave]);
-  useEffect(() => { cardRef.current = card; }, [card]);
+  // Only update cardRef when card is non-null — preserve the last valid card
+  // so unmount cleanup can still save data when parent sets card to null before unmount
+  useEffect(() => { if (card) cardRef.current = card; }, [card]);
   useEffect(() => {
     return () => {
       if (cardRef.current) {
@@ -396,16 +398,24 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
   }, []);
 
   // Initialize scenes, title, and script from card
+  // Only re-initialize when a DIFFERENT card is opened (by tracking card ID),
+  // not when the same card object is updated (e.g., by toggling step complete).
+  // Skip re-initialization when card becomes null (dialog is closing) to
+  // preserve local edits for the unmount cleanup save.
+  const prevCardIdRef = useRef<string | null>(null);
   useEffect(() => {
-    if (card?.storyboard) {
+    if (!card) return;
+    if (card.id === prevCardIdRef.current) return;
+    prevCardIdRef.current = card.id;
+    if (card.storyboard) {
       setScenes(card.storyboard);
     } else {
       setScenes([]);
     }
-    setCardTitle(card?.hook || card?.title || "");
-    setHookContent(card?.hook || card?.title || "");
-    setScriptContent(card?.script || "");
-    setFilmingStatus(card?.status || "to-start");
+    setCardTitle(card.hook || card.title || "");
+    setHookContent(card.hook || card.title || "");
+    setScriptContent(card.script || "");
+    setFilmingStatus(card.status || "to-start");
     setIsEditingTitle(false);
     setIsEditingScript(false);
     setSuggestingSceneId(null);
