@@ -114,7 +114,7 @@ interface StoryboardEditorDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   card: ProductionCard | null;
-  onSave: (storyboard: StoryboardScene[], title?: string, script?: string, hook?: string, status?: "to-start" | "needs-work" | "ready" | null, cardId?: string) => void;
+  onSave: (storyboard: StoryboardScene[], title?: string, script?: string, hook?: string, status?: "to-start" | "needs-work" | "ready" | null, cardId?: string, caption?: string) => void;
   onNavigateToStep?: (step: number, savedCardData?: Partial<ProductionCard>) => void;
   slideDirection?: 'left' | 'right';
   embedded?: boolean;
@@ -355,6 +355,8 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
   const [hookContent, setHookContent] = useState("");
   const [scriptContent, setScriptContent] = useState("");
   const [isEditingScript, setIsEditingScript] = useState(false);
+  const [captionContent, setCaptionContent] = useState("");
+  const [isEditingCaption, setIsEditingCaption] = useState(false);
   const [filmingStatus, setFilmingStatus] = useState<"to-start" | "needs-work" | "ready">("to-start");
 
   // Shot suggestion state
@@ -376,10 +378,10 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
   const rightPanelRef = useRef<HTMLDivElement>(null);
 
   // Track latest data in a ref so unmount cleanup can access it
-  const latestDataRef = useRef({ scenes, cardTitle, scriptContent, hookContent, filmingStatus });
+  const latestDataRef = useRef({ scenes, cardTitle, scriptContent, hookContent, filmingStatus, captionContent });
   useEffect(() => {
-    latestDataRef.current = { scenes, cardTitle, scriptContent, hookContent, filmingStatus };
-  }, [scenes, cardTitle, scriptContent, hookContent, filmingStatus]);
+    latestDataRef.current = { scenes, cardTitle, scriptContent, hookContent, filmingStatus, captionContent };
+  }, [scenes, cardTitle, scriptContent, hookContent, filmingStatus, captionContent]);
 
   // Save on unmount (when parent dialog closes via X button)
   const onSaveRef = useRef(onSave);
@@ -392,7 +394,7 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
     return () => {
       if (cardRef.current) {
         const d = latestDataRef.current;
-        onSaveRef.current(d.scenes, d.cardTitle, d.scriptContent, d.hookContent, d.filmingStatus, cardRef.current.id);
+        onSaveRef.current(d.scenes, d.cardTitle, d.scriptContent, d.hookContent, d.filmingStatus, cardRef.current.id, d.captionContent);
       }
     };
   }, []);
@@ -415,6 +417,7 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
     setCardTitle(card.hook || card.title || "");
     setHookContent(card.hook || card.title || "");
     setScriptContent(card.script || "");
+    setCaptionContent(card.caption || "");
     setFilmingStatus(card.status || "to-start");
     setIsEditingTitle(false);
     setIsEditingScript(false);
@@ -422,10 +425,18 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
     setSuggestions([]);
   }, [card]);
 
+  // Sync caption from card when navigating between steps (e.g., Script→Film)
+  // This runs separately from the main init effect which is guarded by prevCardIdRef
+  useEffect(() => {
+    if (!card) return;
+    setCaptionContent(card.caption || "");
+    setIsEditingCaption(false);
+  }, [card?.caption]);
+
   // Save on close
   const handleClose = useCallback((open: boolean) => {
     if (!open && card) {
-      onSave(scenes, cardTitle, scriptContent, hookContent, filmingStatus, card?.id);
+      onSave(scenes, cardTitle, scriptContent, hookContent, filmingStatus, card?.id, captionContent);
     }
     onOpenChange(open);
   }, [card, scenes, cardTitle, scriptContent, hookContent, filmingStatus, onSave, onOpenChange]);
@@ -439,9 +450,10 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
       script: scriptContent,
       hook: hookContent,
       status: filmingStatus || undefined,
+      caption: captionContent,
     };
     onNavigateToStep?.(step, savedData);
-  }, [scenes, cardTitle, scriptContent, hookContent, filmingStatus, onNavigateToStep]);
+  }, [scenes, cardTitle, scriptContent, hookContent, filmingStatus, captionContent, onNavigateToStep]);
 
   // Focus title input when editing
   useEffect(() => {
@@ -970,17 +982,52 @@ const StoryboardEditorDialog: React.FC<StoryboardEditorDialogProps> = ({
 
               {/* Caption section */}
               <div className="mt-6">
-                <p className="text-[11px] font-semibold text-[#612A4F] uppercase tracking-wider mb-1">Caption</p>
-                {isEditingScript ? (
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-[11px] font-semibold text-[#612A4F] uppercase tracking-wider">Caption</p>
+                  {!isEditingCaption ? (
+                    <TooltipProvider delayDuration={0}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            onClick={() => setIsEditingCaption(true)}
+                            className="p-1 text-[#8B7082] hover:text-[#612A4F] transition-all duration-200 hover:scale-110 hover:-rotate-12"
+                          >
+                            <SquarePen className="w-3.5 h-3.5" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" sideOffset={4} className="bg-gray-500 text-white">
+                          <p>Edit caption</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  ) : (
+                    <TooltipProvider delayDuration={0}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            onClick={() => setIsEditingCaption(false)}
+                            className="p-1.5 rounded-lg bg-[#A89098] hover:bg-[#8B7082] text-white transition-colors"
+                          >
+                            <Check className="w-3.5 h-3.5" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" sideOffset={4} className="bg-gray-500 text-white">
+                          <p>Done</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                </div>
+                {isEditingCaption ? (
                   <textarea
-                    value={card?.caption || ''}
-                    onChange={() => {}}
+                    autoFocus
+                    value={captionContent}
+                    onChange={(e) => setCaptionContent(e.target.value)}
                     className="w-full min-h-[80px] text-[13px] text-gray-700 leading-relaxed bg-transparent border-none p-0 resize-none focus:outline-none focus:ring-0"
                     placeholder="Write your caption here..."
-                    readOnly
                   />
-                ) : card?.caption ? (
-                  <p className="text-[13px] text-gray-700 leading-relaxed whitespace-pre-wrap">{card.caption}</p>
+                ) : captionContent ? (
+                  <p className="text-[13px] text-gray-700 leading-relaxed whitespace-pre-wrap">{captionContent}</p>
                 ) : (
                   <p className="text-[13px] text-gray-400 italic">No caption added</p>
                 )}

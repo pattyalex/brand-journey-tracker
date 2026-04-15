@@ -845,7 +845,7 @@ const Production = () => {
     }
   };
 
-  const handleSaveStoryboard = (storyboard: StoryboardScene[], title?: string, script?: string, hook?: string, status?: "to-start" | "needs-work" | "ready" | null, cardId?: string) => {
+  const handleSaveStoryboard = (storyboard: StoryboardScene[], title?: string, script?: string, hook?: string, status?: "to-start" | "needs-work" | "ready" | null, cardId?: string, caption?: string) => {
     const targetId = cardId || editingStoryboardCard?.id;
     if (!targetId) return;
 
@@ -863,6 +863,7 @@ const Production = () => {
                 ...(script !== undefined && { script }),
                 ...(hook !== undefined && { hook }),
                 ...(status !== undefined && { status }),
+                ...(caption !== undefined && { caption }),
                 lastUpdated: now,
               }
             : card
@@ -884,7 +885,7 @@ const Production = () => {
     }
   };
 
-  const handleSaveEditChecklist = (checklist: EditingChecklist, title?: string, hook?: string, script?: string, cardId?: string) => {
+  const handleSaveEditChecklist = (checklist: EditingChecklist, title?: string, hook?: string, script?: string, cardId?: string, caption?: string) => {
     const targetId = cardId || editingEditCard?.id;
     if (!targetId) return;
 
@@ -901,6 +902,7 @@ const Production = () => {
                 ...(title !== undefined && { title }),
                 ...(hook !== undefined && { hook }),
                 ...(script !== undefined && { script }),
+                ...(caption !== undefined && { caption }),
                 lastUpdated: now,
               }
             : card
@@ -1200,7 +1202,7 @@ const Production = () => {
               updates.propsText = propsText;
               if (filmingNotes) updates.filmingNotes = filmingNotes;
               if (cardStatus) updates.status = cardStatus;
-              if (caption) updates.caption = caption;
+              updates.caption = caption;
               if (visualReferences.length > 0) updates.visualReferences = visualReferences;
               if (linkPreviews.length > 0) updates.linkPreviews = linkPreviews;
               if (slides.length > 0) updates.slides = slides;
@@ -1560,7 +1562,7 @@ const Production = () => {
       }
       currentFormData.contentType = contentType;
       currentFormData.imageMode = imageMode;
-      if (caption) currentFormData.caption = caption;
+      currentFormData.caption = caption;
       if (slides.length > 0) currentFormData.slides = slides;
     }
     // Steps 3, 4, 5 save their own data through their respective dialogs
@@ -1674,6 +1676,7 @@ const Production = () => {
             setCardHook(scriptTitle);
             setIdeateCardTitle(scriptTitle);
             setScriptContent(latestCard!.script || "");
+            setCaption(latestCard!.caption || "");
             setPlatformTags(latestCard!.platforms || []);
             setFormatTags(latestCard!.formats || []);
             setLocationChecked(latestCard!.locationChecked || false);

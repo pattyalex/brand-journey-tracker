@@ -78,7 +78,7 @@ interface EditChecklistDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   card: ProductionCard | null;
-  onSave: (checklist: EditingChecklist, title?: string, hook?: string, script?: string, cardId?: string) => void;
+  onSave: (checklist: EditingChecklist, title?: string, hook?: string, script?: string, cardId?: string, caption?: string) => void;
   onNavigateToStep?: (step: number, savedCardData?: Partial<ProductionCard>) => void;
   slideDirection?: 'left' | 'right';
   embedded?: boolean;
@@ -184,6 +184,8 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
   const [title, setTitle] = useState("");
   const [hook, setHook] = useState("");
   const [script, setScript] = useState("");
+  const [captionContent, setCaptionContent] = useState("");
+  const [isEditingCaption, setIsEditingCaption] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
   const isImage = contentType === 'image';
@@ -192,10 +194,10 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
   const scheduleStepNumber = isImage ? 4 : 5;
 
   // Track latest data in a ref so unmount cleanup can access it
-  const latestDataRef = useRef({ globalItems, notes, externalLinks, status, title, hook, script });
+  const latestDataRef = useRef({ globalItems, notes, externalLinks, status, title, hook, script, captionContent });
   useEffect(() => {
-    latestDataRef.current = { globalItems, notes, externalLinks, status, title, hook, script };
-  }, [globalItems, notes, externalLinks, status, title, hook, script]);
+    latestDataRef.current = { globalItems, notes, externalLinks, status, title, hook, script, captionContent };
+  }, [globalItems, notes, externalLinks, status, title, hook, script, captionContent]);
 
   // Save on unmount (when parent dialog closes via X button)
   const onSaveRef = useRef(onSave);
@@ -214,7 +216,7 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
           externalLinks: d.externalLinks,
           status: d.status,
         };
-        onSaveRef.current(checklist, d.title, d.hook, d.script, cardRef.current.id);
+        onSaveRef.current(checklist, d.title, d.hook, d.script, cardRef.current.id, d.captionContent);
       }
     };
   }, []);
@@ -241,7 +243,16 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
     const slidesText = card.slides?.map(s => s.content).filter(Boolean).join('\n\n') || '';
     const scriptFromCard = card.script?.trim() || '';
     setScript(slidesText || scriptFromCard || "");
+    setCaptionContent(card.caption || "");
   }, [card, isOpen]);
+
+  // Sync caption from card when navigating between steps (e.g., Script→Edit)
+  // This runs separately from the main init effect which is guarded by prevCardIdRef
+  useEffect(() => {
+    if (!card) return;
+    setCaptionContent(card.caption || "");
+    setIsEditingCaption(false);
+  }, [card?.caption]);
 
   // Save global checklist whenever it changes
   useEffect(() => {
@@ -271,7 +282,7 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
       externalLinks,
       status,
     };
-    onSave(checklist, title, hook, script, card?.id);
+    onSave(checklist, title, hook, script, card?.id, captionContent);
     onOpenChange(false);
   };
 
@@ -289,6 +300,7 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
       title,
       hook,
       script,
+      caption: captionContent,
     };
     onNavigateToStep?.(step, savedData);
   };
@@ -454,16 +466,52 @@ const EditChecklistDialog: React.FC<EditChecklistDialogProps> = ({
 
               {/* Caption section */}
               <div className="mt-6">
-                <p className="text-[11px] font-semibold text-[#612A4F] uppercase tracking-wider mb-1">Caption</p>
-                {isEditing ? (
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-[11px] font-semibold text-[#612A4F] uppercase tracking-wider">Caption</p>
+                  {!isEditingCaption ? (
+                    <TooltipProvider delayDuration={0}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            onClick={() => setIsEditingCaption(true)}
+                            className="p-1 text-[#8B7082] hover:text-[#612A4F] transition-all duration-200 hover:scale-110 hover:-rotate-12"
+                          >
+                            <SquarePen className="w-3.5 h-3.5" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" sideOffset={4} className="bg-gray-500 text-white">
+                          <p>Edit caption</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  ) : (
+                    <TooltipProvider delayDuration={0}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            onClick={() => setIsEditingCaption(false)}
+                            className="p-1.5 rounded-lg bg-[#A89098] hover:bg-[#8B7082] text-white transition-colors"
+                          >
+                            <Check className="w-3.5 h-3.5" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" sideOffset={4} className="bg-gray-500 text-white">
+                          <p>Done</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                </div>
+                {isEditingCaption ? (
                   <textarea
-                    value={card?.caption || ''}
+                    autoFocus
+                    value={captionContent}
+                    onChange={(e) => setCaptionContent(e.target.value)}
                     className="w-full min-h-[80px] text-[13px] text-gray-700 leading-relaxed bg-transparent border-none p-0 resize-none focus:outline-none focus:ring-0"
                     placeholder="Write your caption here..."
-                    readOnly
                   />
-                ) : card?.caption ? (
-                  <p className="text-[13px] text-gray-700 leading-relaxed whitespace-pre-wrap">{card.caption}</p>
+                ) : captionContent ? (
+                  <p className="text-[13px] text-gray-700 leading-relaxed whitespace-pre-wrap">{captionContent}</p>
                 ) : (
                   <p className="text-[13px] text-gray-400 italic">No caption added</p>
                 )}
