@@ -98,7 +98,7 @@ export default async function handler(req, res) {
     }
 
     if (promotionCodeId) {
-      subscriptionParams['promotion_code'] = promotionCodeId;
+      subscriptionParams['discounts[0][promotion_code]'] = promotionCodeId;
     }
 
     const result = await stripeRequest('/v1/subscriptions', 'POST', subscriptionParams, key);
