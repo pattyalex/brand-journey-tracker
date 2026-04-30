@@ -180,21 +180,63 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
                 </div>
               </div>
 
-              {/* Attached Files */}
+              {/* Attach Inspiration */}
               <div>
                 <label className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
                   <Paperclip className="w-3 h-3" />
-                  Attached Files
+                  Attach Inspiration
                 </label>
-                {post.attachedFiles && post.attachedFiles.length > 0 ? (
-                  <div className="space-y-1">
+                {post.attachedFiles && post.attachedFiles.length > 0 && (
+                  <div className="space-y-1.5 mb-2">
                     {post.attachedFiles.map((file, i) => (
-                      <div key={i} className="text-sm text-gray-600">{file}</div>
+                      <div key={i} className="flex items-center gap-2 text-sm text-gray-600 group/file">
+                        <Paperclip className="w-3 h-3 text-gray-400 flex-shrink-0" />
+                        <span className="flex-1 truncate">{file}</span>
+                        <button
+                          onClick={() => {
+                            const updated = post.attachedFiles!.filter((_, idx) => idx !== i);
+                            onUpdate(post.id, { attachedFiles: updated });
+                          }}
+                          className="opacity-0 group-hover/file:opacity-100 text-gray-300 hover:text-red-400 transition-all"
+                        >
+                          <span className="text-xs">&times;</span>
+                        </button>
+                      </div>
                     ))}
                   </div>
-                ) : (
-                  <p className="text-sm text-gray-300 italic">No files attached</p>
                 )}
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Paste a link or type a filename..."
+                    className="flex-1 text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:border-[#612A4F] focus:ring-0 outline-none transition-colors placeholder:text-gray-300"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        const value = (e.target as HTMLInputElement).value.trim();
+                        if (value) {
+                          onUpdate(post.id, { attachedFiles: [...(post.attachedFiles || []), value] });
+                          (e.target as HTMLInputElement).value = '';
+                        }
+                      }
+                    }}
+                  />
+                  <label className="flex items-center gap-1 px-3 py-1.5 text-[12px] text-gray-500 hover:text-[#612A4F] border border-gray-200 rounded-lg cursor-pointer hover:border-[#612A4F]/30 transition-colors">
+                    <Paperclip className="w-3 h-3" />
+                    File
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/*,.pdf,.doc,.docx"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          onUpdate(post.id, { attachedFiles: [...(post.attachedFiles || []), file.name] });
+                        }
+                        e.target.value = '';
+                      }}
+                    />
+                  </label>
+                </div>
               </div>
 
               {/* Notes */}

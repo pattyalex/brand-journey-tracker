@@ -5,7 +5,6 @@ import { Check, Plus, X } from 'lucide-react';
 import ShootHeader from './ShootHeader';
 import OutfitsGearNotes from './OutfitsGearNotes';
 import LocationsBlock from './LocationsBlock';
-import AddPostsPanel from './AddPostsPanel';
 import PostDetailPanel from '@/components/posts/PostDetailPanel';
 
 import { Shoot, ShootLocation } from '@/types/shoots';
@@ -38,7 +37,6 @@ export default function ShootDetail({
   onUpdatePost,
   getUnassignedPosts,
 }: ShootDetailProps) {
-  const [showAddPanel, setShowAddPanel] = useState(false);
   const [detailPost, setDetailPost] = useState<Post | null>(null);
 
   const handleAddLocation = (location: ShootLocation) => {
@@ -56,10 +54,6 @@ export default function ShootDetail({
     onUpdatePost(postId, { status: 'Shot' });
   };
 
-  const handleAddPosts = (postIds: string[]) => {
-    onAssignPosts(postIds);
-    setShowAddPanel(false);
-  };
 
   const shotCount = posts.filter(p => p.status === 'Shot' || p.status === 'Edited' || p.status === 'Scheduled' || p.status === 'Posted').length;
   const totalCount = posts.length;
@@ -95,13 +89,6 @@ export default function ShootDetail({
                 </span>
               )}
             </div>
-            <button
-              onClick={() => setShowAddPanel(true)}
-              className="flex items-center gap-1 text-[13px] text-[#612A4F] hover:text-[#4e2140] font-medium transition-colors"
-            >
-              <Plus size={14} />
-              Add
-            </button>
           </div>
 
           {/* Progress bar */}
@@ -190,14 +177,11 @@ export default function ShootDetail({
               })}
             </div>
           ) : (
-            <div className="rounded-xl border border-dashed border-gray-200 py-10 flex flex-col items-center gap-2">
+            <div className="rounded-xl border border-dashed border-gray-200 py-10 flex flex-col items-center gap-3 text-center px-6">
               <p className="text-sm text-gray-400">No content linked yet</p>
-              <button
-                onClick={() => setShowAddPanel(true)}
-                className="text-[13px] text-[#612A4F] hover:text-[#4e2140] font-medium transition-colors"
-              >
-                + Add content
-              </button>
+              <p className="text-[12px] text-gray-300 max-w-[260px] leading-relaxed">
+                Go to the Posts page and set content to "Ready to shoot", then use the arrow to send it here.
+              </p>
             </div>
           )}
         </div>
@@ -243,13 +227,6 @@ export default function ShootDetail({
         onDeletePillar={() => {}}
       />
 
-      {/* Add posts panel */}
-      <AddPostsPanel
-        open={showAddPanel}
-        onClose={() => setShowAddPanel(false)}
-        unassignedPosts={getUnassignedPosts()}
-        onAddPosts={handleAddPosts}
-      />
     </motion.div>
   );
 }
