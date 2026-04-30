@@ -66,7 +66,6 @@ function formatDateKey(year: number, month: number, day: number): string {
 const PostsCalendarView: React.FC<PostsCalendarViewProps> = ({
   posts,
   allPosts,
-  pillars,
   onClickPost,
   onUpdatePost,
   onCreateOnDate,
@@ -77,7 +76,6 @@ const PostsCalendarView: React.FC<PostsCalendarViewProps> = ({
   const [viewMonth, setViewMonth] = useState(today.getMonth());
   const [activeId, setActiveId] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [sidebarPillar, setSidebarPillar] = useState<string | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
@@ -89,11 +87,6 @@ const PostsCalendarView: React.FC<PostsCalendarViewProps> = ({
 
   const unscheduledPosts = useMemo(() => allPosts.filter(p => !p.scheduledDate), [allPosts]);
 
-
-  const filteredUnscheduled = useMemo(() => {
-    if (!sidebarPillar) return unscheduledPosts;
-    return unscheduledPosts.filter(p => p.pillar === sidebarPillar);
-  }, [unscheduledPosts, sidebarPillar]);
 
   const postsByDate = useMemo(() => {
     const map: Record<string, Post[]> = {};
@@ -161,41 +154,8 @@ const PostsCalendarView: React.FC<PostsCalendarViewProps> = ({
                     <ChevronLeft className="w-3.5 h-3.5" />
                   </button>
                 </div>
-                {/* Pillar filter */}
-                <div className="flex flex-wrap gap-1 px-2 pt-2 pb-1">
-                  <button
-                    onClick={() => setSidebarPillar(null)}
-                    className="px-2 py-0.5 rounded-full text-[10px] font-medium border transition-all duration-150"
-                    style={{
-                      backgroundColor: !sidebarPillar ? '#F3F4F6' : 'transparent',
-                      color: !sidebarPillar ? '#374151' : '#9CA3AF',
-                      borderColor: !sidebarPillar ? '#D1D5DB' : '#E5E7EB',
-                    }}
-                  >
-                    All
-                  </button>
-                  {pillars.map(p => {
-                    const ps = getPillarStyle(p);
-                    const isActive = sidebarPillar === p;
-                    return (
-                      <button
-                        key={p}
-                        onClick={() => setSidebarPillar(isActive ? null : p)}
-                        className="px-2 py-0.5 rounded-full text-[10px] font-medium border transition-all duration-150"
-                        style={{
-                          backgroundColor: isActive ? ps.bg : 'transparent',
-                          color: isActive ? ps.text : '#9CA3AF',
-                          borderColor: isActive ? ps.border : '#E5E7EB',
-                        }}
-                      >
-                        {p}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                <div className="overflow-y-auto p-2 space-y-1.5" style={{ maxHeight: 'calc(100vh - 330px)' }}>
-                  {filteredUnscheduled.map(post => (
+                <div className="overflow-y-auto p-2 space-y-1.5" style={{ maxHeight: 'calc(100vh - 280px)' }}>
+                  {unscheduledPosts.map(post => (
                     <DraggableSidebarCard key={post.id} post={post} onClick={onClickPost} />
                   ))}
                 </div>
@@ -359,18 +319,25 @@ const CalendarCell: React.FC<CalendarCellProps> = ({
   onClickEmpty,
 }) => {
   const { setNodeRef, isOver } = useDroppable({ id: date });
+  const [hovered, setHovered] = useState(false);
+
+  const bg = isOver
+    ? 'rgba(97, 42, 79, 0.06)'
+    : hovered
+    ? 'rgba(97, 42, 79, 0.03)'
+    : isCurrentMonth
+    ? 'white'
+    : '#FAFAFA';
 
   return (
     <div
       ref={setNodeRef}
       onClick={() => { if (posts.length === 0) onClickEmpty(); }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       className="border-r border-b border-gray-100 min-h-[105px] p-1 cursor-pointer transition-colors duration-150"
       style={{
-        backgroundColor: isOver
-          ? 'rgba(97, 42, 79, 0.06)'
-          : isCurrentMonth
-          ? 'white'
-          : '#FAFAFA',
+        backgroundColor: bg,
         outline: isOver ? '2px solid rgba(97, 42, 79, 0.2)' : 'none',
         outlineOffset: '-2px',
         borderRadius: isOver ? '4px' : '0',

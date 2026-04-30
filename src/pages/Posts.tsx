@@ -2,6 +2,7 @@ import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trash2 } from 'lucide-react';
 import { Post, PostStatus, DEFAULT_PILLARS, DEFAULT_FORMATS, POST_STATUSES, STATUS_COLORS } from '@/types/posts';
+import { StatusIcon } from '@/components/posts/StatusDropdown';
 import { seedPosts } from '@/data/postsSeedData';
 import PostsPipeline from '@/components/posts/PostsPipeline';
 import PostsTable from '@/components/posts/PostsTable';
@@ -242,8 +243,8 @@ const Posts: React.FC = () => {
           <ViewSwitcher active={activeView} onChange={setActiveView} />
         </div>
 
-        {/* Filter Bar */}
-        <PostsFilterBar
+        {/* Filter Bar (hidden in Calendar view) */}
+        {activeView !== 'Calendar' && <PostsFilterBar
           pillars={pillars}
           filterPillars={filterPillars}
           filterStatuses={filterStatuses}
@@ -264,7 +265,7 @@ const Posts: React.FC = () => {
           onAddFormat={handleAddFormat}
           onDeleteFormat={handleDeleteFormat}
           onRenameFormat={handleRenameFormat}
-        />
+        />}
 
         {/* Bulk actions bar (List view only) */}
         <AnimatePresence>
@@ -289,10 +290,7 @@ const Posts: React.FC = () => {
                     className="flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium hover:bg-white/60 transition-colors duration-150"
                     style={{ color: STATUS_COLORS[status].text }}
                   >
-                    <div
-                      className="w-1.5 h-1.5 rounded-full"
-                      style={{ backgroundColor: STATUS_COLORS[status].dot }}
-                    />
+                    <StatusIcon status={status} className="w-3 h-3" style={{ color: STATUS_COLORS[status].dot }} />
                     {status}
                   </button>
                 ))}

@@ -4,6 +4,7 @@ import { X, Calendar, Hash, FileText, BarChart3, StickyNote, Paperclip, Trash2 }
 import { Post, PostStatus, POST_STATUSES, STATUS_COLORS, getPillarStyle } from '@/types/posts';
 import FormatDropdown from './FormatDropdown';
 import PillarDropdown from './PillarDropdown';
+import StatusDropdown from './StatusDropdown';
 
 interface PostDetailPanelProps {
   post: Post | null;
@@ -70,6 +71,7 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
                   type="text"
                   value={post.title}
                   onChange={e => onUpdate(post.id, { title: e.target.value })}
+                  onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); onClose(); } }}
                   className="text-lg font-semibold text-gray-900 bg-transparent outline-none w-full truncate hover:bg-gray-50 focus:bg-gray-50 rounded px-1 -ml-1 transition-colors duration-150"
                 />
               </div>
@@ -110,15 +112,10 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
                 {/* Status */}
                 <div>
                   <label className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5 block">Status</label>
-                  <select
+                  <StatusDropdown
                     value={post.status}
-                    onChange={e => onUpdate(post.id, { status: e.target.value as PostStatus })}
-                    className="text-sm text-gray-700 bg-transparent outline-none cursor-pointer hover:bg-gray-50 rounded px-1 py-0.5 transition-colors duration-150"
-                  >
-                    {POST_STATUSES.map(s => (
-                      <option key={s} value={s}>{s}</option>
-                    ))}
-                  </select>
+                    onChange={val => onUpdate(post.id, { status: val })}
+                  />
                 </div>
               </div>
 

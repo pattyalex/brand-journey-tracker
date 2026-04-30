@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Plus, X, SlidersHorizontal, ChevronRight, Check } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { PostStatus, POST_STATUSES, STATUS_COLORS, getPillarStyle } from '@/types/posts';
+import { StatusIcon } from './StatusDropdown';
 
 interface PostsFilterBarProps {
   pillars: string[];
@@ -314,7 +315,7 @@ const PostsFilterBar: React.FC<PostsFilterBarProps> = ({
                       onClick={() => onToggleStatus(status)}
                       className={`w-full text-left px-3 py-1.5 text-sm flex items-center gap-2 transition-colors duration-100 ${isActive ? 'text-gray-900 font-medium' : 'text-gray-500 hover:bg-gray-50'}`}
                     >
-                      <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: colors.dot }} />
+                      <StatusIcon status={status} className="w-3.5 h-3.5 flex-shrink-0" style={{ color: colors.dot }} />
                       <span className="flex-1">{status}</span>
                       {isActive && <Check className="w-3 h-3 text-[#612a4f]" />}
                     </button>

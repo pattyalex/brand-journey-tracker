@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, GripVertical, Trash2 } from 'lucide-react';
 import { Post, STATUS_COLORS, PostStatus, getPillarStyle } from '@/types/posts';
+import { StatusIcon } from './StatusDropdown';
 import PostsDatePicker from './PostsDatePicker';
 
 interface PostCardProps {
@@ -24,16 +25,12 @@ const PostCard: React.FC<PostCardProps> = ({ post, variant, onClick, allPosts = 
         layout={false}
         onClick={e => { e.stopPropagation(); onClick(post); }}
         className="relative rounded px-2 py-1 cursor-pointer hover:shadow-sm transition-shadow duration-150 text-left group/card"
-        style={{ backgroundColor: pillarStyle.bg, borderLeft: `3px solid ${pillarStyle.border}` }}
+        style={{ backgroundColor: pillarStyle.bg }}
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         transition={{ duration: 0.15 }}
       >
-        <div
-          className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full"
-          style={{ backgroundColor: statusColor.dot }}
-        />
-        <p className="text-[11px] font-medium text-gray-800 truncate pr-3">{post.title}</p>
+        <p className="text-[11px] font-medium text-gray-800 truncate">{post.title}</p>
         <span className="text-[9px] text-gray-500">{post.format}</span>
       </motion.div>
     );
@@ -68,7 +65,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, variant, onClick, allPosts = 
         )}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1">
-            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: statusColor.dot }} />
+            <StatusIcon status={post.status} className="w-2.5 h-2.5" style={{ color: statusColor.dot }} />
             <span className="text-[10px] text-gray-400">{post.status}</span>
           </div>
           <div onClick={e => e.stopPropagation()}>

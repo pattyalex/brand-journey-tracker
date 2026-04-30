@@ -29,6 +29,7 @@ import {
   STATUS_COLORS,
   getPillarStyle,
 } from '@/types/posts';
+import { StatusIcon } from './StatusDropdown';
 
 interface PostsTableProps {
   posts: Post[];
@@ -148,7 +149,7 @@ const PostsTable: React.FC<PostsTableProps> = ({
                     <td className="px-4 py-3 text-sm text-gray-600">{activePost.format}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: STATUS_COLORS[activePost.status].dot }} />
+                        <StatusIcon status={activePost.status} className="w-3.5 h-3.5" style={{ color: STATUS_COLORS[activePost.status].dot }} />
                         <span className="text-sm font-medium text-gray-700">{activePost.status}</span>
                       </div>
                     </td>

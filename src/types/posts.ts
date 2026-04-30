@@ -29,7 +29,7 @@ export const POST_STATUSES: PostStatus[] = ['Idea', 'Scripted', 'Ready to shoot'
 export const DEFAULT_PILLARS: string[] = ['Fashion', 'POV', 'Day in my life', 'The build'];
 
 export const STATUS_COLORS: Record<PostStatus, { dot: string; bg: string; text: string }> = {
-  Idea:             { dot: '#9CA3AF', bg: '#F3F4F6', text: '#6B7280' },
+  Idea:             { dot: '#FACC15', bg: '#FEF9C3', text: '#854D0E' },
   Scripted:         { dot: '#EC4899', bg: '#FCE7F3', text: '#9D174D' },
   'Ready to shoot': { dot: '#F59E0B', bg: '#FEF3C7', text: '#78350F' },
   Shot:             { dot: '#FF6B00', bg: '#FFF2E0', text: '#B94500' },
