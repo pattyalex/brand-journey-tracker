@@ -322,9 +322,9 @@ const CalendarCell: React.FC<CalendarCellProps> = ({
   const [hovered, setHovered] = useState(false);
 
   const bg = isOver
-    ? 'rgba(97, 42, 79, 0.06)'
+    ? 'rgba(0, 0, 0, 0.04)'
     : hovered
-    ? 'rgba(97, 42, 79, 0.03)'
+    ? 'rgba(0, 0, 0, 0.02)'
     : isCurrentMonth
     ? 'white'
     : '#FAFAFA';
@@ -338,7 +338,7 @@ const CalendarCell: React.FC<CalendarCellProps> = ({
       className="border-r border-b border-gray-100 min-h-[105px] p-1 cursor-pointer transition-colors duration-150"
       style={{
         backgroundColor: bg,
-        outline: isOver ? '2px solid rgba(97, 42, 79, 0.2)' : 'none',
+        outline: isOver ? '1px solid rgba(0, 0, 0, 0.15)' : 'none',
         outlineOffset: '-2px',
         borderRadius: isOver ? '4px' : '0',
       }}

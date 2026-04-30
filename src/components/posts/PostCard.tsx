@@ -31,7 +31,13 @@ const PostCard: React.FC<PostCardProps> = ({ post, variant, onClick, allPosts = 
         transition={{ duration: 0.15 }}
       >
         <p className="text-[11px] font-medium text-gray-800 truncate">{post.title}</p>
-        <span className="text-[9px] text-gray-500">{post.format}</span>
+        <div className="flex items-center justify-between">
+          {post.format ? <span className="text-[9px] text-gray-500">{post.format}</span> : <span />}
+          <span className="flex items-center gap-0.5 text-[9px] text-gray-400">
+            <StatusIcon status={post.status} className="w-2 h-2" style={{ color: statusColor.dot }} />
+            {post.status}
+          </span>
+        </div>
       </motion.div>
     );
   }
