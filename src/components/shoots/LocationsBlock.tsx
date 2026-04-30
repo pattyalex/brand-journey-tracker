@@ -53,7 +53,7 @@ const LocationsBlock: React.FC<LocationsBlockProps> = ({
     <div>
       {/* Section label */}
       <div className="text-xs uppercase tracking-wider text-gray-400 font-medium mb-3">
-        Locations
+        Location
       </div>
 
       {/* Location list */}
@@ -78,11 +78,6 @@ const LocationsBlock: React.FC<LocationsBlockProps> = ({
                   <div className="text-sm font-medium text-gray-800">{location.name}</div>
                   {location.address && (
                     <div className="text-[11px] text-gray-400">{location.address}</div>
-                  )}
-                  {index < locations.length - 1 && (
-                    <div className="text-[11px] text-gray-400 italic mt-1">
-                      ~ calculating...
-                    </div>
                   )}
                 </div>
 

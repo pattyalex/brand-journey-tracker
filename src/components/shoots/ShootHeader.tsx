@@ -124,9 +124,6 @@ const ShootHeader: React.FC<ShootHeaderProps> = ({
         </div>
 
         <div className="flex items-center gap-2 ml-4 flex-shrink-0">
-          {/* Status pill */}
-          <ShootStatusPill status={shoot.status} size="md" />
-
           {/* Three-dot menu */}
           <Popover open={menuOpen} onOpenChange={setMenuOpen}>
             <PopoverTrigger asChild>
@@ -134,7 +131,7 @@ const ShootHeader: React.FC<ShootHeaderProps> = ({
                 <MoreHorizontal size={18} className="text-gray-400" />
               </button>
             </PopoverTrigger>
-            <PopoverContent align="end" className="w-48 p-1">
+            <PopoverContent align="end" className="w-48 p-1 bg-white">
               <div
                 className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-md cursor-pointer"
                 onClick={() => {
@@ -144,16 +141,6 @@ const ShootHeader: React.FC<ShootHeaderProps> = ({
               >
                 <Copy size={14} />
                 Duplicate shoot
-              </div>
-              <div
-                className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-md cursor-pointer"
-                onClick={() => {
-                  setMenuOpen(false);
-                  onArchive();
-                }}
-              >
-                <Archive size={14} />
-                Archive shoot
               </div>
               <div
                 className="flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-gray-50 rounded-md cursor-pointer"

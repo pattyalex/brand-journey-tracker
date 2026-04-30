@@ -431,14 +431,13 @@ function ShootCard({ shoot, posts, onClick, index }: ShootCardProps) {
           )}
         </div>
 
-        {/* Status */}
-        <span
-          className="text-[11px] px-2.5 py-1 rounded-full font-medium flex items-center gap-1.5 flex-shrink-0"
-          style={{ backgroundColor: statusColor.bg, color: statusColor.text }}
-        >
-          <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: statusColor.dot }} />
-          {shoot.status}
-        </span>
+        {/* Post count */}
+        {posts.length > 0 && (
+          <span className="text-[11px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 flex-shrink-0">
+            {posts.length} {posts.length === 1 ? 'post' : 'posts'}
+          </span>
+        )}
+
       </div>
 
       {/* Content ideas in this shoot */}

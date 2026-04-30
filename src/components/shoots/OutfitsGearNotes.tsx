@@ -91,11 +91,11 @@ const OutfitsGearNotes: React.FC<OutfitsGearNotesProps> = ({
         onUpdate={onUpdateOutfits}
       />
 
-      {/* Gear */}
+      {/* Props */}
       <TagBlock
-        label="Gear"
+        label="Props"
         items={gear}
-        placeholder="Add gear..."
+        placeholder="Add a prop..."
         onUpdate={onUpdateGear}
       />
 

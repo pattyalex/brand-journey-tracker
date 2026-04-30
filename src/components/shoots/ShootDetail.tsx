@@ -1,17 +1,15 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { Check, Plus, X } from 'lucide-react';
 
 import ShootHeader from './ShootHeader';
-import LocationsBlock from './LocationsBlock';
-import RouteMap from './RouteMap';
-import RouteOptimizer from './RouteOptimizer';
-import AIPlannerTimeline from './AIPlannerTimeline';
 import OutfitsGearNotes from './OutfitsGearNotes';
-import ShootPostsList from './ShootPostsList';
+import LocationsBlock from './LocationsBlock';
 import AddPostsPanel from './AddPostsPanel';
+import PostDetailPanel from '@/components/posts/PostDetailPanel';
 
-import { Shoot, ShootLocation, AIPlan } from '@/types/shoots';
-import { Post } from '@/types/posts';
+import { Shoot, ShootLocation } from '@/types/shoots';
+import { Post, DEFAULT_PILLARS, DEFAULT_FORMATS, getPillarStyle, STATUS_COLORS } from '@/types/posts';
 
 interface ShootDetailProps {
   shoot: Shoot;
@@ -41,61 +39,21 @@ export default function ShootDetail({
   getUnassignedPosts,
 }: ShootDetailProps) {
   const [showAddPanel, setShowAddPanel] = useState(false);
-
-  // --- Location handlers ---
+  const [detailPost, setDetailPost] = useState<Post | null>(null);
 
   const handleAddLocation = (location: ShootLocation) => {
     onUpdate({ locations: [...(shoot.locations || []), location] });
   };
-
   const handleRemoveLocation = (locationId: string) => {
-    onUpdate({
-      locations: (shoot.locations || []).filter((loc) => loc.id !== locationId),
-    });
+    onUpdate({ locations: (shoot.locations || []).filter(l => l.id !== locationId) });
   };
-
   const handleReorderLocations = (reordered: ShootLocation[]) => {
     onUpdate({ locations: reordered });
   };
-
-  // --- Route handler ---
-
-  const handleOptimizeRoute = (order: string[]) => {
-    onUpdate({ optimized_route_order: order });
-  };
-
-  // --- AI Plan handler ---
-
-  const handleUpdatePlan = (plan: AIPlan) => {
-    onUpdate({ ai_plan: plan });
-  };
-
-  // --- Outfits / Gear / Notes handlers ---
-
-  const handleUpdateOutfits = (outfits: string[]) => {
-    onUpdate({ outfits });
-  };
-
-  const handleUpdateGear = (gear: string[]) => {
-    onUpdate({ gear });
-  };
-
-  const handleUpdateNotes = (notes: string) => {
-    onUpdate({ notes });
-  };
-
-  // --- Post handlers ---
-
-  const handleRemovePost = (postId: string) => {
-    onRemovePost(postId);
-  };
+  const handleArchive = () => onUpdate({ status: 'Archived' });
 
   const handleMarkAsShot = (postId: string) => {
     onUpdatePost(postId, { status: 'Shot' });
-  };
-
-  const handleClickPost = (postId: string) => {
-    console.log('Post clicked:', postId);
   };
 
   const handleAddPosts = (postIds: string[]) => {
@@ -103,11 +61,8 @@ export default function ShootDetail({
     setShowAddPanel(false);
   };
 
-  // --- Archive handler ---
-
-  const handleArchive = () => {
-    onUpdate({ status: 'Archived' });
-  };
+  const shotCount = posts.filter(p => p.status === 'Shot' || p.status === 'Edited' || p.status === 'Scheduled' || p.status === 'Posted').length;
+  const totalCount = posts.length;
 
   return (
     <motion.div
@@ -116,71 +71,185 @@ export default function ShootDetail({
       animate={{ opacity: 1 }}
       transition={{ duration: 0.2 }}
     >
-      <div className="max-w-6xl mx-auto px-6 md:px-8 lg:px-10 py-6">
-        <div className="grid grid-cols-1 md:grid-cols-[1fr,380px] gap-8">
-          {/* Left Column */}
-          <div className="flex flex-col gap-6">
-            <ShootHeader
-              shoot={shoot}
-              onUpdate={onUpdate}
-              onDuplicate={onDuplicate}
-              onArchive={handleArchive}
-              onDelete={onDelete}
-              onBack={onBack}
-            />
+      <div className="max-w-3xl mx-auto px-6 md:px-8 py-6">
+        {/* Header */}
+        <ShootHeader
+          shoot={shoot}
+          onUpdate={onUpdate}
+          onDuplicate={onDuplicate}
+          onArchive={handleArchive}
+          onDelete={onDelete}
+          onBack={onBack}
+        />
 
-            <LocationsBlock
-              locations={shoot.locations || []}
-              onAddLocation={handleAddLocation}
-              onRemoveLocation={handleRemoveLocation}
-              onReorderLocations={handleReorderLocations}
-            />
-
-            <RouteMap
-              locations={shoot.locations || []}
-              optimizedOrder={shoot.optimized_route_order || []}
-            />
-
-            <RouteOptimizer
-              locations={shoot.locations || []}
-              onOptimize={handleOptimizeRoute}
-            />
-
-            <AIPlannerTimeline
-              shoot={shoot}
-              posts={posts}
-              onUpdatePlan={handleUpdatePlan}
-            />
-
-            <OutfitsGearNotes
-              outfits={shoot.outfits || []}
-              gear={shoot.gear || []}
-              notes={shoot.notes || ''}
-              onUpdateOutfits={handleUpdateOutfits}
-              onUpdateGear={handleUpdateGear}
-              onUpdateNotes={handleUpdateNotes}
-            />
+        {/* Content to capture */}
+        <div className="mt-8">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <span className="text-xs uppercase tracking-wider text-gray-400 font-medium">
+                Content to capture
+              </span>
+              {totalCount > 0 && (
+                <span className="text-[11px] text-gray-400">
+                  {shotCount}/{totalCount} done
+                </span>
+              )}
+            </div>
+            <button
+              onClick={() => setShowAddPanel(true)}
+              className="flex items-center gap-1 text-[13px] text-[#612A4F] hover:text-[#4e2140] font-medium transition-colors"
+            >
+              <Plus size={14} />
+              Add
+            </button>
           </div>
 
-          {/* Right Column */}
-          <div className="flex flex-col gap-4 md:sticky md:top-6">
-            <ShootPostsList
-              posts={posts}
-              onRemovePost={handleRemovePost}
-              onMarkAsShot={handleMarkAsShot}
-              onClickPost={(post: Post) => handleClickPost(post.id)}
-              onAddPosts={() => setShowAddPanel(true)}
-            />
+          {/* Progress bar */}
+          {totalCount > 0 && (
+            <div className="h-1 rounded-full bg-gray-100 mb-4 overflow-hidden">
+              <motion.div
+                className="h-full rounded-full bg-[#612A4F]"
+                initial={{ width: 0 }}
+                animate={{ width: `${(shotCount / totalCount) * 100}%` }}
+                transition={{ duration: 0.5, ease: 'easeOut' }}
+              />
+            </div>
+          )}
 
-            <AddPostsPanel
-              open={showAddPanel}
-              onClose={() => setShowAddPanel(false)}
-              unassignedPosts={getUnassignedPosts()}
-              onAddPosts={handleAddPosts}
-            />
-          </div>
+          {/* Post list with checkmarks */}
+          {posts.length > 0 ? (
+            <div className="rounded-xl border border-gray-100 bg-white overflow-hidden">
+              {posts.map((post, i) => {
+                const isDone = post.status === 'Shot' || post.status === 'Edited' || post.status === 'Scheduled' || post.status === 'Posted';
+                const pillar = post.pillar || '';
+                const format = post.format || '';
+                const pillarStyle = getPillarStyle(pillar);
+                return (
+                  <div
+                    key={post.id}
+                    className={`group flex items-center gap-3 px-4 py-3 transition-colors duration-150 ${
+                      i > 0 ? 'border-t border-gray-50' : ''
+                    } ${isDone ? 'bg-gray-50/50' : ''}`}
+                  >
+                    {/* Checkmark circle */}
+                    <button
+                      onClick={() => {
+                        if (isDone) {
+                          onUpdatePost(post.id, { status: 'Ready to shoot' });
+                        } else {
+                          handleMarkAsShot(post.id);
+                        }
+                      }}
+                      className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all duration-200 cursor-pointer ${
+                        isDone
+                          ? 'bg-[#059669] border-[#059669] hover:bg-[#059669]/80'
+                          : 'border-gray-300 hover:border-[#612A4F]'
+                      }`}
+                    >
+                      {isDone && <Check size={12} className="text-white" strokeWidth={3} />}
+                    </button>
+
+                    {/* Title */}
+                    <span
+                      onClick={() => setDetailPost(post)}
+                      className={`text-sm flex-1 truncate transition-colors cursor-pointer hover:text-[#612A4F] ${
+                        isDone ? 'text-gray-400 line-through' : 'text-gray-800'
+                      }`}
+                    >
+                      {post.title}
+                    </span>
+
+                    {/* Pillar */}
+                    {pillar && (
+                      <span
+                        className="text-[10px] px-2 py-0.5 rounded-full flex-shrink-0 font-medium"
+                        style={{
+                          backgroundColor: pillarStyle.bg,
+                          color: pillarStyle.text,
+                          border: `1px solid ${pillarStyle.border}`,
+                        }}
+                      >
+                        {pillar}
+                      </span>
+                    )}
+
+                    {/* Format */}
+                    {format && (
+                      <span className="text-[10px] text-gray-400 flex-shrink-0">{format}</span>
+                    )}
+
+                    {/* Remove */}
+                    <button
+                      onClick={() => onRemovePost(post.id)}
+                      className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-400 transition-all duration-150 flex-shrink-0"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="rounded-xl border border-dashed border-gray-200 py-10 flex flex-col items-center gap-2">
+              <p className="text-sm text-gray-400">No content linked yet</p>
+              <button
+                onClick={() => setShowAddPanel(true)}
+                className="text-[13px] text-[#612A4F] hover:text-[#4e2140] font-medium transition-colors"
+              >
+                + Add content
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Location, Outfits, Props, Notes */}
+        <div className="mt-8">
+          <LocationsBlock
+            locations={shoot.locations || []}
+            onAddLocation={handleAddLocation}
+            onRemoveLocation={handleRemoveLocation}
+            onReorderLocations={handleReorderLocations}
+          />
+        </div>
+
+        <div className="mt-6">
+          <OutfitsGearNotes
+            outfits={shoot.outfits || []}
+            gear={shoot.gear || []}
+            notes={shoot.notes || ''}
+            onUpdateOutfits={(outfits) => onUpdate({ outfits })}
+            onUpdateGear={(gear) => onUpdate({ gear })}
+            onUpdateNotes={(notes) => onUpdate({ notes })}
+          />
         </div>
       </div>
+
+      {/* Post detail panel */}
+      <PostDetailPanel
+        post={detailPost}
+        pillars={DEFAULT_PILLARS}
+        formats={DEFAULT_FORMATS}
+        onClose={() => setDetailPost(null)}
+        onUpdate={(id, updates) => {
+          onUpdatePost(id, updates);
+          setDetailPost(prev => prev && prev.id === id ? { ...prev, ...updates } : prev);
+        }}
+        onDelete={(id) => {
+          onRemovePost(id);
+          setDetailPost(null);
+        }}
+        onAddFormat={() => {}}
+        onDeleteFormat={() => {}}
+        onDeletePillar={() => {}}
+      />
+
+      {/* Add posts panel */}
+      <AddPostsPanel
+        open={showAddPanel}
+        onClose={() => setShowAddPanel(false)}
+        unassignedPosts={getUnassignedPosts()}
+        onAddPosts={handleAddPosts}
+      />
     </motion.div>
   );
 }
