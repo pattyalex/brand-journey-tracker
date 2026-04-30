@@ -1,22 +1,22 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Calendar, GripVertical, Trash2 } from 'lucide-react';
 import { Post, STATUS_COLORS, PostStatus, getPillarStyle } from '@/types/posts';
+import PostsDatePicker from './PostsDatePicker';
 
 interface PostCardProps {
   post: Post;
   variant: 'pillar' | 'calendar';
   onClick: (post: Post) => void;
+  allPosts?: Post[];
+  onUpdatePost?: (id: string, updates: Partial<Post>) => void;
+  onClickPost?: (post: Post) => void;
+  onDelete?: (id: string) => void;
 }
 
-const PIPELINE_STAGES: PostStatus[] = ['Scripted', 'Ready to shoot', 'Shot', 'Edited', 'Scheduled', 'Posted'];
-const STATUS_INDEX: Record<PostStatus, number> = {
-  Idea: 0, Scripted: 1, 'Ready to shoot': 2, Shot: 3, Edited: 4, Scheduled: 5, Posted: 6,
-};
-
-const PostCard: React.FC<PostCardProps> = ({ post, variant, onClick }) => {
+const PostCard: React.FC<PostCardProps> = ({ post, variant, onClick, allPosts = [], onUpdatePost, onClickPost, onDelete }) => {
   const pillarStyle = getPillarStyle(post.pillar);
   const statusColor = STATUS_COLORS[post.status];
-  const stageIndex = STATUS_INDEX[post.status];
 
   if (variant === 'calendar') {
     return (
@@ -45,41 +45,52 @@ const PostCard: React.FC<PostCardProps> = ({ post, variant, onClick }) => {
       layout={false}
       onClick={() => onClick(post)}
       className="rounded-lg bg-white border border-gray-100 p-3 cursor-pointer hover:shadow-[0_4px_12px_rgba(93,63,90,0.08)] transition-shadow duration-200 group/card"
-      style={{ borderLeftWidth: 3, borderLeftColor: pillarStyle.border }}
       whileHover={{ y: -1 }}
-      whileTap={{ scale: 0.98 }}
       transition={{ duration: 0.15 }}
     >
-      <p className="text-sm font-medium text-gray-900 line-clamp-2 mb-2">{post.title}</p>
+      <div className="flex items-start gap-1.5 mb-2">
+        <GripVertical className="w-3.5 h-3.5 text-gray-300 flex-shrink-0 mt-0.5" />
+        <p className="text-sm font-medium text-gray-900 line-clamp-2 flex-1">{post.title}</p>
+        {onDelete && (
+          <button
+            onClick={e => { e.stopPropagation(); onDelete(post.id); }}
+            className="opacity-0 group-hover/card:opacity-100 p-0.5 rounded text-gray-300 hover:text-red-500 transition-all duration-150 flex-shrink-0"
+          >
+            <Trash2 className="w-3 h-3" />
+          </button>
+        )}
+      </div>
       <div className="flex items-center justify-between">
-        <span
-          className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full border"
-          style={{
-            backgroundColor: pillarStyle.bg,
-            color: pillarStyle.text,
-            borderColor: pillarStyle.border,
-          }}
-        >
-          {post.format}
-        </span>
-        {/* 4-dot pipeline */}
-        <div className="flex items-center gap-1">
-          {PIPELINE_STAGES.map((stage, i) => {
-            const filled = stageIndex >= STATUS_INDEX[stage];
-            const dotColor = STATUS_COLORS[stage].dot;
-            return (
-              <motion.div
-                key={stage}
-                className="w-1.5 h-1.5 rounded-full"
-                style={{
-                  backgroundColor: filled ? dotColor : 'transparent',
-                  border: `1.5px solid ${filled ? dotColor : '#D1D5DB'}`,
-                }}
-                animate={{ backgroundColor: filled ? dotColor : 'transparent' }}
-                transition={{ duration: 0.3, ease: 'easeOut' }}
-              />
-            );
-          })}
+        {post.format ? (
+          <span className="text-[10px] text-gray-500">{post.format}</span>
+        ) : (
+          <span />
+        )}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1">
+            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: statusColor.dot }} />
+            <span className="text-[10px] text-gray-400">{post.status}</span>
+          </div>
+          <div onClick={e => e.stopPropagation()}>
+            <PostsDatePicker
+            value={post.scheduledDate}
+            allPosts={allPosts}
+            onChange={date => onUpdatePost?.(post.id, { scheduledDate: date })}
+            onClickPost={onClickPost}
+            triggerSlot={
+              post.scheduledDate ? (
+                <button className="flex items-center gap-1 text-[10px] text-gray-400 hover:text-gray-600 transition-colors duration-150">
+                  <Calendar className="w-3 h-3" />
+                  {new Date(post.scheduledDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                </button>
+              ) : (
+                <button className="text-gray-300 hover:text-gray-500 transition-colors duration-150">
+                  <Calendar className="w-3 h-3" />
+                </button>
+              )
+            }
+          />
+          </div>
         </div>
       </div>
     </motion.div>

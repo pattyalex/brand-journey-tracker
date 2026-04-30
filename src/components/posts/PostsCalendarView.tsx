@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Archive } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, CalendarPlus } from 'lucide-react';
 import {
   DndContext,
   DragOverlay,
@@ -10,13 +10,15 @@ import {
   DragStartEvent,
   DragEndEvent,
   useDroppable,
+  useDraggable,
 } from '@dnd-kit/core';
 import { Post, getPillarStyle } from '@/types/posts';
 import PostCard from './PostCard';
 
 interface PostsCalendarViewProps {
   posts: Post[];
-  allPosts: Post[]; // unfiltered, to count unscheduled
+  allPosts: Post[];
+  pillars: string[];
   onClickPost: (post: Post) => void;
   onUpdatePost: (id: string, updates: Partial<Post>) => void;
   onCreateOnDate: (date: string) => void;
@@ -33,25 +35,18 @@ function getMonthGrid(year: number, month: number) {
 
   const days: { date: string; day: number; isCurrentMonth: boolean }[] = [];
 
-  // Padding from previous month
   const prevMonthLast = new Date(year, month, 0).getDate();
   for (let i = startPad - 1; i >= 0; i--) {
     const d = prevMonthLast - i;
     const prevMonth = month === 0 ? 11 : month - 1;
     const prevYear = month === 0 ? year - 1 : year;
-    days.push({
-      date: formatDateKey(prevYear, prevMonth, d),
-      day: d,
-      isCurrentMonth: false,
-    });
+    days.push({ date: formatDateKey(prevYear, prevMonth, d), day: d, isCurrentMonth: false });
   }
 
-  // Current month
   for (let d = 1; d <= totalDays; d++) {
     days.push({ date: formatDateKey(year, month, d), day: d, isCurrentMonth: true });
   }
 
-  // Padding to fill last row
   const remaining = 7 - (days.length % 7);
   if (remaining < 7) {
     const nextMonth = month === 11 ? 0 : month + 1;
@@ -71,6 +66,7 @@ function formatDateKey(year: number, month: number, day: number): string {
 const PostsCalendarView: React.FC<PostsCalendarViewProps> = ({
   posts,
   allPosts,
+  pillars,
   onClickPost,
   onUpdatePost,
   onCreateOnDate,
@@ -80,6 +76,8 @@ const PostsCalendarView: React.FC<PostsCalendarViewProps> = ({
   const [viewYear, setViewYear] = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarPillar, setSidebarPillar] = useState<string | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
@@ -87,10 +85,15 @@ const PostsCalendarView: React.FC<PostsCalendarViewProps> = ({
 
   const days = useMemo(() => getMonthGrid(viewYear, viewMonth), [viewYear, viewMonth]);
 
-  const scheduledPosts = useMemo(
-    () => posts.filter(p => p.scheduledDate),
-    [posts]
-  );
+  const scheduledPosts = useMemo(() => posts.filter(p => p.scheduledDate), [posts]);
+
+  const unscheduledPosts = useMemo(() => allPosts.filter(p => !p.scheduledDate), [allPosts]);
+
+
+  const filteredUnscheduled = useMemo(() => {
+    if (!sidebarPillar) return unscheduledPosts;
+    return unscheduledPosts.filter(p => p.pillar === sidebarPillar);
+  }, [unscheduledPosts, sidebarPillar]);
 
   const postsByDate = useMemo(() => {
     const map: Record<string, Post[]> = {};
@@ -103,12 +106,7 @@ const PostsCalendarView: React.FC<PostsCalendarViewProps> = ({
     return map;
   }, [scheduledPosts]);
 
-  const unscheduledCount = useMemo(
-    () => allPosts.filter(p => !p.scheduledDate).length,
-    [allPosts]
-  );
-
-  const activePost = activeId ? posts.find(p => p.id === activeId) : null;
+  const activePost = activeId ? allPosts.find(p => p.id === activeId) : null;
 
   const monthLabel = new Date(viewYear, viewMonth).toLocaleDateString('en-US', {
     month: 'long',
@@ -135,100 +133,206 @@ const PostsCalendarView: React.FC<PostsCalendarViewProps> = ({
     if (!over) return;
     const postId = active.id as string;
     const newDate = over.id as string;
-    // Validate it looks like a date
     if (/^\d{4}-\d{2}-\d{2}$/.test(newDate)) {
       onUpdatePost(postId, { scheduledDate: newDate });
     }
   };
 
-  const hasPostsThisMonth = scheduledPosts.some(p => {
-    if (!p.scheduledDate) return false;
-    const [y, m] = p.scheduledDate.split('-').map(Number);
-    return y === viewYear && m === viewMonth + 1;
-  });
+  return (
+    <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+      <div className="flex gap-4">
+        {/* Unscheduled sidebar */}
+        {unscheduledPosts.length > 0 && (
+          <div
+            className="flex-shrink-0 transition-all duration-300 ease-in-out"
+            style={{ width: sidebarOpen ? '20%' : '40px', minWidth: sidebarOpen ? '200px' : '40px', maxWidth: sidebarOpen ? '280px' : '40px' }}
+          >
+            {sidebarOpen ? (
+              <div className="bg-gray-50/80 rounded-lg border border-gray-100 h-full">
+                <div className="flex items-center justify-between px-3 py-2.5 border-b border-gray-100">
+                  <div className="flex items-center gap-1.5">
+                    <CalendarPlus className="w-3.5 h-3.5 text-gray-400" />
+                    <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Unscheduled</span>
+                  </div>
+                  <button
+                    onClick={() => setSidebarOpen(false)}
+                    className="p-0.5 rounded hover:bg-gray-200/60 text-gray-400 hover:text-gray-600 transition-colors duration-150"
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+                {/* Pillar filter */}
+                <div className="flex flex-wrap gap-1 px-2 pt-2 pb-1">
+                  <button
+                    onClick={() => setSidebarPillar(null)}
+                    className="px-2 py-0.5 rounded-full text-[10px] font-medium border transition-all duration-150"
+                    style={{
+                      backgroundColor: !sidebarPillar ? '#F3F4F6' : 'transparent',
+                      color: !sidebarPillar ? '#374151' : '#9CA3AF',
+                      borderColor: !sidebarPillar ? '#D1D5DB' : '#E5E7EB',
+                    }}
+                  >
+                    All
+                  </button>
+                  {pillars.map(p => {
+                    const ps = getPillarStyle(p);
+                    const isActive = sidebarPillar === p;
+                    return (
+                      <button
+                        key={p}
+                        onClick={() => setSidebarPillar(isActive ? null : p)}
+                        className="px-2 py-0.5 rounded-full text-[10px] font-medium border transition-all duration-150"
+                        style={{
+                          backgroundColor: isActive ? ps.bg : 'transparent',
+                          color: isActive ? ps.text : '#9CA3AF',
+                          borderColor: isActive ? ps.border : '#E5E7EB',
+                        }}
+                      >
+                        {p}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="overflow-y-auto p-2 space-y-1.5" style={{ maxHeight: 'calc(100vh - 330px)' }}>
+                  {filteredUnscheduled.map(post => (
+                    <DraggableSidebarCard key={post.id} post={post} onClick={onClickPost} />
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="w-10 h-full bg-gray-50/80 rounded-lg border border-gray-100 flex flex-col items-center pt-3 gap-1 hover:bg-gray-100/60 transition-colors duration-150"
+              >
+                <CalendarPlus className="w-3.5 h-3.5 text-gray-400" />
+                <span className="text-[9px] font-semibold text-gray-400 writing-vertical" style={{ writingMode: 'vertical-lr' }}>
+                  {unscheduledPosts.length} unscheduled
+                </span>
+                <ChevronRight className="w-3 h-3 text-gray-400 mt-1" />
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Calendar */}
+        <div className="flex-1 min-w-0">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <button onClick={goPrev} className="p-1.5 rounded-md hover:bg-gray-100 text-gray-500 transition-colors duration-150">
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <span className="text-sm font-semibold text-gray-800 min-w-[140px] text-center">{monthLabel}</span>
+              <button onClick={goNext} className="p-1.5 rounded-md hover:bg-gray-100 text-gray-500 transition-colors duration-150">
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+            <button
+              onClick={goToday}
+              className="px-3 py-1 text-xs font-medium text-gray-500 hover:text-gray-700 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors duration-150"
+            >
+              Today
+            </button>
+          </div>
+
+          {/* Weekday headers */}
+          <div className="grid grid-cols-7 mb-1">
+            {WEEKDAYS.map(d => (
+              <div key={d} className="text-center text-[10px] font-medium text-gray-400 uppercase tracking-wider py-1">
+                {d}
+              </div>
+            ))}
+          </div>
+
+          {/* Grid */}
+          <div className="grid grid-cols-7 border-t border-l border-gray-100">
+            {days.map(({ date, day, isCurrentMonth }) => (
+              <CalendarCell
+                key={date}
+                date={date}
+                day={day}
+                isCurrentMonth={isCurrentMonth}
+                isToday={date === todayKey}
+                posts={postsByDate[date] || []}
+                onClickPost={onClickPost}
+                onClickEmpty={() => onCreateOnDate(date)}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <DragOverlay dropAnimation={{ duration: 200, easing: 'ease-out' }}>
+        {activePost && (
+          <div className="opacity-90 scale-105 shadow-lg rounded">
+            <PostCard post={activePost} variant="calendar" onClick={() => {}} />
+          </div>
+        )}
+      </DragOverlay>
+    </DndContext>
+  );
+};
+
+// ── Pillar Group in Sidebar ──────────────────────────────────
+
+const PillarGroup: React.FC<{ pillar: string; posts: Post[]; onClickPost: (post: Post) => void }> = ({ pillar, posts, onClickPost }) => {
+  const [expanded, setExpanded] = useState(true);
+  const style = getPillarStyle(pillar);
 
   return (
     <div>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <button onClick={goPrev} className="p-1.5 rounded-md hover:bg-gray-100 text-gray-500 transition-colors duration-150">
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <span className="text-sm font-semibold text-gray-800 min-w-[140px] text-center">{monthLabel}</span>
-          <button onClick={goNext} className="p-1.5 rounded-md hover:bg-gray-100 text-gray-500 transition-colors duration-150">
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
-        <button
-          onClick={goToday}
-          className="px-3 py-1 text-xs font-medium text-gray-500 hover:text-gray-700 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors duration-150"
-        >
-          Today
-        </button>
-      </div>
-
-      {/* Weekday headers */}
-      <div className="grid grid-cols-7 mb-1">
-        {WEEKDAYS.map(d => (
-          <div key={d} className="text-center text-[10px] font-medium text-gray-400 uppercase tracking-wider py-1">
-            {d}
-          </div>
-        ))}
-      </div>
-
-      {/* Grid */}
-      <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-        <div className="grid grid-cols-7 border-t border-l border-gray-100">
-          {days.map(({ date, day, isCurrentMonth }) => (
-            <CalendarCell
-              key={date}
-              date={date}
-              day={day}
-              isCurrentMonth={isCurrentMonth}
-              isToday={date === todayKey}
-              posts={postsByDate[date] || []}
-              onClickPost={onClickPost}
-              onClickEmpty={() => onCreateOnDate(date)}
-            />
-          ))}
-        </div>
-
-        <DragOverlay dropAnimation={{ duration: 200, easing: 'ease-out' }}>
-          {activePost && (
-            <div className="opacity-80 scale-105">
-              <PostCard post={activePost} variant="calendar" onClick={() => {}} />
-            </div>
-          )}
-        </DragOverlay>
-      </DndContext>
-
-      {/* Empty month state */}
-      {!hasPostsThisMonth && (
-        <div className="flex flex-col items-center py-8 text-center">
-          <p className="text-xs text-gray-400 italic">No posts scheduled this month</p>
-        </div>
-      )}
-
-      {/* Unscheduled banner */}
-      {unscheduledCount > 0 && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="mt-4 flex items-center gap-2 px-4 py-2.5 bg-gray-50 rounded-lg"
-        >
-          <Archive className="w-3.5 h-3.5 text-gray-400" />
-          <span className="text-xs text-gray-500">
-            {unscheduledCount} unscheduled post{unscheduledCount !== 1 ? 's' : ''}
-          </span>
-          <button
-            onClick={onSwitchToList}
-            className="text-xs font-medium text-[#612a4f] hover:underline transition-colors duration-150"
+      <button
+        onClick={() => setExpanded(e => !e)}
+        className="flex items-center gap-1.5 w-full px-1 py-1 rounded hover:bg-gray-100/60 transition-colors duration-150"
+      >
+        <span className="text-[11px] font-semibold text-gray-600 flex-1 text-left truncate">{pillar}</span>
+        {expanded ? <ChevronUp className="w-3 h-3 text-gray-400" /> : <ChevronDown className="w-3 h-3 text-gray-400" />}
+      </button>
+      <AnimatePresence initial={false}>
+        {expanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            className="overflow-hidden"
           >
-            view in List
-          </button>
-        </motion.div>
-      )}
+            <div className="space-y-1 pt-1">
+              {posts.map(post => (
+                <DraggableSidebarCard key={post.id} post={post} onClick={onClickPost} />
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+// ── Draggable Sidebar Card ───────────────────────────────────
+
+const DraggableSidebarCard: React.FC<{ post: Post; onClick: (post: Post) => void }> = ({ post, onClick }) => {
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: post.id });
+  const pillarStyle = getPillarStyle(post.pillar);
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{
+        transform: transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined,
+        opacity: isDragging ? 0.3 : 1,
+      }}
+      {...attributes}
+      {...listeners}
+      onClick={() => onClick(post)}
+      className="px-2 py-1.5 rounded-md bg-white border border-gray-100 cursor-grab active:cursor-grabbing hover:shadow-sm transition-all duration-150 group"
+    >
+      <p className="text-[11px] font-medium text-gray-800 truncate">{post.title}</p>
+      <div className="flex items-center justify-between mt-0.5">
+        <span className="text-[9px] text-gray-400">{post.format || 'No format'}</span>
+        <span className="text-[9px] text-gray-400">{post.status}</span>
+      </div>
     </div>
   );
 };
@@ -260,13 +364,16 @@ const CalendarCell: React.FC<CalendarCellProps> = ({
     <div
       ref={setNodeRef}
       onClick={() => { if (posts.length === 0) onClickEmpty(); }}
-      className="border-r border-b border-gray-100 min-h-[90px] p-1 cursor-pointer transition-colors duration-150"
+      className="border-r border-b border-gray-100 min-h-[105px] p-1 cursor-pointer transition-colors duration-150"
       style={{
         backgroundColor: isOver
-          ? 'rgba(97, 42, 79, 0.04)'
+          ? 'rgba(97, 42, 79, 0.06)'
           : isCurrentMonth
           ? 'white'
           : '#FAFAFA',
+        outline: isOver ? '2px solid rgba(97, 42, 79, 0.2)' : 'none',
+        outlineOffset: '-2px',
+        borderRadius: isOver ? '4px' : '0',
       }}
     >
       <div className="flex justify-end mb-0.5">
@@ -291,8 +398,6 @@ const CalendarCell: React.FC<CalendarCellProps> = ({
 };
 
 // ── Draggable Calendar Card ──────────────────────────────────
-
-import { useDraggable } from '@dnd-kit/core';
 
 const DraggableCalendarCard: React.FC<{ post: Post; onClick: (post: Post) => void }> = ({ post, onClick }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: post.id });

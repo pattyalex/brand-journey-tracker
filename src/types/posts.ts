@@ -41,20 +41,18 @@ export const STATUS_COLORS: Record<PostStatus, { dot: string; bg: string; text: 
 export interface PillarStyle { bg: string; text: string; border: string }
 
 const PILLAR_PRESET_STYLES: Record<string, PillarStyle> = {
-  Fashion:          { bg: '#FEF2F2', text: '#991B1B', border: '#FECACA' },
-  POV:              { bg: '#EFF6FF', text: '#1E3A5F', border: '#BFDBFE' },
-  'Day in my life': { bg: '#F0FDF4', text: '#166534', border: '#BBF7D0' },
-  'The build':      { bg: '#F5F5F4', text: '#57534E', border: '#D6D3D1' },
+  Fashion:          { bg: '#FEF2F2', text: '#991B1B', border: '#F87171' }, // red
+  POV:              { bg: '#EFF6FF', text: '#1E40AF', border: '#60A5FA' }, // blue
+  'Day in my life': { bg: '#F0FDF4', text: '#166534', border: '#4ADE80' }, // green
+  'The build':      { bg: '#FEFCE8', text: '#854D0E', border: '#FACC15' }, // yellow
 };
 
 // Extra palette for user-created pillars — cycles through these
 const PILLAR_EXTRA_PALETTE: PillarStyle[] = [
-  { bg: '#FDF4FF', text: '#86198F', border: '#F0ABFC' }, // fuchsia
-  { bg: '#FFF7ED', text: '#9A3412', border: '#FDBA74' }, // orange
-  { bg: '#F0FDFA', text: '#115E59', border: '#99F6E4' }, // teal
-  { bg: '#FEF9C3', text: '#854D0E', border: '#FDE047' }, // yellow
-  { bg: '#EDE9FE', text: '#5B21B6', border: '#C4B5FD' }, // violet
-  { bg: '#ECFDF5', text: '#065F46', border: '#6EE7B7' }, // emerald
+  { bg: '#F5F3FF', text: '#5B21B6', border: '#A78BFA' }, // purple
+  { bg: '#FFF7ED', text: '#9A3412', border: '#FB923C' }, // orange
+  { bg: '#FDF4FF', text: '#86198F', border: '#E879F9' }, // fuchsia
+  { bg: '#F0FDFA', text: '#115E59', border: '#2DD4BF' }, // teal
   { bg: '#FFF1F2', text: '#9F1239', border: '#FDA4AF' }, // rose
   { bg: '#F0F9FF', text: '#075985', border: '#7DD3FC' }, // sky
 ];

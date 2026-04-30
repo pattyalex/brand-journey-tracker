@@ -10,6 +10,7 @@ import {
   useSensors,
   DragStartEvent,
   DragEndEvent,
+  DragOverEvent,
   useDroppable,
 } from '@dnd-kit/core';
 import {
@@ -27,6 +28,7 @@ interface PostsPillarsViewProps {
   pillars: string[];
   onClickPost: (post: Post) => void;
   onUpdatePost: (id: string, updates: Partial<Post>) => void;
+  onDeletePost: (id: string) => void;
   onAddPost: (title: string, pillar: string) => void;
   onReorder: (posts: Post[]) => void;
 }
@@ -36,10 +38,13 @@ const PostsPillarsView: React.FC<PostsPillarsViewProps> = ({
   pillars,
   onClickPost,
   onUpdatePost,
+  onDeletePost,
   onAddPost,
   onReorder,
 }) => {
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [overColumnId, setOverColumnId] = useState<string | null>(null);
+  const [overCardId, setOverCardId] = useState<string | null>(null);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
   );
@@ -50,8 +55,30 @@ const PostsPillarsView: React.FC<PostsPillarsViewProps> = ({
     setActiveId(event.active.id as string);
   };
 
+  const handleDragOver = (event: DragOverEvent) => {
+    const { over } = event;
+    if (!over) {
+      setOverColumnId(null);
+      setOverCardId(null);
+      return;
+    }
+    const overId = over.id as string;
+    if (pillars.includes(overId)) {
+      setOverColumnId(overId);
+      setOverCardId(null);
+    } else {
+      const overPost = posts.find(p => p.id === overId);
+      if (overPost) {
+        setOverColumnId(overPost.pillar);
+        setOverCardId(overId);
+      }
+    }
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
     setActiveId(null);
+    setOverColumnId(null);
+    setOverCardId(null);
     const { active, over } = event;
     if (!over) return;
 
@@ -73,7 +100,7 @@ const PostsPillarsView: React.FC<PostsPillarsViewProps> = ({
     if (!draggedPost || !overPost) return;
 
     if (draggedPost.pillar !== overPost.pillar) {
-      // Cross-column: update pillar
+      // Cross-column: update pillar and insert at position
       onUpdatePost(postId, { pillar: overPost.pillar });
     } else {
       // Same column: reorder
@@ -82,11 +109,16 @@ const PostsPillarsView: React.FC<PostsPillarsViewProps> = ({
       const newIndex = columnPosts.findIndex(p => p.id === overId);
       if (oldIndex !== -1 && newIndex !== -1 && oldIndex !== newIndex) {
         const reordered = arrayMove(columnPosts, oldIndex, newIndex);
-        // Merge back
         const otherPosts = posts.filter(p => p.pillar !== draggedPost.pillar);
         onReorder([...otherPosts, ...reordered]);
       }
     }
+  };
+
+  const handleDragCancel = () => {
+    setActiveId(null);
+    setOverColumnId(null);
+    setOverCardId(null);
   };
 
   return (
@@ -94,7 +126,9 @@ const PostsPillarsView: React.FC<PostsPillarsViewProps> = ({
       sensors={sensors}
       collisionDetection={closestCenter}
       onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
+      onDragCancel={handleDragCancel}
     >
       <div className="flex gap-4 overflow-x-auto pb-4 min-h-[400px]">
         {pillars.map(pillar => {
@@ -104,8 +138,14 @@ const PostsPillarsView: React.FC<PostsPillarsViewProps> = ({
               key={pillar}
               pillar={pillar}
               posts={columnPosts}
+              allPosts={posts}
               onClickPost={onClickPost}
+              onUpdatePost={onUpdatePost}
+              onDeletePost={onDeletePost}
               onAddPost={onAddPost}
+              isOverColumn={overColumnId === pillar && activeId !== null}
+              overCardId={overColumnId === pillar ? overCardId : null}
+              activeId={activeId}
             />
           );
         })}
@@ -113,7 +153,13 @@ const PostsPillarsView: React.FC<PostsPillarsViewProps> = ({
 
       <DragOverlay dropAnimation={{ duration: 200, easing: 'ease-out' }}>
         {activePost && (
-          <div className="opacity-80 rotate-[2deg] scale-105">
+          <div
+            className="rounded-lg scale-[1.02] cursor-grabbing"
+            style={{
+              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08)',
+              borderRadius: '0.5rem',
+            }}
+          >
             <PostCard post={activePost} variant="pillar" onClick={() => {}} />
           </div>
         )}
@@ -127,11 +173,17 @@ const PostsPillarsView: React.FC<PostsPillarsViewProps> = ({
 interface PillarColumnProps {
   pillar: string;
   posts: Post[];
+  allPosts: Post[];
   onClickPost: (post: Post) => void;
+  onUpdatePost: (id: string, updates: Partial<Post>) => void;
+  onDeletePost: (id: string) => void;
   onAddPost: (title: string, pillar: string) => void;
+  isOverColumn: boolean;
+  overCardId: string | null;
+  activeId: string | null;
 }
 
-const PillarColumn: React.FC<PillarColumnProps> = ({ pillar, posts, onClickPost, onAddPost }) => {
+const PillarColumn: React.FC<PillarColumnProps> = ({ pillar, posts, allPosts, onClickPost, onUpdatePost, onDeletePost, onAddPost, isOverColumn, overCardId, activeId }) => {
   const style = getPillarStyle(pillar);
   const { setNodeRef, isOver } = useDroppable({ id: pillar });
   const [addingIdea, setAddingIdea] = useState(false);
@@ -147,30 +199,39 @@ const PillarColumn: React.FC<PillarColumnProps> = ({ pillar, posts, onClickPost,
     setAddingIdea(false);
   };
 
+  const showColumnHighlight = isOverColumn || isOver;
+
   return (
     <div
       ref={setNodeRef}
-      className="flex-shrink-0 w-64 flex flex-col rounded-lg transition-colors duration-200"
+      className="flex-1 min-w-[240px] flex flex-col rounded-lg transition-all duration-200"
       style={{
-        backgroundColor: isOver ? `${style.bg}` : '#FAFAFA',
-        border: isOver ? `1px dashed ${style.border}` : '1px solid transparent',
+        backgroundColor: showColumnHighlight ? style.bg : '#FAFAFA',
+        border: showColumnHighlight ? `1px solid ${style.border}` : '1px solid transparent',
       }}
     >
       {/* Column header */}
       <div className="flex items-center gap-2 px-3 py-3">
-        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: style.text }} />
         <span className="text-sm font-semibold text-gray-800">{pillar}</span>
-        <span className="text-xs text-gray-400 tabular-nums">{posts.length}</span>
       </div>
 
       {/* Cards */}
       <SortableContext items={posts.map(p => p.id)} strategy={verticalListSortingStrategy}>
-        <div className="flex-1 px-2 pb-2 space-y-2 min-h-[60px]">
+        <div className="flex-1 px-2 pb-2 min-h-[60px]">
           {posts.length === 0 && !addingIdea && (
             <p className="text-xs text-gray-300 text-center py-6 italic">Nothing here yet</p>
           )}
           {posts.map(post => (
-            <SortableCard key={post.id} post={post} onClick={onClickPost} />
+            <SortableCard
+              key={post.id}
+              post={post}
+              allPosts={allPosts}
+              onClick={onClickPost}
+              onUpdatePost={onUpdatePost}
+              onDeletePost={onDeletePost}
+              showInsertBefore={overCardId === post.id && activeId !== post.id}
+              pillarStyle={style}
+            />
           ))}
         </div>
       </SortableContext>
@@ -210,7 +271,15 @@ const PillarColumn: React.FC<PillarColumnProps> = ({ pillar, posts, onClickPost,
 
 // ── Sortable Card Wrapper ────────────────────────────────────
 
-const SortableCard: React.FC<{ post: Post; onClick: (post: Post) => void }> = ({ post, onClick }) => {
+const SortableCard: React.FC<{
+  post: Post;
+  allPosts: Post[];
+  onClick: (post: Post) => void;
+  onUpdatePost: (id: string, updates: Partial<Post>) => void;
+  onDeletePost: (id: string) => void;
+  showInsertBefore: boolean;
+  pillarStyle: { bg: string; text: string; border: string };
+}> = ({ post, allPosts, onClick, onUpdatePost, onDeletePost, showInsertBefore, pillarStyle }) => {
   const {
     attributes,
     listeners,
@@ -218,23 +287,44 @@ const SortableCard: React.FC<{ post: Post; onClick: (post: Post) => void }> = ({
     transform,
     transition,
     isDragging,
+    isOver,
   } = useSortable({
     id: post.id,
     transition: { duration: 250, easing: 'cubic-bezier(0.25, 1, 0.5, 1)' },
   });
 
+  const showLine = isOver && !isDragging;
+
   return (
     <div
       ref={setNodeRef}
       style={{
-        transform: CSS.Transform.toString(transform),
+        transform: CSS.Translate.toString(transform),
         transition,
-        opacity: isDragging ? 0.3 : 1,
       }}
       {...attributes}
       {...listeners}
     >
-      <PostCard post={post} variant="pillar" onClick={onClick} />
+      {showLine && (
+        <div className="flex items-center gap-1 my-1 animate-pulse">
+          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: pillarStyle.border }} />
+          <div className="flex-1 h-[2px] rounded-full" style={{ backgroundColor: pillarStyle.border }} />
+        </div>
+      )}
+      <div
+        className="mb-2 transition-opacity duration-150"
+        style={{ opacity: isDragging ? 0.2 : 1 }}
+      >
+        <PostCard
+          post={post}
+          variant="pillar"
+          onClick={onClick}
+          allPosts={allPosts}
+          onUpdatePost={onUpdatePost}
+          onClickPost={onClick}
+          onDelete={onDeletePost}
+        />
+      </div>
     </div>
   );
 };

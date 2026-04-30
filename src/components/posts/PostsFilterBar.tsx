@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { Plus, X, SlidersHorizontal } from 'lucide-react';
+import { Plus, X, SlidersHorizontal, ChevronRight, Check } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { PostStatus, POST_STATUSES, STATUS_COLORS, getPillarStyle } from '@/types/posts';
 
 interface PostsFilterBarProps {
@@ -24,6 +25,8 @@ interface PostsFilterBarProps {
   onDeleteFormat: (name: string) => void;
   onRenameFormat: (oldName: string, newName: string) => void;
 }
+
+type FilterMenu = 'main' | 'status' | 'format' | 'pillar';
 
 const PostsFilterBar: React.FC<PostsFilterBarProps> = ({
   pillars,
@@ -51,16 +54,12 @@ const PostsFilterBar: React.FC<PostsFilterBarProps> = ({
   const [newPillarName, setNewPillarName] = useState('');
   const [editingPillar, setEditingPillar] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState('');
-  const [addingFormat, setAddingFormat] = useState(false);
-  const [newFormatName, setNewFormatName] = useState('');
-  const [editingFormat, setEditingFormat] = useState<string | null>(null);
-  const [editFormatDraft, setEditFormatDraft] = useState('');
-  const [showFilters, setShowFilters] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [filterMenu, setFilterMenu] = useState<FilterMenu>('main');
   const pillarInputRef = useRef<HTMLInputElement>(null);
-  const popoverRef = useRef<HTMLDivElement>(null);
 
   const hasFilters = filterPillars.size > 0 || filterStatuses.size > 0 || filterFormats.size > 0;
-  const extraFilterCount = filterStatuses.size + filterFormats.size;
+  const totalFilterCount = filterStatuses.size + filterFormats.size + filterPillars.size;
 
   const handleAddPillar = () => {
     const name = newPillarName.trim();
@@ -71,17 +70,17 @@ const PostsFilterBar: React.FC<PostsFilterBarProps> = ({
     setNewPillarName('');
   };
 
-  // Close popover on outside click
-  React.useEffect(() => {
-    if (!showFilters) return;
-    const handler = (e: MouseEvent) => {
-      if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
-        setShowFilters(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [showFilters]);
+  // Build active filter pills
+  const activeFilterPills: { label: string; type: 'status' | 'format' | 'pillar'; value: string }[] = [];
+  filterStatuses.forEach(s => activeFilterPills.push({ label: s, type: 'status', value: s }));
+  filterFormats.forEach(f => activeFilterPills.push({ label: f, type: 'format', value: f }));
+  filterPillars.forEach(p => activeFilterPills.push({ label: p, type: 'pillar', value: p }));
+
+  const removeFilter = (pill: typeof activeFilterPills[0]) => {
+    if (pill.type === 'status') onToggleStatus(pill.value as PostStatus);
+    else if (pill.type === 'format') onToggleFormat(pill.value);
+    else onTogglePillar(pill.value);
+  };
 
   return (
     <div className="flex items-center gap-2 py-3 flex-wrap">
@@ -149,9 +148,9 @@ const PostsFilterBar: React.FC<PostsFilterBarProps> = ({
               }}
               className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold border transition-all duration-200"
               style={{
-                backgroundColor: isActive ? style.bg : 'transparent',
-                color: isActive ? style.text : '#9CA3AF',
-                borderColor: isActive ? style.border : '#E5E7EB',
+                backgroundColor: isActive ? '#F3F4F6' : 'transparent',
+                color: isActive ? '#374151' : '#9CA3AF',
+                borderColor: isActive ? '#D1D5DB' : '#E5E7EB',
               }}
             >
               {pillar}
@@ -189,118 +188,202 @@ const PostsFilterBar: React.FC<PostsFilterBarProps> = ({
         </button>
       )}
 
-      {/* Filter button + popover */}
-      <div className="relative ml-auto" ref={popoverRef}>
-        <button
-          onClick={() => setShowFilters(!showFilters)}
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium border transition-all duration-200"
-          style={{
-            backgroundColor: extraFilterCount > 0 ? '#F3F4F6' : 'transparent',
-            color: extraFilterCount > 0 ? '#374151' : '#9CA3AF',
-            borderColor: extraFilterCount > 0 ? '#D1D5DB' : '#E5E7EB',
-          }}
-        >
-          <SlidersHorizontal className="w-3 h-3" />
-          Filter
-          {extraFilterCount > 0 && (
-            <span className="w-4 h-4 rounded-full bg-[#612a4f] text-white text-[9px] flex items-center justify-center font-semibold">
-              {extraFilterCount}
-            </span>
-          )}
-        </button>
-
-        {showFilters && (
-          <div className="absolute top-full right-0 mt-1.5 z-30 bg-white rounded-lg border border-gray-200 shadow-lg py-1 w-48">
-            {/* Status section */}
-            <div className="px-3 py-1.5">
-              <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">Status</span>
-            </div>
-            <button
-              onClick={() => onClearStatuses()}
-              className={`w-full text-left px-3 py-1.5 text-sm transition-colors duration-100 ${filterStatuses.size === 0 ? 'text-gray-900 bg-gray-50 font-medium' : 'text-gray-500 hover:bg-gray-50'}`}
-            >
-              All statuses
-            </button>
-            {POST_STATUSES.map(status => {
-              const isActive = filterStatuses.has(status);
-              const colors = STATUS_COLORS[status];
-              return (
-                <button
-                  key={status}
-                  onClick={() => onToggleStatus(status)}
-                  className={`w-full text-left px-3 py-1.5 text-sm flex items-center gap-2 transition-colors duration-100 ${isActive ? 'text-gray-900 bg-gray-50 font-medium' : 'text-gray-500 hover:bg-gray-50'}`}
-                >
-                  <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: colors.dot }} />
-                  {status}
-                </button>
-              );
-            })}
-
-            <div className="border-t border-gray-100 my-1" />
-
-            {/* Format section */}
-            <div className="px-3 py-1.5">
-              <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">Format</span>
-            </div>
-            <button
-              onClick={() => onClearFormats()}
-              className={`w-full text-left px-3 py-1.5 text-sm transition-colors duration-100 ${filterFormats.size === 0 ? 'text-gray-900 bg-gray-50 font-medium' : 'text-gray-500 hover:bg-gray-50'}`}
-            >
-              All formats
-            </button>
-            {formats.map(format => {
-              const isActive = filterFormats.has(format);
-              return (
-                <button
-                  key={format}
-                  onClick={() => onToggleFormat(format)}
-                  className={`w-full text-left px-3 py-1.5 text-sm transition-colors duration-100 ${isActive ? 'text-gray-900 bg-gray-50 font-medium' : 'text-gray-500 hover:bg-gray-50'}`}
-                >
-                  {format}
-                </button>
-              );
-            })}
-
-            <div className="border-t border-gray-100 my-1" />
-
-            {/* Quick filters */}
-            <div className="px-3 py-1.5">
-              <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">Quick filters</span>
-            </div>
-            <button
-              onClick={() => { onApplyPreset('bank'); setShowFilters(false); }}
-              className={`w-full text-left px-3 py-1.5 text-sm transition-colors duration-100 ${activePreset === 'bank' ? 'text-gray-900 bg-gray-50 font-medium' : 'text-gray-500 hover:bg-gray-50'}`}
-            >
-              Bank
-            </button>
-            <button
-              onClick={() => { onApplyPreset('scheduled'); setShowFilters(false); }}
-              className={`w-full text-left px-3 py-1.5 text-sm transition-colors duration-100 ${activePreset === 'scheduled' ? 'text-gray-900 bg-gray-50 font-medium' : 'text-gray-500 hover:bg-gray-50'}`}
-            >
-              Scheduled
-            </button>
-
-            {/* Clear all */}
-            {hasFilters && (
-              <>
-                <div className="border-t border-gray-100 my-1" />
-                <button
-                  onClick={() => { onClearAll(); setShowFilters(false); }}
-                  className="w-full text-left px-3 py-1.5 text-sm text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors duration-100"
-                >
-                  Clear all filters
-                </button>
-              </>
+      {/* Active filter pills */}
+      {activeFilterPills.map(pill => {
+        const isStatus = pill.type === 'status';
+        const statusColors = isStatus ? STATUS_COLORS[pill.value as PostStatus] : null;
+        return (
+          <div
+            key={`${pill.type}-${pill.value}`}
+            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600 border border-gray-200"
+          >
+            {isStatus && (
+              <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: statusColors!.dot }} />
             )}
+            <span className="text-[10px] text-gray-400 capitalize">{pill.type}:</span>
+            {pill.label}
+            <button
+              onClick={() => removeFilter(pill)}
+              className="ml-0.5 text-gray-400 hover:text-gray-600 transition-colors duration-150"
+            >
+              <X className="w-2.5 h-2.5" />
+            </button>
           </div>
-        )}
+        );
+      })}
+
+      {/* Filter button + popover */}
+      <div className="ml-auto">
+        <Popover open={filterOpen} onOpenChange={(v) => { setFilterOpen(v); if (!v) setFilterMenu('main'); }}>
+          <PopoverTrigger asChild>
+            <button
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium border transition-all duration-200"
+              style={{
+                backgroundColor: totalFilterCount > 0 ? '#F3F4F6' : 'transparent',
+                color: totalFilterCount > 0 ? '#374151' : '#9CA3AF',
+                borderColor: totalFilterCount > 0 ? '#D1D5DB' : '#E5E7EB',
+              }}
+            >
+              <SlidersHorizontal className="w-3 h-3" />
+              Filter
+              {totalFilterCount > 0 && (
+                <span className="w-4 h-4 rounded-full bg-[#612a4f] text-white text-[9px] flex items-center justify-center font-semibold">
+                  {totalFilterCount}
+                </span>
+              )}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent
+            className="p-0 bg-white rounded-lg border border-gray-200 shadow-lg w-[200px] z-[60]"
+            align="end"
+            sideOffset={4}
+            onOpenAutoFocus={e => e.preventDefault()}
+          >
+            {filterMenu === 'main' && (
+              <div className="py-1">
+                <div className="px-3 py-1.5">
+                  <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">Add filter</span>
+                </div>
+                <button
+                  onClick={() => setFilterMenu('pillar')}
+                  className="w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-100 flex items-center justify-between"
+                >
+                  <span>Pillar</span>
+                  <div className="flex items-center gap-1">
+                    {filterPillars.size > 0 && (
+                      <span className="text-[10px] text-gray-400">{filterPillars.size}</span>
+                    )}
+                    <ChevronRight className="w-3 h-3 text-gray-400" />
+                  </div>
+                </button>
+                <button
+                  onClick={() => setFilterMenu('format')}
+                  className="w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-100 flex items-center justify-between"
+                >
+                  <span>Format</span>
+                  <div className="flex items-center gap-1">
+                    {filterFormats.size > 0 && (
+                      <span className="text-[10px] text-gray-400">{filterFormats.size}</span>
+                    )}
+                    <ChevronRight className="w-3 h-3 text-gray-400" />
+                  </div>
+                </button>
+                <button
+                  onClick={() => setFilterMenu('status')}
+                  className="w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-100 flex items-center justify-between"
+                >
+                  <span>Status</span>
+                  <div className="flex items-center gap-1">
+                    {filterStatuses.size > 0 && (
+                      <span className="text-[10px] text-gray-400">{filterStatuses.size}</span>
+                    )}
+                    <ChevronRight className="w-3 h-3 text-gray-400" />
+                  </div>
+                </button>
+
+                {hasFilters && (
+                  <>
+                    <div className="border-t border-gray-100 my-1" />
+                    <button
+                      onClick={() => { onClearAll(); setFilterOpen(false); setFilterMenu('main'); }}
+                      className="w-full text-left px-3 py-1.5 text-sm text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors duration-100"
+                    >
+                      Clear all filters
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+
+            {filterMenu === 'status' && (
+              <div className="py-1">
+                <button
+                  onClick={() => setFilterMenu('main')}
+                  className="w-full text-left px-3 py-1.5 text-[11px] font-medium text-gray-400 hover:text-gray-600 transition-colors duration-100 flex items-center gap-1"
+                >
+                  <ChevronRight className="w-3 h-3 rotate-180" />
+                  Status
+                </button>
+                <div className="border-t border-gray-100 my-0.5" />
+                {POST_STATUSES.map(status => {
+                  const isActive = filterStatuses.has(status);
+                  const colors = STATUS_COLORS[status];
+                  return (
+                    <button
+                      key={status}
+                      onClick={() => onToggleStatus(status)}
+                      className={`w-full text-left px-3 py-1.5 text-sm flex items-center gap-2 transition-colors duration-100 ${isActive ? 'text-gray-900 font-medium' : 'text-gray-500 hover:bg-gray-50'}`}
+                    >
+                      <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: colors.dot }} />
+                      <span className="flex-1">{status}</span>
+                      {isActive && <Check className="w-3 h-3 text-[#612a4f]" />}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {filterMenu === 'format' && (
+              <div className="py-1">
+                <button
+                  onClick={() => setFilterMenu('main')}
+                  className="w-full text-left px-3 py-1.5 text-[11px] font-medium text-gray-400 hover:text-gray-600 transition-colors duration-100 flex items-center gap-1"
+                >
+                  <ChevronRight className="w-3 h-3 rotate-180" />
+                  Format
+                </button>
+                <div className="border-t border-gray-100 my-0.5" />
+                {formats.map(format => {
+                  const isActive = filterFormats.has(format);
+                  return (
+                    <button
+                      key={format}
+                      onClick={() => onToggleFormat(format)}
+                      className={`w-full text-left px-3 py-1.5 text-sm flex items-center justify-between transition-colors duration-100 ${isActive ? 'text-gray-900 font-medium' : 'text-gray-500 hover:bg-gray-50'}`}
+                    >
+                      <span>{format}</span>
+                      {isActive && <Check className="w-3 h-3 text-[#612a4f]" />}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {filterMenu === 'pillar' && (
+              <div className="py-1">
+                <button
+                  onClick={() => setFilterMenu('main')}
+                  className="w-full text-left px-3 py-1.5 text-[11px] font-medium text-gray-400 hover:text-gray-600 transition-colors duration-100 flex items-center gap-1"
+                >
+                  <ChevronRight className="w-3 h-3 rotate-180" />
+                  Pillar
+                </button>
+                <div className="border-t border-gray-100 my-0.5" />
+                {pillars.map(pillar => {
+                  const isActive = filterPillars.has(pillar);
+                  const style = getPillarStyle(pillar);
+                  return (
+                    <button
+                      key={pillar}
+                      onClick={() => onTogglePillar(pillar)}
+                      className={`w-full text-left px-3 py-1.5 text-sm flex items-center gap-2 transition-colors duration-100 ${isActive ? 'text-gray-900 font-medium' : 'text-gray-500 hover:bg-gray-50'}`}
+                    >
+                      <span className="flex-1">{pillar}</span>
+                      {isActive && <Check className="w-3 h-3 text-[#612a4f]" />}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </PopoverContent>
+        </Popover>
       </div>
 
-      {/* Clear all */}
+      {/* Clear all (outside popover) */}
       {hasFilters && (
         <button
           onClick={onClearAll}
-          className="text-[11px] text-gray-400 hover:text-gray-600 transition-colors duration-150 ml-auto"
+          className="text-[11px] text-gray-400 hover:text-gray-600 transition-colors duration-150"
         >
           Clear all
         </button>

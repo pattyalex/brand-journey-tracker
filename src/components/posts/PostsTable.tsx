@@ -7,10 +7,12 @@ import PillarDropdown from './PillarDropdown';
 import StatusDropdown from './StatusDropdown';
 import {
   DndContext,
+  DragOverlay,
   closestCenter,
   PointerSensor,
   useSensor,
   useSensors,
+  DragStartEvent,
   DragEndEvent,
 } from '@dnd-kit/core';
 import {
@@ -67,11 +69,19 @@ const PostsTable: React.FC<PostsTableProps> = ({
   selectedIds,
   onSelectToggle,
 }) => {
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const activePost = activeId ? posts.find(p => p.id === activeId) : null;
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
   );
 
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
+    setActiveId(null);
     const { active, over } = event;
     if (!over || active.id === over.id) return;
     const oldIndex = posts.findIndex(p => p.id === active.id);
@@ -87,16 +97,15 @@ const PostsTable: React.FC<PostsTableProps> = ({
         <thead>
           <tr className="border-b border-gray-100">
             <th className="w-8 px-2 py-3" />
-            <th className="w-8 px-1 py-3" />
             <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Title</th>
             <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Pillar</th>
             <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Format</th>
             <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
-            <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Date</th>
+            <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Schedule</th>
             <th className="w-10 px-2 py-3" />
           </tr>
         </thead>
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDragCancel={() => setActiveId(null)}>
           <SortableContext items={posts.map(p => p.id)} strategy={verticalListSortingStrategy}>
             <tbody>
               <AnimatePresence initial={false}>
@@ -121,6 +130,35 @@ const PostsTable: React.FC<PostsTableProps> = ({
               </AnimatePresence>
             </tbody>
           </SortableContext>
+          <DragOverlay dropAnimation={{ duration: 200, easing: 'ease-out' }}>
+            {activePost && (
+              <table className="w-full text-sm" style={{ boxShadow: '0 8px 24px rgba(0,0,0,0.12)', borderRadius: '0.5rem', background: 'white' }}>
+                <tbody>
+                  <tr className="border-b border-gray-50 bg-white">
+                    <td className="px-2 py-3 w-8"><GripVertical className="w-3.5 h-3.5 text-gray-400" /></td>
+                    <td className="px-4 py-3 text-sm font-medium text-gray-900">{activePost.title}</td>
+                    <td className="px-4 py-3">
+                      {activePost.pillar && (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border"
+                          style={{ backgroundColor: getPillarStyle(activePost.pillar).bg, color: getPillarStyle(activePost.pillar).text, borderColor: getPillarStyle(activePost.pillar).border }}>
+                          {activePost.pillar}
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600">{activePost.format}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: STATUS_COLORS[activePost.status].dot }} />
+                        <span className="text-sm font-medium text-gray-700">{activePost.status}</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-500">{activePost.scheduledDate ? formatDate(activePost.scheduledDate) : 'Set date'}</td>
+                    <td className="w-10 px-2 py-3" />
+                  </tr>
+                </tbody>
+              </table>
+            )}
+          </DragOverlay>
         </DndContext>
       </table>
     </div>
@@ -167,10 +205,13 @@ const SortableRow: React.FC<SortableRowProps> = ({
     transform,
     transition,
     isDragging,
+    isOver,
   } = useSortable({
     id: post.id,
     transition: { duration: 250, easing: 'cubic-bezier(0.25, 1, 0.5, 1)' },
   });
+
+  const showInsertLine = isOver && !isDragging;
 
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState(post.title);
@@ -181,10 +222,10 @@ const SortableRow: React.FC<SortableRowProps> = ({
   const formatDropdownRef = useRef<HTMLDivElement>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
 
-  const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform),
+  const rowStyle: React.CSSProperties = {
+    transform: CSS.Translate.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
+    opacity: isDragging ? 0.2 : 1,
     zIndex: isDragging ? 100 : 'auto',
     position: 'relative' as const,
   };
@@ -221,7 +262,7 @@ const SortableRow: React.FC<SortableRowProps> = ({
   return (
     <motion.tr
       ref={setNodeRef}
-      style={style}
+      style={rowStyle}
       layout={false}
       initial={{ opacity: 0, y: 8 }}
       animate={{
@@ -235,7 +276,7 @@ const SortableRow: React.FC<SortableRowProps> = ({
       }}
       exit={{ opacity: 0, y: -8 }}
       transition={{ duration: 0.25, ease: 'easeOut' }}
-      className="border-b border-gray-50 cursor-pointer group hover:bg-gray-50/60"
+      className={`border-b cursor-pointer group hover:bg-gray-50/60 border-gray-50`} style={{ borderTop: showInsertLine ? '1.5px solid #9CA3AF' : undefined }}
       onClick={() => onClick(post)}
     >
       {/* Drag handle */}
@@ -250,24 +291,8 @@ const SortableRow: React.FC<SortableRowProps> = ({
         </button>
       </td>
 
-      {/* Checkbox */}
-      <td className="px-1 py-3">
-        <input
-          type="checkbox"
-          checked={isSelected}
-          onChange={() => {}}
-          onClick={e => {
-            e.stopPropagation();
-            onSelect(post.id, e.shiftKey);
-          }}
-          className="w-3.5 h-3.5 rounded border-gray-300 text-[#612a4f] focus:ring-[#612a4f]/30 cursor-pointer opacity-0 group-hover:opacity-100 data-[checked]:opacity-100 transition-opacity duration-150"
-          data-checked={isSelected || undefined}
-          style={{ opacity: isSelected ? 1 : undefined }}
-        />
-      </td>
-
       {/* Title */}
-      <td className="px-4 py-3 min-w-[200px]">
+      <td className="px-4 py-3 min-w-[300px]">
         {editingTitle ? (
           <input
             ref={titleInputRef}

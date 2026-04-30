@@ -9,6 +9,7 @@ interface PostsDatePickerProps {
   onChange: (date: string | undefined) => void;
   onClickPost?: (post: Post) => void;
   detailPanelOpen?: boolean;
+  triggerSlot?: React.ReactNode;
 }
 
 function getMonthGrid(year: number, month: number) {
@@ -41,7 +42,7 @@ function getMonthGrid(year: number, month: number) {
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-const PostsDatePicker: React.FC<PostsDatePickerProps> = ({ value, allPosts, onChange, onClickPost, detailPanelOpen }) => {
+const PostsDatePicker: React.FC<PostsDatePickerProps> = ({ value, allPosts, onChange, onClickPost, detailPanelOpen, triggerSlot }) => {
   const today = new Date();
   const initDate = value ? new Date(value + 'T00:00:00') : today;
   const [viewYear, setViewYear] = useState(initDate.getFullYear());
@@ -76,13 +77,17 @@ const PostsDatePicker: React.FC<PostsDatePickerProps> = ({ value, allPosts, onCh
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <button className={`text-sm transition-colors duration-150 cursor-pointer ${value ? 'text-gray-500 hover:text-gray-700' : 'text-gray-300 hover:text-gray-400'}`}>
-          {value
-            ? new Date(value + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-            : 'Set date'}
-        </button>
+        {triggerSlot ? (
+          <div className="cursor-pointer">{triggerSlot}</div>
+        ) : (
+          <button className={`text-sm transition-colors duration-150 cursor-pointer ${value ? 'text-gray-500 hover:text-gray-700' : 'text-gray-300 hover:text-gray-400'}`}>
+            {value
+              ? new Date(value + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+              : 'Set date'}
+          </button>
+        )}
       </PopoverTrigger>
-      <PopoverContent className="w-[780px] p-0 bg-white shadow-xl border border-gray-200 z-[45]" align="end" sideOffset={4} style={{ opacity: 1 }} onOpenAutoFocus={e => e.preventDefault()} onInteractOutside={e => { if (detailPanelOpen) e.preventDefault(); }}>
+      <PopoverContent className="w-[650px] p-0 bg-white shadow-xl border border-gray-200 z-[45]" align="start" sideOffset={4} collisionPadding={16} onOpenAutoFocus={e => e.preventDefault()} onInteractOutside={e => { if (detailPanelOpen) e.preventDefault(); }}>
         <div className="p-4">
           {/* Header */}
           <div className="flex items-center justify-between mb-3">
@@ -120,7 +125,7 @@ const PostsDatePicker: React.FC<PostsDatePickerProps> = ({ value, allPosts, onCh
                 <button
                   key={date}
                   onClick={() => { onChange(date); setOpen(false); }}
-                  className="border-r border-b border-gray-100 min-h-[100px] p-2 text-left transition-colors duration-100 hover:bg-gray-50 flex flex-col items-stretch justify-start"
+                  className="border-r border-b border-gray-100 min-h-[58px] p-1 text-left transition-colors duration-100 hover:bg-gray-50 flex flex-col items-stretch justify-start"
                   style={{ backgroundColor: isSelected ? 'rgba(97, 42, 79, 0.06)' : undefined }}
                 >
                   <div className="flex justify-end">
@@ -144,7 +149,7 @@ const PostsDatePicker: React.FC<PostsDatePickerProps> = ({ value, allPosts, onCh
                           e.stopPropagation();
                           if (onClickPost) { onClickPost(p); }
                         }}
-                        className="mt-1 rounded px-1.5 py-0.5 truncate text-[11px] font-medium leading-tight cursor-pointer hover:opacity-80 transition-opacity duration-150"
+                        className="mt-1 rounded px-1 py-0.5 truncate text-[10px] font-medium leading-tight cursor-pointer hover:opacity-80 transition-opacity duration-150"
                         style={{
                           backgroundColor: p.pillar ? ps.bg : '#F3F4F6',
                           color: p.pillar ? ps.text : '#9CA3AF',
@@ -156,7 +161,7 @@ const PostsDatePicker: React.FC<PostsDatePickerProps> = ({ value, allPosts, onCh
                     );
                   })}
                   {dayPosts.length > 2 && (
-                    <div className="text-[10px] text-gray-400 px-1.5 mt-1">+{dayPosts.length - 2} more</div>
+                    <div className="text-[10px] text-gray-400 px-1 mt-0.5">+{dayPosts.length - 2} more</div>
                   )}
                 </button>
               );
