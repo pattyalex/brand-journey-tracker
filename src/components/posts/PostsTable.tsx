@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { GripVertical, Trash2 } from 'lucide-react';
+import { GripVertical, MoreHorizontal, Trash2, Camera, ArrowRight } from 'lucide-react';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import PostsDatePicker from './PostsDatePicker';
 import FormatDropdown from './FormatDropdown';
 import PillarDropdown from './PillarDropdown';
@@ -40,6 +41,7 @@ interface PostsTableProps {
   onRowClick: (post: Post) => void;
   onUpdatePost: (id: string, updates: Partial<Post>) => void;
   onDeletePost: (id: string) => void;
+  onSendToShoots?: (id: string) => void;
   onAddFormat: (name: string) => void;
   onDeleteFormat: (name: string) => void;
   onDeletePillar: (name: string) => void;
@@ -63,6 +65,7 @@ const PostsTable: React.FC<PostsTableProps> = ({
   onRowClick,
   onUpdatePost,
   onDeletePost,
+  onSendToShoots,
   onAddFormat,
   onDeleteFormat,
   onDeletePillar,
@@ -102,7 +105,7 @@ const PostsTable: React.FC<PostsTableProps> = ({
             <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Pillar</th>
             <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Format</th>
             <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
-            <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Schedule</th>
+            <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Aim for</th>
             <th className="w-10 px-2 py-3" />
           </tr>
         </thead>
@@ -126,6 +129,7 @@ const PostsTable: React.FC<PostsTableProps> = ({
                     onClick={onRowClick}
                     onUpdate={onUpdatePost}
                     onDelete={onDeletePost}
+                    onSendToShoots={onSendToShoots}
                   />
                 ))}
               </AnimatePresence>
@@ -182,6 +186,7 @@ interface SortableRowProps {
   onClick: (post: Post) => void;
   onUpdate: (id: string, updates: Partial<Post>) => void;
   onDelete: (id: string) => void;
+  onSendToShoots?: (id: string) => void;
 }
 
 const SortableRow: React.FC<SortableRowProps> = ({
@@ -198,6 +203,7 @@ const SortableRow: React.FC<SortableRowProps> = ({
   onClick,
   onUpdate,
   onDelete,
+  onSendToShoots,
 }) => {
   const {
     attributes,
@@ -339,12 +345,32 @@ const SortableRow: React.FC<SortableRowProps> = ({
         />
       </td>
 
-      {/* Status */}
+      {/* Status + shoot action */}
       <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
-        <StatusDropdown
-          value={post.status}
-          onChange={handleStatusChange}
-        />
+        <div className="flex items-center gap-2.5">
+          <StatusDropdown
+            value={post.status}
+            onChange={handleStatusChange}
+          />
+          {post.status === 'Ready to shoot' && onSendToShoots && !post.sentToShoots && (
+            <div className="relative group/arrow flex-shrink-0">
+              <button
+                onClick={() => onSendToShoots(post.id)}
+                className="flex items-center justify-center w-5 h-5 rounded-full bg-[#612A4F]/8 hover:bg-[#612A4F]/20 transition-colors"
+              >
+                <ArrowRight size={11} className="text-[#612A4F]" />
+              </button>
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 rounded-md bg-gray-800 text-white text-[10px] font-medium whitespace-nowrap opacity-0 group-hover/arrow:opacity-100 transition-opacity duration-100 pointer-events-none">
+                Plan the shoot
+              </div>
+            </div>
+          )}
+          {post.sentToShoots && (
+            <span className="text-[10px] text-[#612A4F]/60 font-medium whitespace-nowrap">
+              Shoot in progress
+            </span>
+          )}
+        </div>
       </td>
 
       {/* Date */}
@@ -358,14 +384,36 @@ const SortableRow: React.FC<SortableRowProps> = ({
         />
       </td>
 
-      {/* Delete */}
+      {/* Actions menu */}
       <td className="px-2 py-3">
-        <button
-          onClick={e => { e.stopPropagation(); onDelete(post.id); }}
-          className="opacity-0 group-hover:opacity-100 p-1 rounded text-gray-300 hover:text-red-500 transition-all duration-150"
-        >
-          <Trash2 className="w-3.5 h-3.5" />
-        </button>
+        <Popover>
+          <PopoverTrigger asChild>
+            <button
+              onClick={e => e.stopPropagation()}
+              className="opacity-0 group-hover:opacity-100 p-1 rounded text-gray-300 hover:text-gray-500 transition-all duration-150"
+            >
+              <MoreHorizontal className="w-3.5 h-3.5" />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent align="end" sideOffset={4} className="w-44 p-1 rounded-lg border border-gray-100 bg-white shadow-lg" onClick={e => e.stopPropagation()}>
+            {onSendToShoots && (
+              <button
+                onClick={() => onSendToShoots(post.id)}
+                className="flex items-center gap-2 px-3 py-1.5 text-[12px] text-gray-600 hover:bg-gray-50 rounded-md cursor-pointer w-full"
+              >
+                <Camera className="w-3.5 h-3.5" />
+                Plan a shoot
+              </button>
+            )}
+            <button
+              onClick={() => onDelete(post.id)}
+              className="flex items-center gap-2 px-3 py-1.5 text-[12px] text-red-500 hover:bg-gray-50 rounded-md cursor-pointer w-full"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              Delete
+            </button>
+          </PopoverContent>
+        </Popover>
       </td>
     </motion.tr>
   );

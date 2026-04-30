@@ -1,5 +1,5 @@
 
-import { Home, FolderOpen, FileText, Settings, CreditCard, TrendingUp, BarChart, HelpCircle, CheckSquare, Clipboard, CheckCircle, Handshake, Clapperboard, Sparkles, Calendar, Building2, LayoutList } from 'lucide-react';
+import { Home, FolderOpen, FileText, Settings, CreditCard, TrendingUp, BarChart, HelpCircle, CheckSquare, Clipboard, CheckCircle, Handshake, Clapperboard, Sparkles, Calendar, Building2, LayoutList, Camera } from 'lucide-react';
 import { MenuItem } from '@/types/sidebar';
 
 export const defaultMenuItems: MenuItem[] = [
@@ -7,6 +7,12 @@ export const defaultMenuItems: MenuItem[] = [
     title: 'Posts',
     icon: LayoutList,
     url: '/posts',
+    isDeletable: false
+  },
+  {
+    title: 'Shoots',
+    icon: Camera,
+    url: '/shoots',
     isDeletable: false
   },
   {

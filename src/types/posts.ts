@@ -21,6 +21,8 @@ export interface Post {
     reach?: number;
   };
   order: number;
+  shoot_id?: string | null;
+  sentToShoots?: boolean;
   createdAt: string;
 }
 
@@ -31,10 +33,10 @@ export const DEFAULT_PILLARS: string[] = ['Fashion', 'POV', 'Day in my life', 'T
 export const STATUS_COLORS: Record<PostStatus, { dot: string; bg: string; text: string }> = {
   Idea:             { dot: '#FACC15', bg: '#FEF9C3', text: '#854D0E' },
   Scripted:         { dot: '#EC4899', bg: '#FCE7F3', text: '#9D174D' },
-  'Ready to shoot': { dot: '#F59E0B', bg: '#FEF3C7', text: '#78350F' },
+  'Ready to shoot': { dot: '#7C3AED', bg: '#EDE9FE', text: '#5B21B6' },
   Shot:             { dot: '#FF6B00', bg: '#FFF2E0', text: '#B94500' },
   Edited:           { dot: '#2563EB', bg: '#DBEAFE', text: '#1E40AF' },
-  Scheduled:        { dot: '#7C3AED', bg: '#EDE9FE', text: '#5B21B6' },
+  Scheduled:        { dot: '#F59E0B', bg: '#FEF3C7', text: '#78350F' },
   Posted:           { dot: '#059669', bg: '#D1FAE5', text: '#065F46' },
 };
 

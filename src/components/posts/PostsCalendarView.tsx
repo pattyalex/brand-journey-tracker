@@ -134,7 +134,7 @@ const PostsCalendarView: React.FC<PostsCalendarViewProps> = ({
   return (
     <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       <div className="flex gap-4">
-        {/* Unscheduled sidebar */}
+        {/* No date yet sidebar */}
         {unscheduledPosts.length > 0 && (
           <div
             className="flex-shrink-0 transition-all duration-300 ease-in-out"
@@ -145,7 +145,7 @@ const PostsCalendarView: React.FC<PostsCalendarViewProps> = ({
                 <div className="flex items-center justify-between px-3 py-2.5 border-b border-gray-100">
                   <div className="flex items-center gap-1.5">
                     <CalendarPlus className="w-3.5 h-3.5 text-gray-400" />
-                    <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Unscheduled</span>
+                    <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">No date yet</span>
                   </div>
                   <button
                     onClick={() => setSidebarOpen(false)}

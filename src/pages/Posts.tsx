@@ -1,9 +1,14 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Camera } from 'lucide-react';
+import { Shoot } from '@/types/shoots';
+import CreateShootModal from '@/components/shoots/CreateShootModal';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { Post, PostStatus, DEFAULT_PILLARS, DEFAULT_FORMATS, POST_STATUSES, STATUS_COLORS } from '@/types/posts';
 import { StatusIcon } from '@/components/posts/StatusDropdown';
 import { seedPosts } from '@/data/postsSeedData';
+import { getJSON, setJSON } from '@/lib/storage';
 import PostsPipeline from '@/components/posts/PostsPipeline';
 import PostsTable from '@/components/posts/PostsTable';
 import PostDetailPanel from '@/components/posts/PostDetailPanel';
@@ -12,8 +17,8 @@ import PostsFilterBar from '@/components/posts/PostsFilterBar';
 import PostsPillarsView from '@/components/posts/PostsPillarsView';
 import PostsCalendarView from '@/components/posts/PostsCalendarView';
 
-type ViewMode = 'List' | 'Pillars' | 'Calendar';
-const VIEW_MODES: ViewMode[] = ['List', 'Pillars', 'Calendar'];
+type ViewMode = 'List' | 'Pillars' | 'Timeline';
+const VIEW_MODES: ViewMode[] = ['List', 'Pillars', 'Timeline'];
 
 const STORAGE_KEY = 'heymeg-posts-active-view';
 
@@ -26,6 +31,7 @@ function loadView(): ViewMode {
 }
 
 const Posts: React.FC = () => {
+  const navigate = useNavigate();
   const [posts, setPosts] = useState<Post[]>(seedPosts);
   const [pillars, setPillars] = useState<string[]>(DEFAULT_PILLARS);
   const [formats, setFormats] = useState<string[]>(DEFAULT_FORMATS);
@@ -52,7 +58,7 @@ const Posts: React.FC = () => {
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT' || target.isContentEditable) return;
       if (e.key === '1') setActiveView('List');
       if (e.key === '2') setActiveView('Pillars');
-      if (e.key === '3') setActiveView('Calendar');
+      if (e.key === '3') setActiveView('Timeline');
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
@@ -142,6 +148,32 @@ const Posts: React.FC = () => {
     setSelectedPost(prev => prev?.id === id ? null : prev);
   }, []);
 
+  const handleSendToShoots = useCallback((id: string) => {
+    // Mark post as sent to shoots and copy to shoots store
+    setPosts(prev => {
+      const post = prev.find(p => p.id === id);
+      if (post) {
+        const updated = { ...post, sentToShoots: true };
+        const shootsPosts = getJSON<Post[]>('meg_shoots_posts', []);
+        if (!shootsPosts.find(p => p.id === id)) {
+          setJSON('meg_shoots_posts', [...shootsPosts, updated]);
+        } else {
+          setJSON('meg_shoots_posts', shootsPosts.map(p => p.id === id ? updated : p));
+        }
+      }
+      return prev.map(p => p.id === id ? { ...p, sentToShoots: true } : p);
+    });
+    setSelectedPost(prev => prev && prev.id === id ? { ...prev, sentToShoots: true } : prev);
+
+    toast.success('Added to Shoots', {
+      description: 'Plan your shoot day on the Shoots page.',
+      action: {
+        label: 'Go to Shoots',
+        onClick: () => navigate('/shoots'),
+      },
+    });
+  }, [navigate]);
+
   const handleSelectToggle = useCallback((id: string, shiftKey: boolean) => {
     setSelectedIds(prev => {
       const next = new Set(prev);
@@ -171,6 +203,56 @@ const Posts: React.FC = () => {
     setPosts(prev => prev.filter(p => !selectedIds.has(p.id)));
     setSelectedIds(new Set());
   }, [selectedIds]);
+
+  // ── Plan a shoot from selection ──
+  const [showShootModal, setShowShootModal] = useState(false);
+  const handlePlanShoot = useCallback((data: {
+    name: string;
+    mainLocation: string;
+    date: string;
+    outfits: string[];
+    gear: string[];
+    notes: string;
+    postIds: string[];
+  }) => {
+    const mainLoc = data.mainLocation
+      ? [{ id: crypto.randomUUID(), name: data.mainLocation, address: '', lat: 0, lng: 0, place_id: '' }]
+      : [];
+    const newShoot: Shoot = {
+      id: crypto.randomUUID(),
+      name: data.name,
+      date: data.date,
+      status: 'Planned' as const,
+      locations: mainLoc,
+      outfits: data.outfits,
+      gear: data.gear,
+      notes: data.notes,
+      optimized_route_order: [],
+      ai_plan: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    // Save shoot to shoots localStorage
+    const existingShoots = getJSON<Shoot[]>('meg_shoots', []);
+    setJSON('meg_shoots', [newShoot, ...existingShoots]);
+
+    // Copy selected posts to shoots_posts and link them
+    const selectedPosts = posts.filter(p => selectedIds.has(p.id));
+    const shootsPosts = getJSON<Post[]>('meg_shoots_posts', []);
+    const linkedPosts = selectedPosts.map(p => ({ ...p, shoot_id: newShoot.id, sentToShoots: true }));
+    // Add linked posts, avoid duplicates
+    const existingIds = new Set(shootsPosts.map(p => p.id));
+    const newShootsPosts = [
+      ...shootsPosts.map(p => linkedPosts.find(lp => lp.id === p.id) || p),
+      ...linkedPosts.filter(p => !existingIds.has(p.id)),
+    ];
+    setJSON('meg_shoots_posts', newShootsPosts);
+
+    setSelectedIds(new Set());
+    setShowShootModal(false);
+    navigate('/shoots');
+  }, [posts, selectedIds, navigate]);
 
   // ── Pillar management ──────────────────────────────────────
 
@@ -243,8 +325,15 @@ const Posts: React.FC = () => {
           <ViewSwitcher active={activeView} onChange={setActiveView} />
         </div>
 
+        {activeView === 'Timeline' && (
+          <div className="mb-4">
+            <h2 className="text-sm font-semibold text-gray-700">Your Rough Plan</h2>
+            <p className="text-xs text-gray-400 mt-0.5">Use this timeline to sketch out your posting order. It's a planning tool, not a final calendar — adjust anytime.</p>
+          </div>
+        )}
+
         {/* Filter Bar (hidden in Calendar view) */}
-        {activeView !== 'Calendar' && <PostsFilterBar
+        {activeView !== 'Timeline' && <PostsFilterBar
           pillars={pillars}
           filterPillars={filterPillars}
           filterStatuses={filterStatuses}
@@ -267,52 +356,6 @@ const Posts: React.FC = () => {
           onRenameFormat={handleRenameFormat}
         />}
 
-        {/* Bulk actions bar (List view only) */}
-        <AnimatePresence>
-          {selectedIds.size > 0 && activeView === 'List' && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.2, ease: 'easeOut' }}
-              className="overflow-hidden"
-            >
-              <div className="flex items-center gap-3 px-4 py-2.5 mb-3 bg-[#612a4f]/5 rounded-lg border border-[#612a4f]/10">
-                <span className="text-xs font-medium text-[#612a4f]">
-                  {selectedIds.size} selected
-                </span>
-                <div className="h-3 w-px bg-[#612a4f]/20" />
-                <span className="text-xs text-gray-500">Move to:</span>
-                {POST_STATUSES.map(status => (
-                  <button
-                    key={status}
-                    onClick={() => handleBulkStatusChange(status)}
-                    className="flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium hover:bg-white/60 transition-colors duration-150"
-                    style={{ color: STATUS_COLORS[status].text }}
-                  >
-                    <StatusIcon status={status} className="w-3 h-3" style={{ color: STATUS_COLORS[status].dot }} />
-                    {status}
-                  </button>
-                ))}
-                <div className="ml-auto flex items-center gap-2">
-                  <button
-                    onClick={handleBulkDelete}
-                    className="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium text-red-500 hover:bg-red-50 transition-colors duration-150"
-                  >
-                    <Trash2 className="w-3 h-3" />
-                    Delete
-                  </button>
-                  <button
-                    onClick={() => setSelectedIds(new Set())}
-                    className="text-xs text-gray-400 hover:text-gray-600 transition-colors duration-150"
-                  >
-                    Deselect
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
 
         {/* View body with crossfade */}
         <AnimatePresence mode="wait">
@@ -337,6 +380,7 @@ const Posts: React.FC = () => {
                     onRowClick={setSelectedPost}
                     onUpdatePost={handleUpdatePost}
                     onDeletePost={handleDeletePost}
+                    onSendToShoots={handleSendToShoots}
                     onAddFormat={handleAddFormat}
                     onDeleteFormat={handleDeleteFormat}
                     onDeletePillar={handleDeletePillar}
@@ -356,12 +400,13 @@ const Posts: React.FC = () => {
                 onClickPost={setSelectedPost}
                 onUpdatePost={handleUpdatePost}
                 onDeletePost={handleDeletePost}
+                onSendToShoots={handleSendToShoots}
                 onAddPost={handleAddPost}
                 onReorder={handleReorder}
               />
             )}
 
-            {activeView === 'Calendar' && (
+            {activeView === 'Timeline' && (
               <PostsCalendarView
                 posts={filteredPosts}
                 allPosts={posts}
@@ -388,6 +433,7 @@ const Posts: React.FC = () => {
         onDeleteFormat={handleDeleteFormat}
         onDeletePillar={handleDeletePillar}
       />
+
     </div>
   );
 };
@@ -435,6 +481,80 @@ const ViewSwitcher: React.FC<{
       ))}
       </div>
     </div>
+  );
+};
+
+// ── Selection Bar ────────────────────────────────────────────
+
+const PRE_PRODUCTION: PostStatus[] = ['Idea', 'Scripted', 'Ready to shoot'];
+
+const SelectionBar: React.FC<{
+  selectedIds: Set<string>;
+  posts: Post[];
+  onPlanShoot: () => void;
+  onBulkStatusChange: (status: PostStatus) => void;
+  onBulkDelete: () => void;
+  onClear: () => void;
+}> = ({ selectedIds, posts, onPlanShoot, onBulkStatusChange, onBulkDelete, onClear }) => {
+  if (selectedIds.size === 0) return null;
+
+  const selectedPosts = posts.filter(p => selectedIds.has(p.id));
+  const allPreProduction = selectedPosts.every(p => PRE_PRODUCTION.includes(p.status));
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 10 }}
+        transition={{ duration: 0.15 }}
+        className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 rounded-xl bg-[#612A4F] text-white pl-5 pr-4 py-3 shadow-xl flex items-center gap-4"
+      >
+        <span className="text-[13px] font-medium whitespace-nowrap">
+          {selectedIds.size} selected
+        </span>
+
+        <div className="h-4 w-px bg-white/20" />
+
+        {/* Plan a shoot — only when all selected are pre-production */}
+        {allPreProduction && (
+          <button
+            onClick={onPlanShoot}
+            className="flex items-center gap-1.5 bg-white text-[#612A4F] px-3.5 py-1.5 rounded-lg text-[13px] font-semibold hover:bg-white/90 transition-colors whitespace-nowrap"
+          >
+            <Camera className="w-3.5 h-3.5" />
+            Plan a shoot
+          </button>
+        )}
+
+        {/* Bulk status change */}
+        <div className="flex items-center gap-1">
+          {POST_STATUSES.map(status => (
+            <button
+              key={status}
+              onClick={() => onBulkStatusChange(status)}
+              title={status}
+              className="w-2.5 h-2.5 rounded-full transition-transform hover:scale-150"
+              style={{ backgroundColor: STATUS_COLORS[status].dot }}
+            />
+          ))}
+        </div>
+
+        <button
+          onClick={onBulkDelete}
+          className="flex items-center gap-1 text-white/50 hover:text-white/90 text-[13px] transition-colors"
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+        </button>
+
+        <button
+          onClick={onClear}
+          className="text-[11px] text-white/30 hover:text-white/60 transition-colors"
+        >
+          &times;
+        </button>
+      </motion.div>
+    </AnimatePresence>
   );
 };
 

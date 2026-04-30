@@ -27,9 +27,31 @@ import { toast } from 'sonner';
 import { StorageKeys, getString, setString } from '@/lib/storage';
 
 const Sidebar = () => {
-  const getSavedMenuItems = () => {
+  const getSavedMenuItems = (): MenuItem[] => {
     const saved = getString(StorageKeys.sidebarMenuItems);
-    return saved ? JSON.parse(saved) : defaultMenuItems;
+    if (!saved) return defaultMenuItems;
+    try {
+      const parsed = JSON.parse(saved) as MenuItem[];
+      // Build a lookup from default items so we always have valid icons
+      const defaultByTitle = new Map(defaultMenuItems.map(d => [d.title, d]));
+      // Re-attach icons from defaults (functions can't survive JSON serialization)
+      const restored = parsed
+        .map(item => {
+          const def = defaultByTitle.get(item.title);
+          if (def) return { ...def, ...item, icon: def.icon };
+          return null; // drop unknown items that lost their icon
+        })
+        .filter(Boolean) as MenuItem[];
+      // Add any new default items not yet in the saved list
+      for (const def of defaultMenuItems) {
+        if (!restored.find(r => r.title === def.title)) {
+          restored.push(def);
+        }
+      }
+      return restored;
+    } catch {
+      return defaultMenuItems;
+    }
   };
 
   const [menuItems, setMenuItems] = useState<MenuItem[]>(getSavedMenuItems);

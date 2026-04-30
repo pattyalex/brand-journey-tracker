@@ -29,6 +29,7 @@ interface PostsPillarsViewProps {
   onClickPost: (post: Post) => void;
   onUpdatePost: (id: string, updates: Partial<Post>) => void;
   onDeletePost: (id: string) => void;
+  onSendToShoots?: (id: string) => void;
   onAddPost: (title: string, pillar: string) => void;
   onReorder: (posts: Post[]) => void;
 }
@@ -39,6 +40,7 @@ const PostsPillarsView: React.FC<PostsPillarsViewProps> = ({
   onClickPost,
   onUpdatePost,
   onDeletePost,
+  onSendToShoots,
   onAddPost,
   onReorder,
 }) => {
@@ -142,6 +144,7 @@ const PostsPillarsView: React.FC<PostsPillarsViewProps> = ({
               onClickPost={onClickPost}
               onUpdatePost={onUpdatePost}
               onDeletePost={onDeletePost}
+              onSendToShoots={onSendToShoots}
               onAddPost={onAddPost}
               isOverColumn={overColumnId === pillar && activeId !== null}
               overCardId={overColumnId === pillar ? overCardId : null}
@@ -177,13 +180,14 @@ interface PillarColumnProps {
   onClickPost: (post: Post) => void;
   onUpdatePost: (id: string, updates: Partial<Post>) => void;
   onDeletePost: (id: string) => void;
+  onSendToShoots?: (id: string) => void;
   onAddPost: (title: string, pillar: string) => void;
   isOverColumn: boolean;
   overCardId: string | null;
   activeId: string | null;
 }
 
-const PillarColumn: React.FC<PillarColumnProps> = ({ pillar, posts, allPosts, onClickPost, onUpdatePost, onDeletePost, onAddPost, isOverColumn, overCardId, activeId }) => {
+const PillarColumn: React.FC<PillarColumnProps> = ({ pillar, posts, allPosts, onClickPost, onUpdatePost, onDeletePost, onSendToShoots, onAddPost, isOverColumn, overCardId, activeId }) => {
   const style = getPillarStyle(pillar);
   const { setNodeRef, isOver } = useDroppable({ id: pillar });
   const [addingIdea, setAddingIdea] = useState(false);
@@ -229,6 +233,7 @@ const PillarColumn: React.FC<PillarColumnProps> = ({ pillar, posts, allPosts, on
               onClick={onClickPost}
               onUpdatePost={onUpdatePost}
               onDeletePost={onDeletePost}
+              onSendToShoots={onSendToShoots}
               showInsertBefore={overCardId === post.id && activeId !== post.id}
               pillarStyle={style}
             />
@@ -277,9 +282,10 @@ const SortableCard: React.FC<{
   onClick: (post: Post) => void;
   onUpdatePost: (id: string, updates: Partial<Post>) => void;
   onDeletePost: (id: string) => void;
+  onSendToShoots?: (id: string) => void;
   showInsertBefore: boolean;
   pillarStyle: { bg: string; text: string; border: string };
-}> = ({ post, allPosts, onClick, onUpdatePost, onDeletePost, showInsertBefore, pillarStyle }) => {
+}> = ({ post, allPosts, onClick, onUpdatePost, onDeletePost, onSendToShoots, showInsertBefore, pillarStyle }) => {
   const {
     attributes,
     listeners,
@@ -323,6 +329,7 @@ const SortableCard: React.FC<{
           onUpdatePost={onUpdatePost}
           onClickPost={onClick}
           onDelete={onDeletePost}
+          onSendToShoots={onSendToShoots}
         />
       </div>
     </div>
