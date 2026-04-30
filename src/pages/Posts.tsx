@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trash2, Camera } from 'lucide-react';
+import { Trash2, Camera, Bookmark } from 'lucide-react';
+import InspirationPanel from '@/components/posts/InspirationPanel';
 import { Shoot } from '@/types/shoots';
 import CreateShootModal from '@/components/shoots/CreateShootModal';
 import { useNavigate } from 'react-router-dom';
@@ -39,6 +40,23 @@ const Posts: React.FC = () => {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const lastSelectedId = useRef<string | null>(null);
+  const [showInspiration, setShowInspiration] = useState(false);
+
+  const handleCreateFromInspiration = useCallback((url: string, notes?: string) => {
+    const newPost: Post = {
+      id: Date.now().toString(),
+      title: '',
+      pillar: '',
+      format: '',
+      status: 'Idea',
+      attachedFiles: [url],
+      notes: notes || '',
+      order: posts.length,
+      createdAt: new Date().toISOString(),
+    };
+    setPosts(prev => [...prev, newPost]);
+    setSelectedPost(newPost);
+  }, [posts.length]);
 
   // Filters
   const [filterPillars, setFilterPillars] = useState<Set<string>>(new Set());
@@ -320,8 +338,15 @@ const Posts: React.FC = () => {
   return (
     <div className="h-full flex flex-col overflow-hidden">
       <div className="flex-1 overflow-y-auto px-6 py-6 md:px-8 lg:px-10">
-        {/* Header: View Switcher */}
-        <div className="flex items-center justify-end mb-4">
+        {/* Header: View Switcher + Inspiration */}
+        <div className="flex items-center justify-end gap-3 mb-4">
+          <button
+            onClick={() => setShowInspiration(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] text-gray-500 hover:text-[#612A4F] hover:bg-[#612A4F]/5 transition-colors"
+          >
+            <Bookmark size={14} />
+            Inspiration
+          </button>
           <ViewSwitcher active={activeView} onChange={setActiveView} />
         </div>
 
@@ -434,6 +459,11 @@ const Posts: React.FC = () => {
         onDeletePillar={handleDeletePillar}
       />
 
+      <InspirationPanel
+        open={showInspiration}
+        onClose={() => setShowInspiration(false)}
+        onCreatePost={handleCreateFromInspiration}
+      />
     </div>
   );
 };
