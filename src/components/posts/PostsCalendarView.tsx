@@ -21,6 +21,7 @@ interface PostsCalendarViewProps {
   pillars: string[];
   onClickPost: (post: Post) => void;
   onUpdatePost: (id: string, updates: Partial<Post>) => void;
+  onSendToSchedule?: (id: string) => void;
   onCreateOnDate: (date: string) => void;
   onSwitchToList: () => void;
 }
@@ -68,6 +69,7 @@ const PostsCalendarView: React.FC<PostsCalendarViewProps> = ({
   allPosts,
   onClickPost,
   onUpdatePost,
+  onSendToSchedule,
   onCreateOnDate,
   onSwitchToList,
 }) => {
@@ -216,6 +218,7 @@ const PostsCalendarView: React.FC<PostsCalendarViewProps> = ({
                 isToday={date === todayKey}
                 posts={postsByDate[date] || []}
                 onClickPost={onClickPost}
+                onSendToSchedule={onSendToSchedule}
                 onClickEmpty={() => onCreateOnDate(date)}
               />
             ))}
@@ -306,6 +309,7 @@ interface CalendarCellProps {
   isToday: boolean;
   posts: Post[];
   onClickPost: (post: Post) => void;
+  onSendToSchedule?: (id: string) => void;
   onClickEmpty: () => void;
 }
 
@@ -316,6 +320,7 @@ const CalendarCell: React.FC<CalendarCellProps> = ({
   isToday,
   posts,
   onClickPost,
+  onSendToSchedule,
   onClickEmpty,
 }) => {
   const { setNodeRef, isOver } = useDroppable({ id: date });
@@ -357,7 +362,7 @@ const CalendarCell: React.FC<CalendarCellProps> = ({
       </div>
       <div className="space-y-0.5">
         {posts.map(post => (
-          <DraggableCalendarCard key={post.id} post={post} onClick={onClickPost} />
+          <DraggableCalendarCard key={post.id} post={post} onClick={onClickPost} onSendToSchedule={onSendToSchedule} />
         ))}
       </div>
     </div>
@@ -366,7 +371,7 @@ const CalendarCell: React.FC<CalendarCellProps> = ({
 
 // ── Draggable Calendar Card ──────────────────────────────────
 
-const DraggableCalendarCard: React.FC<{ post: Post; onClick: (post: Post) => void }> = ({ post, onClick }) => {
+const DraggableCalendarCard: React.FC<{ post: Post; onClick: (post: Post) => void; onSendToSchedule?: (id: string) => void }> = ({ post, onClick, onSendToSchedule }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: post.id });
 
   return (
@@ -379,7 +384,7 @@ const DraggableCalendarCard: React.FC<{ post: Post; onClick: (post: Post) => voi
       {...attributes}
       {...listeners}
     >
-      <PostCard post={post} variant="calendar" onClick={onClick} />
+      <PostCard post={post} variant="calendar" onClick={onClick} onSendToSchedule={onSendToSchedule} />
     </div>
   );
 };

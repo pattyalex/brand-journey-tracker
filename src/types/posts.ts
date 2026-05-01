@@ -20,6 +20,8 @@ export interface Post {
     saves?: number;
     reach?: number;
   };
+  thumbnail_url?: string;
+  sent_to_schedule?: boolean;
   order: number;
   shoot_id?: string | null;
   sentToShoots?: boolean;

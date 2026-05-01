@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Calendar, Hash, FileText, BarChart3, StickyNote, Paperclip, Trash2 } from 'lucide-react';
+import { X, Calendar, Hash, FileText, BarChart3, StickyNote, Paperclip, Trash2, ImageIcon } from 'lucide-react';
 import { Post, PostStatus, POST_STATUSES, STATUS_COLORS, getPillarStyle } from '@/types/posts';
+import { uploadPostThumbnail } from '@/lib/postImageUpload';
 import FormatDropdown from './FormatDropdown';
 import PillarDropdown from './PillarDropdown';
 import StatusDropdown from './StatusDropdown';
@@ -23,6 +24,20 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
   const [captionDraft, setCaptionDraft] = useState('');
   const [editingNotes, setEditingNotes] = useState(false);
   const [notesDraft, setNotesDraft] = useState('');
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
+  const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
+  const thumbnailInputRef = useRef<HTMLInputElement>(null);
+
+  const handleThumbnailUpload = useCallback(async (file: File) => {
+    if (!post || !file.type.startsWith('image/')) return;
+    setUploadingThumbnail(true);
+    try {
+      const url = await uploadPostThumbnail(file, post.id);
+      onUpdate(post.id, { thumbnail_url: url });
+    } finally {
+      setUploadingThumbnail(false);
+    }
+  }, [post, onUpdate]);
 
   useEffect(() => {
     if (post) {
@@ -84,6 +99,85 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
             </div>
 
             <div className="px-6 py-5 space-y-6">
+              {/* Cover image */}
+              <div>
+                <label className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                  <ImageIcon className="w-3 h-3" />
+                  Cover image
+                </label>
+                <input
+                  ref={thumbnailInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={e => {
+                    const file = e.target.files?.[0];
+                    if (file) handleThumbnailUpload(file);
+                    e.target.value = '';
+                  }}
+                />
+                {post.thumbnail_url ? (
+                  <div
+                    className="relative group/thumb w-[200px]"
+                    onDragOver={e => { e.preventDefault(); setIsDraggingOver(true); }}
+                    onDragLeave={() => setIsDraggingOver(false)}
+                    onDrop={e => {
+                      e.preventDefault();
+                      setIsDraggingOver(false);
+                      const file = e.dataTransfer.files?.[0];
+                      if (file) handleThumbnailUpload(file);
+                    }}
+                  >
+                    <motion.img
+                      key={post.thumbnail_url}
+                      src={post.thumbnail_url}
+                      alt="Cover"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.25, ease: 'easeOut' }}
+                      className="w-[200px] h-[200px] object-cover rounded-lg"
+                    />
+                    <button
+                      onClick={() => thumbnailInputRef.current?.click()}
+                      className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/40 text-white text-xs font-medium opacity-0 group-hover/thumb:opacity-100 transition-opacity duration-150"
+                    >
+                      Replace
+                    </button>
+                    {isDraggingOver && (
+                      <div className="absolute inset-0 flex items-center justify-center rounded-lg border-2 border-dashed border-[#612A4F] bg-[#612A4F]/10">
+                        <span className="text-xs font-medium text-[#612A4F]">Drop to replace</span>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div
+                    onClick={() => !uploadingThumbnail && thumbnailInputRef.current?.click()}
+                    onDragOver={e => { e.preventDefault(); setIsDraggingOver(true); }}
+                    onDragLeave={() => setIsDraggingOver(false)}
+                    onDrop={e => {
+                      e.preventDefault();
+                      setIsDraggingOver(false);
+                      const file = e.dataTransfer.files?.[0];
+                      if (file) handleThumbnailUpload(file);
+                    }}
+                    className={`w-[200px] h-[200px] rounded-lg border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-colors duration-150 ${
+                      isDraggingOver
+                        ? 'border-[#612A4F] bg-[#612A4F]/5'
+                        : 'border-gray-200 hover:border-gray-300 bg-gray-50'
+                    }`}
+                  >
+                    {uploadingThumbnail ? (
+                      <span className="text-xs text-gray-400">Uploading...</span>
+                    ) : (
+                      <>
+                        <ImageIcon className="w-5 h-5 text-gray-300 mb-1.5" />
+                        <span className="text-xs text-gray-400">+ Add cover image</span>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+
               {/* Meta row: Pillar, Format, Status */}
               <div className="grid grid-cols-3 gap-4">
                 {/* Pillar */}

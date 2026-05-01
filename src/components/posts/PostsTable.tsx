@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { GripVertical, MoreHorizontal, Trash2, Camera, ArrowRight } from 'lucide-react';
+import { GripVertical, MoreHorizontal, Trash2, Camera, ArrowRight, ImageIcon } from 'lucide-react';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import PostsDatePicker from './PostsDatePicker';
 import FormatDropdown from './FormatDropdown';
@@ -42,6 +42,7 @@ interface PostsTableProps {
   onUpdatePost: (id: string, updates: Partial<Post>) => void;
   onDeletePost: (id: string) => void;
   onSendToShoots?: (id: string) => void;
+  onSendToSchedule?: (id: string) => void;
   onAddFormat: (name: string) => void;
   onDeleteFormat: (name: string) => void;
   onDeletePillar: (name: string) => void;
@@ -66,6 +67,7 @@ const PostsTable: React.FC<PostsTableProps> = ({
   onUpdatePost,
   onDeletePost,
   onSendToShoots,
+  onSendToSchedule,
   onAddFormat,
   onDeleteFormat,
   onDeletePillar,
@@ -130,6 +132,7 @@ const PostsTable: React.FC<PostsTableProps> = ({
                     onUpdate={onUpdatePost}
                     onDelete={onDeletePost}
                     onSendToShoots={onSendToShoots}
+                    onSendToSchedule={onSendToSchedule}
                   />
                 ))}
               </AnimatePresence>
@@ -141,7 +144,18 @@ const PostsTable: React.FC<PostsTableProps> = ({
                 <tbody>
                   <tr className="border-b border-gray-50 bg-white">
                     <td className="px-2 py-3 w-8"><GripVertical className="w-3.5 h-3.5 text-gray-400" /></td>
-                    <td className="px-4 py-3 text-sm font-medium text-gray-900">{activePost.title}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2.5">
+                        {activePost.thumbnail_url ? (
+                          <img src={activePost.thumbnail_url} alt="" className="w-8 h-8 rounded object-cover flex-shrink-0" />
+                        ) : (
+                          <div className="w-8 h-8 rounded bg-gray-50 flex items-center justify-center flex-shrink-0">
+                            <ImageIcon className="w-3.5 h-3.5 text-gray-300" />
+                          </div>
+                        )}
+                        <span className="text-sm font-medium text-gray-900">{activePost.title}</span>
+                      </div>
+                    </td>
                     <td className="px-4 py-3">
                       {activePost.pillar && (
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border"
@@ -187,6 +201,7 @@ interface SortableRowProps {
   onUpdate: (id: string, updates: Partial<Post>) => void;
   onDelete: (id: string) => void;
   onSendToShoots?: (id: string) => void;
+  onSendToSchedule?: (id: string) => void;
 }
 
 const SortableRow: React.FC<SortableRowProps> = ({
@@ -204,6 +219,7 @@ const SortableRow: React.FC<SortableRowProps> = ({
   onUpdate,
   onDelete,
   onSendToShoots,
+  onSendToSchedule,
 }) => {
   const {
     attributes,
@@ -300,28 +316,45 @@ const SortableRow: React.FC<SortableRowProps> = ({
 
       {/* Title */}
       <td className="px-4 py-3 min-w-[300px]">
-        {editingTitle ? (
-          <input
-            ref={titleInputRef}
-            type="text"
-            value={titleDraft}
-            onChange={e => setTitleDraft(e.target.value)}
-            onBlur={commitTitle}
-            onKeyDown={e => {
-              if (e.key === 'Enter') commitTitle();
-              if (e.key === 'Escape') setEditingTitle(false);
-            }}
-            onClick={e => e.stopPropagation()}
-            className="text-sm font-medium text-gray-900 bg-white outline-none border border-gray-200 rounded px-1.5 py-0.5 w-full focus:border-gray-300 transition-colors duration-150"
-          />
-        ) : (
-          <span
-            onDoubleClick={handleTitleDoubleClick}
-            className="text-sm font-medium text-gray-900"
-          >
-            {post.title}
-          </span>
-        )}
+        <div className="flex items-center gap-2.5">
+          {post.thumbnail_url ? (
+            <motion.img
+              key={post.thumbnail_url}
+              src={post.thumbnail_url}
+              alt=""
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+              className="w-8 h-8 rounded object-cover flex-shrink-0"
+            />
+          ) : (
+            <div className="w-8 h-8 rounded bg-gray-50 flex items-center justify-center flex-shrink-0">
+              <ImageIcon className="w-3.5 h-3.5 text-gray-300" />
+            </div>
+          )}
+          {editingTitle ? (
+            <input
+              ref={titleInputRef}
+              type="text"
+              value={titleDraft}
+              onChange={e => setTitleDraft(e.target.value)}
+              onBlur={commitTitle}
+              onKeyDown={e => {
+                if (e.key === 'Enter') commitTitle();
+                if (e.key === 'Escape') setEditingTitle(false);
+              }}
+              onClick={e => e.stopPropagation()}
+              className="text-sm font-medium text-gray-900 bg-white outline-none border border-gray-200 rounded px-1.5 py-0.5 w-full focus:border-gray-300 transition-colors duration-150"
+            />
+          ) : (
+            <span
+              onDoubleClick={handleTitleDoubleClick}
+              className="text-sm font-medium text-gray-900"
+            >
+              {post.title}
+            </span>
+          )}
+        </div>
       </td>
 
       {/* Pillar pill */}
@@ -369,6 +402,19 @@ const SortableRow: React.FC<SortableRowProps> = ({
             <span className="text-[10px] text-[#612A4F]/60 font-medium whitespace-nowrap">
               Shoot in progress
             </span>
+          )}
+          {post.status === 'Edited' && onSendToSchedule && !post.sent_to_schedule && (
+            <div className="relative group/sched flex-shrink-0">
+              <button
+                onClick={() => onSendToSchedule(post.id)}
+                className="flex items-center justify-center w-5 h-5 rounded-full bg-[#612A4F]/8 hover:bg-[#612A4F]/20 transition-colors"
+              >
+                <ArrowRight size={11} className="text-[#612A4F]" />
+              </button>
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 rounded-md bg-gray-800 text-white text-[10px] font-medium whitespace-nowrap opacity-0 group-hover/sched:opacity-100 transition-opacity duration-100 pointer-events-none">
+                Schedule this post
+              </div>
+            </div>
           )}
         </div>
       </td>

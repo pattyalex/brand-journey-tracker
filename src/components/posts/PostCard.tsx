@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, GripVertical, MoreHorizontal, Trash2, Camera } from 'lucide-react';
+import { Calendar, GripVertical, MoreHorizontal, Trash2, Camera, ImageIcon, ArrowRight } from 'lucide-react';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { Post, STATUS_COLORS, PostStatus, getPillarStyle } from '@/types/posts';
 import { StatusIcon } from './StatusDropdown';
@@ -15,9 +15,10 @@ interface PostCardProps {
   onClickPost?: (post: Post) => void;
   onDelete?: (id: string) => void;
   onSendToShoots?: (id: string) => void;
+  onSendToSchedule?: (id: string) => void;
 }
 
-const PostCard: React.FC<PostCardProps> = ({ post, variant, onClick, allPosts = [], onUpdatePost, onClickPost, onDelete, onSendToShoots }) => {
+const PostCard: React.FC<PostCardProps> = ({ post, variant, onClick, allPosts = [], onUpdatePost, onClickPost, onDelete, onSendToShoots, onSendToSchedule }) => {
   const pillarStyle = getPillarStyle(post.pillar);
   const statusColor = STATUS_COLORS[post.status];
 
@@ -32,12 +33,38 @@ const PostCard: React.FC<PostCardProps> = ({ post, variant, onClick, allPosts = 
         whileTap={{ scale: 0.98 }}
         transition={{ duration: 0.15 }}
       >
-        <p className="text-[11px] font-medium text-gray-800 truncate">{post.title}</p>
+        <div className="flex items-center gap-1.5">
+          {post.thumbnail_url ? (
+            <motion.img
+              key={post.thumbnail_url}
+              src={post.thumbnail_url}
+              alt=""
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+              className="w-6 h-6 rounded-sm object-cover flex-shrink-0"
+            />
+          ) : (
+            <div className="w-6 h-6 rounded-sm bg-gray-100/50 flex items-center justify-center flex-shrink-0">
+              <ImageIcon className="w-2.5 h-2.5 text-gray-300" />
+            </div>
+          )}
+          <p className="text-[11px] font-medium text-gray-800 truncate flex-1">{post.title}</p>
+        </div>
         <div className="flex items-center justify-between">
           {post.format ? <span className="text-[9px] text-gray-500">{post.format}</span> : <span />}
           <span className="flex items-center gap-0.5 text-[9px] text-gray-400">
             <StatusIcon status={post.status} className="w-2 h-2" style={{ color: statusColor.dot }} />
             {post.status}
+            {post.status === 'Edited' && onSendToSchedule && !post.sent_to_schedule && (
+              <button
+                onClick={e => { e.stopPropagation(); onSendToSchedule(post.id); }}
+                className="ml-0.5 flex items-center justify-center w-3.5 h-3.5 rounded-full bg-[#612A4F]/8 hover:bg-[#612A4F]/20 transition-colors"
+                title="Schedule this post"
+              >
+                <ArrowRight size={7} className="text-[#612A4F]" />
+              </button>
+            )}
           </span>
         </div>
       </motion.div>
@@ -53,8 +80,23 @@ const PostCard: React.FC<PostCardProps> = ({ post, variant, onClick, allPosts = 
       whileHover={{ y: -1 }}
       transition={{ duration: 0.15 }}
     >
-      <div className="flex items-start gap-1.5 mb-2">
-        <GripVertical className="w-3.5 h-3.5 text-gray-300 flex-shrink-0 mt-0.5" />
+      <div className="flex items-center gap-1.5 mb-2">
+        <GripVertical className="w-3.5 h-3.5 text-gray-300 flex-shrink-0" />
+        {post.thumbnail_url ? (
+          <motion.img
+            key={post.thumbnail_url}
+            src={post.thumbnail_url}
+            alt=""
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+            className="w-8 h-8 rounded object-cover flex-shrink-0"
+          />
+        ) : (
+          <div className="w-8 h-8 rounded bg-gray-50 flex items-center justify-center flex-shrink-0">
+            <ImageIcon className="w-3.5 h-3.5 text-gray-300" />
+          </div>
+        )}
         <p className="text-sm font-medium text-gray-900 line-clamp-2 flex-1">{post.title}</p>
         {(onDelete || onSendToShoots) && (
           <Popover>
@@ -99,6 +141,15 @@ const PostCard: React.FC<PostCardProps> = ({ post, variant, onClick, allPosts = 
           <div className="flex items-center gap-1">
             <StatusIcon status={post.status} className="w-2.5 h-2.5" style={{ color: statusColor.dot }} />
             <span className="text-[10px] text-gray-400">{post.status}</span>
+            {post.status === 'Edited' && onSendToSchedule && !post.sent_to_schedule && (
+              <button
+                onClick={e => { e.stopPropagation(); onSendToSchedule(post.id); }}
+                className="flex items-center justify-center w-4 h-4 rounded-full bg-[#612A4F]/8 hover:bg-[#612A4F]/20 transition-colors"
+                title="Schedule this post"
+              >
+                <ArrowRight size={9} className="text-[#612A4F]" />
+              </button>
+            )}
           </div>
           <div onClick={e => e.stopPropagation()}>
             <PostsDatePicker

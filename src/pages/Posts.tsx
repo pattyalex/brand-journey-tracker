@@ -192,6 +192,14 @@ const Posts: React.FC = () => {
     });
   }, [navigate]);
 
+  const handleSendToSchedule = useCallback((id: string) => {
+    const post = posts.find(p => p.id === id);
+    if (!post || post.sent_to_schedule) return;
+    setPosts(prev => prev.map(p => p.id === id ? { ...p, sent_to_schedule: true } : p));
+    setSelectedPost(prev => prev && prev.id === id ? { ...prev, sent_to_schedule: true } : prev);
+    toast.success('Sent to Schedule');
+  }, [posts]);
+
   const handleSelectToggle = useCallback((id: string, shiftKey: boolean) => {
     setSelectedIds(prev => {
       const next = new Set(prev);
@@ -352,7 +360,7 @@ const Posts: React.FC = () => {
 
         {activeView === 'Timeline' && (
           <div className="mb-4">
-            <h2 className="text-sm font-semibold text-gray-700">Your Rough Plan</h2>
+            <h2 className="text-sm font-semibold text-gray-700">Rough Planning</h2>
             <p className="text-xs text-gray-400 mt-0.5">Use this timeline to sketch out your posting order. It's a planning tool, not a final calendar — adjust anytime.</p>
           </div>
         )}
@@ -406,6 +414,7 @@ const Posts: React.FC = () => {
                     onUpdatePost={handleUpdatePost}
                     onDeletePost={handleDeletePost}
                     onSendToShoots={handleSendToShoots}
+                    onSendToSchedule={handleSendToSchedule}
                     onAddFormat={handleAddFormat}
                     onDeleteFormat={handleDeleteFormat}
                     onDeletePillar={handleDeletePillar}
@@ -426,6 +435,7 @@ const Posts: React.FC = () => {
                 onUpdatePost={handleUpdatePost}
                 onDeletePost={handleDeletePost}
                 onSendToShoots={handleSendToShoots}
+                onSendToSchedule={handleSendToSchedule}
                 onAddPost={handleAddPost}
                 onReorder={handleReorder}
               />
@@ -438,6 +448,7 @@ const Posts: React.FC = () => {
                 pillars={pillars}
                 onClickPost={setSelectedPost}
                 onUpdatePost={handleUpdatePost}
+                onSendToSchedule={handleSendToSchedule}
                 onCreateOnDate={handleCreateOnDate}
                 onSwitchToList={handleSwitchToListBank}
               />
