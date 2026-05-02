@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ImageIcon, GripVertical, ChevronRight, ChevronDown, X } from 'lucide-react';
+import { ImageIcon, GripVertical, ChevronRight, ChevronDown, X, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import {
   DndContext,
   DragOverlay,
@@ -57,6 +57,7 @@ const Schedule: React.FC = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [mobileTab, setMobileTab] = useState<MobileTab>('Ready');
   const [readyCollapsed, setReadyCollapsed] = useState(false);
+  const [leftColumnCollapsed, setLeftColumnCollapsed] = useState(false);
   const [pillars] = useState<string[]>(DEFAULT_PILLARS);
   const [formats] = useState<string[]>(DEFAULT_FORMATS);
 
@@ -370,10 +371,10 @@ const Schedule: React.FC = () => {
     <div className="h-full flex flex-col overflow-hidden">
       <div className="flex-1 overflow-hidden">
         <DndContext sensors={sensors} collisionDetection={customCollision} onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDragCancel={handleDragCancel}>
-          <div className="h-full grid gap-0" style={{ gridTemplateColumns: '430px 1fr' }}>
+          <div className="h-full grid gap-0" style={{ gridTemplateColumns: leftColumnCollapsed ? '0px 28px 1fr' : '430px 28px 1fr', transition: 'grid-template-columns 0.3s ease-out' }}>
             {/* Left column: Ready (collapsible top) + Grid (always visible bottom) */}
-            <div className="h-full flex flex-col border-r border-gray-100 bg-gray-50/30">
-              {!readyCollapsed && (
+            <div className="h-full flex flex-col bg-gray-50/30 overflow-hidden">
+              {!readyCollapsed && !leftColumnCollapsed && (
                 <div className="overflow-y-auto flex-shrink-0" style={{ maxHeight: '45%' }}>
                   <DraggableReadyList
                     posts={readyPosts}
@@ -412,6 +413,17 @@ const Schedule: React.FC = () => {
                   externalDraggingId={activeId}
                 />
               </div>
+            </div>
+
+            {/* Toggle button — centered vertically on the divider */}
+            <div className="flex items-center justify-center">
+              <button
+                onClick={() => setLeftColumnCollapsed(prev => !prev)}
+                className="w-[24px] h-[24px] flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-400 hover:text-gray-600 hover:border-gray-300 shadow-sm transition-colors"
+                title={leftColumnCollapsed ? 'Show sidebar' : 'Hide sidebar'}
+              >
+                {leftColumnCollapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5 -rotate-90" />}
+              </button>
             </div>
 
             {/* Right column: Calendar */}
