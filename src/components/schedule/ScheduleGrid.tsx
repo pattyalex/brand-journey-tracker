@@ -50,8 +50,8 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({
   externalDraggingId,
 }) => {
   const filledCount = gridOrder.filter(Boolean).length;
-  const cellW = expanded ? 111 : 84;
-  const cellH = expanded ? 139 : 105;
+  const cellW = expanded ? 104 : 84;
+  const cellH = expanded ? 130 : 105;
 
   // Stable IDs for SortableContext
   const cellIds = useMemo(() =>
@@ -92,9 +92,9 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({
 
   return (
     <div className="h-full flex flex-col">
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100">
-        <span className="text-xs font-semibold text-gray-800 uppercase tracking-wider">Grid</span>
-        <span className="text-[10px] text-gray-400">— Preview how your content looks before you schedule it</span>
+      <div className="flex items-center gap-2 px-4 py-3">
+        <span className="text-sm font-semibold text-gray-900">Grid</span>
+        <span className="text-[11px] text-gray-400">Preview how your content looks before you schedule it</span>
       </div>
       <div className="flex-1 overflow-y-auto p-3 flex justify-center">
         <div className="relative">
@@ -155,7 +155,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({
           </SortableContext>
           <DragOverlay dropAnimation={{ duration: 200, easing: 'ease-out' }}>
             {internalDragPost?.thumbnail_url && (
-              <div style={{ width: cellW, height: cellH }} className="rounded-md overflow-hidden shadow-xl opacity-90 rotate-1">
+              <div style={{ width: cellW, height: cellH }} className="rounded-xl overflow-hidden shadow-2xl opacity-95 rotate-1">
                 <img src={internalDragPost.thumbnail_url} alt="" className="w-full h-full object-cover" />
               </div>
             )}
@@ -175,11 +175,11 @@ const ExternalDropZone: React.FC<{ index: number }> = ({ index }) => {
   return (
     <div
       ref={setNodeRef}
-      className="w-full h-full rounded-md transition-all duration-150"
+      className="w-full h-full rounded-xl transition-all duration-150"
       style={{
-        outline: isOver ? '2px dashed rgba(97,42,79,0.5)' : 'none',
-        outlineOffset: '-1px',
-        background: isOver ? 'rgba(97,42,79,0.08)' : 'transparent',
+        outline: isOver ? '2px dashed rgba(97,42,79,0.4)' : 'none',
+        outlineOffset: '-2px',
+        background: isOver ? 'rgba(97,42,79,0.06)' : 'transparent',
       }}
     />
   );
@@ -252,17 +252,17 @@ const SortableCell: React.FC<{
         style={style}
         {...attributes}
         onClick={() => fileInputRef.current?.click()}
-        className="w-full h-full rounded-md flex items-center justify-center cursor-pointer transition-colors duration-150 group/empty"
+        className="w-full h-full rounded-xl flex items-center justify-center cursor-pointer transition-all duration-200 group/empty"
       >
         <div
-          className="w-full h-full rounded-md flex items-center justify-center"
+          className="w-full h-full rounded-xl flex items-center justify-center"
           style={{
-            outline: '1px dashed #d1d5db',
-            outlineOffset: '-1px',
-            background: 'rgba(250,250,250,1)',
+            outline: '1px dashed #e5e7eb',
+            outlineOffset: '-2px',
+            background: 'rgba(249,250,251,0.8)',
           }}
         >
-          <Plus className="w-4 h-4 text-gray-300 group-hover/empty:text-[#612A4F] group-hover/empty:scale-110 transition-all duration-150" />
+          <Plus className="w-4 h-4 text-gray-300 group-hover/empty:text-[#612A4F] group-hover/empty:scale-110 transition-all duration-200" />
         </div>
         <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
       </div>
@@ -279,12 +279,12 @@ const SortableCell: React.FC<{
         {...listeners}
         onMouseEnter={() => onHover(post.id)}
         onMouseLeave={() => onHover(null)}
-        className="w-full h-full rounded-md cursor-grab active:cursor-grabbing"
+        className="w-full h-full rounded-xl cursor-grab active:cursor-grabbing"
         onClick={() => onClickPost(post)}
       >
         <Popover>
           <div
-            className="w-full h-full rounded-md flex flex-col items-center justify-center transition-colors duration-150 relative group/cell"
+            className="w-full h-full rounded-xl flex flex-col items-center justify-center transition-all duration-200 relative group/cell"
             style={{
               outline: isHovered ? '1px dashed rgba(97,42,79,0.3)' : '1px dashed #d1d5db',
               outlineOffset: '-1px',
@@ -346,7 +346,7 @@ const SortableCell: React.FC<{
     >
       <Popover>
         <div
-          className={`w-full h-full rounded-md overflow-hidden cursor-grab active:cursor-grabbing relative group/cell transition-shadow duration-150 ${
+          className={`w-full h-full rounded-xl overflow-hidden cursor-grab active:cursor-grabbing relative group/cell transition-all duration-200 ${
             isHovered ? 'ring-2 ring-[#612A4F]/20' : ''
           } ${isDragging ? 'shadow-lg' : ''}`}
           onClick={() => onClickPost(post)}
