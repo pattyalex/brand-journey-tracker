@@ -40,6 +40,7 @@ const pageImports = {
   WeeklyContentTasks: () => import('./pages/WeeklyContentTasks'),
   Index: () => import('./pages/Index'),
   ResetPasswordPage: () => import('./pages/ResetPasswordPage'),
+  Tasks: () => import('./pages/Tasks'),
 };
 
 // Lazy load all pages for optimal code splitting
@@ -73,6 +74,7 @@ const Help = lazy(pageImports.Help);
 const WeeklyContentTasks = lazy(pageImports.WeeklyContentTasks);
 const Index = lazy(pageImports.Index);
 const ResetPasswordPage = lazy(pageImports.ResetPasswordPage);
+const Tasks = lazy(pageImports.Tasks);
 
 // Route-to-preload mapping so sidebar can trigger chunk downloads on hover
 const routePreloadMap: Record<string, () => Promise<unknown>> = {
@@ -94,6 +96,7 @@ const routePreloadMap: Record<string, () => Promise<unknown>> = {
   '/get-started': pageImports.GetStarted,
   '/index': pageImports.Index,
   '/strategy-demo': pageImports.StrategyDemo,
+  '/tasks': pageImports.Tasks,
 };
 
 /** Call this on mouseEnter/focus to preload a route's chunk */
@@ -234,6 +237,8 @@ function App() {
                 <Route path="/brands" element={<Brands />} />
                 <Route path="/strategy-demo" element={<StrategyDemo />} />
                 <Route path="/index" element={<Index />} />
+                <Route path="/tasks" element={<Navigate to={`/tasks/${new Date().toISOString().split('T')[0]}`} replace />} />
+                <Route path="/tasks/:date" element={<Tasks />} />
               </Route>
 
               <Route path="*" element={<Suspense fallback={<PageLoader />}><NotFound /></Suspense>} />

@@ -1,8 +1,14 @@
 
-import { Home, FolderOpen, FileText, Settings, CreditCard, TrendingUp, BarChart, HelpCircle, CheckSquare, Clipboard, CheckCircle, Handshake, Clapperboard, Sparkles, Calendar, Building2, LayoutList, Camera, CalendarCheck } from 'lucide-react';
+import { Home, FolderOpen, FileText, Settings, CreditCard, TrendingUp, BarChart, HelpCircle, CheckSquare, Clipboard, CheckCircle, Handshake, Clapperboard, Sparkles, Calendar, Building2, LayoutList, Camera, CalendarCheck, ListChecks } from 'lucide-react';
 import { MenuItem } from '@/types/sidebar';
 
 export const defaultMenuItems: MenuItem[] = [
+  {
+    title: 'Tasks',
+    icon: ListChecks,
+    url: '/tasks',
+    isDeletable: false
+  },
   {
     title: 'Posts',
     icon: LayoutList,

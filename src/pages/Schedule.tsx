@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ImageIcon, GripVertical, ChevronRight, ChevronDown, X, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { ImageIcon, GripVertical, ChevronRight, ChevronLeft, ChevronDown, X, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import {
   DndContext,
   DragOverlay,
@@ -427,7 +427,7 @@ const Schedule: React.FC = () => {
                 className="w-[24px] h-[24px] flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-400 hover:text-gray-600 hover:border-gray-300 shadow-sm transition-colors"
                 title={leftColumnCollapsed ? 'Show sidebar' : 'Hide sidebar'}
               >
-                {leftColumnCollapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5 -rotate-90" />}
+                {leftColumnCollapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
               </button>
             </div>
 
