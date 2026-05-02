@@ -33,9 +33,17 @@ function loadView(): ViewMode {
 
 const Posts: React.FC = () => {
   const navigate = useNavigate();
-  const [posts, setPosts] = useState<Post[]>(seedPosts);
+  const [posts, setPosts] = useState<Post[]>(() => {
+    const saved = getJSON<Post[] | null>('meg_posts', null);
+    return saved && saved.length > 0 ? saved : seedPosts;
+  });
   const [pillars, setPillars] = useState<string[]>(DEFAULT_PILLARS);
   const [formats, setFormats] = useState<string[]>(DEFAULT_FORMATS);
+
+  // Persist posts to localStorage
+  useEffect(() => {
+    setJSON('meg_posts', posts);
+  }, [posts]);
   const [activeView, setActiveView] = useState<ViewMode>(loadView);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());

@@ -22,6 +22,7 @@ export interface Post {
   };
   thumbnail_url?: string;
   sent_to_schedule?: boolean;
+  scheduled_time?: string;
   order: number;
   shoot_id?: string | null;
   sentToShoots?: boolean;

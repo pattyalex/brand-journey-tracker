@@ -12,6 +12,7 @@ import { BrandDealsProvider } from "./contexts/BrandDealsContext";
 const pageImports = {
   Posts: () => import('./pages/Posts'),
   Shoots: () => import('./pages/Shoots'),
+  Schedule: () => import('./pages/Schedule'),
   Dashboard: () => import('./pages/Dashboard'),
   NotFound: () => import('./pages/NotFound'),
   GetStarted: () => import('./pages/GetStarted'),
@@ -44,6 +45,7 @@ const pageImports = {
 // Lazy load all pages for optimal code splitting
 const Posts = lazy(pageImports.Posts);
 const Shoots = lazy(pageImports.Shoots);
+const Schedule = lazy(pageImports.Schedule);
 const Dashboard = lazy(pageImports.Dashboard);
 const NotFound = lazy(pageImports.NotFound);
 const GetStarted = lazy(pageImports.GetStarted);
@@ -84,6 +86,7 @@ const routePreloadMap: Record<string, () => Promise<unknown>> = {
   '/help': pageImports.Help,
   '/posts': pageImports.Posts,
   '/shoots': pageImports.Shoots,
+  '/schedule': pageImports.Schedule,
   '/content-ideation': pageImports.ContentIdeation,
   '/content-planning': pageImports.ContentPlanning,
   '/collab-management': pageImports.CollabManagement,
@@ -218,6 +221,7 @@ function App() {
                 <Route path="/home-page" element={<Navigate to="/production" replace />} />
                 <Route path="/posts" element={<Posts />} />
                 <Route path="/shoots" element={<Shoots />} />
+                <Route path="/schedule" element={<Schedule />} />
                 <Route path="/content-ideation" element={<ContentIdeation />} />
                 <Route path="/content-planning" element={<ContentPlanning />} />
                 <Route path="/production" element={<Production />} />
