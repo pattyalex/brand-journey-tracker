@@ -61,7 +61,7 @@ const Schedule: React.FC = () => {
   const [formats] = useState<string[]>(DEFAULT_FORMATS);
 
   // Time picker state
-  const [timePicker, setTimePicker] = useState<{ open: boolean; postId: string; date: string }>({ open: false, postId: '', date: '' });
+  const [timePicker, setTimePicker] = useState<{ open: boolean; postId: string; date: string; defaultTime?: string }>({ open: false, postId: '', date: '' });
 
   // ── Responsive ─────────────────────────────────────────────
   useEffect(() => {
@@ -165,6 +165,16 @@ const Schedule: React.FC = () => {
     toast.success('Post scheduled');
   }, []);
 
+  const handleEditTime = useCallback((postId: string) => {
+    const post = posts.find(p => p.id === postId);
+    if (post?.scheduledDate) {
+      // Delay to prevent the same click from triggering the backdrop's onCancel
+      requestAnimationFrame(() => {
+        setTimePicker({ open: true, postId, date: post.scheduledDate!, defaultTime: post.scheduled_time });
+      });
+    }
+  }, [posts]);
+
   const handleUnschedule = useCallback((postId: string) => {
     setPosts(prev => prev.map(p =>
       p.id === postId
@@ -188,7 +198,9 @@ const Schedule: React.FC = () => {
 
   const handleDragStart = (event: DragStartEvent) => {
     const rawId = event.active.id as string;
-    setActiveId(rawId);
+    // Extract post ID from cal-post-{postId} format
+    const postId = rawId.startsWith('cal-post-') ? rawId.replace('cal-post-', '') : rawId;
+    setActiveId(postId);
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -221,10 +233,15 @@ const Schedule: React.FC = () => {
       }
     }
 
-    // Drop on calendar date
+    // Drop on calendar date — keep existing time, just change date
     if (overId.startsWith('cal-')) {
       const date = overId.replace('cal-', '');
-      setTimePicker({ open: true, postId: draggedId, date });
+      const post = posts.find(p => p.id === draggedId);
+      if (post?.scheduled_time) {
+        handleScheduleOnDate(draggedId, date, post.scheduled_time);
+      } else {
+        setTimePicker({ open: true, postId: draggedId, date });
+      }
       return;
     }
   };
@@ -312,6 +329,7 @@ const Schedule: React.FC = () => {
                   posts={scheduledPosts}
                   onClickPost={setSelectedPost}
                   onClickEmptyDate={handleClickEmptyDate}
+                  onEditTime={handleEditTime}
                   onHover={setHoveredPostId}
                   hoveredId={hoveredPostId}
                   draggingId={activeId}
@@ -327,6 +345,7 @@ const Schedule: React.FC = () => {
         <TimePickerPopover
           open={timePicker.open}
           date={timePicker.date}
+          defaultTime={timePicker.defaultTime}
           onConfirm={time => {
             handleScheduleOnDate(timePicker.postId, timePicker.date, time);
             setTimePicker({ open: false, postId: '', date: '' });
@@ -401,6 +420,7 @@ const Schedule: React.FC = () => {
                 posts={scheduledPosts}
                 onClickPost={setSelectedPost}
                 onClickEmptyDate={handleClickEmptyDate}
+                onEditTime={handleEditTime}
                 onHover={setHoveredPostId}
                 hoveredId={hoveredPostId}
                 draggingId={activeId}

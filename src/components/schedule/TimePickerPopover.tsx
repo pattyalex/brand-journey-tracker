@@ -5,14 +5,20 @@ import { Clock, X } from 'lucide-react';
 interface TimePickerPopoverProps {
   open: boolean;
   date: string;
+  defaultTime?: string;
   onConfirm: (time: string) => void;
   onCancel: () => void;
 }
 
 const QUICK_TIMES = ['09:00', '10:00', '12:00', '14:00', '17:00', '19:00'];
 
-const TimePickerPopover: React.FC<TimePickerPopoverProps> = ({ open, date, onConfirm, onCancel }) => {
-  const [customTime, setCustomTime] = useState('10:00');
+const TimePickerPopover: React.FC<TimePickerPopoverProps> = ({ open, date, defaultTime, onConfirm, onCancel }) => {
+  const [customTime, setCustomTime] = useState(defaultTime || '10:00');
+
+  // Update custom time when defaultTime changes
+  React.useEffect(() => {
+    if (defaultTime) setCustomTime(defaultTime);
+  }, [defaultTime]);
 
   const formattedDate = new Date(date + 'T00:00:00').toLocaleDateString('en-US', {
     weekday: 'short',
