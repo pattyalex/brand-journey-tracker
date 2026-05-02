@@ -313,7 +313,7 @@ const TaskRow: React.FC<TaskRowProps> = ({
 
         {/* Duration */}
         {task.duration && !editing && (
-          <span className="text-[11px] text-gray-300 flex-shrink-0">{task.duration}</span>
+          <span className="text-[11px] text-gray-400 flex-shrink-0">{task.duration}</span>
         )}
 
         {/* Delete button */}

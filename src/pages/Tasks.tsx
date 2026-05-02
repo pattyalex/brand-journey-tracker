@@ -9,6 +9,7 @@ import DayHeader from '@/components/tasks/DayHeader';
 import TaskList from '@/components/tasks/TaskList';
 import NotesArea from '@/components/tasks/NotesArea';
 import ToDoSoonSection from '@/components/tasks/ToDoSoonSection';
+import TagSummary from '@/components/tasks/TagSummary';
 
 const TASKS_KEY = 'meg_tasks';
 const NOTES_KEY = 'meg_daily_notes';
@@ -304,6 +305,8 @@ const Tasks: React.FC = () => {
                 content={dayNote?.content || ''}
                 onChange={handleNotesChange}
               />
+
+              <TagSummary tasks={dayTasks} />
             </motion.div>
           </AnimatePresence>
         </div>
