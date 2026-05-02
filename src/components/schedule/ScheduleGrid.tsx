@@ -279,21 +279,57 @@ const SortableCell: React.FC<{
         {...listeners}
         onMouseEnter={() => onHover(post.id)}
         onMouseLeave={() => onHover(null)}
-        className="w-full h-full rounded-md flex flex-col items-center justify-center cursor-grab active:cursor-grabbing"
-        onClick={() => fileInputRef.current?.click()}
+        className="w-full h-full rounded-md cursor-grab active:cursor-grabbing"
+        onClick={() => onClickPost(post)}
       >
-        <div
-          className="w-full h-full rounded-md flex flex-col items-center justify-center transition-colors duration-150"
-          style={{
-            outline: isHovered ? '1px dashed rgba(97,42,79,0.3)' : '1px dashed #d1d5db',
-            outlineOffset: '-1px',
-            background: isHovered ? 'rgba(97,42,79,0.05)' : 'rgba(249,250,251,0.5)',
-          }}
-        >
-          <ImagePlus className="w-4 h-4 text-gray-300 mb-1" />
-          <span className="text-[9px] text-gray-400">Add cover</span>
-        </div>
-        <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
+        <Popover>
+          <div
+            className="w-full h-full rounded-md flex flex-col items-center justify-center transition-colors duration-150 relative group/cell"
+            style={{
+              outline: isHovered ? '1px dashed rgba(97,42,79,0.3)' : '1px dashed #d1d5db',
+              outlineOffset: '-1px',
+              background: isHovered ? 'rgba(97,42,79,0.05)' : 'rgba(249,250,251,0.5)',
+            }}
+          >
+            <ImagePlus
+              className="w-4 h-4 text-gray-300 mb-1 cursor-pointer hover:text-[#612A4F] transition-colors"
+              onClick={e => { e.stopPropagation(); fileInputRef.current?.click(); }}
+            />
+            <span className="text-[9px] text-gray-400">Add cover</span>
+            <PopoverTrigger asChild>
+              <button
+                onClick={e => e.stopPropagation()}
+                className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/20 text-white flex items-center justify-center opacity-0 group-hover/cell:opacity-100 transition-opacity duration-150"
+              >
+                <span className="text-[10px] leading-none">···</span>
+              </button>
+            </PopoverTrigger>
+          </div>
+          <PopoverContent align="end" sideOffset={4} className="w-44 p-1 rounded-lg border border-gray-100 bg-white shadow-lg" onClick={e => e.stopPropagation()}>
+            <button
+              onClick={() => onClickPost(post)}
+              className="flex items-center gap-2 px-3 py-1.5 text-[12px] text-gray-600 hover:bg-gray-50 rounded-md cursor-pointer w-full"
+            >
+              <PanelRight className="w-3.5 h-3.5" />
+              Open detail panel
+            </button>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center gap-2 px-3 py-1.5 text-[12px] text-gray-600 hover:bg-gray-50 rounded-md cursor-pointer w-full"
+            >
+              <ImagePlus className="w-3.5 h-3.5" />
+              Add cover image
+              <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
+            </button>
+            <button
+              onClick={() => onRemoveFromGrid(post.id)}
+              className="flex items-center gap-2 px-3 py-1.5 text-[12px] text-red-500 hover:bg-gray-50 rounded-md cursor-pointer w-full"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              Remove from grid
+            </button>
+          </PopoverContent>
+        </Popover>
       </div>
     );
   }

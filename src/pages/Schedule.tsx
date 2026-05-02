@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ImageIcon, GripVertical, ChevronRight, ChevronDown } from 'lucide-react';
+import { ImageIcon, GripVertical, ChevronRight, ChevronDown, X } from 'lucide-react';
 import {
   DndContext,
   DragOverlay,
@@ -287,6 +287,7 @@ const Schedule: React.FC = () => {
                 posts={readyPosts}
                 gridPostIds={gridPostIds}
                 onClickPost={setSelectedPost}
+                onRemove={handleRemoveFromSchedule}
                 onHover={setHoveredPostId}
                 hoveredId={hoveredPostId}
                 draggingId={activeId}
@@ -359,6 +360,7 @@ const Schedule: React.FC = () => {
                     posts={readyPosts}
                     gridPostIds={gridPostIds}
                     onClickPost={setSelectedPost}
+                    onRemove={handleRemoveFromSchedule}
                     onHover={setHoveredPostId}
                     hoveredId={hoveredPostId}
                     draggingId={activeId}
@@ -443,6 +445,7 @@ const DraggableReadyList: React.FC<{
   posts: Post[];
   gridPostIds: Set<string>;
   onClickPost: (post: Post) => void;
+  onRemove: (id: string) => void;
   onHover: (id: string | null) => void;
   hoveredId: string | null;
   draggingId: string | null;
@@ -474,6 +477,7 @@ const DraggableReadyList: React.FC<{
                 post={post}
                 gridPostIds={props.gridPostIds}
                 onClickPost={props.onClickPost}
+                onRemove={props.onRemove}
                 onHover={props.onHover}
                 isHovered={props.hoveredId === post.id}
                 isDragging={props.draggingId === post.id}
@@ -492,10 +496,11 @@ const DraggableReadyCard: React.FC<{
   post: Post;
   gridPostIds: Set<string>;
   onClickPost: (post: Post) => void;
+  onRemove: (id: string) => void;
   onHover: (id: string | null) => void;
   isHovered: boolean;
   isDragging: boolean;
-}> = ({ post, gridPostIds, onClickPost, onHover, isHovered, isDragging }) => {
+}> = ({ post, gridPostIds, onClickPost, onRemove, onHover, isHovered, isDragging }) => {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({ id: post.id });
   const inGrid = gridPostIds.has(post.id);
   const inCalendar = !!post.scheduledDate;
@@ -539,6 +544,12 @@ const DraggableReadyCard: React.FC<{
           </div>
         </div>
       </div>
+      <button
+        onClick={e => { e.stopPropagation(); onRemove(post.id); }}
+        className="flex-shrink-0 p-0.5 rounded text-gray-300 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all duration-150"
+      >
+        <X className="w-3 h-3" />
+      </button>
     </motion.div>
   );
 };

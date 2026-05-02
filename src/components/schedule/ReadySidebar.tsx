@@ -1,18 +1,19 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Pin, ImageIcon } from 'lucide-react';
+import { Pin, ImageIcon, X } from 'lucide-react';
 import { Post } from '@/types/posts';
 
 interface ReadySidebarProps {
   posts: Post[];
   gridPostIds: Set<string>;
   onClickPost: (post: Post) => void;
+  onRemove?: (id: string) => void;
   onHover: (id: string | null) => void;
   hoveredId: string | null;
   draggingId: string | null;
 }
 
-const ReadySidebar: React.FC<ReadySidebarProps> = ({ posts, gridPostIds, onClickPost, onHover, hoveredId, draggingId }) => {
+const ReadySidebar: React.FC<ReadySidebarProps> = ({ posts, gridPostIds, onClickPost, onRemove, onHover, hoveredId, draggingId }) => {
   if (posts.length === 0) {
     return (
       <div className="h-full flex flex-col">
@@ -55,7 +56,7 @@ const ReadySidebar: React.FC<ReadySidebarProps> = ({ posts, gridPostIds, onClick
                 onClick={() => onClickPost(post)}
                 onMouseEnter={() => onHover(post.id)}
                 onMouseLeave={() => onHover(null)}
-                className={`rounded-lg border bg-white p-2 cursor-pointer transition-all duration-150 ${
+                className={`rounded-lg border bg-white p-2 cursor-pointer transition-all duration-150 group ${
                   isHovered ? 'border-[#612A4F]/25 shadow-[0_2px_8px_rgba(97,42,79,0.08)]' : 'border-gray-100 hover:border-gray-200'
                 }`}
               >
@@ -71,8 +72,18 @@ const ReadySidebar: React.FC<ReadySidebarProps> = ({ posts, gridPostIds, onClick
                     <ImageIcon className="w-4 h-4 text-gray-300" />
                   </div>
                 )}
-                {/* Title */}
-                <p className="text-[11px] font-medium text-gray-800 truncate mb-1.5">{post.title}</p>
+                {/* Title + remove */}
+                <div className="flex items-center gap-1 mb-1.5">
+                  <p className="text-[11px] font-medium text-gray-800 truncate flex-1">{post.title}</p>
+                  {onRemove && (
+                    <button
+                      onClick={e => { e.stopPropagation(); onRemove(post.id); }}
+                      className="flex-shrink-0 p-0.5 rounded text-gray-300 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all duration-150"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
                 {/* Progress dots */}
                 <div className="flex items-center gap-2">
                   <div className="flex items-center gap-1">
