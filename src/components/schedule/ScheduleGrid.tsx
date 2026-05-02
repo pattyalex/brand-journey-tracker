@@ -92,29 +92,46 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({
 
   return (
     <div className="h-full flex flex-col">
-      <div className="px-4 py-3 border-b border-gray-100">
-        <div className="flex items-center gap-1.5">
-          <span className="text-xs font-semibold text-gray-800 uppercase tracking-wider">Grid</span>
-          <span className="text-[11px] text-gray-500 ml-auto">{filledCount}/{gridOrder.length}</span>
-        </div>
-        <p className="text-[10px] text-gray-400 mt-0.5">Preview how your content looks before you schedule it</p>
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100">
+        <span className="text-xs font-semibold text-gray-800 uppercase tracking-wider">Grid</span>
+        <span className="text-[10px] text-gray-400">— Preview how your content looks before you schedule it</span>
       </div>
       <div className="flex-1 overflow-y-auto p-3 flex justify-center">
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
-          onDragCancel={handleDragCancel}
-        >
-          <SortableContext items={cellIds} strategy={rectSortingStrategy}>
+        <div className="relative">
+          {/* External drop zones — register with PARENT DndContext (for Ready → Grid drops) */}
+          {externalDraggingId && (
             <div style={{
+              position: 'absolute',
+              inset: 0,
+              zIndex: 15,
               display: 'grid',
               gridTemplateColumns: `repeat(3, ${cellW}px)`,
               gridAutoRows: `${cellH}px`,
               gap: '2px',
-              transition: 'all 0.25s ease-out',
+              pointerEvents: 'auto',
             }}>
+              {gridOrder.map((_, idx) => (
+                <ExternalDropZone key={`ext-${idx}`} index={idx} />
+              ))}
+            </div>
+          )}
+
+          {/* Grid's own DndContext for internal reordering */}
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+            onDragCancel={handleDragCancel}
+          >
+            <SortableContext items={cellIds} strategy={rectSortingStrategy}>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: `repeat(3, ${cellW}px)`,
+                gridAutoRows: `${cellH}px`,
+                gap: '2px',
+                transition: 'all 0.25s ease-out',
+              }}>
               {gridOrder.map((postId, idx) => {
                 const post = postId ? postsMap.get(postId) || null : null;
                 return (
@@ -144,8 +161,27 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({
             )}
           </DragOverlay>
         </DndContext>
+        </div>
       </div>
     </div>
+  );
+};
+
+// ── External Drop Zone (registers with parent DndContext) ────
+
+const ExternalDropZone: React.FC<{ index: number }> = ({ index }) => {
+  const { setNodeRef, isOver } = useDroppable({ id: `grid-ext-${index}` });
+
+  return (
+    <div
+      ref={setNodeRef}
+      className="w-full h-full rounded-md transition-all duration-150"
+      style={{
+        outline: isOver ? '2px dashed rgba(97,42,79,0.5)' : 'none',
+        outlineOffset: '-1px',
+        background: isOver ? 'rgba(97,42,79,0.08)' : 'transparent',
+      }}
+    />
   );
 };
 

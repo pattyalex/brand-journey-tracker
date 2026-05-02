@@ -198,18 +198,22 @@ const Schedule: React.FC = () => {
 
     const overId = event.over.id as string;
 
-    // Drop on grid cell (from Ready)
-    if (overId.startsWith('grid-') || overId.startsWith('empty-')) {
-      const cellIds = gridOrder.map((pid, i) => pid || `empty-${i}`);
-      const overIdx = cellIds.indexOf(overId);
-      if (overIdx !== -1) {
+    // Drop on grid cell (from Ready via external drop zone)
+    if (overId.startsWith('grid-ext-')) {
+      const cellIndex = parseInt(overId.replace('grid-ext-', ''), 10);
+      if (!isNaN(cellIndex)) {
         setGridOrder(prev => {
           const next = [...prev];
-          next.splice(overIdx, 0, draggedId);
-          while (next.length > GRID_SLOTS) {
-            const lastNull = next.lastIndexOf(null);
-            if (lastNull !== -1) next.splice(lastNull, 1);
-            else { next.pop(); break; }
+          // Place in target cell if empty, otherwise insert and shift
+          if (next[cellIndex] === null) {
+            next[cellIndex] = draggedId;
+          } else {
+            next.splice(cellIndex, 0, draggedId);
+            while (next.length > GRID_SLOTS) {
+              const lastNull = next.lastIndexOf(null);
+              if (lastNull !== -1) next.splice(lastNull, 1);
+              else { next.pop(); break; }
+            }
           }
           return next;
         });
@@ -314,7 +318,7 @@ const Schedule: React.FC = () => {
               </div>
             )}
           </div>
-          <DragOverlay dropAnimation={{ duration: 200, easing: 'ease-out' }}>
+          <DragOverlay dropAnimation={null}>
             {activePost && <DragPreview post={activePost} />}
           </DragOverlay>
         </DndContext>
@@ -402,7 +406,7 @@ const Schedule: React.FC = () => {
             </div>
           </div>
 
-          <DragOverlay dropAnimation={{ duration: 200, easing: 'ease-out' }}>
+          <DragOverlay dropAnimation={null}>
             {activePost && <DragPreview post={activePost} />}
           </DragOverlay>
         </DndContext>
