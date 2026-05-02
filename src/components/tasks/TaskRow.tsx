@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { GripVertical, Trash2, Clock, X } from 'lucide-react';
+import { GripVertical, Trash2, Clock, X, Plus } from 'lucide-react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Task, getTagColor } from '@/types/tasks';
@@ -17,6 +17,7 @@ interface TaskRowProps {
   onDelete: (id: string) => void;
   onIndent: (id: string) => void;
   onOutdent: (id: string) => void;
+  onAddSubtask?: (parentId: string, title: string) => void;
   isDraggable?: boolean;
 }
 
@@ -30,11 +31,15 @@ const TaskRow: React.FC<TaskRowProps> = ({
   onDelete,
   onIndent,
   onOutdent,
+  onAddSubtask,
   isDraggable = false,
 }) => {
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState(task.title);
   const [editingTime, setEditingTime] = useState(false);
+  const [addingSubtask, setAddingSubtask] = useState(false);
+  const [subtaskVal, setSubtaskVal] = useState('');
+  const subtaskInputRef = useRef<HTMLInputElement>(null);
   const [startTimeVal, setStartTimeVal] = useState(task.time || '');
   const [endTimeVal, setEndTimeVal] = useState(task.end_time || '');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -71,6 +76,10 @@ const TaskRow: React.FC<TaskRowProps> = ({
       startTimeRef.current.focus();
     }
   }, [editingTime]);
+
+  useEffect(() => {
+    if (addingSubtask && subtaskInputRef.current) subtaskInputRef.current.focus();
+  }, [addingSubtask]);
 
   // Sync time state when task changes externally
   useEffect(() => {
@@ -193,27 +202,28 @@ const TaskRow: React.FC<TaskRowProps> = ({
   return (
     <div ref={setNodeRef} style={style} {...attributes}>
       <div className="flex items-center gap-2.5 py-1.5 px-2 -mx-2 rounded-lg group hover:bg-[#f9f7f5] transition-colors duration-150">
-        {/* Drag handle */}
-        {isDraggable ? (
-          <span {...listeners} className="flex-shrink-0 cursor-grab opacity-0 group-hover:opacity-100 transition-opacity duration-150">
-            <GripVertical className="w-3.5 h-3.5 text-gray-300" />
-          </span>
-        ) : (
-          <span className="w-3.5 flex-shrink-0" />
-        )}
-
-        {/* Time column — clickable */}
-        <span
-          onClick={openTimeEditor}
-          className="w-[90px] flex-shrink-0 text-[10px] font-medium tabular-nums text-gray-400 text-right whitespace-nowrap cursor-pointer hover:text-[#612A4F] transition-colors"
-          title="Click to set time"
-        >
-          {timeDisplay || (
-            <span className="opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center gap-0.5 text-gray-300 hover:text-[#612A4F]">
-              <Clock className="w-2.5 h-2.5" />
+        {/* Grip icon + Time column — no gap between them */}
+        {/* Grip + Time: fixed total width, content right-aligned */}
+        <div className="w-[108px] flex-shrink-0 flex items-center justify-end gap-0">
+          {isDraggable && (
+            <span {...listeners} className="cursor-grab opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+              <GripVertical className="w-3.5 h-3.5 text-gray-300" />
             </span>
           )}
-        </span>
+          <span
+            onClick={openTimeEditor}
+            className="text-[10px] font-medium tabular-nums text-gray-400 whitespace-nowrap cursor-pointer hover:text-[#612A4F] transition-colors relative group/time"
+          >
+            {timeDisplay || (
+              <span className="opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center gap-0.5 text-gray-300 hover:text-[#612A4F]">
+                <Clock className="w-2.5 h-2.5" />
+              </span>
+            )}
+            <span className="absolute left-1/2 -translate-x-1/2 bottom-[calc(100%+4px)] px-2 py-0.5 rounded bg-gray-500 text-white text-[10px] font-medium whitespace-nowrap opacity-0 group-hover/time:opacity-100 transition-opacity duration-100 pointer-events-none z-30">
+              Click To Set Time
+            </span>
+          </span>
+        </div>
 
         {/* Checkbox */}
         <TaskCheckbox
@@ -239,6 +249,17 @@ const TaskRow: React.FC<TaskRowProps> = ({
           >
             {task.title}
           </span>
+        )}
+
+        {/* Add subtask button — only on top-level tasks */}
+        {onAddSubtask && depth === 0 && !editing && (
+          <button
+            onClick={e => { e.stopPropagation(); setAddingSubtask(true); }}
+            className="flex-shrink-0 p-1 rounded text-gray-300 hover:text-gray-500 opacity-0 group-hover:opacity-100 transition-all duration-150"
+            title="Add subtask"
+          >
+            <Plus className="w-3.5 h-3.5" />
+          </button>
         )}
 
         {/* Tag pill */}
@@ -327,6 +348,37 @@ const TaskRow: React.FC<TaskRowProps> = ({
           {completedSubtaskCount} of {subtaskCount} subtasks done
         </p>
       )}
+
+      {/* Inline subtask input */}
+      <AnimatePresence>
+        {addingSubtask && onAddSubtask && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.12 }}
+            className="overflow-hidden"
+            style={{ paddingLeft: 32 }}
+          >
+            <div className="flex items-center gap-2 py-1 px-2">
+              <span className="w-[90px] flex-shrink-0" />
+              <Plus className="w-3 h-3 text-gray-300 flex-shrink-0" />
+              <input
+                ref={subtaskInputRef}
+                value={subtaskVal}
+                onChange={e => setSubtaskVal(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') { e.preventDefault(); if (subtaskVal.trim()) { onAddSubtask(task.id, subtaskVal.trim()); setSubtaskVal(''); } }
+                  if (e.key === 'Escape') { setSubtaskVal(''); setAddingSubtask(false); }
+                }}
+                onBlur={() => { if (!subtaskVal.trim()) setAddingSubtask(false); }}
+                placeholder="Add subtask..."
+                className="flex-1 bg-transparent border-none outline-none text-[13px] text-gray-500 placeholder:text-gray-300"
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

@@ -170,6 +170,28 @@ const Tasks: React.FC = () => {
     });
   }, []);
 
+  const handleAddSubtask = useCallback((parentId: string, title: string) => {
+    setAllTasks(prev => {
+      const siblings = prev.filter(t => t.parent_task_id === parentId);
+      const newTask: Task = {
+        id: `task-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        title,
+        date: currentDate,
+        time: null,
+        end_time: null,
+        duration: null,
+        tag: null,
+        completed: false,
+        parent_task_id: parentId,
+        order_index: siblings.length,
+        notes: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      return [...prev, newTask];
+    });
+  }, [currentDate]);
+
   // Backlog handlers
   const handleMoveBacklogToToday = useCallback((id: string) => {
     setAllTasks(prev => {
@@ -275,6 +297,7 @@ const Tasks: React.FC = () => {
                 onReorder={handleReorder}
                 onIndent={handleIndent}
                 onOutdent={handleOutdent}
+                onAddSubtask={handleAddSubtask}
               />
 
               <NotesArea

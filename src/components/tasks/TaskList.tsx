@@ -28,6 +28,7 @@ interface TaskListProps {
   onReorder: (tasks: Task[]) => void;
   onIndent: (id: string) => void;
   onOutdent: (id: string) => void;
+  onAddSubtask: (parentId: string, title: string) => void;
 }
 
 const TaskList: React.FC<TaskListProps> = ({
@@ -41,6 +42,7 @@ const TaskList: React.FC<TaskListProps> = ({
   onReorder,
   onIndent,
   onOutdent,
+  onAddSubtask,
 }) => {
   const { timedParents, untimedParents, childrenMap } = useMemo(() => {
     const childrenMap: Record<string, Task[]> = {};
@@ -58,11 +60,11 @@ const TaskList: React.FC<TaskListProps> = ({
     Object.values(childrenMap).forEach(arr => arr.sort((a, b) => a.order_index - b.order_index));
 
     const timed = parentTasks
-      .filter(t => t.time !== null)
+      .filter(t => !!t.time)
       .sort((a, b) => (a.time || '').localeCompare(b.time || ''));
 
     const untimed = parentTasks
-      .filter(t => t.time === null)
+      .filter(t => !t.time)
       .sort((a, b) => a.order_index - b.order_index);
 
     return { timedParents: timed, untimedParents: untimed, childrenMap };
@@ -76,14 +78,35 @@ const TaskList: React.FC<TaskListProps> = ({
     useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
   );
 
-  const untimedIds = visibleUntimed.map(t => t.id);
+  // Collect all draggable IDs: untimed parents + all subtasks without time (from any parent)
+  const allDraggableIds = useMemo(() => {
+    const ids: string[] = [];
+    const addChildren = (parentId: string) => {
+      const children = childrenMap[parentId] || [];
+      const visible = showCompleted ? children : children.filter(c => !c.completed);
+      visible.forEach(child => {
+        if (!child.time) ids.push(child.id);
+        const grandchildren = childrenMap[child.id] || [];
+        const visibleGC = showCompleted ? grandchildren : grandchildren.filter(c => !c.completed);
+        visibleGC.forEach(gc => { if (!gc.time) ids.push(gc.id); });
+      });
+    };
+    // Untimed parents and their children
+    visibleUntimed.forEach(t => {
+      ids.push(t.id);
+      addChildren(t.id);
+    });
+    // Subtasks of timed parents that have no time
+    visibleTimed.forEach(t => addChildren(t.id));
+    return ids;
+  }, [visibleUntimed, visibleTimed, childrenMap, showCompleted]);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
-    const oldIndex = untimedIds.indexOf(active.id as string);
-    const newIndex = untimedIds.indexOf(over.id as string);
+    const oldIndex = allDraggableIds.indexOf(active.id as string);
+    const newIndex = allDraggableIds.indexOf(over.id as string);
     if (oldIndex === -1 || newIndex === -1) return;
 
     const reordered = arrayMove(visibleUntimed, oldIndex, newIndex);
@@ -118,6 +141,7 @@ const TaskList: React.FC<TaskListProps> = ({
           onDelete={onDelete}
           onIndent={onIndent}
           onOutdent={onOutdent}
+          onAddSubtask={onAddSubtask}
           isDraggable={isDraggable}
         />
         {visibleChildren.map(child => {
@@ -133,6 +157,7 @@ const TaskList: React.FC<TaskListProps> = ({
                 onDelete={onDelete}
                 onIndent={onIndent}
                 onOutdent={onOutdent}
+                isDraggable={!child.time}
               />
               {visibleGrandchildren.map(gc => (
                 <TaskRow
@@ -144,6 +169,7 @@ const TaskList: React.FC<TaskListProps> = ({
                   onDelete={onDelete}
                   onIndent={onIndent}
                   onOutdent={onOutdent}
+                  isDraggable={!gc.time}
                 />
               ))}
             </div>
@@ -178,27 +204,27 @@ const TaskList: React.FC<TaskListProps> = ({
         </div>
       )}
 
-      {visibleTimed.length > 0 && (
-        <div className="mb-2">
-          {visibleTimed.map(task => renderTaskWithChildren(task, false))}
-        </div>
-      )}
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext items={allDraggableIds} strategy={verticalListSortingStrategy}>
+          {visibleTimed.length > 0 && (
+            <div className="mb-2">
+              {visibleTimed.map(task => renderTaskWithChildren(task, false))}
+            </div>
+          )}
 
-      {visibleUntimed.length > 0 && visibleTimed.length > 0 && (
-        <div className="mt-4 mb-2">
-          <div className="border-t border-gray-100 pt-3 mb-1">
-            <p className="text-[11px] font-medium text-gray-300 uppercase tracking-wider">No time set</p>
-          </div>
-        </div>
-      )}
+          {visibleUntimed.length > 0 && visibleTimed.length > 0 && (
+            <div className="mt-4 mb-2">
+              <div className="border-t border-gray-100 pt-3 mb-1">
+                <p className="text-[11px] font-medium text-gray-300 uppercase tracking-wider">No time set</p>
+              </div>
+            </div>
+          )}
 
-      {visibleUntimed.length > 0 && (
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <SortableContext items={untimedIds} strategy={verticalListSortingStrategy}>
-            {visibleUntimed.map(task => renderTaskWithChildren(task, true))}
-          </SortableContext>
-        </DndContext>
-      )}
+          {visibleUntimed.length > 0 && (
+            visibleUntimed.map(task => renderTaskWithChildren(task, true))
+          )}
+        </SortableContext>
+      </DndContext>
     </div>
   );
 };

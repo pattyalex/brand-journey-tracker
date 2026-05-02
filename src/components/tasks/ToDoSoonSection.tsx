@@ -46,9 +46,9 @@ const ToDoSoonSection: React.FC<ToDoSoonSectionProps> = ({ tasks, onMoveToToday,
         {!adding && (
           <button
             onClick={() => setAdding(true)}
-            className="text-gray-300 hover:text-[#612A4F] transition-colors"
+            className="text-gray-300 hover:text-gray-600 hover:bg-gray-200 rounded-full p-0.5 transition-all duration-150"
           >
-            <Plus className="w-3.5 h-3.5" />
+            <Plus className="w-4 h-4" />
           </button>
         )}
       </div>
