@@ -314,7 +314,7 @@ const Tasks: React.FC = () => {
         className="h-full flex-shrink-0 border-l border-gray-100 transition-all duration-300 ease-out"
         style={{
           width: soonCollapsed ? 0 : '25%',
-          minWidth: soonCollapsed ? 0 : 240,
+          minWidth: soonCollapsed ? 0 : 300,
           opacity: soonCollapsed ? 0 : 1,
           overflow: soonCollapsed ? 'hidden' : 'auto',
           scrollbarWidth: 'thin',
@@ -330,6 +330,7 @@ const Tasks: React.FC = () => {
             onAdd={handleAddBacklog}
             onToggle={handleToggleBacklog}
             onDelete={handleDeleteBacklog}
+            onRemoveTag={(id: string) => handleUpdate(id, { tag: null })}
             showCompleted={showCompleted}
           />
         </div>

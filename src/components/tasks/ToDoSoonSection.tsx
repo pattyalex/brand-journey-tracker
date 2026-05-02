@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Plus, Trash2 } from 'lucide-react';
+import { ArrowRight, Plus, Trash2, X } from 'lucide-react';
 import { Task, getTagColor } from '@/types/tasks';
 import { parseTaskInput } from '@/lib/taskParser';
 import TaskCheckbox from './TaskCheckbox';
@@ -11,10 +11,11 @@ interface ToDoSoonSectionProps {
   onAdd: (title: string, tag: string | null) => void;
   onToggle: (taskId: string) => void;
   onDelete: (taskId: string) => void;
+  onRemoveTag: (taskId: string) => void;
   showCompleted: boolean;
 }
 
-const ToDoSoonSection: React.FC<ToDoSoonSectionProps> = ({ tasks, onMoveToToday, onAdd, onToggle, onDelete, showCompleted }) => {
+const ToDoSoonSection: React.FC<ToDoSoonSectionProps> = ({ tasks, onMoveToToday, onAdd, onToggle, onDelete, onRemoveTag, showCompleted }) => {
   const [adding, setAdding] = useState(false);
   const [inputVal, setInputVal] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -54,7 +55,7 @@ const ToDoSoonSection: React.FC<ToDoSoonSectionProps> = ({ tasks, onMoveToToday,
       </div>
       {visible.length === 0 && !adding && (
         <p className="text-[13px] text-gray-300 italic py-4">
-          Jot down things you need to do but haven't scheduled yet.
+          Write down things you need to do but haven't scheduled yet.
         </p>
       )}
       <AnimatePresence initial={false}>
@@ -68,40 +69,50 @@ const ToDoSoonSection: React.FC<ToDoSoonSectionProps> = ({ tasks, onMoveToToday,
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, x: -20, height: 0, marginBottom: 0 }}
               transition={{ duration: 0.2, ease: 'easeOut' }}
-              className="flex items-center gap-2.5 py-1.5 px-2 -mx-2 rounded-lg group hover:bg-gray-50/60 transition-colors"
+              className="py-1.5 px-2 -mx-2 rounded-lg group hover:bg-gray-50/60 transition-colors"
             >
-              <TaskCheckbox
-                checked={task.completed}
-                onChange={() => onToggle(task.id)}
-                size="md"
-              />
-              <span className={`text-[14px] flex-1 ${task.completed ? 'text-gray-300 line-through' : 'text-gray-500'} transition-colors duration-200`}>
-                {task.title}
-              </span>
-              {tagColor && (
-                <span
-                  className="inline-flex items-center gap-1 text-[11px] px-1.5 py-px rounded-lg flex-shrink-0"
-                  style={{ backgroundColor: tagColor.bg, color: tagColor.text }}
-                >
-                  <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: tagColor.dot }} />
-                  {task.tag}
+              <div className="flex items-center gap-2.5">
+                <TaskCheckbox
+                  checked={task.completed}
+                  onChange={() => onToggle(task.id)}
+                  size="md"
+                />
+                <span className={`text-[14px] flex-1 ${task.completed ? 'text-gray-300 line-through' : 'text-gray-800'} transition-colors duration-200`}>
+                  {task.title}
                 </span>
-              )}
-              {!task.completed && (
+                {!task.completed && (
+                  <button
+                    onClick={() => onMoveToToday(task.id)}
+                    className="flex items-center gap-1 text-[11px] text-[#612A4F] font-medium opacity-0 group-hover:opacity-100 transition-opacity hover:underline flex-shrink-0"
+                  >
+                    <ArrowRight className="w-3 h-3" />
+                    today
+                  </button>
+                )}
                 <button
-                  onClick={() => onMoveToToday(task.id)}
-                  className="flex items-center gap-1 text-[11px] text-[#612A4F] font-medium opacity-0 group-hover:opacity-100 transition-opacity hover:underline flex-shrink-0"
+                  onClick={() => onDelete(task.id)}
+                  className="p-0.5 text-gray-300 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
                 >
-                  <ArrowRight className="w-3 h-3" />
-                  today
+                  <Trash2 className="w-3 h-3" />
                 </button>
+              </div>
+              {tagColor && (
+                <div className="ml-[26px] mt-0.5">
+                  <span
+                    className="inline-flex items-center gap-1 text-[11px] px-1.5 py-px rounded-lg group/tag"
+                    style={{ backgroundColor: tagColor.bg, color: tagColor.text }}
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: tagColor.dot }} />
+                    {task.tag}
+                    <button
+                      onClick={e => { e.stopPropagation(); onRemoveTag(task.id); }}
+                      className="opacity-0 group-hover/tag:opacity-100 transition-opacity cursor-pointer"
+                    >
+                      <X className="w-2.5 h-2.5" />
+                    </button>
+                  </span>
+                </div>
               )}
-              <button
-                onClick={() => onDelete(task.id)}
-                className="p-0.5 text-gray-300 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
-              >
-                <Trash2 className="w-3 h-3" />
-              </button>
             </motion.div>
           );
         })}

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { GripVertical, Trash2, Clock, X, Plus } from 'lucide-react';
+import { GripVertical, Trash2, Clock, X, Plus, Tag } from 'lucide-react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Task, getTagColor } from '@/types/tasks';
@@ -39,6 +39,8 @@ const TaskRow: React.FC<TaskRowProps> = ({
   const [editingTime, setEditingTime] = useState(false);
   const [addingSubtask, setAddingSubtask] = useState(false);
   const [subtaskVal, setSubtaskVal] = useState('');
+  const [editingTag, setEditingTag] = useState(false);
+  const [tagVal, setTagVal] = useState(task.tag || '');
   const subtaskInputRef = useRef<HTMLInputElement>(null);
   const [startTimeVal, setStartTimeVal] = useState(task.time || '');
   const [endTimeVal, setEndTimeVal] = useState(task.end_time || '');
@@ -262,15 +264,51 @@ const TaskRow: React.FC<TaskRowProps> = ({
           </button>
         )}
 
+        {/* Add tag button — when no tag */}
+        {!task.tag && !editing && !editingTag && (
+          <div className="relative group/addtag flex-shrink-0">
+            <button
+              onClick={e => { e.stopPropagation(); setEditingTag(true); setTagVal(''); }}
+              className="p-1 rounded text-gray-300 hover:text-gray-500 opacity-0 group-hover:opacity-100 transition-all duration-150"
+            >
+              <Tag className="w-3 h-3" />
+            </button>
+            <span className="absolute left-1/2 -translate-x-1/2 bottom-[calc(100%+4px)] px-2 py-0.5 rounded bg-gray-500 text-white text-[10px] font-medium whitespace-nowrap opacity-0 group-hover/addtag:opacity-100 transition-opacity duration-100 pointer-events-none z-30">
+              Add Tag
+            </span>
+          </div>
+        )}
+
         {/* Tag pill */}
-        {tagColor && !editing && (
+        {task.tag && !editing && !editingTag && tagColor && (
           <span
-            className="inline-flex items-center gap-1 text-[11px] px-1.5 py-px rounded-lg flex-shrink-0"
+            className="inline-flex items-center gap-1 text-[11px] px-1.5 py-px rounded-lg flex-shrink-0 group/tag cursor-pointer"
             style={{ backgroundColor: tagColor.bg, color: tagColor.text }}
+            onClick={e => { e.stopPropagation(); setEditingTag(true); setTagVal(task.tag || ''); }}
           >
             <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: tagColor.dot }} />
             {task.tag}
+            <button
+              onClick={e => { e.stopPropagation(); onUpdate(task.id, { tag: null }); }}
+              className="opacity-0 group-hover/tag:opacity-100 transition-opacity"
+            >
+              <X className="w-2.5 h-2.5" />
+            </button>
           </span>
+        )}
+        {editingTag && (
+          <input
+            autoFocus
+            value={tagVal}
+            onChange={e => setTagVal(e.target.value.replace(/\s/g, ''))}
+            onKeyDown={e => {
+              if (e.key === 'Enter') { e.preventDefault(); onUpdate(task.id, { tag: tagVal.trim() || null }); setEditingTag(false); }
+              if (e.key === 'Escape') { setEditingTag(false); }
+            }}
+            onBlur={() => { onUpdate(task.id, { tag: tagVal.trim() || null }); setEditingTag(false); }}
+            className="text-[11px] px-1.5 py-px rounded-lg border border-gray-200 outline-none focus:border-[#612A4F] w-[80px] flex-shrink-0"
+            placeholder="tag"
+          />
         )}
 
         {/* Duration */}
