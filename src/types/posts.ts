@@ -9,6 +9,7 @@ export interface Post {
   format: string;
   status: PostStatus;
   scheduledDate?: string; // ISO date string
+  script?: string;
   caption?: string;
   hashtags?: string[];
   attachedFiles?: string[];
