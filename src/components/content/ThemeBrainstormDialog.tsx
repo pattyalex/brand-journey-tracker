@@ -71,16 +71,28 @@ export default function ThemeBrainstormDialog({ open, onOpenChange }: ThemeBrain
   useEffect(() => { setString(StorageKeys.pillarSelectedTheme, selectedUserPillar || ""); savePillarsToSupabase(); }, [selectedUserPillar]);
   useEffect(() => { setString(StorageKeys.pillarSelectedSubCategory, selectedSubCategory || ""); savePillarsToSupabase(); }, [selectedSubCategory]);
 
-  // Restore cascadeIdeas from cache on mount
+  // Restore cascadeIdeas from cache, or generate when dialog opens
   useEffect(() => {
+    if (!open) return;
     if (cascadeIdeas.length === 0 && selectedUserPillar && selectedSubCategory) {
       const cacheKey = `${selectedUserPillar}::${selectedSubCategory}`;
       const cached = pillarIdeasMap[cacheKey];
       if (cached && cached.length > 0) {
         setCascadeIdeas(cached);
+      } else {
+        // Cache is empty — generate fresh ideas
+        setIsGeneratingCascadeIdeas(true);
+        generateContentIdeasWithAI(selectedUserPillar, selectedSubCategory).then((ideas) => {
+          setCascadeIdeas(ideas);
+          setPillarIdeasMap(prev => ({ ...prev, [cacheKey]: ideas }));
+        }).catch(() => {
+          setCascadeIdeas([]);
+        }).finally(() => {
+          setIsGeneratingCascadeIdeas(false);
+        });
       }
     }
-  }, []);
+  }, [open]);
 
   // Load from Supabase on mount
   useEffect(() => {
@@ -110,11 +122,17 @@ export default function ThemeBrainstormDialog({ open, onOpenChange }: ThemeBrain
         headers: aiHeaders,
         body: JSON.stringify({ pillarName, existingCategories }),
       });
-      if (!response.ok) return [];
+      if (!response.ok) {
+        const errText = await response.text().catch(() => '');
+        console.error('Subcategory generation failed:', response.status, errText);
+        toast.error('Failed to generate topics. Please try again.');
+        return [];
+      }
       const data = await response.json();
       return data.subCategories || [];
     } catch (error) {
       console.error('Error generating subcategories:', error);
+      toast.error('Failed to generate topics. Please try again.');
       return [];
     }
   };

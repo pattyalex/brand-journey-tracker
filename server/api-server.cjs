@@ -40,7 +40,7 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-app.use(cors({ origin: ['https://www.heymeg.ai', 'http://localhost:5173'] }));
+app.use(cors({ origin: ['https://www.heymeg.ai', 'http://localhost:5173', 'http://localhost:5001'] }));
 app.use(express.json());
 
 // Rate limiters
