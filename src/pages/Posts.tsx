@@ -1,7 +1,9 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trash2, Camera, Bookmark } from 'lucide-react';
+import { Trash2, Camera, Bookmark, TrendingUp, Sparkles } from 'lucide-react';
 import InspirationPanel from '@/components/posts/InspirationPanel';
+import TitleHookSuggestions from '@/components/content/TitleHookSuggestions';
+import ThemeBrainstormDialog from '@/components/content/ThemeBrainstormDialog';
 import { Shoot } from '@/types/shoots';
 import CreateShootModal from '@/components/shoots/CreateShootModal';
 import { useNavigate } from 'react-router-dom';
@@ -49,6 +51,8 @@ const Posts: React.FC = () => {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const lastSelectedId = useRef<string | null>(null);
   const [showInspiration, setShowInspiration] = useState(false);
+  const [showHooksDialog, setShowHooksDialog] = useState(false);
+  const [showBrainstormDialog, setShowBrainstormDialog] = useState(false);
 
   const handleCreateFromInspiration = useCallback((url: string, notes?: string) => {
     const newPost: Post = {
@@ -355,14 +359,30 @@ const Posts: React.FC = () => {
     <div className="h-full flex flex-col overflow-hidden">
       <div className="flex-1 overflow-y-auto px-6 py-6 md:px-8 lg:px-10">
         {/* Header: View Switcher + Inspiration */}
-        <div className="flex items-center justify-end gap-3 mb-4">
-          <button
-            onClick={() => setShowInspiration(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] text-gray-500 hover:text-[#612A4F] hover:bg-[#612A4F]/5 transition-colors"
-          >
-            <Bookmark size={14} />
-            Inspiration
-          </button>
+        <div className="flex items-center justify-between gap-3 mb-4">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowInspiration(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] text-gray-500 hover:text-[#612A4F] hover:bg-[#612A4F]/5 transition-colors"
+            >
+              <Bookmark size={14} />
+              Inspiration
+            </button>
+            <button
+              onClick={() => setShowHooksDialog(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] text-gray-500 hover:text-[#E07A5F] hover:bg-[#E07A5F]/5 transition-colors"
+            >
+              <TrendingUp size={14} />
+              Trending Hooks
+            </button>
+            <button
+              onClick={() => setShowBrainstormDialog(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] text-gray-500 hover:text-[#2D9D70] hover:bg-[#2D9D70]/5 transition-colors"
+            >
+              <Sparkles size={14} />
+              Brainstorm with MegAI
+            </button>
+          </div>
           <ViewSwitcher active={activeView} onChange={setActiveView} />
         </div>
 
@@ -482,6 +502,17 @@ const Posts: React.FC = () => {
         open={showInspiration}
         onClose={() => setShowInspiration(false)}
         onCreatePost={handleCreateFromInspiration}
+      />
+
+      <TitleHookSuggestions
+        onSelectHook={() => {}}
+        externalOpen={showHooksDialog}
+        onExternalOpenChange={setShowHooksDialog}
+      />
+
+      <ThemeBrainstormDialog
+        open={showBrainstormDialog}
+        onOpenChange={setShowBrainstormDialog}
       />
     </div>
   );
