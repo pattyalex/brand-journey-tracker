@@ -2115,7 +2115,7 @@ app.get('/api/video-thumbnail', async (req, res) => {
       if (scrapeResp.ok) {
         const html = await scrapeResp.text();
         const match = html.match(/<meta\s+(?:property|name)="og:image"\s+content="([^"]+)"/i)
-          || html.match(/content="([^"]+)"\s+(?:property|name)="og:image"/i);
+          || html.match(/<meta\s[^>]*content="([^"]+)"[^>]*(?:property|name)="og:image"/i);
         if (match && match[1]) return res.json({ thumbnail_url: match[1] });
       }
     }
@@ -2129,7 +2129,7 @@ app.get('/api/video-thumbnail', async (req, res) => {
       if (scrapeResp.ok) {
         const html = await scrapeResp.text();
         const match = html.match(/<meta\s+(?:property|name)="og:image"\s+content="([^"]+)"/i)
-          || html.match(/content="([^"]+)"\s+(?:property|name)="og:image"/i);
+          || html.match(/<meta\s[^>]*content="([^"]+)"[^>]*(?:property|name)="og:image"/i);
         if (match && match[1]) return res.json({ thumbnail_url: match[1] });
       }
     }
@@ -2143,7 +2143,7 @@ app.get('/api/video-thumbnail', async (req, res) => {
       if (scrapeResp.ok) {
         const html = await scrapeResp.text();
         const match = html.match(/<meta\s+(?:property|name)="og:image"\s+content="([^"]+)"/i)
-          || html.match(/content="([^"]+)"\s+(?:property|name)="og:image"/i);
+          || html.match(/<meta\s[^>]*content="([^"]+)"[^>]*(?:property|name)="og:image"/i);
         if (match && match[1]) return res.json({ thumbnail_url: match[1] });
       }
     } catch {}
