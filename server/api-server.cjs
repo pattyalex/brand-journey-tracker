@@ -2074,6 +2074,86 @@ app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), asyn
   }
 });
 
+// Fetch video thumbnail via server-side scraping
+app.get('/api/video-thumbnail', async (req, res) => {
+  const { url } = req.query;
+  if (!url) return res.status(400).json({ error: 'Missing url parameter' });
+
+  try {
+    // TikTok oEmbed (public API)
+    if (/tiktok\.com/i.test(url)) {
+      const resp = await fetch(`https://www.tiktok.com/oembed?url=${encodeURIComponent(url)}`);
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data.thumbnail_url) return res.json({ thumbnail_url: data.thumbnail_url });
+      }
+    }
+
+    // YouTube oEmbed
+    if (/youtube\.com|youtu\.be/i.test(url)) {
+      const resp = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`);
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data.thumbnail_url) return res.json({ thumbnail_url: data.thumbnail_url });
+      }
+    }
+
+    // Instagram oEmbed (public API, requires Facebook app token)
+    if (/instagram\.com/i.test(url)) {
+      if (process.env.FACEBOOK_APP_TOKEN) {
+        const resp = await fetch(`https://graph.facebook.com/v22.0/instagram_oembed?url=${encodeURIComponent(url)}&access_token=${process.env.FACEBOOK_APP_TOKEN}`);
+        if (resp.ok) {
+          const data = await resp.json();
+          if (data.thumbnail_url) return res.json({ thumbnail_url: data.thumbnail_url });
+        }
+      }
+      // Fallback: scrape og:image with a realistic user agent
+      const scrapeResp = await fetch(url, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' },
+        redirect: 'follow',
+      });
+      if (scrapeResp.ok) {
+        const html = await scrapeResp.text();
+        const match = html.match(/<meta\s+(?:property|name)="og:image"\s+content="([^"]+)"/i)
+          || html.match(/content="([^"]+)"\s+(?:property|name)="og:image"/i);
+        if (match && match[1]) return res.json({ thumbnail_url: match[1] });
+      }
+    }
+
+    // Pinterest — scrape og:image (returns the actual pinned image)
+    if (/pinterest\.(com|co\.\w+|ca|fr|de|it|es|ch|at|jp|au)/i.test(url) || /pin\.it/i.test(url)) {
+      const scrapeResp = await fetch(url, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' },
+        redirect: 'follow',
+      });
+      if (scrapeResp.ok) {
+        const html = await scrapeResp.text();
+        const match = html.match(/<meta\s+(?:property|name)="og:image"\s+content="([^"]+)"/i)
+          || html.match(/content="([^"]+)"\s+(?:property|name)="og:image"/i);
+        if (match && match[1]) return res.json({ thumbnail_url: match[1] });
+      }
+    }
+
+    // Generic fallback: try og:image for any URL
+    try {
+      const scrapeResp = await fetch(url, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' },
+        redirect: 'follow',
+      });
+      if (scrapeResp.ok) {
+        const html = await scrapeResp.text();
+        const match = html.match(/<meta\s+(?:property|name)="og:image"\s+content="([^"]+)"/i)
+          || html.match(/content="([^"]+)"\s+(?:property|name)="og:image"/i);
+        if (match && match[1]) return res.json({ thumbnail_url: match[1] });
+      }
+    } catch {}
+
+    res.json({ thumbnail_url: null });
+  } catch (error) {
+    res.json({ thumbnail_url: null });
+  }
+});
+
 app.listen(port, '0.0.0.0', () => {
   console.log(`API server running at http://0.0.0.0:${port}`);
 });

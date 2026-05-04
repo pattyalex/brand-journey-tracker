@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Calendar, Hash, FileText, BarChart3, StickyNote, Paperclip, Trash2, ImageIcon, Pencil, ExternalLink, Maximize2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Post, PostStatus, POST_STATUSES, STATUS_COLORS, getPillarStyle } from '@/types/posts';
 import { uploadPostThumbnail } from '@/lib/postImageUpload';
+import { API_BASE } from '@/lib/api-base';
 import FormatDropdown from './FormatDropdown';
 import PillarDropdown from './PillarDropdown';
 import StatusDropdown from './StatusDropdown';
@@ -31,9 +32,37 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
   const [renameDraft, setRenameDraft] = useState('');
   const [uploadingInspiration, setUploadingInspiration] = useState(false);
   const [localBlobUrls, setLocalBlobUrls] = useState<Record<string, string>>({});
+  const [videoThumbnails, setVideoThumbnails] = useState<Record<string, string>>({});
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
+  const [addingLink, setAddingLink] = useState(false);
   const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
   const thumbnailInputRef = useRef<HTMLInputElement>(null);
+
+  const isVideoUrl = (url: string) =>
+    /tiktok\.com/i.test(url) || /instagram\.com\/(reels?|p)\//i.test(url) || /youtube\.com|youtu\.be/i.test(url);
+
+  // Fetch link thumbnails: try server proxy first (og:image), Microlink screenshot as fallback
+  useEffect(() => {
+    if (!post?.attachedFiles) return;
+    post.attachedFiles.forEach((file) => {
+      const hasLabel = file.includes('||');
+      const url = hasLabel ? file.split('||')[1] : file;
+      const isLink = url.startsWith('http://') || url.startsWith('https://');
+      const isImage = /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(url) || url.includes('/post-thumbnails/');
+      if (!isLink || isImage || videoThumbnails[url]) return;
+
+      const microlinkFallback = `https://api.microlink.io/?url=${encodeURIComponent(url)}&screenshot=true&meta=false&embed=screenshot.url`;
+      fetch(`${API_BASE}/api/video-thumbnail?url=${encodeURIComponent(url)}`)
+        .then(r => r.json())
+        .then(data => {
+          setVideoThumbnails(prev => ({ ...prev, [url]: data.thumbnail_url || microlinkFallback }));
+        })
+        .catch(() => {
+          setVideoThumbnails(prev => ({ ...prev, [url]: microlinkFallback }));
+        });
+    });
+  }, [post?.attachedFiles]);
 
   const inspirationImages = useMemo(() => {
     if (!post?.attachedFiles) return [];
@@ -44,11 +73,12 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
         const url = hasLabel ? file.split('||')[1] : file;
         const isUrl = url.startsWith('http://') || url.startsWith('https://') || url.startsWith('blob:');
         const isImage = /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(displayName) || /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(url) || url.includes('/post-thumbnails/');
-        return { displayName, url, isUrl, isImage };
+        const hasVideoThumb = videoThumbnails[url];
+        return { displayName, url, isUrl, isImage: isImage || !!hasVideoThumb };
       })
       .filter(x => x.isImage && x.isUrl)
-      .map(x => localBlobUrls[x.displayName] || x.url);
-  }, [post?.attachedFiles, localBlobUrls]);
+      .map(x => localBlobUrls[x.displayName] || videoThumbnails[x.url] || x.url);
+  }, [post?.attachedFiles, localBlobUrls, videoThumbnails]);
 
   const handleThumbnailUpload = useCallback(async (file: File) => {
     if (!post || !file.type.startsWith('image/')) return;
@@ -131,10 +161,14 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
 
             <div className="px-8 py-6 space-y-8">
 
-              {/* Row 1: Cover Image + Properties */}
+              {/* Row 1: Cover Image + Inspiration */}
               <div className="flex gap-8">
                 {/* Cover image */}
                 <div className="flex-shrink-0">
+                  <label className="text-[11px] font-medium text-gray-400 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                    <ImageIcon className="w-3 h-3" />
+                    Cover image
+                  </label>
                   <input
                     ref={thumbnailInputRef}
                     type="file"
@@ -208,50 +242,8 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
                   )}
                 </div>
 
-                {/* Properties */}
-                <div className="flex-1 min-w-0 flex flex-col justify-center">
-                  <div className="space-y-4">
-                    <div className="flex items-center">
-                      <span className="text-[11px] font-medium text-gray-400 uppercase tracking-wider w-16 flex-shrink-0">Pillar</span>
-                      <PillarDropdown
-                        value={post.pillar}
-                        pillars={pillars}
-                        onChange={val => onUpdate(post.id, { pillar: val })}
-                        onDelete={onDeletePillar}
-                      />
-                    </div>
-                    <div className="flex items-center">
-                      <span className="text-[11px] font-medium text-gray-400 uppercase tracking-wider w-16 flex-shrink-0">Format</span>
-                      <FormatDropdown
-                        value={post.format}
-                        formats={formats}
-                        onChange={val => onUpdate(post.id, { format: val })}
-                        onAdd={onAddFormat}
-                        onDelete={onDeleteFormat}
-                      />
-                    </div>
-                    <div className="flex items-center">
-                      <span className="text-[11px] font-medium text-gray-400 uppercase tracking-wider w-16 flex-shrink-0">Status</span>
-                      <StatusDropdown
-                        value={post.status}
-                        onChange={val => onUpdate(post.id, { status: val })}
-                      />
-                    </div>
-                    <div className="flex items-center">
-                      <span className="text-[11px] font-medium text-gray-400 uppercase tracking-wider w-16 flex-shrink-0">Date</span>
-                      <input
-                        type="date"
-                        value={post.scheduledDate || ''}
-                        onChange={e => onUpdate(post.id, { scheduledDate: e.target.value || undefined })}
-                        className="text-sm text-gray-700 bg-transparent outline-none hover:bg-gray-50 rounded px-1 py-0.5 transition-colors duration-150"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Inspiration section */}
-              <div>
+                {/* Inspiration (inline next to cover) */}
+                <div className="flex-1 min-w-0">
                 <label className="text-[11px] font-medium text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
                   <Paperclip className="w-3 h-3" />
                   Inspiration
@@ -268,7 +260,9 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
                         const url = hasLabel ? file.split('||')[1] : file;
                         const isUrl = url.startsWith('http://') || url.startsWith('https://') || url.startsWith('blob:');
                         const isImage = /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(displayName) || /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(url) || url.includes('/post-thumbnails/');
-                        return { file, i, displayName, url, isUrl, isImage };
+                        const isVideo = isVideoUrl(url);
+                        const hasThumb = isImage || !!videoThumbnails[url];
+                        return { file, i, displayName, url, isUrl, isImage: hasThumb, isVideo };
                       });
                       const images = items.filter(x => x.isImage && x.isUrl);
                       const links = items.filter(x => !x.isImage || !x.isUrl);
@@ -276,27 +270,45 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
                       return (
                         <>
                           {images.length > 0 && (
-                            <div className="grid grid-cols-6 gap-2 mb-3">
-                              {images.map(({ i, displayName, url }) => (
+                            <div className="grid grid-cols-4 gap-2 mb-3">
+                              {images.map(({ i, displayName, url, isVideo }) => {
+                                const imgSrc = localBlobUrls[displayName] || videoThumbnails[url] || url;
+                                const isFailed = failedImages.has(imgSrc);
+                                return (
                                 <div key={i} className="relative group/file rounded-lg overflow-hidden">
-                                  <button onClick={() => setLightboxIndex(inspirationImages.indexOf(localBlobUrls[displayName] || url))} className="w-full">
-                                    <img
-                                      src={localBlobUrls[displayName] || url}
-                                      alt={displayName}
-                                      className="w-full aspect-square object-cover hover:scale-105 transition-transform duration-200 cursor-pointer bg-gray-100"
-                                      onError={(e) => {
-                                        const el = e.currentTarget;
-                                        el.style.display = 'none';
-                                        const placeholder = document.createElement('div');
-                                        placeholder.className = 'w-full aspect-square bg-gray-100 rounded-lg flex items-center justify-center';
-                                        placeholder.innerHTML = '<span class="text-[10px] text-gray-400 text-center px-1">Image unavailable</span>';
-                                        el.parentElement?.appendChild(placeholder);
-                                      }}
-                                    />
+                                  <button onClick={() => !isFailed && setLightboxIndex(inspirationImages.indexOf(imgSrc))} className="w-full">
+                                    {isFailed ? (
+                                      <div className="w-full aspect-square bg-gray-100 rounded-lg flex items-center justify-center">
+                                        <span className="text-[10px] text-gray-400 text-center px-1">Image unavailable</span>
+                                      </div>
+                                    ) : (
+                                      <img
+                                        src={imgSrc}
+                                        alt={displayName}
+                                        className="w-full aspect-square object-cover hover:scale-105 transition-transform duration-200 cursor-pointer bg-gray-100"
+                                        onError={(e) => {
+                                          const el = e.currentTarget;
+                                          const microlinkUrl = `https://api.microlink.io/?url=${encodeURIComponent(url)}&screenshot=true&meta=false&embed=screenshot.url`;
+                                          if (el.src.includes('api.microlink.io') || el.getAttribute('data-retried')) {
+                                            setFailedImages(prev => new Set(prev).add(imgSrc));
+                                          } else {
+                                            el.setAttribute('data-retried', '1');
+                                            el.src = microlinkUrl;
+                                          }
+                                        }}
+                                      />
+                                    )}
+                                    {isVideo && !isFailed && (
+                                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                        <div className="w-8 h-8 rounded-full bg-black/50 flex items-center justify-center">
+                                          <div className="w-0 h-0 border-t-[5px] border-t-transparent border-b-[5px] border-b-transparent border-l-[8px] border-l-white ml-0.5" />
+                                        </div>
+                                      </div>
+                                    )}
                                   </button>
                                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover/file:opacity-100 transition-opacity duration-150">
                                     <button
-                                      onClick={() => setLightboxIndex(inspirationImages.indexOf(localBlobUrls[displayName] || url))}
+                                      onClick={() => setLightboxIndex(inspirationImages.indexOf(localBlobUrls[displayName] || videoThumbnails[url] || url))}
                                       className="absolute top-1.5 right-1.5 p-1 rounded bg-black/40 hover:bg-black/60 text-white transition-colors"
                                       title="Expand"
                                     >
@@ -351,7 +363,8 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
                                     </div>
                                   )}
                                 </div>
-                              ))}
+                                );
+                              })}
                             </div>
                           )}
 
@@ -416,23 +429,38 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
                 )}
 
                 {/* Add inspiration */}
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="Paste a link..."
-                    className="flex-1 text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:border-[#612A4F] focus:ring-0 outline-none transition-colors placeholder:text-gray-300"
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        const value = (e.target as HTMLInputElement).value.trim();
-                        if (value) {
-                          onUpdate(post.id, { attachedFiles: [...(post.attachedFiles || []), value] });
-                          (e.target as HTMLInputElement).value = '';
+                <div className="flex items-center gap-3">
+                  {addingLink ? (
+                    <input
+                      type="text"
+                      autoFocus
+                      placeholder="Paste URL and press Enter..."
+                      className="text-[12px] text-gray-600 bg-gray-50 rounded-md px-2.5 py-1 border border-gray-200 focus:border-[#612A4F] outline-none transition-colors w-48"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          const value = (e.target as HTMLInputElement).value.trim();
+                          if (value) {
+                            onUpdate(post.id, { attachedFiles: [...(post.attachedFiles || []), value] });
+                          }
+                          setAddingLink(false);
+                        } else if (e.key === 'Escape') {
+                          setAddingLink(false);
                         }
-                      }
-                    }}
-                  />
-                  <label className={`flex items-center gap-1 px-3 py-1.5 text-[12px] border border-gray-200 rounded-lg transition-colors whitespace-nowrap ${uploadingInspiration ? 'text-gray-400 cursor-wait' : 'text-gray-500 hover:text-[#612A4F] cursor-pointer hover:border-[#612A4F]/30'}`}>
-                    <Paperclip className="w-3 h-3" />
+                      }}
+                      onBlur={() => setAddingLink(false)}
+                    />
+                  ) : (
+                    <button
+                      onClick={() => setAddingLink(true)}
+                      className="flex items-center gap-1.5 text-[12px] text-gray-400 hover:text-[#612A4F] transition-colors"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      Add link
+                    </button>
+                  )}
+                  <span className="text-gray-200">|</span>
+                  <label className={`flex items-center gap-1.5 text-[12px] transition-colors ${uploadingInspiration ? 'text-gray-400 cursor-wait' : 'text-gray-400 hover:text-[#612A4F] cursor-pointer'}`}>
+                    <Paperclip className="w-3.5 h-3.5" />
                     {uploadingInspiration ? 'Uploading...' : 'Attach file'}
                     <input
                       type="file"
@@ -468,11 +496,51 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
                     />
                   </label>
                 </div>
+                </div>
+              </div>
+
+              {/* Properties */}
+              <div className="grid grid-cols-4 gap-4">
+                <div>
+                  <span className="text-[11px] font-medium text-gray-400 uppercase tracking-wider block mb-1.5">Pillar</span>
+                  <PillarDropdown
+                    value={post.pillar}
+                    pillars={pillars}
+                    onChange={val => onUpdate(post.id, { pillar: val })}
+                    onDelete={onDeletePillar}
+                  />
+                </div>
+                <div>
+                  <span className="text-[11px] font-medium text-gray-400 uppercase tracking-wider block mb-1.5">Format</span>
+                  <FormatDropdown
+                    value={post.format}
+                    formats={formats}
+                    onChange={val => onUpdate(post.id, { format: val })}
+                    onAdd={onAddFormat}
+                    onDelete={onDeleteFormat}
+                  />
+                </div>
+                <div>
+                  <span className="text-[11px] font-medium text-gray-400 uppercase tracking-wider block mb-1.5">Status</span>
+                  <StatusDropdown
+                    value={post.status}
+                    onChange={val => onUpdate(post.id, { status: val })}
+                  />
+                </div>
+                <div>
+                  <span className="text-[11px] font-medium text-gray-400 uppercase tracking-wider block mb-1.5">Date</span>
+                  <input
+                    type="date"
+                    value={post.scheduledDate || ''}
+                    onChange={e => onUpdate(post.id, { scheduledDate: e.target.value || undefined })}
+                    className="text-sm text-gray-700 bg-transparent outline-none hover:bg-gray-50 rounded px-1 py-0.5 transition-colors duration-150"
+                  />
+                </div>
               </div>
 
               {/* Script */}
-              <div>
-                <label className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+              <div className="bg-gray-50/70 border border-gray-100 rounded-xl p-4 border-l-[3px] border-l-[#612A4F]/20">
+                <label className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                   <FileText className="w-3 h-3" />
                   Script
                 </label>
@@ -486,12 +554,12 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
                     }}
                     autoFocus
                     rows={6}
-                    className="w-full text-sm text-gray-700 bg-gray-50 rounded-md p-2.5 outline-none border border-gray-200 focus:border-gray-300 resize-none transition-colors duration-150"
+                    className="w-full text-sm text-gray-700 bg-white rounded-md p-2.5 outline-none border border-gray-200 focus:border-gray-300 resize-none transition-colors duration-150"
                   />
                 ) : (
                   <p
                     onClick={() => setEditingScript(true)}
-                    className="text-sm text-gray-600 leading-relaxed cursor-text hover:bg-gray-50 rounded-md p-2 -m-2 transition-colors duration-150 min-h-[2.5rem] whitespace-pre-wrap"
+                    className="text-sm text-gray-600 leading-relaxed cursor-text hover:bg-white rounded-md p-2 transition-colors duration-150 min-h-[2.5rem] whitespace-pre-wrap"
                   >
                     {post.script || <span className="text-gray-300 italic">Add a script...</span>}
                   </p>
@@ -501,7 +569,7 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
               {/* Caption */}
               <div>
                 <label className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-                  <FileText className="w-3 h-3" />
+                  <Hash className="w-3 h-3" />
                   Caption
                 </label>
                 {editingCaption ? (
