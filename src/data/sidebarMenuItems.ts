@@ -41,7 +41,7 @@ export const defaultMenuItems: MenuItem[] = [
     isDeletable: false
   },
   {
-    title: 'Strategy and Goals',
+    title: 'Strategy',
     icon: TrendingUp,
     url: '/strategy-growth',
     isDeletable: false

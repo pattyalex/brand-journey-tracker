@@ -696,7 +696,7 @@ export function useMyAccount() {
   const faqs = [
     { question: "How do I schedule content on the calendar?", answer: "Navigate to 'Planner and Calendar' from the sidebar. Click on any date to add a new task or content item. You can drag and drop items to reschedule them, and use the weekly or monthly views to plan ahead." },
     { question: "How do I track brand partnerships?", answer: "Go to 'Partnerships' in the sidebar to manage all your brand deals. You can add new partnerships, track deliverables, set deadlines, and monitor payment status all in one place." },
-    { question: "How do I set my content goals?", answer: "Visit 'Strategy and Goals' to define your mission statement, set monthly goals, and track your top priorities. This helps you stay focused on what matters most for your brand growth." },
+    { question: "How do I set my content goals?", answer: "Visit 'Strategy' to define your mission statement, set monthly goals, and track your top priorities. This helps you stay focused on what matters most for your brand growth." },
     { question: "How do I change my timezone?", answer: "Go to Settings > Preferences and select your preferred timezone from the list. Your planner and calendar will automatically adjust to show times in your selected timezone." },
     { question: "How do I export my data?", answer: "Navigate to Settings > Data where you can export all your account data as JSON or download your content calendar as a CSV or iCal file." },
   ];

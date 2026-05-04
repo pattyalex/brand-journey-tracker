@@ -23,7 +23,7 @@ const faqs = [
   },
   {
     question: "How do I set my content goals?",
-    answer: "Visit 'Strategy and Goals' to define your mission statement, set monthly goals, and track your top priorities. This helps you stay focused on what matters most for your brand growth."
+    answer: "Visit 'Strategy' to define your mission statement, set monthly goals, and track your top priorities. This helps you stay focused on what matters most for your brand growth."
   },
   {
     question: "How do I change my timezone?",
