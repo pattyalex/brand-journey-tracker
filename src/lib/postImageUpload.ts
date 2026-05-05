@@ -16,11 +16,16 @@ export async function uploadPostThumbnail(file: File, postId: string): Promise<s
       upsert: true,
     });
 
-    if (error) throw error;
+    if (error) {
+      console.error('[Upload] Supabase storage error:', error.message, error);
+      throw error;
+    }
 
     const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(fullPath);
+    console.log('[Upload] Success:', urlData.publicUrl);
     return urlData.publicUrl;
-  } catch {
+  } catch (err) {
+    console.error('[Upload] Failed, falling back to blob URL:', err);
     // Fallback: local object URL (won't persist across sessions)
     return URL.createObjectURL(file);
   }

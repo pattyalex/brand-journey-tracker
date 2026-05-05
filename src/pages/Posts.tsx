@@ -37,7 +37,18 @@ const Posts: React.FC = () => {
   const navigate = useNavigate();
   const [posts, setPosts] = useState<Post[]>(() => {
     const saved = getJSON<Post[] | null>('meg_posts', null);
-    return saved && saved.length > 0 ? saved : seedPosts;
+    const raw = saved && saved.length > 0 ? saved : seedPosts;
+    // Clean out dead blob URLs from attachedFiles (they don't survive page refresh)
+    return raw.map(p => {
+      if (!p.attachedFiles) return p;
+      const cleaned = p.attachedFiles.filter(f => {
+        const url = f.includes('||') ? f.split('||')[1] : f;
+        return !url.startsWith('blob:');
+      });
+      return cleaned.length !== p.attachedFiles.length
+        ? { ...p, attachedFiles: cleaned }
+        : p;
+    });
   });
   const [pillars, setPillars] = useState<string[]>(DEFAULT_PILLARS);
   const [formats, setFormats] = useState<string[]>(DEFAULT_FORMATS);

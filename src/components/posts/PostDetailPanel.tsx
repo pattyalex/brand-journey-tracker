@@ -598,7 +598,7 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
                 ) : (
                   <p
                     onClick={() => setEditingScript(true)}
-                    className="text-sm text-gray-600 leading-relaxed cursor-text bg-gray-100/60 hover:bg-gray-100 rounded-md p-2 -m-2 transition-colors duration-150 min-h-[2.5rem] whitespace-pre-wrap"
+                    className="text-sm text-gray-600 leading-relaxed cursor-text bg-gray-100/80 hover:bg-gray-100 rounded-md p-2 -m-2 transition-colors duration-150 min-h-[2.5rem] whitespace-pre-wrap"
                   >
                     {post.script || <span className="text-gray-300 italic">Add a script...</span>}
                   </p>
@@ -606,7 +606,7 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
               </div>
 
               {/* Caption */}
-              <div>
+              <div className="mt-2">
                 <label className="text-[11px] font-medium text-gray-400 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
                   <MessageSquare className="w-3 h-3" />
                   Caption
