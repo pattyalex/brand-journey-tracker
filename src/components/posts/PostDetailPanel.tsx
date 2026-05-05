@@ -99,6 +99,7 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
       setEditingScript(false);
       setEditingCaption(false);
       setEditingNotes(false);
+      setFailedImages(new Set());
     }
   }, [post?.id]);
 

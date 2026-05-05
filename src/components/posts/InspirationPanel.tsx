@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { Plus, ExternalLink, Trash2, Link as LinkIcon, Image, Paperclip } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { getJSON, setJSON } from '@/lib/storage';
+import { API_BASE } from '@/lib/api-base';
+import { uploadPostThumbnail } from '@/lib/postImageUpload';
 
 export interface InspirationItem {
   id: string;
@@ -48,8 +50,16 @@ const platformColors: Record<InspirationItem['platform'], string> = {
 };
 
 const LinkThumbnail: React.FC<{ item: InspirationItem }> = ({ item }) => {
+  const [imgSrc, setImgSrc] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
-  const thumbUrl = `https://api.microlink.io/?url=${encodeURIComponent(item.url)}&screenshot=true&meta=false&embed=screenshot.url`;
+  const microlinkUrl = `https://api.microlink.io/?url=${encodeURIComponent(item.url)}&screenshot=true&meta=false&embed=screenshot.url`;
+
+  useEffect(() => {
+    fetch(`${API_BASE}/api/video-thumbnail?url=${encodeURIComponent(item.url)}`)
+      .then(r => r.json())
+      .then(data => setImgSrc(data.thumbnail_url || microlinkUrl))
+      .catch(() => setImgSrc(microlinkUrl));
+  }, [item.url]);
 
   if (failed) {
     return (
@@ -64,12 +74,22 @@ const LinkThumbnail: React.FC<{ item: InspirationItem }> = ({ item }) => {
     );
   }
 
+  if (!imgSrc) {
+    return <div className="w-full h-full bg-gray-100 animate-pulse" />;
+  }
+
   return (
     <img
-      src={thumbUrl}
+      src={imgSrc}
       alt={item.title}
       className="w-full h-full object-cover object-top"
-      onError={() => setFailed(true)}
+      onError={() => {
+        if (imgSrc !== microlinkUrl) {
+          setImgSrc(microlinkUrl);
+        } else {
+          setFailed(true);
+        }
+      }}
     />
   );
 };
@@ -111,22 +131,35 @@ const InspirationPanel: React.FC<InspirationPanelProps> = ({ open, onClose, onCr
     setInputValue('');
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
-    const newItems: InspirationItem[] = Array.from(files).map(file => {
+    for (const file of Array.from(files)) {
       const isImage = file.type.startsWith('image/');
-      return {
-        id: crypto.randomUUID(),
-        url: isImage ? URL.createObjectURL(file) : '',
+      const id = crypto.randomUUID();
+      const blobUrl = isImage ? URL.createObjectURL(file) : '';
+      const newItem: InspirationItem = {
+        id,
+        url: blobUrl,
         title: file.name,
-        type: isImage ? 'photo' as const : 'file' as const,
-        platform: 'other' as const,
+        type: isImage ? 'photo' : 'file',
+        platform: 'other',
         fileName: file.name,
         savedAt: new Date().toISOString(),
       };
-    });
-    setItems(prev => [...newItems, ...prev]);
+      setItems(prev => [newItem, ...prev]);
+      // Upload to server and replace blob URL with permanent URL
+      if (isImage) {
+        try {
+          const uploadedUrl = await uploadPostThumbnail(file, `inspiration-${id}`);
+          if (uploadedUrl && !uploadedUrl.startsWith('blob:')) {
+            setItems(prev => prev.map(item => item.id === id ? { ...item, url: uploadedUrl } : item));
+          }
+        } catch {
+          // Keep blob URL as fallback for this session
+        }
+      }
+    }
     e.target.value = '';
   };
 
