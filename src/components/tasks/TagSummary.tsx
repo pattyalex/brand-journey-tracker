@@ -1,4 +1,5 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
+import { ChevronRight } from 'lucide-react';
 import { Task, getTagColor } from '@/types/tasks';
 
 interface TagSummaryProps {
@@ -51,16 +52,22 @@ const TagSummary: React.FC<TagSummaryProps> = ({ tasks }) => {
     });
   }, [tasks]);
 
+  const [expanded, setExpanded] = useState(false);
+
   if (tasks.length === 0 || tagData.length === 0) return null;
 
   const totalTasks = tasks.length;
 
   return (
-    <div className="mt-8 mb-4">
-      <p className="text-[11px] font-medium text-gray-400 uppercase tracking-wider mb-3">
+    <div className="mt-10 mb-4 pt-8 border-t border-gray-100">
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="flex items-center gap-1 text-[11px] font-medium text-gray-400 uppercase tracking-wider mb-3 hover:text-gray-500 transition-colors"
+      >
+        <ChevronRight className={`w-3.5 h-3.5 transition-transform duration-200 ${expanded ? 'rotate-90' : ''}`} />
         Today's breakdown
-      </p>
-      <div className="space-y-2.5">
+      </button>
+      {expanded && <div className="space-y-2.5">
         {tagData.map(({ tag, total, completed, minutes }) => {
           const isUntagged = tag === '_untagged';
           const color = isUntagged ? null : getTagColor(tag);
@@ -69,7 +76,7 @@ const TagSummary: React.FC<TagSummaryProps> = ({ tasks }) => {
           return (
             <div key={tag} className="flex items-center gap-3">
               {/* Tag label */}
-              <span className="w-[72px] flex-shrink-0 text-right">
+              <span className="min-w-[72px] flex-shrink-0 text-right whitespace-nowrap">
                 {isUntagged ? (
                   <span className="text-[11px] text-gray-300 italic">untagged</span>
                 ) : (
@@ -102,7 +109,7 @@ const TagSummary: React.FC<TagSummaryProps> = ({ tasks }) => {
             </div>
           );
         })}
-      </div>
+      </div>}
     </div>
   );
 };

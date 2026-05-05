@@ -301,12 +301,6 @@ const Tasks: React.FC = () => {
                 onAddSubtask={handleAddSubtask}
               />
 
-              <NotesArea
-                content={dayNote?.content || ''}
-                onChange={handleNotesChange}
-              />
-
-              <TagSummary tasks={dayTasks} />
             </motion.div>
           </AnimatePresence>
         </div>
@@ -336,6 +330,7 @@ const Tasks: React.FC = () => {
             onRemoveTag={(id: string) => handleUpdate(id, { tag: null })}
             showCompleted={showCompleted}
           />
+          <TagSummary tasks={dayTasks} />
         </div>
       </div>
       </div>
