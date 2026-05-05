@@ -66,15 +66,15 @@ const SidebarMenuItemComponent = ({ item, onDelete }: SidebarMenuItemProps) => {
           className={cn(
             "flex items-center gap-2 rounded-xl transition-all duration-200",
             (isActive || isSubItemActive)
-              ? "bg-[#EBE1E7] text-[#612A4F] font-medium"
-              : "hover:bg-[#F9F7F8] text-[#5A4A52]"
+              ? "bg-white/10 text-white font-medium"
+              : "hover:bg-white/5 text-white/60"
           )}
           onClick={handleMenuItemClick}
           onMouseEnter={() => preloadRoute(item.url)}
         >
           <item.icon size={20} className={cn(
             "transition-colors duration-200 flex-shrink-0",
-            (isActive || isSubItemActive) ? "text-[#612A4F]" : "text-[#8B7082]"
+            (isActive || isSubItemActive) ? "text-white" : "text-white/40"
           )} />
           <span>{item.title}</span>
           {item.subItems && item.subItems.length > 0 && (
@@ -104,7 +104,7 @@ const SidebarMenuItemComponent = ({ item, onDelete }: SidebarMenuItemProps) => {
       )}
       
       {item.subItems && item.subItems.length > 0 && isExpanded && (
-        <SidebarMenuSub className="border-l-[#E8E4E6]">
+        <SidebarMenuSub className="border-l-white/10">
           {item.subItems.map((subItem) => {
             const isSubActive = location.pathname === subItem.url;
             return (
@@ -119,13 +119,13 @@ const SidebarMenuItemComponent = ({ item, onDelete }: SidebarMenuItemProps) => {
                     className={cn(
                       "flex items-center gap-2 rounded-lg transition-all duration-200",
                       isSubActive
-                        ? "bg-[#F5F0F3] text-[#612A4F] font-medium"
-                        : "hover:bg-[#F9F7F8] text-[#5A4A52]"
+                        ? "bg-white/10 text-white font-medium"
+                        : "hover:bg-white/5 text-white/60"
                     )}
                   >
                     <subItem.icon size={16} className={cn(
                       "transition-colors duration-200",
-                      isSubActive ? "text-[#612A4F]" : "text-[#8B7082]"
+                      isSubActive ? "text-white" : "text-white/40"
                     )} />
                     <span>{subItem.title}</span>
                   </a>
