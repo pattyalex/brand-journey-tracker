@@ -1,10 +1,12 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, EyeOff, ChevronRight, ChevronLeft } from 'lucide-react';
 import { Task, DailyNote } from '@/types/tasks';
 import { getJSON, setJSON } from '@/lib/storage';
 import { getSeedTasks, getSeedDailyNote } from '@/data/tasksSeedData';
+import { useAuth } from '@/contexts/AuthContext';
+import * as tasksApi from '@/services/tasksService';
 import DayHeader from '@/components/tasks/DayHeader';
 import TaskList from '@/components/tasks/TaskList';
 import NotesArea from '@/components/tasks/NotesArea';
@@ -36,6 +38,8 @@ function isValidDate(dateStr: string): boolean {
 const Tasks: React.FC = () => {
   const { date: dateParam } = useParams<{ date?: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const userId = user?.id;
 
   const today = todayStr();
   const currentDate = dateParam && isValidDate(dateParam) ? dateParam : today;
@@ -61,9 +65,61 @@ const Tasks: React.FC = () => {
   const [showCompleted, setShowCompleted] = useState(true);
   const [soonCollapsed, setSoonCollapsed] = useState(false);
 
-  // Persist
+  // Load from Supabase on mount
+  useEffect(() => {
+    if (!userId) return;
+    tasksApi.fetchTasks(userId).then(remote => {
+      if (remote.length > 0) {
+        setAllTasks(remote);
+      } else {
+        const local = getJSON<Task[] | null>(TASKS_KEY, null);
+        if (local && local.length > 0) {
+          tasksApi.upsertTasks(local, userId).catch(console.error);
+        }
+      }
+    }).catch(err => {
+      console.error('[Tasks] Failed to load from Supabase:', err);
+    });
+
+    tasksApi.fetchDailyNotes(userId).then(remote => {
+      if (remote.length > 0) {
+        setAllNotes(remote);
+      } else {
+        const local = getJSON<DailyNote[] | null>(NOTES_KEY, null);
+        if (local && local.length > 0) {
+          local.forEach(n => tasksApi.upsertDailyNote(n, userId).catch(console.error));
+        }
+      }
+    }).catch(err => {
+      console.error('[Tasks] Failed to load daily notes from Supabase:', err);
+    });
+  }, [userId]);
+
+  // Persist to localStorage (cache)
   useEffect(() => { setJSON(TASKS_KEY, allTasks); }, [allTasks]);
   useEffect(() => { setJSON(NOTES_KEY, allNotes); }, [allNotes]);
+
+  // Debounced sync to Supabase (tasks change frequently via reorder, indent, etc.)
+  const syncTimer = useRef<ReturnType<typeof setTimeout>>();
+  useEffect(() => {
+    if (!userId) return;
+    clearTimeout(syncTimer.current);
+    syncTimer.current = setTimeout(() => {
+      tasksApi.upsertTasks(allTasks, userId).catch(console.error);
+    }, 1500);
+    return () => clearTimeout(syncTimer.current);
+  }, [allTasks, userId]);
+
+  // Sync notes to Supabase on change
+  const noteSyncTimer = useRef<ReturnType<typeof setTimeout>>();
+  useEffect(() => {
+    if (!userId) return;
+    clearTimeout(noteSyncTimer.current);
+    noteSyncTimer.current = setTimeout(() => {
+      allNotes.forEach(n => tasksApi.upsertDailyNote(n, userId).catch(console.error));
+    }, 1500);
+    return () => clearTimeout(noteSyncTimer.current);
+  }, [allNotes, userId]);
 
   // Derived
   const dayTasks = useMemo(() =>

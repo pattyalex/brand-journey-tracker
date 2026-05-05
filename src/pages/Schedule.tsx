@@ -20,6 +20,9 @@ import { Post, PostStatus, DEFAULT_PILLARS, DEFAULT_FORMATS } from '@/types/post
 import { getJSON, setJSON } from '@/lib/storage';
 import { seedPosts } from '@/data/postsSeedData';
 import { uploadPostThumbnail } from '@/lib/postImageUpload';
+import { useAuth } from '@/contexts/AuthContext';
+import * as postsApi from '@/services/postsService';
+import * as scheduleApi from '@/services/scheduleService';
 import PostDetailPanel from '@/components/posts/PostDetailPanel';
 import ReadySidebar from '@/components/schedule/ReadySidebar';
 import ScheduleGrid from '@/components/schedule/ScheduleGrid';
@@ -45,6 +48,9 @@ function getInitialGrid(): (string | null)[] {
 }
 
 const Schedule: React.FC = () => {
+  const { user } = useAuth();
+  const userId = user?.id;
+
   // ── State ──────────────────────────────────────────────────
   const [posts, setPosts] = useState<Post[]>(() => {
     const saved = getJSON<Post[] | null>('meg_posts', null);
@@ -71,9 +77,31 @@ const Schedule: React.FC = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // ── Persist ────────────────────────────────────────────────
+  // ── Load from Supabase ─────────────────────────────────────
+  useEffect(() => {
+    if (!userId) return;
+    postsApi.fetchPosts(userId).then(remote => {
+      if (remote.length > 0) setPosts(remote);
+    }).catch(console.error);
+    scheduleApi.fetchScheduleGrid(userId).then(remote => {
+      if (remote.some(s => s !== null)) setGridOrder(remote);
+    }).catch(console.error);
+  }, [userId]);
+
+  // ── Persist to localStorage (cache) ───────────────────────
   useEffect(() => { setJSON('meg_posts', posts); }, [posts]);
   useEffect(() => { setJSON(GRID_STORAGE_KEY, gridOrder); }, [gridOrder]);
+
+  // ── Sync grid to Supabase (debounced) ─────────────────────
+  const gridSyncTimer = React.useRef<ReturnType<typeof setTimeout>>();
+  useEffect(() => {
+    if (!userId) return;
+    clearTimeout(gridSyncTimer.current);
+    gridSyncTimer.current = setTimeout(() => {
+      scheduleApi.saveScheduleGrid(gridOrder, userId).catch(console.error);
+    }, 1500);
+    return () => clearTimeout(gridSyncTimer.current);
+  }, [gridOrder, userId]);
 
   // ── Derived data ───────────────────────────────────────────
   const postsMap = useMemo(() => {
@@ -102,22 +130,22 @@ const Schedule: React.FC = () => {
   const handleUpdatePost = useCallback((id: string, updates: Partial<Post>) => {
     setPosts(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
     setSelectedPost(prev => prev && prev.id === id ? { ...prev, ...updates } : prev);
+    postsApi.updatePost(id, updates).catch(console.error);
   }, []);
 
   const handleDeletePost = useCallback((id: string) => {
     setPosts(prev => prev.filter(p => p.id !== id));
     setGridOrder(prev => prev.filter(pid => pid !== id));
     setSelectedPost(prev => prev?.id === id ? null : prev);
+    postsApi.deletePost(id).catch(console.error);
   }, []);
 
   const handleRemoveFromSchedule = useCallback((id: string) => {
-    setPosts(prev => prev.map(p =>
-      p.id === id
-        ? { ...p, sent_to_schedule: false, scheduledDate: undefined, scheduled_time: undefined, status: 'Edited' as PostStatus }
-        : p
-    ));
+    const updates = { sent_to_schedule: false, scheduledDate: undefined, scheduled_time: undefined, status: 'Edited' as PostStatus };
+    setPosts(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
     setGridOrder(prev => prev.map(pid => pid === id ? null : pid));
     setSelectedPost(null);
+    postsApi.updatePost(id, updates).catch(console.error);
     toast.success('Removed from Schedule');
   }, []);
 
@@ -151,18 +179,14 @@ const Schedule: React.FC = () => {
       next[cellIndex] = newId;
       return next;
     });
-  }, [posts.length]);
+    if (userId) postsApi.createPost(newPost, userId).catch(console.error);
+  }, [posts.length, userId]);
 
   const handleScheduleOnDate = useCallback((postId: string, date: string, time: string) => {
-    setPosts(prev => prev.map(p =>
-      p.id === postId
-        ? { ...p, scheduledDate: date, scheduled_time: time, status: 'Scheduled' as PostStatus }
-        : p
-    ));
-    setSelectedPost(prev => prev && prev.id === postId
-      ? { ...prev, scheduledDate: date, scheduled_time: time, status: 'Scheduled' as PostStatus }
-      : prev
-    );
+    const updates = { scheduledDate: date, scheduled_time: time, status: 'Scheduled' as PostStatus };
+    setPosts(prev => prev.map(p => p.id === postId ? { ...p, ...updates } : p));
+    setSelectedPost(prev => prev && prev.id === postId ? { ...prev, ...updates } : prev);
+    postsApi.updatePost(postId, updates).catch(console.error);
     toast.success('Post scheduled');
   }, []);
 

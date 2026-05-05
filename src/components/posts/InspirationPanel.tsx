@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
 import { Plus, ExternalLink, Trash2, Link as LinkIcon, Image, Paperclip, Maximize2, X, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -6,6 +6,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { getJSON, setJSON } from '@/lib/storage';
 import { API_BASE } from '@/lib/api-base';
 import { uploadPostThumbnail } from '@/lib/postImageUpload';
+import { useAuth } from '@/contexts/AuthContext';
+import * as inspirationApi from '@/services/inspirationService';
 
 export interface InspirationItem {
   id: string;
@@ -125,21 +127,38 @@ interface InspirationPanelProps {
 }
 
 const InspirationPanel: React.FC<InspirationPanelProps> = ({ open, onClose, onCreatePost }) => {
+  const { user } = useAuth();
+  const userId = user?.id;
   const [items, setItems] = useState<InspirationItem[]>(() => getJSON<InspirationItem[]>(STORAGE_KEY, []));
   const [inputValue, setInputValue] = useState('');
   const [filter, setFilter] = useState<'all' | 'link' | 'photo' | 'file'>('all');
   const [lightboxItem, setLightboxItem] = useState<InspirationItem | null>(null);
+  const supabaseLoaded = useRef(false);
 
+  // Persist to localStorage (cache)
   useEffect(() => {
     setJSON(STORAGE_KEY, items);
   }, [items]);
 
-  // Re-read from storage when panel opens
+  // Load from Supabase when panel opens
   useEffect(() => {
-    if (open) {
-      setItems(getJSON<InspirationItem[]>(STORAGE_KEY, []));
-    }
-  }, [open]);
+    if (!open || !userId) return;
+    if (supabaseLoaded.current) return;
+    inspirationApi.fetchInspiration(userId).then(remote => {
+      if (remote.length > 0) {
+        setItems(remote);
+      } else {
+        // First time: migrate localStorage
+        const local = getJSON<InspirationItem[]>(STORAGE_KEY, []);
+        if (local.length > 0) {
+          inspirationApi.upsertInspiration(local, userId).catch(console.error);
+        }
+      }
+      supabaseLoaded.current = true;
+    }).catch(err => {
+      console.error('[Inspiration] Failed to load from Supabase:', err);
+    });
+  }, [open, userId]);
 
   const handleAdd = () => {
     const url = inputValue.trim();
@@ -154,6 +173,7 @@ const InspirationPanel: React.FC<InspirationPanelProps> = ({ open, onClose, onCr
     };
     setItems(prev => [newItem, ...prev]);
     setInputValue('');
+    if (userId) inspirationApi.createInspiration(newItem, userId).catch(console.error);
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -173,12 +193,14 @@ const InspirationPanel: React.FC<InspirationPanelProps> = ({ open, onClose, onCr
         savedAt: new Date().toISOString(),
       };
       setItems(prev => [newItem, ...prev]);
+      if (userId) inspirationApi.createInspiration(newItem, userId).catch(console.error);
       // Upload to server and replace blob URL with permanent URL
       if (isImage) {
         try {
           const uploadedUrl = await uploadPostThumbnail(file, `inspiration-${id}`);
           if (uploadedUrl && !uploadedUrl.startsWith('blob:')) {
             setItems(prev => prev.map(item => item.id === id ? { ...item, url: uploadedUrl } : item));
+            if (userId) inspirationApi.updateInspiration(id, { url: uploadedUrl }).catch(console.error);
           }
         } catch {
           // Keep blob URL as fallback for this session
@@ -190,10 +212,12 @@ const InspirationPanel: React.FC<InspirationPanelProps> = ({ open, onClose, onCr
 
   const handleDelete = (id: string) => {
     setItems(prev => prev.filter(i => i.id !== id));
+    inspirationApi.deleteInspiration(id).catch(console.error);
   };
 
   const handleNotesChange = (id: string, notes: string) => {
     setItems(prev => prev.map(i => i.id === id ? { ...i, notes } : i));
+    inspirationApi.updateInspiration(id, { notes }).catch(console.error);
   };
 
   const handleCreatePost = (item: InspirationItem) => {

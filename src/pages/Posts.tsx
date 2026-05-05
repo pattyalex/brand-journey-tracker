@@ -12,6 +12,8 @@ import { Post, PostStatus, DEFAULT_PILLARS, DEFAULT_FORMATS, POST_STATUSES, STAT
 import { StatusIcon } from '@/components/posts/StatusDropdown';
 import { seedPosts } from '@/data/postsSeedData';
 import { getJSON, setJSON } from '@/lib/storage';
+import { useAuth } from '@/contexts/AuthContext';
+import * as postsApi from '@/services/postsService';
 import PostsPipeline from '@/components/posts/PostsPipeline';
 import PostsTable from '@/components/posts/PostsTable';
 import PostDetailPanel from '@/components/posts/PostDetailPanel';
@@ -33,27 +35,51 @@ function loadView(): ViewMode {
   return 'List';
 }
 
+function cleanBlobUrls(posts: Post[]): Post[] {
+  return posts.map(p => {
+    if (!p.attachedFiles) return p;
+    const cleaned = p.attachedFiles.filter(f => {
+      const url = f.includes('||') ? f.split('||')[1] : f;
+      return !url.startsWith('blob:');
+    });
+    return cleaned.length !== p.attachedFiles.length
+      ? { ...p, attachedFiles: cleaned }
+      : p;
+  });
+}
+
 const Posts: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const userId = user?.id;
+
   const [posts, setPosts] = useState<Post[]>(() => {
     const saved = getJSON<Post[] | null>('meg_posts', null);
     const raw = saved && saved.length > 0 ? saved : seedPosts;
-    // Clean out dead blob URLs from attachedFiles (they don't survive page refresh)
-    return raw.map(p => {
-      if (!p.attachedFiles) return p;
-      const cleaned = p.attachedFiles.filter(f => {
-        const url = f.includes('||') ? f.split('||')[1] : f;
-        return !url.startsWith('blob:');
-      });
-      return cleaned.length !== p.attachedFiles.length
-        ? { ...p, attachedFiles: cleaned }
-        : p;
-    });
+    return cleanBlobUrls(raw);
   });
   const [pillars, setPillars] = useState<string[]>(DEFAULT_PILLARS);
   const [formats, setFormats] = useState<string[]>(DEFAULT_FORMATS);
 
-  // Persist posts to localStorage
+  // Load posts from Supabase on mount
+  useEffect(() => {
+    if (!userId) return;
+    postsApi.fetchPosts(userId).then(remote => {
+      if (remote.length > 0) {
+        setPosts(cleanBlobUrls(remote));
+      } else {
+        // First time: migrate localStorage posts to Supabase
+        const local = getJSON<Post[] | null>('meg_posts', null);
+        if (local && local.length > 0) {
+          postsApi.upsertPosts(cleanBlobUrls(local), userId).catch(console.error);
+        }
+      }
+    }).catch(err => {
+      console.error('[Posts] Failed to load from Supabase, using localStorage:', err);
+    });
+  }, [userId]);
+
+  // Persist posts to localStorage (cache)
   useEffect(() => {
     setJSON('meg_posts', posts);
   }, [posts]);
@@ -79,7 +105,8 @@ const Posts: React.FC = () => {
     };
     setPosts(prev => [...prev, newPost]);
     setSelectedPost(newPost);
-  }, [posts.length]);
+    if (userId) postsApi.createPost(newPost, userId).catch(console.error);
+  }, [posts.length, userId]);
 
   // Filters
   const [filterPillars, setFilterPillars] = useState<Set<string>>(new Set());
@@ -159,12 +186,19 @@ const Posts: React.FC = () => {
   const handleUpdatePost = useCallback((id: string, updates: Partial<Post>) => {
     setPosts(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
     setSelectedPost(prev => prev && prev.id === id ? { ...prev, ...updates } : prev);
+    // Sync to Supabase in background
+    postsApi.updatePost(id, updates).catch(console.error);
   }, []);
 
   const handleReplaceAttachment = useCallback((id: string, blobUrl: string, newEntry: string) => {
     const replace = (files: string[] | undefined) =>
       files?.map(f => f.includes(blobUrl) ? newEntry : f);
-    setPosts(prev => prev.map(p => p.id === id ? { ...p, attachedFiles: replace(p.attachedFiles) } : p));
+    setPosts(prev => {
+      const updated = prev.map(p => p.id === id ? { ...p, attachedFiles: replace(p.attachedFiles) } : p);
+      const post = updated.find(p => p.id === id);
+      if (post) postsApi.updatePost(id, { attachedFiles: post.attachedFiles }).catch(console.error);
+      return updated;
+    });
     setSelectedPost(prev => prev && prev.id === id ? { ...prev, attachedFiles: replace(prev.attachedFiles) } : prev);
   }, []);
 
@@ -188,12 +222,16 @@ const Posts: React.FC = () => {
       createdAt: new Date().toISOString(),
     };
     setPosts(prev => [...prev, newPost]);
+    // Sync to Supabase in background
+    if (userId) postsApi.createPost(newPost, userId).catch(console.error);
     return newPost;
-  }, [posts.length]);
+  }, [posts.length, userId]);
 
   const handleDeletePost = useCallback((id: string) => {
     setPosts(prev => prev.filter(p => p.id !== id));
     setSelectedPost(prev => prev?.id === id ? null : prev);
+    // Sync to Supabase in background
+    postsApi.deletePost(id).catch(console.error);
   }, []);
 
   const handleSendToShoots = useCallback((id: string) => {
@@ -212,6 +250,7 @@ const Posts: React.FC = () => {
       return prev.map(p => p.id === id ? { ...p, sentToShoots: true } : p);
     });
     setSelectedPost(prev => prev && prev.id === id ? { ...prev, sentToShoots: true } : prev);
+    postsApi.updatePost(id, { sentToShoots: true }).catch(console.error);
 
     toast.success('Added to Shoots', {
       description: 'Plan your shoot day on the Shoots page.',
@@ -227,6 +266,7 @@ const Posts: React.FC = () => {
     if (!post || post.sent_to_schedule) return;
     setPosts(prev => prev.map(p => p.id === id ? { ...p, sent_to_schedule: true } : p));
     setSelectedPost(prev => prev && prev.id === id ? { ...prev, sent_to_schedule: true } : prev);
+    postsApi.updatePost(id, { sent_to_schedule: true }).catch(console.error);
     toast.success('Sent to Schedule');
   }, [posts]);
 
@@ -252,11 +292,15 @@ const Posts: React.FC = () => {
 
   const handleBulkStatusChange = useCallback((status: PostStatus) => {
     setPosts(prev => prev.map(p => selectedIds.has(p.id) ? { ...p, status } : p));
+    // Sync each to Supabase
+    selectedIds.forEach(id => postsApi.updatePost(id, { status }).catch(console.error));
     setSelectedIds(new Set());
   }, [selectedIds]);
 
   const handleBulkDelete = useCallback(() => {
     setPosts(prev => prev.filter(p => !selectedIds.has(p.id)));
+    // Sync each to Supabase
+    selectedIds.forEach(id => postsApi.deletePost(id).catch(console.error));
     setSelectedIds(new Set());
   }, [selectedIds]);
 
@@ -323,7 +367,14 @@ const Posts: React.FC = () => {
 
   const handleRenamePillar = (oldName: string, newName: string) => {
     setPillars(prev => prev.map(p => p === oldName ? newName : p));
-    setPosts(prev => prev.map(p => p.pillar === oldName ? { ...p, pillar: newName } : p));
+    setPosts(prev => {
+      const updated = prev.map(p => p.pillar === oldName ? { ...p, pillar: newName } : p);
+      // Sync affected posts to Supabase
+      updated.filter(p => p.pillar === newName).forEach(p =>
+        postsApi.updatePost(p.id, { pillar: newName }).catch(console.error)
+      );
+      return updated;
+    });
     setFilterPillars(prev => {
       if (!prev.has(oldName)) return prev;
       const n = new Set(prev);
@@ -346,7 +397,13 @@ const Posts: React.FC = () => {
 
   const handleRenameFormat = (oldName: string, newName: string) => {
     setFormats(prev => prev.map(f => f === oldName ? newName : f));
-    setPosts(prev => prev.map(p => p.format === oldName ? { ...p, format: newName } : p));
+    setPosts(prev => {
+      const updated = prev.map(p => p.format === oldName ? { ...p, format: newName } : p);
+      updated.filter(p => p.format === newName).forEach(p =>
+        postsApi.updatePost(p.id, { format: newName }).catch(console.error)
+      );
+      return updated;
+    });
     setFilterFormats(prev => {
       if (!prev.has(oldName)) return prev;
       const n = new Set(prev);
