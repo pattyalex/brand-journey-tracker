@@ -34,17 +34,11 @@ type MobileTab = 'Ready' | 'Grid' | 'Calendar';
 const GRID_STORAGE_KEY = 'meg_schedule_grid';
 const GRID_SLOTS = 12;
 
-// ── Initial grid from seed data ──
+// ── Initial grid ──
 function getInitialGrid(): (string | null)[] {
   const saved = getJSON<(string | null)[] | null>(GRID_STORAGE_KEY, null);
   if (saved && saved.length === GRID_SLOTS) return saved;
-  // Seed: first 4 cells filled, rest empty
-  const grid: (string | null)[] = new Array(GRID_SLOTS).fill(null);
-  grid[0] = 'seed-1';
-  grid[1] = 'seed-2';
-  grid[2] = 'seed-3';
-  grid[3] = 'seed-8';
-  return grid;
+  return new Array(GRID_SLOTS).fill(null);
 }
 
 const Schedule: React.FC = () => {
