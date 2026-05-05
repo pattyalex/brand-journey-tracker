@@ -10,6 +10,9 @@ import { BrandDealsProvider } from "./contexts/BrandDealsContext";
 
 // Lazy-load import functions (stored so we can preload on hover)
 const pageImports = {
+  Posts: () => import('./pages/Posts'),
+  Shoots: () => import('./pages/Shoots'),
+  Schedule: () => import('./pages/Schedule'),
   Dashboard: () => import('./pages/Dashboard'),
   NotFound: () => import('./pages/NotFound'),
   GetStarted: () => import('./pages/GetStarted'),
@@ -37,9 +40,13 @@ const pageImports = {
   WeeklyContentTasks: () => import('./pages/WeeklyContentTasks'),
   Index: () => import('./pages/Index'),
   ResetPasswordPage: () => import('./pages/ResetPasswordPage'),
+  Tasks: () => import('./pages/Tasks'),
 };
 
 // Lazy load all pages for optimal code splitting
+const Posts = lazy(pageImports.Posts);
+const Shoots = lazy(pageImports.Shoots);
+const Schedule = lazy(pageImports.Schedule);
 const Dashboard = lazy(pageImports.Dashboard);
 const NotFound = lazy(pageImports.NotFound);
 const GetStarted = lazy(pageImports.GetStarted);
@@ -67,6 +74,7 @@ const Help = lazy(pageImports.Help);
 const WeeklyContentTasks = lazy(pageImports.WeeklyContentTasks);
 const Index = lazy(pageImports.Index);
 const ResetPasswordPage = lazy(pageImports.ResetPasswordPage);
+const Tasks = lazy(pageImports.Tasks);
 
 // Route-to-preload mapping so sidebar can trigger chunk downloads on hover
 const routePreloadMap: Record<string, () => Promise<unknown>> = {
@@ -78,6 +86,9 @@ const routePreloadMap: Record<string, () => Promise<unknown>> = {
   '/my-account': pageImports.MyAccount,
   '/settings': pageImports.Settings,
   '/help': pageImports.Help,
+  '/posts': pageImports.Posts,
+  '/shoots': pageImports.Shoots,
+  '/schedule': pageImports.Schedule,
   '/content-ideation': pageImports.ContentIdeation,
   '/content-planning': pageImports.ContentPlanning,
   '/collab-management': pageImports.CollabManagement,
@@ -85,6 +96,7 @@ const routePreloadMap: Record<string, () => Promise<unknown>> = {
   '/get-started': pageImports.GetStarted,
   '/index': pageImports.Index,
   '/strategy-demo': pageImports.StrategyDemo,
+  '/tasks': pageImports.Tasks,
 };
 
 /** Call this on mouseEnter/focus to preload a route's chunk */
@@ -207,21 +219,29 @@ function App() {
 
               {/* Protected routes — Layout (sidebar) stays mounted, only page content swaps */}
               <Route element={<ProtectedLayout />}>
-                <Route path="/app" element={<Navigate to="/production" replace />} />
-                <Route path="/dashboard" element={<Navigate to="/production" replace />} />
-                <Route path="/home-page" element={<Navigate to="/production" replace />} />
+                <Route path="/app" element={<Navigate to="/posts" replace />} />
+                <Route path="/dashboard" element={<Navigate to="/posts" replace />} />
+                <Route path="/home-page" element={<Navigate to="/posts" replace />} />
+                <Route path="/posts" element={<Posts />} />
+                <Route path="/shoots" element={<Shoots />} />
+                <Route path="/schedule" element={<Schedule />} />
                 <Route path="/content-ideation" element={<ContentIdeation />} />
                 <Route path="/content-planning" element={<ContentPlanning />} />
-                <Route path="/production" element={<Production />} />
+                {/* Hidden pages — uncomment to restore: */}
+                {/* <Route path="/production" element={<Production />} /> */}
+                <Route path="/production" element={<Navigate to="/posts" replace />} />
                 <Route path="/strategy-growth" element={<StrategyGrowth />} />
                 <Route path="/get-started" element={<GetStarted />} />
-                <Route path="/task-board" element={<TaskBoard />} />
+                {/* <Route path="/task-board" element={<TaskBoard />} /> */}
+                <Route path="/task-board" element={<Navigate to="/posts" replace />} />
                 <Route path="/help" element={<Help />} />
                 <Route path="/weekly-content" element={<WeeklyContentTasks />} />
                 <Route path="/collab-management" element={<CollabManagement />} />
                 <Route path="/brands" element={<Brands />} />
                 <Route path="/strategy-demo" element={<StrategyDemo />} />
                 <Route path="/index" element={<Index />} />
+                <Route path="/tasks" element={<Navigate to={`/tasks/${new Date().toISOString().split('T')[0]}`} replace />} />
+                <Route path="/tasks/:date" element={<Tasks />} />
               </Route>
 
               <Route path="*" element={<Suspense fallback={<PageLoader />}><NotFound /></Suspense>} />

@@ -140,6 +140,7 @@ const Production = () => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
   // Helper to scroll to and highlight a column
   const columnRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const [highlightedColumn, setHighlightedColumn] = useState<string | null>(null);

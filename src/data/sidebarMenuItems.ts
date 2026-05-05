@@ -1,15 +1,35 @@
 
-import { Home, FolderOpen, FileText, Settings, CreditCard, TrendingUp, BarChart, HelpCircle, CheckSquare, Clipboard, CheckCircle, Handshake, Clapperboard, Sparkles, Calendar, Building2 } from 'lucide-react';
+import { Home, FolderOpen, FileText, Settings, CreditCard, TrendingUp, BarChart, HelpCircle, CheckSquare, Clipboard, CheckCircle, Handshake, Clapperboard, Sparkles, Calendar, Building2, LayoutList, Camera, CalendarCheck, ListChecks } from 'lucide-react';
 import { MenuItem } from '@/types/sidebar';
 
 export const defaultMenuItems: MenuItem[] = [
   {
-    title: 'Content Hub',
-    icon: Clapperboard,
-    url: '/production',
+    title: 'Tasks',
+    icon: ListChecks,
+    url: '/tasks',
     isDeletable: false
   },
-  { title: 'Planner and Calendar', icon: Calendar, url: '/task-board', isDeletable: false },
+  {
+    title: 'Posts',
+    icon: LayoutList,
+    url: '/posts',
+    isDeletable: false
+  },
+  {
+    title: 'Shoots',
+    icon: Camera,
+    url: '/shoots',
+    isDeletable: false
+  },
+  {
+    title: 'Schedule',
+    icon: CalendarCheck,
+    url: '/schedule',
+    isDeletable: false
+  },
+  // Hidden pages — uncomment to restore:
+  // { title: 'Content Hub', icon: Clapperboard, url: '/production', isDeletable: false },
+  // { title: 'Planner and Calendar', icon: Calendar, url: '/task-board', isDeletable: false },
   {
     title: 'Partnerships',
     icon: Handshake,
@@ -17,7 +37,7 @@ export const defaultMenuItems: MenuItem[] = [
     isDeletable: false
   },
   {
-    title: 'Strategy and Goals',
+    title: 'Strategy',
     icon: TrendingUp,
     url: '/strategy-growth',
     isDeletable: false

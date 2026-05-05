@@ -1,11 +1,13 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, Clapperboard, Calendar, Handshake } from 'lucide-react';
+import { Home, Clapperboard, Calendar, Handshake, Camera } from 'lucide-react';
 import { preloadRoute } from '@/App';
 
 const navItems = [
-  { label: 'Content', icon: Clapperboard, path: '/production' },
-  { label: 'Calendar', icon: Calendar, path: '/task-board' },
+  // Hidden pages — uncomment to restore:
+  // { label: 'Content', icon: Clapperboard, path: '/production' },
+  { label: 'Shoots', icon: Camera, path: '/shoots' },
+  // { label: 'Calendar', icon: Calendar, path: '/task-board' },
   { label: 'Deals', icon: Handshake, path: '/brands' },
 ];
 

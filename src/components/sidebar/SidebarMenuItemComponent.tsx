@@ -31,7 +31,7 @@ const SidebarMenuItemComponent = ({ item, onDelete }: SidebarMenuItemProps) => {
   const location = useLocation();
 
   // Check if this item or any of its sub-items is active
-  const isActive = location.pathname === item.url;
+  const isActive = location.pathname === item.url || location.pathname.startsWith(item.url + '/');
   const isSubItemActive = item.subItems?.some(sub => location.pathname === sub.url) || false;
   
   // Save expanded state to localStorage whenever it changes
