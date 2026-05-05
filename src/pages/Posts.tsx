@@ -150,6 +150,13 @@ const Posts: React.FC = () => {
     setSelectedPost(prev => prev && prev.id === id ? { ...prev, ...updates } : prev);
   }, []);
 
+  const handleReplaceAttachment = useCallback((id: string, blobUrl: string, newEntry: string) => {
+    const replace = (files: string[] | undefined) =>
+      files?.map(f => f.includes(blobUrl) ? newEntry : f);
+    setPosts(prev => prev.map(p => p.id === id ? { ...p, attachedFiles: replace(p.attachedFiles) } : p));
+    setSelectedPost(prev => prev && prev.id === id ? { ...prev, attachedFiles: replace(prev.attachedFiles) } : prev);
+  }, []);
+
   const handleReorder = useCallback((reordered: Post[]) => {
     setPosts(prev => {
       const reorderedIds = new Set(reordered.map(p => p.id));
@@ -496,6 +503,7 @@ const Posts: React.FC = () => {
         onAddFormat={handleAddFormat}
         onDeleteFormat={handleDeleteFormat}
         onDeletePillar={handleDeletePillar}
+        onReplaceAttachment={handleReplaceAttachment}
       />
 
       <InspirationPanel

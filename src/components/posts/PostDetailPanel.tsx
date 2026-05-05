@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Calendar, Hash, FileText, BarChart3, StickyNote, Paperclip, Trash2, ImageIcon, Pencil, ExternalLink, Maximize2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, Calendar, MessageSquare, FileText, BarChart3, StickyNote, Paperclip, Trash2, ImageIcon, Pencil, ExternalLink, Maximize2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Post, PostStatus, POST_STATUSES, STATUS_COLORS, getPillarStyle } from '@/types/posts';
 import { uploadPostThumbnail } from '@/lib/postImageUpload';
 import { API_BASE } from '@/lib/api-base';
@@ -18,9 +18,10 @@ interface PostDetailPanelProps {
   onAddFormat: (name: string) => void;
   onDeleteFormat: (name: string) => void;
   onDeletePillar: (name: string) => void;
+  onReplaceAttachment: (id: string, blobUrl: string, newEntry: string) => void;
 }
 
-const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, formats, onClose, onUpdate, onDelete, onAddFormat, onDeleteFormat, onDeletePillar }) => {
+const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, formats, onClose, onUpdate, onDelete, onAddFormat, onDeleteFormat, onDeletePillar, onReplaceAttachment }) => {
   const [editingScript, setEditingScript] = useState(false);
   const [scriptDraft, setScriptDraft] = useState('');
   const [editingCaption, setEditingCaption] = useState(false);
@@ -166,6 +167,56 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
             <div className="px-8 py-6 space-y-8">
 
               {/* Row 1: Cover Image + Inspiration */}
+              {(() => {
+                const fileCount = post.attachedFiles?.length || 0;
+                const manyFiles = fileCount > 4;
+
+                const labelClass = manyFiles
+                  ? "text-[11px] font-medium text-gray-400 uppercase tracking-wider w-20 pl-3 flex-shrink-0"
+                  : "text-[11px] font-medium text-gray-400 uppercase tracking-wider block mb-1.5";
+                const rowClass = manyFiles ? "flex items-center gap-2" : "";
+
+                const propertiesBlock = (
+                  <div className={manyFiles ? "flex flex-col gap-2.5 mt-8" : "grid grid-cols-4 gap-4"}>
+                    <div className={rowClass}>
+                      <span className={labelClass}>Pillar</span>
+                      <PillarDropdown
+                        value={post.pillar}
+                        pillars={pillars}
+                        onChange={val => onUpdate(post.id, { pillar: val })}
+                        onDelete={onDeletePillar}
+                      />
+                    </div>
+                    <div className={rowClass}>
+                      <span className={labelClass}>Format</span>
+                      <FormatDropdown
+                        value={post.format}
+                        formats={formats}
+                        onChange={val => onUpdate(post.id, { format: val })}
+                        onAdd={onAddFormat}
+                        onDelete={onDeleteFormat}
+                      />
+                    </div>
+                    <div className={rowClass}>
+                      <span className={labelClass}>Status</span>
+                      <StatusDropdown
+                        value={post.status}
+                        onChange={val => onUpdate(post.id, { status: val })}
+                      />
+                    </div>
+                    <div className={rowClass}>
+                      <span className={labelClass}>Date</span>
+                      <input
+                        type="date"
+                        value={post.scheduledDate || ''}
+                        onChange={e => onUpdate(post.id, { scheduledDate: e.target.value || undefined })}
+                        className="text-sm text-gray-700 bg-transparent outline-none hover:bg-gray-50 rounded px-1 py-0.5 transition-colors duration-150"
+                      />
+                    </div>
+                  </div>
+                );
+
+                return (<>
               <div className="flex gap-8">
                 {/* Cover image */}
                 <div className="flex-shrink-0">
@@ -244,6 +295,7 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
                       )}
                     </div>
                   )}
+                  {manyFiles && propertiesBlock}
                 </div>
 
                 {/* Inspiration (inline next to cover) */}
@@ -279,7 +331,7 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
                                 const imgSrc = localBlobUrls[displayName] || videoThumbnails[url] || url;
                                 const isFailed = failedImages.has(imgSrc);
                                 return (
-                                <div key={i} className="relative group/file rounded-lg overflow-hidden">
+                                <div key={i} className="relative group/file rounded-xl overflow-hidden">
                                   <button onClick={() => {
                                     if (isFailed) return;
                                     const isExternal = url.startsWith('http') && !/\.(jpg|jpeg|png|gif|webp|svg)$/i.test(url) && !url.includes('/post-thumbnails/');
@@ -290,14 +342,14 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
                                     }
                                   }} className="w-full">
                                     {isFailed ? (
-                                      <div className="w-full aspect-square bg-gray-100 rounded-lg flex items-center justify-center">
+                                      <div className="w-full aspect-square bg-gray-100 rounded-xl flex items-center justify-center">
                                         <span className="text-[10px] text-gray-400 text-center px-1">Image unavailable</span>
                                       </div>
                                     ) : (
                                       <img
                                         src={imgSrc}
                                         alt={displayName}
-                                        className="w-full aspect-square object-cover hover:scale-105 transition-transform duration-200 cursor-pointer bg-gray-100"
+                                        className="w-full aspect-square object-cover rounded-xl hover:scale-105 transition-transform duration-200 cursor-pointer bg-gray-100"
                                         onError={(e) => {
                                           const el = e.currentTarget;
                                           const microlinkUrl = `https://api.microlink.io/?url=${encodeURIComponent(url)}&screenshot=true&meta=false&embed=screenshot.url`;
@@ -504,9 +556,7 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
                             const uploadedUrl = await uploadPostThumbnail(file, `${post.id}-inspiration-${Date.now()}`);
                             if (uploadedUrl && !uploadedUrl.startsWith('blob:')) {
                               const realEntry = `${file.name}||${uploadedUrl}`;
-                              const current = [...(post.attachedFiles || []), tempEntry];
-                              const updated = current.map(f => f === tempEntry ? realEntry : f);
-                              onUpdate(post.id, { attachedFiles: updated });
+                              onReplaceAttachment(post.id, blobUrl, realEntry);
                             }
                           } catch {
                             // Keep blob URL
@@ -522,48 +572,14 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
                 </div>
               </div>
 
-              {/* Properties */}
-              <div className="grid grid-cols-4 gap-4">
-                <div>
-                  <span className="text-[11px] font-medium text-gray-400 uppercase tracking-wider block mb-1.5">Pillar</span>
-                  <PillarDropdown
-                    value={post.pillar}
-                    pillars={pillars}
-                    onChange={val => onUpdate(post.id, { pillar: val })}
-                    onDelete={onDeletePillar}
-                  />
-                </div>
-                <div>
-                  <span className="text-[11px] font-medium text-gray-400 uppercase tracking-wider block mb-1.5">Format</span>
-                  <FormatDropdown
-                    value={post.format}
-                    formats={formats}
-                    onChange={val => onUpdate(post.id, { format: val })}
-                    onAdd={onAddFormat}
-                    onDelete={onDeleteFormat}
-                  />
-                </div>
-                <div>
-                  <span className="text-[11px] font-medium text-gray-400 uppercase tracking-wider block mb-1.5">Status</span>
-                  <StatusDropdown
-                    value={post.status}
-                    onChange={val => onUpdate(post.id, { status: val })}
-                  />
-                </div>
-                <div>
-                  <span className="text-[11px] font-medium text-gray-400 uppercase tracking-wider block mb-1.5">Date</span>
-                  <input
-                    type="date"
-                    value={post.scheduledDate || ''}
-                    onChange={e => onUpdate(post.id, { scheduledDate: e.target.value || undefined })}
-                    className="text-sm text-gray-700 bg-transparent outline-none hover:bg-gray-50 rounded px-1 py-0.5 transition-colors duration-150"
-                  />
-                </div>
-              </div>
+              {/* Properties — horizontal row when ≤4 files */}
+              {!manyFiles && propertiesBlock}
+              </>);
+              })()}
 
               {/* Script */}
-              <div className="bg-gray-50/70 border border-gray-100 rounded-xl p-4 border-l-[3px] border-l-[#612A4F]/20">
-                <label className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+              <div className="mb-4">
+                <label className="text-[11px] font-medium text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-1.5">
                   <FileText className="w-3 h-3" />
                   Script
                 </label>
@@ -582,7 +598,7 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
                 ) : (
                   <p
                     onClick={() => setEditingScript(true)}
-                    className="text-sm text-gray-600 leading-relaxed cursor-text hover:bg-white rounded-md p-2 transition-colors duration-150 min-h-[2.5rem] whitespace-pre-wrap"
+                    className="text-sm text-gray-600 leading-relaxed cursor-text bg-gray-100/60 hover:bg-gray-100 rounded-md p-2 -m-2 transition-colors duration-150 min-h-[2.5rem] whitespace-pre-wrap"
                   >
                     {post.script || <span className="text-gray-300 italic">Add a script...</span>}
                   </p>
@@ -591,8 +607,8 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
 
               {/* Caption */}
               <div>
-                <label className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-                  <Hash className="w-3 h-3" />
+                <label className="text-[11px] font-medium text-gray-400 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                  <MessageSquare className="w-3 h-3" />
                   Caption
                 </label>
                 {editingCaption ? (
@@ -620,7 +636,7 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
 
               {/* Notes */}
               <div>
-                <label className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                <label className="text-[11px] font-medium text-gray-400 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
                   <StickyNote className="w-3 h-3" />
                   Notes
                 </label>
@@ -649,7 +665,7 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
               {/* Metrics (only for Posted) */}
               {post.metrics && post.status === 'Posted' && (
                 <div>
-                  <label className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                  <label className="text-[11px] font-medium text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                     <BarChart3 className="w-3 h-3" />
                     Metrics
                   </label>
