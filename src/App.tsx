@@ -219,18 +219,21 @@ function App() {
 
               {/* Protected routes — Layout (sidebar) stays mounted, only page content swaps */}
               <Route element={<ProtectedLayout />}>
-                <Route path="/app" element={<Navigate to="/production" replace />} />
-                <Route path="/dashboard" element={<Navigate to="/production" replace />} />
-                <Route path="/home-page" element={<Navigate to="/production" replace />} />
+                <Route path="/app" element={<Navigate to="/posts" replace />} />
+                <Route path="/dashboard" element={<Navigate to="/posts" replace />} />
+                <Route path="/home-page" element={<Navigate to="/posts" replace />} />
                 <Route path="/posts" element={<Posts />} />
                 <Route path="/shoots" element={<Shoots />} />
                 <Route path="/schedule" element={<Schedule />} />
                 <Route path="/content-ideation" element={<ContentIdeation />} />
                 <Route path="/content-planning" element={<ContentPlanning />} />
-                <Route path="/production" element={<Production />} />
+                {/* Hidden pages — uncomment to restore: */}
+                {/* <Route path="/production" element={<Production />} /> */}
+                <Route path="/production" element={<Navigate to="/posts" replace />} />
                 <Route path="/strategy-growth" element={<StrategyGrowth />} />
                 <Route path="/get-started" element={<GetStarted />} />
-                <Route path="/task-board" element={<TaskBoard />} />
+                {/* <Route path="/task-board" element={<TaskBoard />} /> */}
+                <Route path="/task-board" element={<Navigate to="/posts" replace />} />
                 <Route path="/help" element={<Help />} />
                 <Route path="/weekly-content" element={<WeeklyContentTasks />} />
                 <Route path="/collab-management" element={<CollabManagement />} />

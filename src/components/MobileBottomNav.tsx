@@ -4,9 +4,10 @@ import { Home, Clapperboard, Calendar, Handshake, Camera } from 'lucide-react';
 import { preloadRoute } from '@/App';
 
 const navItems = [
-  { label: 'Content', icon: Clapperboard, path: '/production' },
+  // Hidden pages — uncomment to restore:
+  // { label: 'Content', icon: Clapperboard, path: '/production' },
   { label: 'Shoots', icon: Camera, path: '/shoots' },
-  { label: 'Calendar', icon: Calendar, path: '/task-board' },
+  // { label: 'Calendar', icon: Calendar, path: '/task-board' },
   { label: 'Deals', icon: Handshake, path: '/brands' },
 ];
 

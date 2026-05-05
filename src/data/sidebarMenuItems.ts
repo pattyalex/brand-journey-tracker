@@ -27,13 +27,9 @@ export const defaultMenuItems: MenuItem[] = [
     url: '/schedule',
     isDeletable: false
   },
-  {
-    title: 'Content Hub',
-    icon: Clapperboard,
-    url: '/production',
-    isDeletable: false
-  },
-  { title: 'Planner and Calendar', icon: Calendar, url: '/task-board', isDeletable: false },
+  // Hidden pages — uncomment to restore:
+  // { title: 'Content Hub', icon: Clapperboard, url: '/production', isDeletable: false },
+  // { title: 'Planner and Calendar', icon: Calendar, url: '/task-board', isDeletable: false },
   {
     title: 'Partnerships',
     icon: Handshake,
