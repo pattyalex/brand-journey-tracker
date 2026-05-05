@@ -1,6 +1,6 @@
 
-import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 import { format, isSameMonth, isSameYear, addMonths, subMonths, addYears, subYears } from "date-fns";
 import {
   ChevronLeft,
@@ -9,6 +9,7 @@ import {
   ArrowUpRight,
   Wallet,
   Archive,
+  Sparkles,
 } from "lucide-react";
 import { useBrandsPage } from "@/components/brands/useBrandsPage";
 import BrandsFilters from "@/components/brands/BrandsFilters";
@@ -16,6 +17,22 @@ import BrandsKanban from "@/components/brands/BrandsKanban";
 import BrandDealDialog from "@/components/brands/BrandDealDialog";
 import { BrandDeal } from "@/components/brands/brandsTypes";
 import { useBrandDealsContext } from "@/contexts/BrandDealsContext";
+
+const summaryCards = [
+  { key: 'earnings', icon: Wallet, tint: 'bg-[#612a4f]/10', iconTint: 'text-[#612a4f]' },
+  { key: 'yearly', icon: ArrowUpRight, tint: 'bg-blue-100', iconTint: 'text-blue-600' },
+  { key: 'expected', icon: Clock, tint: 'bg-amber-100', iconTint: 'text-amber-600' },
+  { key: 'active', icon: Sparkles, tint: 'bg-emerald-100', iconTint: 'text-emerald-600' },
+];
+
+const cardStagger = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.06 } },
+};
+const cardFade = {
+  hidden: { opacity: 0, y: 8 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.25, 1, 0.5, 1] } },
+};
 
 const Brands = () => {
   const {
@@ -51,64 +68,66 @@ const Brands = () => {
   } = useBrandsPage();
   const { updateDeal } = useBrandDealsContext();
 
+  const isZero = (v: number) => v === 0;
+  const cardData = [
+    { label: isYearView ? `${format(selectedMonth, "yyyy")} Earnings` : `${format(selectedMonth, "MMM")} Earnings`, value: `$${isYearView ? metrics.yearlyEarnings.toLocaleString() : metrics.monthlyEarnings.toLocaleString()}`, zero: isZero(isYearView ? metrics.yearlyEarnings : metrics.monthlyEarnings) },
+    { label: isYearView ? "Total Deals" : `${format(selectedMonth, "yyyy")} Earnings`, value: isYearView ? filteredDeals.length.toString() : `$${metrics.yearlyEarnings.toLocaleString()}`, zero: isYearView ? filteredDeals.length === 0 : isZero(metrics.yearlyEarnings) },
+    { label: "Expected", value: `$${metrics.pendingAmount.toLocaleString()}`, zero: isZero(metrics.pendingAmount) },
+    { label: "Active Deals", value: metrics.activeDeals.toString(), zero: isZero(metrics.activeDeals) },
+  ];
+
   return (
-      <div className="min-h-screen bg-gradient-to-br from-[#F0EAED] via-[#F8F6F6] to-[#FFFAF3]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-        <div className="p-4 sm:p-6 lg:p-10">
-            {/* Month Picker / Archive Header */}
+      <div className="h-full flex flex-col overflow-hidden">
+        <div className="flex-1 overflow-y-auto px-6 py-6 md:px-8 lg:px-10">
+
+            {/* Month Picker */}
             {showArchived ? (
-              <div className="flex items-center justify-center gap-4 mb-10">
+              <div className="flex items-center gap-4 mb-8">
                 <button
                   onClick={() => setShowArchived(false)}
-                  className="p-2.5 rounded-xl bg-white/60 backdrop-blur-sm border border-[#8B7082]/10 hover:bg-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 text-[#8B7082] hover:text-[#612a4f]"
+                  className="p-2 rounded-lg border border-gray-200 hover:border-[#612a4f]/20 hover:bg-white transition-all duration-200 text-gray-400 hover:text-[#612a4f]"
                 >
-                  <ChevronLeft className="w-5 h-5" />
+                  <ChevronLeft className="w-4 h-4" />
                 </button>
-                <div className="flex items-center gap-3">
-                  <Archive className="w-6 h-6 text-[#612a4f]" />
-                  <h2 className="text-3xl text-[#612a4f] tracking-[-0.02em]" style={{ fontFamily: "'Playfair Display', serif" }}>
-                    Archive
-                  </h2>
-                  <span className="text-sm text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>({archivedCount} deals)</span>
+                <div>
+                  <h2 className="text-sm font-semibold text-gray-800">Archive</h2>
+                  <p className="text-[11px] text-gray-400">{archivedCount} deals</p>
                 </div>
-                <div className="w-11" /> {/* Spacer for alignment */}
               </div>
             ) : (
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 mb-8 sm:mb-10">
-                <div className="flex items-center gap-4 sm:gap-8">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="flex items-center gap-0.5">
                   <button
                     onClick={() => setSelectedMonth(prev => isYearView ? subYears(prev, 1) : subMonths(prev, 1))}
-                    className="text-[#612a4f] hover:text-[#612a4f]/80 transition-colors duration-200"
+                    className="p-0.5 text-gray-300 hover:text-gray-500 transition-colors duration-150"
                   >
-                    <ChevronLeft className="w-5 h-5" strokeWidth={1.5} />
+                    <ChevronLeft className="w-3.5 h-3.5" strokeWidth={1.5} />
                   </button>
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    <h2 className="text-2xl sm:text-3xl font-medium text-[#612a4f] min-w-[180px] sm:min-w-[240px] text-center tracking-[-0.02em]" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 500 }}>
-                      {isYearView ? format(selectedMonth, "yyyy") : format(selectedMonth, "MMMM yyyy")}
-                    </h2>
-                    {(isYearView ? !isSameYear(selectedMonth, new Date()) : !isSameMonth(selectedMonth, new Date())) && (
-                      <button
-                        onClick={() => setSelectedMonth(new Date())}
-                        className="text-xs text-[#8B7082] hover:text-[#612a4f] underline tracking-wide uppercase"
-                      >
-                        Today
-                      </button>
-                    )}
-                  </div>
+                  <h2 className="text-sm font-semibold text-gray-800 select-none px-0.5">
+                    {isYearView ? format(selectedMonth, "yyyy") : format(selectedMonth, "MMMM yyyy")}
+                  </h2>
                   <button
                     onClick={() => setSelectedMonth(prev => isYearView ? addYears(prev, 1) : addMonths(prev, 1))}
-                    className="text-[#612a4f] hover:text-[#612a4f]/80 transition-colors duration-200"
+                    className="p-0.5 text-gray-300 hover:text-gray-500 transition-colors duration-150"
                   >
-                    <ChevronRight className="w-5 h-5" strokeWidth={1.5} />
+                    <ChevronRight className="w-3.5 h-3.5" strokeWidth={1.5} />
                   </button>
                 </div>
-                {/* Year View Toggle */}
+                {(isYearView ? !isSameYear(selectedMonth, new Date()) : !isSameMonth(selectedMonth, new Date())) && (
+                  <button
+                    onClick={() => setSelectedMonth(new Date())}
+                    className="text-[11px] text-gray-400 hover:text-[#612a4f] transition-colors duration-200"
+                  >
+                    Today
+                  </button>
+                )}
                 <button
                   onClick={() => setIsYearView(prev => !prev)}
                   className={cn(
-                    "px-3 py-1.5 text-xs font-medium rounded-full border transition-all duration-200",
+                    "text-[11px] font-medium transition-colors duration-200",
                     isYearView
-                      ? "bg-[#612a4f] text-white border-[#612a4f]"
-                      : "bg-white text-[#612a4f] border-[#E8E4E6] hover:border-[#612a4f]/30"
+                      ? "text-[#612a4f]"
+                      : "text-gray-400 hover:text-[#612a4f]"
                   )}
                 >
                   {isYearView ? "By Month" : `All ${format(selectedMonth, "yyyy")} Deals`}
@@ -116,52 +135,44 @@ const Brands = () => {
               </div>
             )}
 
-            {/* Dashboard Summary */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 mb-8 sm:mb-10">
-              <Card className="group p-4 sm:p-6 bg-white border border-[#D8C8D3] rounded-xl sm:rounded-2xl shadow-none">
-                <div className="flex items-center gap-1.5 sm:gap-2 mb-2 sm:mb-3">
-                  <Wallet className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-[#8B7082]" strokeWidth={1.5} />
-                  <p className="text-[9px] sm:text-[10px] text-[#8B7082] font-medium uppercase tracking-[0.08em] truncate">
-                    {isYearView ? `${format(selectedMonth, "yyyy")} EARNINGS` : `${format(selectedMonth, "MMM").toUpperCase()} EARNINGS`}
-                  </p>
-                </div>
-                <p className={`text-xl sm:text-[32px] font-normal text-[#612a4f] tracking-[-0.02em] leading-none transition-opacity duration-300 ${isReady ? 'opacity-100' : 'opacity-0'}`} style={{ fontFamily: "'Playfair Display', serif" }}>
-                  ${isYearView ? metrics.yearlyEarnings.toLocaleString() : metrics.monthlyEarnings.toLocaleString()}
-                </p>
-              </Card>
-              <Card className="group p-4 sm:p-6 bg-white border border-[#D8C8D3] rounded-xl sm:rounded-2xl shadow-none">
-                <div className="flex items-center gap-1.5 sm:gap-2 mb-2 sm:mb-3">
-                  <ArrowUpRight className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-[#8B7082]" />
-                  <p className="text-[9px] sm:text-[10px] text-[#8B7082] font-medium uppercase tracking-[0.08em] truncate">
-                    {isYearView ? "TOTAL DEALS" : `${format(selectedMonth, "yyyy")} EARNINGS`}
-                  </p>
-                </div>
-                <p className={`text-xl sm:text-[32px] font-normal text-[#612a4f] tracking-[-0.02em] leading-none transition-opacity duration-300 ${isReady ? 'opacity-100' : 'opacity-0'}`} style={{ fontFamily: "'Playfair Display', serif" }}>
-                  {isYearView ? filteredDeals.length : `$${metrics.yearlyEarnings.toLocaleString()}`}
-                </p>
-              </Card>
-              <Card className="group p-4 sm:p-6 bg-white border border-[#D8C8D3] rounded-xl sm:rounded-2xl shadow-none">
-                <div className="flex items-center gap-1.5 sm:gap-2 mb-2 sm:mb-3">
-                  <Clock className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-[#8B7082]" strokeWidth={1.5} />
-                  <p className="text-[9px] sm:text-[10px] text-[#8B7082] font-medium uppercase tracking-[0.08em] truncate">EXPECTED</p>
-                </div>
-                <p className={`text-xl sm:text-[32px] font-normal text-[#612a4f] tracking-[-0.02em] leading-none transition-opacity duration-300 ${isReady ? 'opacity-100' : 'opacity-0'}`} style={{ fontFamily: "'Playfair Display', serif" }}>
-                  ${metrics.pendingAmount.toLocaleString()}
-                </p>
-              </Card>
-              <Card className="group p-4 sm:p-6 bg-white border border-[#D8C8D3] rounded-xl sm:rounded-2xl shadow-none">
-                <div className="flex items-center gap-1.5 sm:gap-2 mb-2 sm:mb-3">
-                  <svg className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-[#8B7082]" viewBox="0 0 24 24" fill="currentColor" fillOpacity="0.2" stroke="currentColor" strokeWidth="1.5"><path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" /></svg>
-                  <p className="text-[9px] sm:text-[10px] text-[#8B7082] font-medium uppercase tracking-[0.08em] truncate">ACTIVE DEALS</p>
-                </div>
-                <p className={`text-xl sm:text-[32px] font-normal text-[#612a4f] tracking-[-0.02em] leading-none transition-opacity duration-300 ${isReady ? 'opacity-100' : 'opacity-0'}`} style={{ fontFamily: "'Playfair Display', serif" }}>
-                  {metrics.activeDeals}
-                </p>
-              </Card>
-            </div>
+            {/* Dashboard Summary Cards */}
+            <motion.div
+              className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8"
+              variants={cardStagger}
+              initial="hidden"
+              animate="show"
+            >
+              {summaryCards.map((card, i) => {
+                const data = cardData[i];
+                const Icon = card.icon;
+                return (
+                  <motion.div
+                    key={card.key}
+                    variants={cardFade}
+                    className="relative bg-white rounded-lg border border-gray-100 p-4 overflow-hidden group shadow-[0_1px_3px_rgba(0,0,0,0.04),0_2px_6px_rgba(0,0,0,0.03)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)] transition-shadow duration-300"
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <p className="text-[10px] text-gray-500 font-semibold tracking-wider uppercase">
+                        {data.label}
+                      </p>
+                      <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center -mt-0.5 -mr-0.5", card.tint)}>
+                        <Icon className={cn("w-3.5 h-3.5", card.iconTint)} strokeWidth={1.5} />
+                      </div>
+                    </div>
+                    <p className={cn(
+                      "text-xl font-bold text-gray-900 tracking-tight leading-none transition-all duration-300",
+                      isReady ? 'opacity-100' : 'opacity-0',
+                      'text-gray-900'
+                    )} style={{ fontVariantNumeric: 'tabular-nums' }}>
+                      {data.value}
+                    </p>
+                  </motion.div>
+                );
+              })}
+            </motion.div>
 
-            {/* Toolbar */}
-            <BrandsFilters
+            {/* Toolbar — hidden when no deals */}
+            {filteredDeals.length > 0 && <BrandsFilters
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
               statusFilter={statusFilter}
@@ -172,7 +183,7 @@ const Brands = () => {
               setShowArchived={setShowArchived}
               archivedCount={archivedCount}
               onAddDeal={() => setIsAddDialogOpen(true)}
-            />
+            />}
 
             {/* Main Content */}
             <BrandsKanban

@@ -1,7 +1,6 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { GripVertical, MoreHorizontal, Trash2, Camera, ArrowRight, ImageIcon } from 'lucide-react';
-import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+import { GripVertical, Trash2, ArrowRight, ImageIcon } from 'lucide-react';
 import PostsDatePicker from './PostsDatePicker';
 import FormatDropdown from './FormatDropdown';
 import PillarDropdown from './PillarDropdown';
@@ -430,36 +429,14 @@ const SortableRow: React.FC<SortableRowProps> = ({
         />
       </td>
 
-      {/* Actions menu */}
+      {/* Delete */}
       <td className="px-2 py-3">
-        <Popover>
-          <PopoverTrigger asChild>
-            <button
-              onClick={e => e.stopPropagation()}
-              className="opacity-0 group-hover:opacity-100 p-1 rounded text-gray-300 hover:text-gray-500 transition-all duration-150"
-            >
-              <MoreHorizontal className="w-3.5 h-3.5" />
-            </button>
-          </PopoverTrigger>
-          <PopoverContent align="end" sideOffset={4} className="w-44 p-1 rounded-lg border border-gray-100 bg-white shadow-lg" onClick={e => e.stopPropagation()}>
-            {onSendToShoots && (
-              <button
-                onClick={() => onSendToShoots(post.id)}
-                className="flex items-center gap-2 px-3 py-1.5 text-[12px] text-gray-600 hover:bg-gray-50 rounded-md cursor-pointer w-full"
-              >
-                <Camera className="w-3.5 h-3.5" />
-                Plan a shoot
-              </button>
-            )}
-            <button
-              onClick={() => onDelete(post.id)}
-              className="flex items-center gap-2 px-3 py-1.5 text-[12px] text-red-500 hover:bg-gray-50 rounded-md cursor-pointer w-full"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-              Delete
-            </button>
-          </PopoverContent>
-        </Popover>
+        <button
+          onClick={e => { e.stopPropagation(); onDelete(post.id); }}
+          className="opacity-0 group-hover:opacity-100 p-1 rounded text-gray-300 hover:text-red-400 transition-all duration-150"
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+        </button>
       </td>
     </motion.tr>
   );

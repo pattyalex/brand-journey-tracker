@@ -44,8 +44,10 @@ export default function CollabManagement() {
   });
 
   return (
-      <div className="w-full max-w-[1600px] mx-auto px-8 py-8">
-        <ModernBrandsTable />
+      <div className="h-full flex flex-col overflow-hidden">
+        <div className="flex-1 overflow-y-auto px-6 py-6 md:px-8 lg:px-10">
+          <ModernBrandsTable />
+        </div>
       </div>
   );
 }

@@ -134,68 +134,70 @@ const BrandDealDialog = ({ open, onOpenChange, deal, onSave, onQuickUpdate }: De
   const calculatedTotal = (formData.depositAmount || 0) + deliverableTotal;
   const hasMismatch = deliverableTotal > 0 && calculatedTotal !== (formData.totalFee || 0);
 
+  const inputClass = "rounded-lg border-gray-200 focus:border-[#612a4f]/30 focus:ring-0 focus:shadow-[0_0_0_2px_rgba(97,42,79,0.08)] transition-shadow duration-150";
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-[#FAF9F8] via-[#F8F6F5] to-[#F5F3F2] border border-[#8B7082]/10" style={{ fontFamily: "'DM Sans', sans-serif", borderRadius: '20px', boxShadow: '0 24px 80px rgba(0,0,0,0.12)' }}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white border border-gray-200 rounded-lg shadow-xl">
         <DialogHeader>
-          <DialogTitle className="text-2xl text-[#612a4f] tracking-[-0.02em]" style={{ fontFamily: "'Playfair Display', serif" }}>{deal ? 'Edit Deal' : 'Add New Deal'}</DialogTitle>
+          <DialogTitle className="text-sm font-semibold text-gray-800">{deal ? 'Edit Deal' : 'Add New Deal'}</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
+        <div className="space-y-5 py-3">
           {/* Partnership Details */}
-          <div className="space-y-4 p-6 rounded-2xl bg-white border border-[#E8E4E6] shadow-[0_2px_8px_rgba(0,0,0,0.04),0_4px_16px_rgba(97,42,79,0.06)]">
-            <h3 className="text-sm font-semibold text-[#612a4f] flex items-center gap-3 tracking-wide">
-              <div className="w-9 h-9 rounded-lg bg-[#612a4f] flex items-center justify-center">
-                <Building2 className="w-4 h-4 text-white" />
+          <div className="space-y-3 p-5 rounded-lg bg-white border border-gray-100 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+            <h3 className="text-xs font-semibold text-gray-800 flex items-center gap-2.5 uppercase tracking-wider">
+              <div className="w-7 h-7 rounded-md bg-[#612a4f] flex items-center justify-center">
+                <Building2 className="w-3.5 h-3.5 text-white" />
               </div>
               Partnership Details
             </h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs text-[#8B7082] mb-1 block">Brand Name *</label>
+                <label className="text-[11px] text-gray-400 mb-1 block">Brand Name *</label>
                 <Input
                   value={formData.brandName}
                   onChange={(e) => setFormData(prev => ({ ...prev, brandName: e.target.value }))}
                   onKeyDown={handleEnterKey}
                   placeholder="e.g., Nike"
-                  className="rounded-[10px] border-[#E8E4E6] focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] transition-shadow duration-200"
+                  className={inputClass}
                 />
               </div>
               <div>
-                <label className="text-xs text-[#8B7082] mb-1 block">Product/Campaign</label>
+                <label className="text-[11px] text-gray-400 mb-1 block">Product/Campaign</label>
                 <Input
                   value={formData.productCampaign}
                   onChange={(e) => setFormData(prev => ({ ...prev, productCampaign: e.target.value }))}
                   onKeyDown={handleEnterKey}
                   placeholder="e.g., Summer Collection"
-                  className="rounded-[10px] border-[#E8E4E6] focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] transition-shadow duration-200"
+                  className={inputClass}
                 />
               </div>
               <div>
-                <label className="text-xs text-[#8B7082] mb-1 block">Contact Person</label>
+                <label className="text-[11px] text-gray-400 mb-1 block">Contact Person</label>
                 <Input
                   value={formData.contactPerson}
                   onChange={(e) => setFormData(prev => ({ ...prev, contactPerson: e.target.value }))}
                   onKeyDown={handleEnterKey}
                   placeholder="e.g., Maria Smith"
-                  className="rounded-[10px] border-[#E8E4E6] focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] transition-shadow duration-200"
+                  className={inputClass}
                 />
               </div>
               <div>
-                <label className="text-xs text-[#8B7082] mb-1 block">Contact Email</label>
+                <label className="text-[11px] text-gray-400 mb-1 block">Contact Email</label>
                 <Input
                   type="email"
                   value={formData.contactEmail}
                   onChange={(e) => setFormData(prev => ({ ...prev, contactEmail: e.target.value }))}
                   onKeyDown={handleEnterKey}
                   placeholder="maria@brand.com"
-                  className="rounded-[10px] border-[#E8E4E6] focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] transition-shadow duration-200"
+                  className={inputClass}
                 />
               </div>
               <div>
-                <label className="text-xs text-[#8B7082] mb-1 block">Project Status</label>
+                <label className="text-[11px] text-gray-400 mb-1 block">Project Status</label>
                 <Select value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value as BrandDeal['status'], customStatus: value === 'other' ? '' : undefined }))}>
-                  <SelectTrigger className="rounded-[10px] border-[#E8E4E6] focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)]">
+                  <SelectTrigger className={cn(inputClass, "h-10")}>
                     <SelectValue>
                       {formData.status === 'other'
                         ? (formData.customStatus || 'Other')
@@ -222,37 +224,37 @@ const BrandDealDialog = ({ open, onOpenChange, deal, onSave, onQuickUpdate }: De
                       }
                     }}
                     placeholder="Specify status..."
-                    className="rounded-[10px] border-[#E8E4E6] focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] h-9 text-sm mt-2 transition-shadow duration-200"
+                    className={cn(inputClass, "h-9 text-sm mt-2")}
                     autoFocus
                   />
                 )}
               </div>
               <div>
-                <label className="text-xs text-[#8B7082] mb-1 block">Contract</label>
+                <label className="text-[11px] text-gray-400 mb-1 block">Contract</label>
                 {formData.contractFile ? (
-                  <div className="flex items-center gap-2 p-2 bg-[#FAF9F7] rounded-[10px] border border-[#E8E4E6]">
-                    <FileText className="w-4 h-4 text-[#8B7082] flex-shrink-0" />
-                    <span className="text-sm text-[#612a4f] flex-1 truncate">{formData.contractFile.name}</span>
+                  <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg border border-gray-200">
+                    <FileText className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                    <span className="text-sm text-gray-700 flex-1 truncate">{formData.contractFile.name}</span>
                     <button
                       type="button"
                       onClick={() => window.open(formData.contractFile?.url, '_blank')}
-                      className="text-xs text-[#8B7082] hover:text-[#612a4f]"
+                      className="text-xs text-gray-400 hover:text-[#612a4f] transition-colors"
                     >
                       View
                     </button>
                     <button
                       type="button"
                       onClick={() => setFormData(prev => ({ ...prev, contractFile: undefined }))}
-                      className="text-xs text-red-500 hover:text-red-700"
+                      className="text-xs text-red-400 hover:text-red-600 transition-colors"
                     >
-                      <X className="w-3.5 h-3.5" />
+                      <X className="w-3 h-3" />
                     </button>
                   </div>
                 ) : (
                   <label className="cursor-pointer block">
-                    <div className="flex items-center justify-center gap-2 h-10 border border-[#E8E4E6] rounded-[10px] bg-[#F5F0F3] hover:bg-[#EDE6EB] hover:border-[#D5CDD2] transition-all duration-200">
-                      <Upload className="w-4 h-4 text-[#612a4f]" />
-                      <span className="text-sm text-[#612a4f] font-medium">Upload PDF</span>
+                    <div className="flex items-center justify-center gap-2 h-10 border border-gray-200 rounded-lg bg-gray-50 hover:bg-gray-100 hover:border-gray-300 transition-all duration-150">
+                      <Upload className="w-3.5 h-3.5 text-gray-500" />
+                      <span className="text-sm text-gray-500 font-medium">Upload PDF</span>
                     </div>
                     <input
                       type="file"
@@ -282,19 +284,19 @@ const BrandDealDialog = ({ open, onOpenChange, deal, onSave, onQuickUpdate }: De
           </div>
 
           {/* Payment Details */}
-          <div className="space-y-5 p-6 rounded-2xl bg-white border border-[#E8E4E6] shadow-[0_2px_8px_rgba(0,0,0,0.04),0_4px_16px_rgba(97,42,79,0.06)]">
-            <h3 className="text-sm font-semibold text-[#612a4f] flex items-center gap-3 tracking-wide">
-              <div className="w-9 h-9 rounded-lg bg-[#612a4f] flex items-center justify-center">
-                <DollarSign className="w-4 h-4 text-white" />
+          <div className="space-y-4 p-5 rounded-lg bg-white border border-gray-100 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+            <h3 className="text-xs font-semibold text-gray-800 flex items-center gap-2.5 uppercase tracking-wider">
+              <div className="w-7 h-7 rounded-md bg-[#612a4f] flex items-center justify-center">
+                <DollarSign className="w-3.5 h-3.5 text-white" />
               </div>
               Payment Details
             </h3>
 
-            {/* Total Fee - Prominent */}
-            <div className="bg-white rounded-lg p-4">
-              <label className="text-xs font-semibold text-[#612a4f] uppercase tracking-wide mb-2 block">Total Fee</label>
+            {/* Total Fee */}
+            <div className="bg-gray-50/50 rounded-lg p-4">
+              <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2 block">Total Fee</label>
               <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold text-[#612a4f]">$</span>
+                <span className="text-xl font-semibold text-gray-800">$</span>
                 <Input
                   type="text"
                   value={formData.totalFee ? formData.totalFee.toLocaleString() : ''}
@@ -310,16 +312,17 @@ const BrandDealDialog = ({ open, onOpenChange, deal, onSave, onQuickUpdate }: De
                   }}
                   placeholder="0"
                   className={cn(
-                    "text-2xl font-bold h-12 rounded-[10px] border-[#E8E4E6] focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] transition-shadow duration-200",
+                    "text-xl font-semibold h-11",
+                    inputClass,
                     hasMismatch && "bg-amber-50 border-amber-300"
                   )}
                 />
               </div>
-              <div className="flex items-center gap-4 mt-3 pt-3 border-t border-[#8B7082]/10">
+              <div className="flex items-center gap-4 mt-3 pt-3 border-t border-gray-100">
                 <div className="flex-1">
-                  <label className="text-xs text-[#8B7082] mb-1 block">Deposit</label>
+                  <label className="text-[11px] text-gray-400 mb-1 block">Deposit</label>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-[#8B7082]">$</span>
+                    <span className="text-sm text-gray-400">$</span>
                     <Input
                       type="number"
                       value={formData.depositAmount || ''}
@@ -327,18 +330,19 @@ const BrandDealDialog = ({ open, onOpenChange, deal, onSave, onQuickUpdate }: De
                       onKeyDown={handleEnterKey}
                       placeholder="0"
                       className={cn(
-                        "h-8 text-sm rounded-[10px] border-[#E8E4E6] focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] transition-shadow duration-200",
+                        "h-8 text-sm",
+                        inputClass,
                         hasMismatch && "bg-amber-50 border-amber-300"
                       )}
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs text-[#8B7082] mb-1 block">Due Date</label>
+                  <label className="text-[11px] text-gray-400 mb-1 block">Due Date</label>
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Button variant="outline" className="h-8 text-sm justify-start text-left font-normal rounded-[10px] border-[#E8E4E6] hover:border-[#D5CDD2] hover:bg-[#F5F5F5] focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] transition-shadow duration-200">
-                        <CalendarIcon className="mr-2 h-3.5 w-3.5 text-[#8B7082]" />
+                      <Button variant="outline" className={cn("h-8 text-sm justify-start text-left font-normal", inputClass)}>
+                        <CalendarIcon className="mr-2 h-3.5 w-3.5 text-gray-400" />
                         {formData.finalPaymentDueDate ? format(parseISO(formData.finalPaymentDueDate), "MMM d") : "Select"}
                       </Button>
                     </PopoverTrigger>
@@ -357,47 +361,47 @@ const BrandDealDialog = ({ open, onOpenChange, deal, onSave, onQuickUpdate }: De
 
             {/* Payment Progress Tracker */}
             <div>
-              <label className="text-xs font-semibold text-[#612a4f] uppercase tracking-wide mb-3 block">Payment Progress</label>
+              <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-3 block">Payment Progress</label>
               <div className="flex items-center justify-between gap-2">
                 {/* Invoice Sent */}
                 <button
                   type="button"
                   onClick={() => setFormData(prev => ({ ...prev, invoiceSent: !prev.invoiceSent, invoiceSentDate: !prev.invoiceSent ? new Date().toISOString() : undefined }))}
                   className={cn(
-                    "flex-1 flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all",
+                    "flex-1 flex flex-col items-center gap-1.5 p-3 rounded-lg border transition-all duration-200",
                     formData.invoiceSent
                       ? "bg-[#612a4f] border-[#612a4f] text-white"
-                      : "bg-white border-[#8B7082]/20 text-[#8B7082] hover:border-[#8B7082]/40"
+                      : "bg-white border-gray-200 text-gray-400 hover:border-gray-300 hover:text-gray-500"
                   )}
                 >
-                  <Mail className="w-5 h-5" />
-                  <span className="text-xs font-medium">Invoice Sent</span>
-                  <div className={cn("w-4 h-4 rounded-full border-2", formData.invoiceSent ? "bg-white border-white" : "border-current")}>
+                  <Mail className="w-4 h-4" />
+                  <span className="text-[11px] font-medium">Invoice Sent</span>
+                  <div className={cn("w-3.5 h-3.5 rounded-full border-2", formData.invoiceSent ? "bg-white border-white" : "border-current")}>
                     {formData.invoiceSent && <CheckCircle2 className="w-full h-full text-[#612a4f]" />}
                   </div>
                 </button>
 
-                <div className="w-8 h-0.5 bg-[#8B7082]/20" />
+                <div className="w-6 h-px bg-gray-200" />
 
                 {/* Deposit Paid */}
                 <button
                   type="button"
                   onClick={() => setFormData(prev => ({ ...prev, depositPaid: !prev.depositPaid, depositPaidDate: !prev.depositPaid ? new Date().toISOString() : undefined }))}
                   className={cn(
-                    "flex-1 flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all",
+                    "flex-1 flex flex-col items-center gap-1.5 p-3 rounded-lg border transition-all duration-200",
                     formData.depositPaid
                       ? "bg-[#612a4f] border-[#612a4f] text-white"
-                      : "bg-white border-[#8B7082]/20 text-[#8B7082] hover:border-[#8B7082]/40"
+                      : "bg-white border-gray-200 text-gray-400 hover:border-gray-300 hover:text-gray-500"
                   )}
                 >
-                  <Wallet className="w-5 h-5" />
-                  <span className="text-xs font-medium">Deposit Paid</span>
-                  <div className={cn("w-4 h-4 rounded-full border-2", formData.depositPaid ? "bg-white border-white" : "border-current")}>
+                  <Wallet className="w-4 h-4" />
+                  <span className="text-[11px] font-medium">Deposit Paid</span>
+                  <div className={cn("w-3.5 h-3.5 rounded-full border-2", formData.depositPaid ? "bg-white border-white" : "border-current")}>
                     {formData.depositPaid && <CheckCircle2 className="w-full h-full text-[#612a4f]" />}
                   </div>
                 </button>
 
-                <div className="w-8 h-0.5 bg-[#8B7082]/20" />
+                <div className="w-6 h-px bg-gray-200" />
 
                 {/* Final Payment */}
                 <button
@@ -418,15 +422,15 @@ const BrandDealDialog = ({ open, onOpenChange, deal, onSave, onQuickUpdate }: De
                     if (deal && onQuickUpdate) onQuickUpdate(deal.id, updated);
                   }}
                   className={cn(
-                    "flex-1 flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all",
+                    "flex-1 flex flex-col items-center gap-1.5 p-3 rounded-lg border transition-all duration-200",
                     formData.paymentReceived
                       ? "bg-[#612a4f] border-[#612a4f] text-white"
-                      : "bg-white border-[#8B7082]/20 text-[#8B7082] hover:border-[#8B7082]/40"
+                      : "bg-white border-gray-200 text-gray-400 hover:border-gray-300 hover:text-gray-500"
                   )}
                 >
-                  <CheckCircle2 className="w-5 h-5" />
-                  <span className="text-xs font-medium">Fully Paid</span>
-                  <div className={cn("w-4 h-4 rounded-full border-2", formData.paymentReceived ? "bg-white border-white" : "border-current")}>
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span className="text-[11px] font-medium">Fully Paid</span>
+                  <div className={cn("w-3.5 h-3.5 rounded-full border-2", formData.paymentReceived ? "bg-white border-white" : "border-current")}>
                     {formData.paymentReceived && <CheckCircle2 className="w-full h-full text-[#612a4f]" />}
                   </div>
                 </button>
@@ -435,44 +439,42 @@ const BrandDealDialog = ({ open, onOpenChange, deal, onSave, onQuickUpdate }: De
           </div>
 
           {/* Deliverables */}
-          <div className="space-y-4 p-6 rounded-2xl bg-white border border-[#E8E4E6] shadow-[0_2px_8px_rgba(0,0,0,0.04),0_4px_16px_rgba(97,42,79,0.06)]">
+          <div className="space-y-3 p-5 rounded-lg bg-white border border-gray-100 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-[#612a4f] flex items-center gap-3 tracking-wide">
-                <div className="w-9 h-9 rounded-lg bg-[#612a4f] flex items-center justify-center">
-                  <Send className="w-4 h-4 text-white" />
+              <h3 className="text-xs font-semibold text-gray-800 flex items-center gap-2.5 uppercase tracking-wider">
+                <div className="w-7 h-7 rounded-md bg-[#612a4f] flex items-center justify-center">
+                  <Send className="w-3.5 h-3.5 text-white" />
                 </div>
                 Deliverables
               </h3>
-              <Button
+              <button
                 type="button"
-                variant="outline"
-                size="sm"
                 onClick={addDeliverable}
-                className="bg-gradient-to-r from-[#612a4f] to-[#4d2140] text-white hover:from-[#4d2140] hover:to-[#3a1830] border-0 rounded-lg shadow-sm hover:shadow-md transition-all duration-200"
+                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-medium bg-[#612a4f] text-white hover:bg-[#4d2240] transition-colors duration-150"
               >
-                <Plus className="w-3 h-3 mr-1" />
-                Add Deliverable
-              </Button>
+                <Plus className="w-3 h-3" />
+                Add
+              </button>
             </div>
 
             {formData.deliverables?.length === 0 ? (
-              <div className="text-center py-10 bg-gradient-to-br from-[#FAF9F8] to-[#F5F3F2] rounded-xl border border-dashed border-[#8B7082]/20">
-                <div className="w-12 h-12 mx-auto rounded-xl bg-gradient-to-br from-[#8B7082]/10 to-[#8B7082]/5 flex items-center justify-center mb-3">
-                  <Send className="w-6 h-6 text-[#8B7082]/40" />
+              <div className="text-center py-10 bg-gray-50/50 rounded-lg border border-dashed border-gray-200">
+                <div className="w-10 h-10 mx-auto rounded-full bg-[#612a4f]/[0.06] flex items-center justify-center mb-3">
+                  <Send className="w-4 h-4 text-[#612a4f]/30" />
                 </div>
-                <p className="text-sm text-[#612a4f] font-medium">No deliverables added yet</p>
-                <p className="text-xs text-[#8B7082]/70 mt-1">Click "Add Deliverable" to add content pieces</p>
+                <p className="text-sm font-medium text-gray-500">No deliverables added yet</p>
+                <p className="text-xs text-gray-400 mt-0.5">Click "Add" to add content pieces</p>
               </div>
             ) : (
-              <div className="space-y-6">
+              <div className="space-y-5">
                 {formData.deliverables?.map((deliverable, index) => (
-                  <div key={deliverable.id} className="p-4">
+                  <div key={deliverable.id} className="p-4 rounded-lg border border-gray-100">
                     <div className="flex items-start justify-between mb-3">
-                      <span className="text-sm font-semibold text-[#612a4f]">Deliverable {index + 1}</span>
+                      <span className="text-xs font-semibold text-gray-600">Deliverable {index + 1}</span>
                       <button
                         type="button"
                         onClick={() => removeDeliverable(deliverable.id)}
-                        className="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+                        className="p-1 text-gray-300 hover:text-red-400 hover:bg-red-50/80 rounded transition-colors duration-150"
                       >
                         <X className="w-3.5 h-3.5" />
                       </button>
@@ -481,12 +483,12 @@ const BrandDealDialog = ({ open, onOpenChange, deal, onSave, onQuickUpdate }: De
                     <div className="grid grid-cols-2 gap-3">
                       {/* Content Type */}
                       <div>
-                        <label className="text-xs text-[#8B7082] mb-1 block">Content Type</label>
+                        <label className="text-[11px] text-gray-400 mb-1 block">Content Type</label>
                         <Select
                           value={deliverable.contentType || undefined}
                           onValueChange={(value) => updateDeliverable(deliverable.id, { contentType: value as ContentType, customContentType: value === 'other' ? '' : undefined })}
                         >
-                          <SelectTrigger className="rounded-[10px] border-l-4 border-l-[#612a4f] border-[#E8E4E6] focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] bg-[#F5F0F3] h-9 transition-shadow duration-200">
+                          <SelectTrigger className={cn(inputClass, "border-l-2 border-l-[#612a4f] bg-[#612a4f]/[0.02] h-9")}>
                             <SelectValue placeholder="Select content">
                               {deliverable.contentType
                                 ? (deliverable.contentType === 'other'
@@ -516,7 +518,7 @@ const BrandDealDialog = ({ open, onOpenChange, deal, onSave, onQuickUpdate }: De
                               }
                             }}
                             placeholder="Specify content type..."
-                            className="rounded-[10px] border-[#E8E4E6] focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] bg-[#F5F0F3] h-9 text-sm mt-2 transition-shadow duration-200"
+                            className={cn(inputClass, "h-9 text-sm mt-2")}
                             autoFocus
                           />
                         )}
@@ -524,12 +526,12 @@ const BrandDealDialog = ({ open, onOpenChange, deal, onSave, onQuickUpdate }: De
 
                       {/* Status */}
                       <div>
-                        <label className="text-xs text-[#8B7082] mb-1 block">Deliverable {index + 1} Status</label>
+                        <label className="text-[11px] text-gray-400 mb-1 block">Deliverable {index + 1} Status</label>
                         <Select
                           value={deliverable.status || undefined}
                           onValueChange={(value) => updateDeliverable(deliverable.id, { status: value as DeliverableStatus })}
                         >
-                          <SelectTrigger className="rounded-[10px] border-[#E8E4E6] focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] bg-white h-9 transition-shadow duration-200">
+                          <SelectTrigger className={cn(inputClass, "bg-white h-9")}>
                             <SelectValue placeholder="Select status">
                               {deliverable.status ? deliverableStatusConfig[deliverable.status]?.label : null}
                             </SelectValue>
@@ -545,20 +547,20 @@ const BrandDealDialog = ({ open, onOpenChange, deal, onSave, onQuickUpdate }: De
                       {/* Submit for Approval Date */}
                       <div>
                         <div className="flex items-center justify-between mb-1">
-                          <label className="text-xs text-[#8B7082]">Submit for Approval</label>
+                          <label className="text-[11px] text-gray-400">Submit for Approval</label>
                           <label className="flex items-center gap-1.5 cursor-pointer">
                             <Checkbox
                               checked={deliverable.isSubmitted || false}
                               onCheckedChange={(checked) => updateDeliverable(deliverable.id, { isSubmitted: checked as boolean })}
-                              className="h-4 w-4 rounded-full border-[#8B7082]/30 data-[state=checked]:bg-gradient-to-b data-[state=checked]:from-[#6B9B6B] data-[state=checked]:to-[#4A7A4A] data-[state=checked]:border-[#4A7A4A] data-[state=checked]:shadow-[0_2px_8px_rgba(74,122,74,0.4),inset_0_1px_0_rgba(255,255,255,0.2)]"
+                              className="h-3.5 w-3.5 rounded-full border-gray-300 data-[state=checked]:bg-[#612a4f] data-[state=checked]:border-[#612a4f]"
                             />
-                            <span className="text-[10px] text-[#8B7082]">Done</span>
+                            <span className="text-[10px] text-gray-400">Done</span>
                           </label>
                         </div>
                         <Popover>
                           <PopoverTrigger asChild>
-                            <Button variant="outline" className="w-full justify-start text-left font-normal rounded-[10px] border-[#E8E4E6] hover:border-[#D5CDD2] hover:bg-[#F5F5F5] focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] bg-white h-9 text-sm transition-shadow duration-200">
-                              <CalendarIcon className="mr-2 h-3.5 w-3.5 text-[#8B7082]" />
+                            <Button variant="outline" className={cn("w-full justify-start text-left font-normal bg-white h-9 text-sm", inputClass)}>
+                              <CalendarIcon className="mr-2 h-3.5 w-3.5 text-gray-400" />
                               {deliverable.submissionDeadline ? format(parseISO(deliverable.submissionDeadline), "MMM d, yyyy") : "Select date"}
                             </Button>
                           </PopoverTrigger>
@@ -576,20 +578,20 @@ const BrandDealDialog = ({ open, onOpenChange, deal, onSave, onQuickUpdate }: De
                       {/* Publish Due Date */}
                       <div>
                         <div className="flex items-center justify-between mb-1">
-                          <label className="text-xs text-[#8B7082]">Publish Due Date</label>
+                          <label className="text-[11px] text-gray-400">Publish Due Date</label>
                           <label className="flex items-center gap-1.5 cursor-pointer">
                             <Checkbox
                               checked={deliverable.isPublished || false}
                               onCheckedChange={(checked) => updateDeliverable(deliverable.id, { isPublished: checked as boolean })}
-                              className="h-4 w-4 rounded-full border-[#8B7082]/30 data-[state=checked]:bg-gradient-to-b data-[state=checked]:from-[#6B9B6B] data-[state=checked]:to-[#4A7A4A] data-[state=checked]:border-[#4A7A4A] data-[state=checked]:shadow-[0_2px_8px_rgba(74,122,74,0.4),inset_0_1px_0_rgba(255,255,255,0.2)]"
+                              className="h-3.5 w-3.5 rounded-full border-gray-300 data-[state=checked]:bg-[#612a4f] data-[state=checked]:border-[#612a4f]"
                             />
-                            <span className="text-[10px] text-[#8B7082]">Done</span>
+                            <span className="text-[10px] text-gray-400">Done</span>
                           </label>
                         </div>
                         <Popover modal={true}>
                           <PopoverTrigger asChild>
-                            <Button variant="outline" className="w-full justify-start text-left font-normal rounded-[10px] border-l-4 border-l-[#8B7082] border-[#E8E4E6] hover:border-[#D5CDD2] hover:bg-[#EDE8EB] focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] bg-[#F5F0F3] h-9 text-sm transition-shadow duration-200">
-                              <CalendarIcon className="mr-2 h-3.5 w-3.5 text-[#8B7082]" />
+                            <Button variant="outline" className={cn("w-full justify-start text-left font-normal border-l-2 border-l-gray-400 bg-gray-50/50 h-9 text-sm", inputClass)}>
+                              <CalendarIcon className="mr-2 h-3.5 w-3.5 text-gray-400" />
                               {deliverable.publishDeadline ? format(parseISO(deliverable.publishDeadline), "MMM d, yyyy") : "Select date"}
                             </Button>
                           </PopoverTrigger>
@@ -612,14 +614,14 @@ const BrandDealDialog = ({ open, onOpenChange, deal, onSave, onQuickUpdate }: De
                         onChange={(e) => updateDeliverable(deliverable.id, { title: e.target.value })}
                         onKeyDown={handleEnterKey}
                         placeholder="Optional: Add a description..."
-                        className="rounded-[10px] border-[#E8E4E6] focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] bg-white h-9 text-sm transition-shadow duration-200"
+                        className={cn(inputClass, "bg-white h-9 text-sm")}
                       />
                     </div>
 
                     {/* Paid Checkbox */}
-                    <div className="mt-3 mb-4">
+                    <div className="mt-3 mb-1">
                       <div className="flex items-center justify-between mb-2">
-                        <label className="text-sm text-[#612a4f] font-semibold">
+                        <label className="text-xs text-gray-600 font-semibold">
                           Payment for this deliverable
                         </label>
                         <label className="flex items-center gap-1.5 cursor-pointer">
@@ -629,15 +631,15 @@ const BrandDealDialog = ({ open, onOpenChange, deal, onSave, onQuickUpdate }: De
                               isPaid: checked as boolean,
                               paidDate: checked ? new Date().toISOString() : undefined
                             })}
-                            className="h-4 w-4 rounded-full border-[#8B7082]/30 data-[state=checked]:bg-gradient-to-b data-[state=checked]:from-[#6B9B6B] data-[state=checked]:to-[#4A7A4A] data-[state=checked]:border-[#4A7A4A] data-[state=checked]:shadow-[0_2px_8px_rgba(74,122,74,0.4),inset_0_1px_0_rgba(255,255,255,0.2)]"
+                            className="h-3.5 w-3.5 rounded-full border-gray-300 data-[state=checked]:bg-[#612a4f] data-[state=checked]:border-[#612a4f]"
                           />
-                          <span className="text-[10px] text-[#8B7082]">Paid</span>
+                          <span className="text-[10px] text-gray-400">Paid</span>
                         </label>
                       </div>
                       <div className="relative w-32">
                         <DollarSign className={cn(
-                          "absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4",
-                          hasMismatch ? "text-amber-600" : "text-[#8B7082]"
+                          "absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5",
+                          hasMismatch ? "text-amber-600" : "text-gray-400"
                         )} />
                         <Input
                           type="text"
@@ -654,7 +656,8 @@ const BrandDealDialog = ({ open, onOpenChange, deal, onSave, onQuickUpdate }: De
                           }}
                           placeholder="0"
                           className={cn(
-                            "rounded-[10px] border-[#E8E4E6] focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] bg-white h-9 text-sm pl-8 transition-shadow duration-200",
+                            inputClass,
+                            "bg-white h-9 text-sm pl-7",
                             hasMismatch && "bg-amber-50 border-amber-300"
                           )}
                         />
@@ -667,10 +670,10 @@ const BrandDealDialog = ({ open, onOpenChange, deal, onSave, onQuickUpdate }: De
           </div>
 
           {/* Notes */}
-          <div className="space-y-4 p-6 rounded-2xl bg-white border border-[#E8E4E6] shadow-[0_2px_8px_rgba(0,0,0,0.04),0_4px_16px_rgba(97,42,79,0.06)]">
-            <h3 className="text-sm font-semibold text-[#612a4f] flex items-center gap-3 tracking-wide">
-              <div className="w-9 h-9 rounded-lg bg-[#612a4f] flex items-center justify-center">
-                <StickyNote className="w-4 h-4 text-white" />
+          <div className="space-y-3 p-5 rounded-lg bg-white border border-gray-100 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+            <h3 className="text-xs font-semibold text-gray-800 flex items-center gap-2.5 uppercase tracking-wider">
+              <div className="w-7 h-7 rounded-md bg-[#612a4f] flex items-center justify-center">
+                <StickyNote className="w-3.5 h-3.5 text-white" />
               </div>
               Notes
             </h3>
@@ -678,34 +681,34 @@ const BrandDealDialog = ({ open, onOpenChange, deal, onSave, onQuickUpdate }: De
               value={formData.notes}
               onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
               placeholder="Any additional details..."
-              className="min-h-[100px] rounded-[10px] border-[#E8E4E6] bg-white focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] transition-shadow duration-200"
+              className={cn(inputClass, "min-h-[100px] bg-white")}
             />
           </div>
         </div>
 
-        {/* Fee Mismatch Warning - shown above save button */}
+        {/* Fee Mismatch Warning */}
         {hasMismatch && (
-          <div className="flex items-start gap-3 p-4 rounded-xl bg-gradient-to-r from-amber-50 to-amber-50/80 border border-amber-200/60 mx-6 mb-4 shadow-sm">
-            <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
-              <AlertCircle className="w-4 h-4 text-amber-600" />
+          <div className="flex items-start gap-2.5 p-3.5 rounded-lg bg-amber-50 border border-amber-200/60 mx-1 mb-3">
+            <div className="w-7 h-7 rounded-md bg-amber-100 flex items-center justify-center flex-shrink-0">
+              <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
             </div>
             <div className="flex-1">
-              <p className="text-sm font-semibold text-amber-800">Fee mismatch</p>
-              <p className="text-xs text-amber-700 mt-1">
+              <p className="text-xs font-semibold text-amber-800">Fee mismatch</p>
+              <p className="text-[11px] text-amber-700 mt-0.5">
                 Deposit (${(formData.depositAmount || 0).toLocaleString()}) + Deliverables (${deliverableTotal.toLocaleString()}) = ${calculatedTotal.toLocaleString()}
               </p>
-              <p className="text-xs text-amber-700">
+              <p className="text-[11px] text-amber-700">
                 Total Fee entered: ${(formData.totalFee || 0).toLocaleString()} — Difference: {((formData.totalFee || 0) - calculatedTotal) > 0 ? '+' : ''}${((formData.totalFee || 0) - calculatedTotal).toLocaleString()}
               </p>
             </div>
           </div>
         )}
 
-        <DialogFooter className="gap-3 pt-2">
-          <Button variant="outline" onClick={() => onOpenChange(false)} className="border-[#612a4f]/20 rounded-xl hover:bg-[#612a4f]/10 hover:border-[#612a4f]/30 transition-all duration-200">
+        <DialogFooter className="gap-2 pt-1">
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-150 text-sm">
             Cancel
           </Button>
-          <Button onClick={handleSubmit} className="bg-gradient-to-r from-[#612a4f] to-[#4d2140] hover:from-[#4d2140] hover:to-[#3a1830] text-white rounded-xl shadow-[0_4px_16px_rgba(97,42,79,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] hover:shadow-[0_6px_24px_rgba(97,42,79,0.4)] transition-all duration-200">
+          <Button onClick={handleSubmit} className="bg-[#612a4f] hover:bg-[#4d2240] text-white rounded-lg shadow-sm transition-colors duration-150 text-sm">
             {deal ? 'Save Changes' : 'Add Deal'}
           </Button>
         </DialogFooter>

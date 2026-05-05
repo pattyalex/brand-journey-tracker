@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -13,7 +14,7 @@ import {
   Diamond,
 } from "lucide-react";
 import { Handshake } from "lucide-react";
-import { BrandDeal, Deliverable, contentTypeConfig, statusOrder } from "./brandsTypes";
+import { BrandDeal, Deliverable, contentTypeConfig, statusOrder, statusConfig } from "./brandsTypes";
 
 interface KanbanViewProps {
   dealsByStatus: Record<string, BrandDeal[]>;
@@ -31,40 +32,48 @@ interface KanbanViewProps {
   onAddDeal?: () => void;
 }
 
+// Status accent colors for the left border
+const statusAccent: Record<string, string> = {
+  'inbound': '#8B7082',
+  'negotiating': '#D4915E',
+  'signed': '#5B8FB9',
+  'in-progress': '#612a4f',
+  'completed': '#5BA67A',
+  'other': '#9CA3AF',
+};
+
 const PlaceholderDealCard = ({ onDismiss }: { onDismiss: (e: React.MouseEvent) => void }) => (
-  <div className="group relative bg-gradient-to-br from-white via-white to-[#FAF9F8] rounded-xl p-3 sm:p-4 border-2 border-dashed border-[#D8C8D3] min-h-[260px] sm:min-h-[300px] flex flex-col opacity-50 hover:opacity-70 transition-opacity" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-    {/* "Example" label */}
-    <div className="absolute top-3 left-3 px-2 py-0.5 rounded-full bg-[#8B7082]/10 text-[#8B7082] text-[9px] font-semibold tracking-wide uppercase">Example</div>
+  <div className="group relative bg-white rounded-lg p-4 border border-gray-200 min-h-[260px] flex flex-col opacity-90 hover:opacity-100 transition-opacity duration-300 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+    <div className="absolute top-3 left-3 px-2 py-0.5 rounded-full bg-[#612a4f]/[0.06] text-[#612a4f] text-[9px] font-semibold tracking-wide uppercase">Example</div>
     <button
       onClick={onDismiss}
-      className="absolute top-2.5 right-2.5 w-5 h-5 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-200 transition-all opacity-50 hover:opacity-100 z-10"
+      className="absolute top-2.5 right-2.5 w-5 h-5 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all opacity-50 hover:opacity-100 z-10"
       title="Dismiss"
     >
       <svg width="7" height="7" viewBox="0 0 8 8" fill="none"><path d="M1 1l6 6M7 1L1 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
     </button>
     <div className="mt-6 mb-3">
-      <h3 className="text-base sm:text-lg font-bold text-[#612a4f] tracking-[-0.02em]" style={{ fontFamily: "'Playfair Display', serif" }}>Brand Name</h3>
-      <p className="text-xs text-[#8B7082] mt-0.5">Product Campaign</p>
+      <h3 className="text-sm font-semibold text-gray-800">Sephora</h3>
+      <p className="text-xs text-gray-400 mt-0.5">Summer Campaign</p>
     </div>
     <div className="flex items-center gap-2 mb-3">
-      <span className="text-lg sm:text-[22px] font-semibold text-[#612a4f] tracking-[-0.02em]" style={{ fontFamily: "'Playfair Display', serif" }}>$2,500</span>
-      <span className="px-2 py-0.5 bg-[#F5F0F3] text-[#612a4f] text-[10px] font-medium rounded-full border border-[#612a4f]/15">In Progress</span>
+      <span className="text-lg font-semibold text-gray-900 tracking-tight" style={{ fontVariantNumeric: 'tabular-nums' }}>$2,500</span>
+      <span className="px-2 py-0.5 bg-[#612a4f]/[0.05] text-[#612a4f] text-[10px] font-medium rounded-full border border-[#612a4f]/10">In Progress</span>
     </div>
     <div className="mb-3">
-      <div className="flex items-center gap-2 text-xs text-[#8B7082] mb-2">
+      <div className="flex items-center gap-2 text-xs text-gray-400 mb-2">
         <span>0/1 delivered</span>
-        <div className="flex-1 h-1.5 bg-[#F5F3F4] rounded-full overflow-hidden" />
+        <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden" />
       </div>
-      <span className="px-1.5 py-0.5 text-[9px] font-semibold rounded bg-[#F5F0F3] text-[#612a4f] border border-[#612a4f]/20">Instagram Reel</span>
+      <span className="px-1.5 py-0.5 text-[9px] font-semibold rounded bg-[#612a4f]/[0.05] text-[#612a4f] border border-[#612a4f]/10">Instagram Reel</span>
     </div>
-    <div className="flex flex-col gap-1.5 pt-2.5 border-t border-[#F5F3F4] mt-auto text-xs text-[#8B7082]">
-      <div className="flex items-center gap-1.5"><CalendarIcon className="w-2.5 h-2.5" /><span>Submit: Apr 10</span></div>
-      <div className="flex items-center gap-1.5"><CalendarIcon className="w-2.5 h-2.5" /><span>Publish: Apr 15</span></div>
+    <div className="flex flex-col gap-1.5 pt-2.5 border-t border-gray-100 mt-auto text-xs text-gray-400">
+      <div className="flex items-center gap-1.5"><CalendarIcon className="w-3 h-3" /><span>Submit: Apr 10</span></div>
+      <div className="flex items-center gap-1.5"><CalendarIcon className="w-3 h-3" /><span>Publish: Apr 15</span></div>
     </div>
   </div>
 );
 
-// Deal Card Component
 interface DealCardProps {
   deal: BrandDeal;
   selectedMonth: Date;
@@ -85,7 +94,6 @@ const DealCard = ({ deal, selectedMonth, isYearView, showArchived, onDragStart, 
   const monthEnd = endOfMonth(selectedMonth);
   const selectedYear = selectedMonth.getFullYear();
 
-  // Helper to check if a deliverable is in the selected period (month or year)
   const isDeliverableInPeriod = (d: Deliverable) => {
     const submitDate = d.submissionDeadline ? parseISO(d.submissionDeadline) : null;
     const publishDate = d.publishDeadline ? parseISO(d.publishDeadline) : null;
@@ -97,19 +105,12 @@ const DealCard = ({ deal, selectedMonth, isYearView, showArchived, onDragStart, 
            (publishDate && isWithinInterval(publishDate, { start: monthStart, end: monthEnd }));
   };
 
-  // Get deliverables that are in this period (for auto-selection)
   const deliverablesInPeriod = deal.deliverables?.filter(isDeliverableInPeriod) || [];
-
-  // All deliverables for display
   const allDeliverables = deal.deliverables || [];
-
-  // Get the selected deliverable - prefer one in the current period
   const selectedDeliverable = selectedDeliverableId
     ? allDeliverables.find(d => d.id === selectedDeliverableId)
     : null;
 
-  // Auto-select: if selected is not in current period, default to first one in period
-  // Otherwise show first with pending work in this period, or just the first one in period
   const displayDeliverable = (selectedDeliverable && isDeliverableInPeriod(selectedDeliverable))
     ? selectedDeliverable
     : deliverablesInPeriod.find(d => (!d.isSubmitted && d.submissionDeadline) || (!d.isPublished && d.publishDeadline))
@@ -121,113 +122,122 @@ const DealCard = ({ deal, selectedMonth, isYearView, showArchived, onDragStart, 
   const displayPublishDate = displayDeliverable?.publishDeadline;
   const isSubmitDone = displayDeliverable?.isSubmitted || false;
   const isPublishDone = displayDeliverable?.isPublished || false;
-
   const isSubmitPastDue = displaySubmitDate && !isSubmitDone && isBefore(parseISO(displaySubmitDate), now);
   const isPublishPastDue = displayPublishDate && !isPublishDone && isBefore(parseISO(displayPublishDate), now);
-  // Progress bar shows TOTAL deliverables (across all months)
   const totalPublishedCount = deal.deliverables?.filter(d => d.isPublished).length || 0;
   const totalDeliverablesCount = deal.deliverables?.length || 0;
+  const accentColor = statusAccent[deal.status] || '#9CA3AF';
+  const allDone = totalDeliverablesCount > 0 && totalPublishedCount === totalDeliverablesCount;
 
   return (
     <div
       draggable
       onDragStart={() => onDragStart(deal.id)}
       onClick={() => onEdit(deal)}
-      className="group bg-gradient-to-br from-white via-white to-[#FAF9F8] rounded-xl p-3 sm:p-4 shadow-none border border-[#D8C8D3] cursor-pointer hover:shadow-[0_8px_24px_rgba(0,0,0,0.08),0_3px_8px_rgba(0,0,0,0.04)] transition-shadow duration-200 min-h-[260px] sm:min-h-[300px] flex flex-col"
-      style={{ fontFamily: "'DM Sans', sans-serif" }}
+      className="group relative bg-white rounded-lg p-4 border border-gray-100 cursor-pointer min-h-[220px] flex flex-col hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 border-l-[3px]"
+      style={{ borderLeftColor: accentColor }}
     >
-      <div className="flex items-start justify-between mb-3">
+      {/* Header */}
+      <div className="flex items-start justify-between mb-1">
         <div className="min-w-0 flex-1 mr-2">
-          <h3 className="text-base sm:text-lg font-bold text-[#612a4f] tracking-[-0.02em] truncate" style={{ fontFamily: "'Playfair Display', serif" }}>{deal.brandName}</h3>
-          <p className="text-xs text-[#8B7082] min-h-[16px] mt-0.5 truncate">{deal.productCampaign || '\u00A0'}</p>
+          <div className="flex items-center gap-2 mb-0.5">
+            <h3 className="text-sm font-semibold text-gray-900 truncate">{deal.brandName}</h3>
+          </div>
+          <p className="text-xs text-gray-400 min-h-[16px] truncate">{deal.productCampaign || '\u00A0'}</p>
         </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button
-              className="p-1 hover:bg-[#8B7082]/10 rounded-lg text-[#8B7082] hover:text-[#612a4f] transition-all duration-200 flex-shrink-0"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <MoreHorizontal className="w-4 h-4" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()} className="rounded-xl">
-            {showArchived ? (
-              <DropdownMenuItem
-                onClick={() => onUnarchive(deal.id)}
-                className="text-[#612a4f]"
+        <div className="flex items-center gap-1">
+          {/* Status pill */}
+          <span
+            className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-full border"
+            style={{
+              color: accentColor,
+              backgroundColor: `${accentColor}10`,
+              borderColor: `${accentColor}25`,
+            }}
+          >
+            {deal.status === 'other' ? (deal.customStatus || 'Other') : statusConfig[deal.status]?.label}
+          </span>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                className="p-1 hover:bg-gray-100 rounded-lg text-gray-300 hover:text-gray-500 transition-all duration-150 flex-shrink-0 opacity-0 group-hover:opacity-100"
+                onClick={(e) => e.stopPropagation()}
               >
-                <Archive className="w-4 h-4 mr-2" />
-                Restore
+                <MoreHorizontal className="w-4 h-4" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()} className="rounded-lg">
+              {showArchived ? (
+                <DropdownMenuItem onClick={() => onUnarchive(deal.id)} className="text-[#612a4f]">
+                  <Archive className="w-4 h-4 mr-2" /> Restore
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem onClick={() => onArchive(deal.id)} className="text-gray-500">
+                  <Archive className="w-4 h-4 mr-2" /> Archive
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem onClick={() => onDelete(deal.id)} className="text-red-500">
+                <Trash2 className="w-4 h-4 mr-2" /> Delete
               </DropdownMenuItem>
-            ) : (
-              <DropdownMenuItem
-                onClick={() => onArchive(deal.id)}
-                className="text-[#8B7082]"
-              >
-                <Archive className="w-4 h-4 mr-2" />
-                Archive
-              </DropdownMenuItem>
-            )}
-            <DropdownMenuItem
-              onClick={() => onDelete(deal.id)}
-              className="text-red-600"
-            >
-              <Trash2 className="w-4 h-4 mr-2" />
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
-      {/* Fee */}
-      <div className="flex items-center gap-2 mb-3 flex-wrap">
-        <span className="text-lg sm:text-[22px] font-semibold text-[#612a4f] tracking-[-0.02em]" style={{ fontFamily: "'Playfair Display', serif" }}>${deal.totalFee.toLocaleString()}</span>
-        <div className="flex gap-1.5">
+      {/* Fee — the hero */}
+      <div className="flex items-baseline gap-2.5 mb-3 mt-2 flex-wrap">
+        <span className="text-lg font-semibold text-gray-900 tracking-tight leading-none">
+          ${deal.totalFee.toLocaleString()}
+        </span>
+        <div className="flex gap-1.5 items-center">
           {deal.depositPaid && (
-            <span className="px-3 py-1 bg-[#E8F0E8] text-[#5A8A5A] text-[10px] font-medium rounded-full border border-[#C5D9C5]/40 flex items-center gap-1">
-              <span>Deposit Paid</span>
-              {deal.depositAmount ? <span className="font-semibold">${deal.depositAmount.toLocaleString()}</span> : null}
+            <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-semibold rounded-full border border-emerald-200/60 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              Deposit{deal.depositAmount ? ` $${deal.depositAmount.toLocaleString()}` : ''}
             </span>
           )}
           {displayDeliverable?.isPaid && (
-            <span className="px-3 py-1 bg-[#E8F0E8] text-[#5A8A5A] text-[10px] font-medium rounded-full border border-[#C5D9C5]/40">
-              Content Paid
+            <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-semibold rounded-full border border-emerald-200/60 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              Paid
             </span>
           )}
         </div>
       </div>
 
-      {/* Deliverables Summary */}
+      {/* Deliverables */}
       {allDeliverables.length > 0 && (
         <div className="mb-3">
-          <div className="flex items-center gap-2 text-xs text-[#8B7082]">
-            <span>{totalPublishedCount}/{totalDeliverablesCount} delivered</span>
-            <div className="flex-1 h-1.5 bg-[#F5F3F4] rounded-full overflow-hidden shadow-inner">
+          <div className="flex items-center gap-2 text-xs mb-2">
+            <span className="font-semibold text-gray-600">{totalPublishedCount}/{totalDeliverablesCount}</span>
+            <span className="text-gray-300">delivered</span>
+            <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-[#5A8A5A] to-[#6B9B6B] rounded-full transition-all shadow-[0_0_8px_rgba(90,138,90,0.4)]"
-                style={{ width: `${(totalPublishedCount / totalDeliverablesCount) * 100}%` }}
+                className="h-full rounded-full transition-all duration-500 ease-out"
+                style={{
+                  width: `${totalDeliverablesCount > 0 ? (totalPublishedCount / totalDeliverablesCount) * 100 : 0}%`,
+                  backgroundColor: allDone ? '#5BA67A' : accentColor,
+                }}
               />
             </div>
           </div>
-          <div className="flex gap-1 mt-2 overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          <div className="flex gap-1 overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
             {allDeliverables.map(d => {
               const inThisPeriod = isDeliverableInPeriod(d);
               const isSelected = displayDeliverable?.id === d.id;
               return (
                 <button
                   key={d.id}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedDeliverableId(d.id);
-                  }}
+                  onClick={(e) => { e.stopPropagation(); setSelectedDeliverableId(d.id); }}
                   className={cn(
-                    "px-1.5 py-0.5 text-[9px] font-semibold rounded transition-all duration-200 flex-shrink-0",
+                    "px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide rounded-md transition-all duration-200 flex-shrink-0",
                     isSelected
-                      ? "bg-gradient-to-r from-[#612a4f] to-[#7a3d65] text-white shadow-[0_2px_8px_rgba(97,42,79,0.3)]"
+                      ? "text-white shadow-sm"
                       : inThisPeriod
-                        ? "bg-gradient-to-r from-[#F5F0F3] to-[#F0EAF0] text-[#612a4f] border border-[#612a4f]/20 hover:border-[#612a4f]/40 hover:shadow-sm"
-                        : "bg-[#F8F6F7] text-[#8B7082]/60 border border-transparent"
+                        ? "text-[#612a4f] bg-[#612a4f]/[0.06] border border-[#612a4f]/10 hover:bg-[#612a4f]/10"
+                        : "bg-gray-50 text-gray-400 border border-transparent"
                   )}
+                  style={isSelected ? { backgroundColor: accentColor } : undefined}
                 >
                   {d.contentType === 'other' && d.customContentType ? d.customContentType : contentTypeConfig[d.contentType].short}
                 </button>
@@ -237,14 +247,17 @@ const DealCard = ({ deal, selectedMonth, isYearView, showArchived, onDragStart, 
         </div>
       )}
 
-      {/* Footer */}
-      <div className="flex flex-col gap-1.5 pt-2.5 border-t border-[#F5F3F4] mt-auto">
+      {/* Dates Footer */}
+      <div className="flex flex-col gap-1.5 pt-3 border-t border-gray-100 mt-auto">
         {displaySubmitDate && (
-          <div className="flex items-center justify-between text-xs text-[#8B7082]">
-            <div className="flex items-center gap-1.5">
-              <CalendarIcon className="w-2.5 h-2.5" />
-              <span className={cn(isSubmitDone && "opacity-50")}>
-                Submit: {format(parseISO(displaySubmitDate), "MMM d")}
+          <div className="flex items-center justify-between text-xs">
+            <div className="flex items-center gap-1.5 text-gray-400">
+              <CalendarIcon className="w-3 h-3" />
+              <span className={cn(
+                isSubmitDone && "line-through opacity-40",
+                isSubmitPastDue && "text-amber-500 font-semibold"
+              )}>
+                Submit {format(parseISO(displaySubmitDate), "MMM d")}
               </span>
             </div>
             <label className="flex items-center cursor-pointer" onClick={(e) => e.stopPropagation()}>
@@ -258,17 +271,20 @@ const DealCard = ({ deal, selectedMonth, isYearView, showArchived, onDragStart, 
                     onQuickUpdate(deal.id, { deliverables: updatedDeliverables });
                   }
                 }}
-                className="h-4 w-4 rounded-full border-[#8B7082]/30 data-[state=checked]:bg-gradient-to-b data-[state=checked]:from-[#6B9B6B] data-[state=checked]:to-[#4A7A4A] data-[state=checked]:border-[#4A7A4A] data-[state=checked]:shadow-[0_2px_8px_rgba(74,122,74,0.4),inset_0_1px_0_rgba(255,255,255,0.2)]"
+                className="h-4 w-4 rounded border-gray-200 data-[state=checked]:bg-[#612a4f] data-[state=checked]:border-[#612a4f]"
               />
             </label>
           </div>
         )}
         {displayPublishDate && (
-          <div className="flex items-center justify-between text-xs font-medium text-[#612a4f]">
-            <div className="flex items-center gap-1.5">
-              <CalendarIcon className="w-2.5 h-2.5" />
-              <span className={cn(isPublishDone && "opacity-50")}>
-                Publish: {format(parseISO(displayPublishDate), "MMM d")}
+          <div className="flex items-center justify-between text-xs">
+            <div className="flex items-center gap-1.5 text-gray-600 font-medium">
+              <CalendarIcon className="w-3 h-3 text-[#612a4f]/40" />
+              <span className={cn(
+                isPublishDone && "line-through opacity-40",
+                isPublishPastDue && "text-red-400 font-semibold"
+              )}>
+                Publish {format(parseISO(displayPublishDate), "MMM d")}
               </span>
             </div>
             <label className="flex items-center cursor-pointer" onClick={(e) => e.stopPropagation()}>
@@ -282,28 +298,24 @@ const DealCard = ({ deal, selectedMonth, isYearView, showArchived, onDragStart, 
                     onQuickUpdate(deal.id, { deliverables: updatedDeliverables });
                   }
                 }}
-                className="h-4 w-4 rounded-full border-[#8B7082]/30 data-[state=checked]:bg-gradient-to-b data-[state=checked]:from-[#6B9B6B] data-[state=checked]:to-[#4A7A4A] data-[state=checked]:border-[#4A7A4A] data-[state=checked]:shadow-[0_2px_8px_rgba(74,122,74,0.4),inset_0_1px_0_rgba(255,255,255,0.2)]"
+                className="h-4 w-4 rounded border-gray-200 data-[state=checked]:bg-[#612a4f] data-[state=checked]:border-[#612a4f]"
               />
             </label>
           </div>
         )}
-        {/* Paid checkbox - always visible for selected deliverable */}
         {displayDeliverable && (() => {
-          // Calculate effective paid amount: use paymentAmount if set, otherwise derive from balance after deposit
-          // Deposit is PART of totalFee, so deliverable payment = (totalFee - depositAmount) / numDeliverables
           const balanceAfterDeposit = deal.totalFee ? deal.totalFee - (deal.depositAmount || 0) : 0;
           const effectivePaidAmount = displayDeliverable.paymentAmount ||
             (displayDeliverable.isPaid ? Math.round(balanceAfterDeposit / (deal.deliverables?.length || 1)) : 0);
-
           return (
           <div className={cn(
-            "flex items-center justify-between text-xs pt-1.5 mt-1 border-t border-[#F5F3F4] font-medium",
-            displayDeliverable.isPaid ? "text-[#5A8A5A]" : "text-[#612a4f]"
+            "flex items-center justify-between text-xs pt-2 mt-1 border-t border-gray-50 font-semibold",
+            displayDeliverable.isPaid ? "text-emerald-600" : "text-gray-500"
           )}>
             <div className="flex items-center gap-1.5">
-              <Diamond className="w-2.5 h-2.5 fill-current" />
-              <span className="font-semibold">
-                Content Paid{effectivePaidAmount > 0 ? ` $${effectivePaidAmount.toLocaleString()}` : ''}
+              <Diamond className="w-3 h-3 fill-current" />
+              <span>
+                Paid{effectivePaidAmount > 0 ? ` $${effectivePaidAmount.toLocaleString()}` : ''}
               </span>
             </div>
             <label className="cursor-pointer" onClick={(e) => e.stopPropagation()}>
@@ -317,7 +329,6 @@ const DealCard = ({ deal, selectedMonth, isYearView, showArchived, onDragStart, 
                       paidDate: checked ? new Date().toISOString() : undefined
                     } : d
                   );
-                  // Auto-set "Fully Paid" when all deliverables are paid
                   const allPaid = updatedDeliverables.every(d => d.isPaid);
                   onQuickUpdate(deal.id, {
                     deliverables: updatedDeliverables,
@@ -325,7 +336,7 @@ const DealCard = ({ deal, selectedMonth, isYearView, showArchived, onDragStart, 
                     paymentReceivedDate: allPaid ? new Date().toISOString() : null as unknown as string,
                   });
                 }}
-                className="h-4 w-4 rounded-full border-[#8B7082]/30 data-[state=checked]:bg-gradient-to-b data-[state=checked]:from-[#6B9B6B] data-[state=checked]:to-[#4A7A4A] data-[state=checked]:border-[#4A7A4A] data-[state=checked]:shadow-[0_2px_8px_rgba(74,122,74,0.4),inset_0_1px_0_rgba(255,255,255,0.2)]"
+                className="h-4 w-4 rounded border-gray-200 data-[state=checked]:bg-[#612a4f] data-[state=checked]:border-[#612a4f]"
               />
             </label>
           </div>
@@ -353,70 +364,50 @@ const BrandsKanban = ({ dealsByStatus, selectedMonth, isYearView, showArchived, 
     });
   };
 
-  // Only show columns that have deals
   const activeStatuses = statusOrder.filter(status => dealsByStatus[status].length > 0);
 
   if (activeStatuses.length === 0) {
     if (showArchived) {
       return (
-        <div className="flex flex-col items-center justify-center py-20 bg-gradient-to-br from-white/80 via-white/60 to-[#F8F6F5]/80 backdrop-blur-sm rounded-2xl border border-[#8B7082]/10 shadow-[0_4px_24px_rgba(97,42,79,0.04)]">
-          <div className="p-4 rounded-2xl bg-gradient-to-br from-[#8B7082]/10 to-[#8B7082]/5 mb-4">
-            <Archive className="w-10 h-10 text-[#8B7082]/40" />
+        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-xl border border-gray-100">
+          <div className="w-14 h-14 rounded-2xl bg-[#612a4f]/10 flex items-center justify-center mb-4">
+            <Archive className="w-6 h-6 text-[#612a4f]/30" />
           </div>
-          <p className="text-[#612a4f] font-medium text-lg" style={{ fontFamily: "'Playfair Display', serif" }}>No archived deals</p>
-          <p className="text-sm text-[#8B7082]/70 mt-1">Archived deals will appear here</p>
-        </div>
-      );
-    }
-
-    if (!dismissedPlaceholders['pd-0']) {
-      return (
-        <div className="flex flex-col sm:flex-row items-center gap-10 py-6 px-2">
-          {/* Example card */}
-          <div className="w-full sm:w-60 flex-shrink-0">
-            <PlaceholderDealCard onDismiss={(e) => dismissPlaceholder('pd-0', e)} />
-          </div>
-
-          {/* Divider */}
-          <div className="hidden sm:block w-px self-stretch bg-gradient-to-b from-transparent via-[#D8C8D3] to-transparent" />
-
-          {/* Text + CTA */}
-          <div className="flex flex-col gap-5 max-w-sm">
-            <div>
-<h2 className="text-3xl font-bold text-[#2d2a26] leading-tight mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>
-                No brand deals yet
-              </h2>
-              <p className="text-sm text-[#8B7082] leading-relaxed" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                Track every partnership from first contact to final payment — deadlines, deliverables, and dollars all in one place.
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={onAddDeal}
-                className="h-10 px-5 rounded-xl bg-gradient-to-r from-[#612a4f] to-[#4d2140] hover:from-[#4d2140] hover:to-[#3a1830] text-white text-sm font-semibold shadow-[0_4px_16px_rgba(97,42,79,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] hover:shadow-[0_6px_24px_rgba(97,42,79,0.4)] hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2"
-                style={{ fontFamily: "'DM Sans', sans-serif" }}
-              >
-                <Plus className="w-4 h-4" />
-                Add your first deal
-              </button>
-            </div>
-          </div>
+          <p className="text-sm font-semibold text-gray-700">No archived deals</p>
+          <p className="text-xs text-gray-400 mt-1">Archived deals will appear here</p>
         </div>
       );
     }
 
     return (
-      <div className="flex flex-col items-center justify-center py-20 gap-3">
-        <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: 'rgba(97,42,79,0.07)' }}>
-          <Handshake className="w-5 h-5 text-[#612a4f]" />
+      <motion.div
+        className="flex flex-col sm:flex-row items-center gap-10 py-6 px-2"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: [0.25, 1, 0.5, 1] }}
+      >
+        {/* Example card */}
+        <div className="w-full sm:w-60 flex-shrink-0">
+          <PlaceholderDealCard onDismiss={(e) => dismissPlaceholder('pd-0', e)} />
         </div>
-        <p className="text-sm text-[#8B7082] text-center" style={{ fontFamily: "'DM Sans', sans-serif" }}>Your next brand deal is just around the corner</p>
-        <button onClick={onAddDeal} className="px-5 py-2 rounded-full text-sm font-semibold text-[#612a4f] border border-[#612a4f]/30 hover:bg-[#612a4f] hover:text-white transition-all" style={{ fontFamily: "'DM Sans', sans-serif" }}>Add a brand deal</button>
-      </div>
+
+        {/* Text + CTA */}
+        <div className="flex flex-col gap-4 max-w-sm">
+          <div>
+            <h2 className="text-sm font-semibold text-gray-800 mb-2">No brand deals yet</h2>
+          </div>
+          <button
+            onClick={onAddDeal}
+            className="w-fit flex items-center gap-1.5 px-5 py-2.5 rounded-lg text-[13px] font-semibold bg-[#612a4f] hover:bg-[#4d2240] text-white shadow-[0_2px_8px_rgba(97,42,79,0.25)] hover:shadow-[0_4px_16px_rgba(97,42,79,0.3)] hover:-translate-y-0.5 transition-all duration-200"
+          >
+            <Plus className="w-4 h-4" />
+            Add your first deal
+          </button>
+        </div>
+      </motion.div>
     );
   }
 
-  // Flatten all deals into a single array for grid layout, sorted by earliest deadline
   const getEarliestDealDate = (deal: BrandDeal) => {
     const dates = deal.deliverables
       .map(d => d.submissionDeadline || d.publishDeadline)
@@ -429,8 +420,17 @@ const BrandsKanban = ({ dealsByStatus, selectedMonth, isYearView, showArchived, 
     .sort((a, b) => getEarliestDealDate(a).localeCompare(getEarliestDealDate(b)));
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+    <motion.div
+      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+      initial="hidden"
+      animate="show"
+      variants={{ hidden: {}, show: { transition: { staggerChildren: 0.05 } } }}
+    >
       {allDeals.map(deal => (
+        <motion.div
+          key={deal.id + '-wrapper'}
+          variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.25, 1, 0.5, 1] } } }}
+        >
         <DealCard
           key={deal.id}
           deal={deal}
@@ -444,8 +444,9 @@ const BrandsKanban = ({ dealsByStatus, selectedMonth, isYearView, showArchived, 
           onUnarchive={onUnarchive}
           onQuickUpdate={onQuickUpdate}
         />
+        </motion.div>
       ))}
-    </div>
+    </motion.div>
   );
 };
 

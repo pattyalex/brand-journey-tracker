@@ -50,8 +50,8 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({
   externalDraggingId,
 }) => {
   const filledCount = gridOrder.filter(Boolean).length;
-  const cellW = expanded ? 104 : 84;
-  const cellH = expanded ? 130 : 105;
+  const cellW = expanded ? 88 : 72;
+  const cellH = expanded ? 110 : 90;
 
   // Stable IDs for SortableContext
   const cellIds = useMemo(() =>

@@ -149,38 +149,39 @@ const ModernBrandsTable = ({}: ModernBrandsTableProps) => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden relative">
+    <div className="bg-white rounded-lg border border-gray-100 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_2px_4px_rgba(0,0,0,0.03)] overflow-hidden relative">
       {/* Notification */}
       {showNotification && (
-        <div className="absolute top-4 right-4 z-50 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="absolute top-3 right-3 z-50 bg-[#612A4F] text-white px-3.5 py-2 rounded-lg shadow-md flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-300 text-[13px]">
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
-          <span className="font-medium">Column added successfully!</span>
+          <span className="font-medium">Column added</span>
         </div>
       )}
 
       {/* Header */}
-      <div className="px-8 py-5 border-b border-gray-200 bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50">
+      <div className="px-6 py-4 border-b border-gray-100">
         <div className="flex justify-between items-center">
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Brand Partnerships</h2>
-            <p className="text-sm text-gray-600 mt-0.5">Track and manage your brand collaborations</p>
+            <h2 className="text-sm font-semibold text-gray-800">Brand Partnerships</h2>
+            <p className="text-xs text-gray-400 mt-0.5">Track and manage your brand collaborations</p>
           </div>
-          <div className="flex gap-3">
-            <Button
+          <div className="flex items-center gap-2">
+            <button
               onClick={handleAddPartnership}
-              className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow-md"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-[13px] font-medium bg-[#612A4F] text-white hover:bg-[#4d2240] transition-colors duration-200 shadow-sm"
             >
-              <Plus className="h-4 w-4 mr-2" /> Add Partnership
-            </Button>
-            <Button
+              <Plus className="h-3.5 w-3.5" />
+              Add Partnership
+            </button>
+            <button
               onClick={handleAddColumn}
-              variant="outline"
-              className="border-2 border-indigo-300 text-indigo-600 hover:bg-indigo-50"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium text-gray-500 hover:text-[#612A4F] hover:bg-[#612A4F]/5 border border-gray-200 hover:border-[#612A4F]/20 transition-all duration-200"
             >
-              <Columns className="h-4 w-4 mr-2" /> Add Column
-            </Button>
+              <Columns className="h-3.5 w-3.5" />
+              Add Column
+            </button>
           </div>
         </div>
       </div>
@@ -189,8 +190,8 @@ const ModernBrandsTable = ({}: ModernBrandsTableProps) => {
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
-            <TableRow className="bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-gray-300">
-              <TableHead className="w-10 sticky left-0 z-10 bg-gray-50"></TableHead>
+            <TableRow className="border-b border-gray-100">
+              <TableHead className="w-10 sticky left-0 z-10 bg-white"></TableHead>
               {allColumns.map((column) => (
                 column.editable ? (
                   <EditableColumnHeader
@@ -199,12 +200,12 @@ const ModernBrandsTable = ({}: ModernBrandsTableProps) => {
                     onChange={(newTitle) => handleUpdateColumnTitle(column.key, newTitle)}
                     canDelete={column.deletable}
                     onDelete={column.deletable ? () => handleDeleteColumn(column.key) : undefined}
-                    className="font-semibold text-gray-800 py-4 px-4 text-sm uppercase tracking-wide whitespace-nowrap"
+                    className="text-xs font-medium text-gray-400 uppercase tracking-wider py-3 px-4 whitespace-nowrap"
                   />
                 ) : (
                   <TableHead
                     key={column.key}
-                    className="font-semibold text-gray-800 py-4 px-4 text-sm uppercase tracking-wide whitespace-nowrap"
+                    className="text-xs font-medium text-gray-400 uppercase tracking-wider py-3 px-4 whitespace-nowrap"
                   >
                     {column.title}
                   </TableHead>
@@ -217,16 +218,16 @@ const ModernBrandsTable = ({}: ModernBrandsTableProps) => {
               <TableRow
                 key={brand.id}
                 className={cn(
-                  "group hover:bg-gradient-to-r hover:from-indigo-50/30 hover:to-purple-50/30 transition-all duration-200 border-b border-gray-200",
-                  brand.id === '1' && "italic bg-indigo-50/20"
+                  "group hover:bg-gray-50/60 transition-colors duration-150 border-b border-gray-50",
+                  brand.id === '1' && "bg-[#612A4F]/[0.015]"
                 )}
               >
-                <TableCell className="w-10 sticky left-0 z-10 bg-white group-hover:bg-indigo-50/30 text-center">
+                <TableCell className="w-10 sticky left-0 z-10 bg-white group-hover:bg-gray-50/60 text-center transition-colors duration-150">
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => handleDeleteBrand(brand.id)}
-                    className="h-7 w-7 text-gray-300 hover:text-red-600 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all"
+                    className="h-7 w-7 text-gray-300 hover:text-red-400 hover:bg-red-50/80 opacity-0 group-hover:opacity-100 transition-all duration-150"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
@@ -234,18 +235,18 @@ const ModernBrandsTable = ({}: ModernBrandsTableProps) => {
                 {allColumns.map((column, colIndex) => (
                   <TableCell
                     key={`${brand.id}-${column.key}`}
-                    className="py-4 px-4 text-gray-700"
+                    className="py-3 px-4 text-sm text-gray-700"
                   >
                     <div className="flex items-center gap-2 whitespace-nowrap">
                       {column.key === 'brandName' && brand.id === '1' && (
-                        <span className="inline-flex items-center gap-1 text-[9px] font-bold text-indigo-600 bg-indigo-50 pl-1.5 pr-0.5 py-0.5 rounded whitespace-nowrap">
+                        <span className="inline-flex items-center gap-1 text-[9px] font-semibold text-[#612A4F] bg-[#612A4F]/[0.06] pl-1.5 pr-0.5 py-0.5 rounded whitespace-nowrap tracking-wide">
                           EXAMPLE
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
                               setShowExampleRow(false);
                             }}
-                            className="ml-0.5 p-0.5 hover:bg-indigo-100 rounded"
+                            className="ml-0.5 p-0.5 hover:bg-[#612A4F]/10 rounded transition-colors duration-150"
                           >
                             <X className="h-2.5 w-2.5" />
                           </button>
