@@ -55,7 +55,7 @@ const SidebarFooterSection = ({ settingsItem, helpItem }: SidebarFooterSectionPr
   const avatarUrl = profileAvatarUrl || metaAvatarUrl;
 
   return (
-    <SidebarFooter className="mt-auto border-t border-white/10 pt-2 relative z-10">
+    <SidebarFooter className="mt-auto border-t border-[#E8E4E6] pt-2 relative z-10">
       <SidebarMenu>
         {(
           <SidebarMenuItem>
@@ -67,7 +67,7 @@ const SidebarFooterSection = ({ settingsItem, helpItem }: SidebarFooterSectionPr
                 type="button"
                 onClick={() => navigate('/my-account')}
                 onMouseEnter={() => preloadRoute('/my-account')}
-                className="flex items-center gap-2 w-full hover:bg-white/5 p-2 rounded-xl transition-colors"
+                className="flex items-center gap-2 w-full hover:bg-[#F9F7F8] p-2 rounded-xl transition-colors"
               >
                 <Avatar className="h-7 w-7 flex-shrink-0">
                   {avatarUrl && <AvatarImage src={avatarUrl} alt={firstName} />}
@@ -76,7 +76,7 @@ const SidebarFooterSection = ({ settingsItem, helpItem }: SidebarFooterSectionPr
                   </AvatarFallback>
                 </Avatar>
                 {!isCollapsed && (
-                  <span className="text-sm font-medium text-white/80 truncate tracking-normal">
+                  <span className="text-sm font-medium text-[#1a1523] truncate tracking-normal">
                     {firstName}
                   </span>
                 )}

@@ -73,7 +73,7 @@ const Sidebar = () => {
   return (
     <SidebarContainer collapsible="icon">
       {/* Premium background wrapper */}
-      <div className="absolute inset-0 bg-[#1E1B2E] border-r border-[#2A2740]" />
+      <div className="absolute inset-0 bg-[#f9f7f5] border-r border-[#E8E4E6]" />
 
       {/* Noise texture overlay */}
       <div
@@ -93,7 +93,7 @@ const Sidebar = () => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 rounded-lg hover:bg-white/10 text-white/50 hover:text-white"
+                  className="h-8 w-8 rounded-lg hover:bg-[#F5F0F3] text-[#8B7082] hover:text-[#612A4F]"
                   onClick={toggleSidebar}
                 >
                   <ChevronRight className="h-5 w-5" />
@@ -123,12 +123,12 @@ const Sidebar = () => {
               {/* Brand Name & Tagline */}
               <div className="flex flex-col">
                 <h1
-                  className="text-lg font-semibold text-white"
+                  className="text-lg font-semibold text-[#3D2B35]"
                   style={{ fontFamily: "'Playfair Display', serif" }}
                 >
                   HeyMeg
                 </h1>
-                <span className="text-[10px] text-white/40 tracking-wider">
+                <span className="text-[10px] text-[#8B7082] tracking-wider">
                   Creator Studio
                 </span>
               </div>
