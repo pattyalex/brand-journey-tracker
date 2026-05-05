@@ -199,7 +199,7 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.25, ease: 'easeOut' }}
-                        className="w-[220px] h-[220px] object-cover rounded-xl shadow-sm"
+                        className="w-[220px] h-[250px] object-cover rounded-xl shadow-sm"
                       />
                       <button
                         onClick={() => thumbnailInputRef.current?.click()}
@@ -224,7 +224,7 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
                         const file = e.dataTransfer.files?.[0];
                         if (file) handleThumbnailUpload(file);
                       }}
-                      className={`w-[220px] h-[220px] rounded-xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-colors duration-150 ${
+                      className={`w-[220px] h-[250px] rounded-xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-colors duration-150 ${
                         isDraggingOver
                           ? 'border-[#612A4F] bg-[#612A4F]/5'
                           : 'border-gray-200 hover:border-gray-300 bg-gray-50/50'
@@ -243,10 +243,10 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
                 </div>
 
                 {/* Inspiration (inline next to cover) */}
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 pt-6">
                 <label className="text-[11px] font-medium text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
                   <Paperclip className="w-3 h-3" />
-                  Inspiration
+                  Attachments
                 </label>
 
                 {/* Image grid + links */}
@@ -276,7 +276,15 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
                                 const isFailed = failedImages.has(imgSrc);
                                 return (
                                 <div key={i} className="relative group/file rounded-lg overflow-hidden">
-                                  <button onClick={() => !isFailed && setLightboxIndex(inspirationImages.indexOf(imgSrc))} className="w-full">
+                                  <button onClick={() => {
+                                    if (isFailed) return;
+                                    const isExternal = url.startsWith('http') && !/\.(jpg|jpeg|png|gif|webp|svg)$/i.test(url) && !url.includes('/post-thumbnails/');
+                                    if (isExternal) {
+                                      window.open(url, '_blank', 'noopener,noreferrer');
+                                    } else {
+                                      setLightboxIndex(inspirationImages.indexOf(imgSrc));
+                                    }
+                                  }} className="w-full">
                                     {isFailed ? (
                                       <div className="w-full aspect-square bg-gray-100 rounded-lg flex items-center justify-center">
                                         <span className="text-[10px] text-gray-400 text-center px-1">Image unavailable</span>
@@ -306,15 +314,26 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
                                       </div>
                                     )}
                                   </button>
-                                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover/file:opacity-100 transition-opacity duration-150">
-                                    <button
-                                      onClick={() => setLightboxIndex(inspirationImages.indexOf(localBlobUrls[displayName] || videoThumbnails[url] || url))}
-                                      className="absolute top-1.5 right-1.5 p-1 rounded bg-black/40 hover:bg-black/60 text-white transition-colors"
-                                      title="Expand"
-                                    >
-                                      <Maximize2 className="w-3 h-3" />
-                                    </button>
-                                    <div className="absolute bottom-0 left-0 right-0 p-2 flex items-end justify-between">
+                                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover/file:opacity-100 transition-opacity duration-150 pointer-events-none">
+                                    <div className="absolute top-1.5 right-1.5 flex gap-1 pointer-events-auto">
+                                      {url.startsWith('http') && !/\.(jpg|jpeg|png|gif|webp|svg)$/i.test(url) && !url.includes('/post-thumbnails/') && (
+                                        <button
+                                          onClick={() => window.open(url, '_blank', 'noopener,noreferrer')}
+                                          className="p-1 rounded bg-black/40 hover:bg-black/60 text-white transition-colors"
+                                          title="Open link"
+                                        >
+                                          <ExternalLink className="w-3 h-3" />
+                                        </button>
+                                      )}
+                                      <button
+                                        onClick={() => setLightboxIndex(inspirationImages.indexOf(localBlobUrls[displayName] || videoThumbnails[url] || url))}
+                                        className="p-1 rounded bg-black/40 hover:bg-black/60 text-white transition-colors"
+                                        title="Expand"
+                                      >
+                                        <Maximize2 className="w-3 h-3" />
+                                      </button>
+                                    </div>
+                                    <div className="absolute bottom-0 left-0 right-0 p-2 flex items-end justify-between pointer-events-auto">
                                       <span className="text-[10px] text-white/90 truncate flex-1 mr-1">{displayName}</span>
                                       <div className="flex gap-1">
                                         <button
