@@ -180,7 +180,7 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
       {/* Month view */}
       {calView === 'month' && (
         <div className="flex-1 overflow-y-auto px-2 pb-2">
-          <div className="grid grid-cols-7 gap-[1px] bg-gray-100 rounded-xl overflow-hidden">
+          <div className="grid grid-cols-7 gap-[1px] bg-[#e8eaed] rounded-xl overflow-hidden">
             {monthDays.map(({ date, day, isCurrentMonth }, i) => (
               <MonthCell
                 key={date}
@@ -290,7 +290,10 @@ const MonthCell: React.FC<{
           {day}
         </span>
       </div>
-      <div className="space-y-1">
+      <div
+        className={`space-y-1 ${posts.length > 2 ? 'overflow-y-auto' : ''}`}
+        style={posts.length > 2 ? { maxHeight: 72, scrollbarWidth: 'thin' } : undefined}
+      >
         {posts.map((post) => {
           const isPostHovered = hoveredId === post.id;
           const missingAssets = isWithin48Hours(post.scheduledDate!, post.scheduled_time) && (!post.attachedFiles || post.attachedFiles.length === 0);
