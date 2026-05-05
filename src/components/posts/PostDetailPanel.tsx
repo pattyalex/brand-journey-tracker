@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Calendar, MessageSquare, FileText, BarChart3, StickyNote, Paperclip, Trash2, ImageIcon, Pencil, ExternalLink, Maximize2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, Calendar, MessageSquare, FileText, BarChart3, StickyNote, Paperclip, Trash2, ImageIcon, Pencil, ExternalLink, Maximize2, ChevronLeft, ChevronRight, Clapperboard, Plus } from 'lucide-react';
 import { Post, PostStatus, POST_STATUSES, STATUS_COLORS, getPillarStyle } from '@/types/posts';
 import { uploadPostThumbnail } from '@/lib/postImageUpload';
 import { API_BASE } from '@/lib/api-base';
@@ -586,14 +586,23 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
                 {editingScript ? (
                   <textarea
                     value={scriptDraft}
-                    onChange={e => setScriptDraft(e.target.value)}
+                    onChange={e => {
+                      setScriptDraft(e.target.value);
+                      e.target.style.height = 'auto';
+                      e.target.style.height = Math.min(e.target.scrollHeight, 600) + 'px';
+                    }}
                     onBlur={() => {
                       onUpdate(post.id, { script: scriptDraft });
                       setEditingScript(false);
                     }}
                     autoFocus
-                    rows={6}
-                    className="w-full text-sm text-gray-700 bg-white rounded-md p-2.5 outline-none border border-gray-200 focus:border-gray-300 resize-none transition-colors duration-150"
+                    ref={el => {
+                      if (el) {
+                        el.style.height = 'auto';
+                        el.style.height = Math.min(el.scrollHeight, 600) + 'px';
+                      }
+                    }}
+                    className="w-full text-sm text-gray-700 bg-white rounded-md p-2.5 outline-none border border-gray-200 focus:border-gray-300 resize-none transition-colors duration-150 min-h-[6rem] max-h-[600px] overflow-y-auto"
                   />
                 ) : (
                   <p
@@ -661,6 +670,87 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
                   </p>
                 )}
               </div>
+
+              {/* Storyboard */}
+              {(() => {
+                const rows = post.storyboard || [];
+                const hasStoryboard = rows.length > 0;
+
+                const updateRow = (idx: number, field: 'action' | 'script', value: string) => {
+                  const updated = [...rows];
+                  updated[idx] = { ...updated[idx], [field]: value };
+                  onUpdate(post.id, { storyboard: updated });
+                };
+
+                const addRow = () => {
+                  onUpdate(post.id, { storyboard: [...rows, { action: '', script: '' }] });
+                };
+
+                const deleteRow = (idx: number) => {
+                  onUpdate(post.id, { storyboard: rows.filter((_, i) => i !== idx) });
+                };
+
+                return hasStoryboard ? (
+                  <div>
+                    <label className="text-[11px] font-medium text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                      <Clapperboard className="w-3 h-3" />
+                      Video Storyboard
+                    </label>
+                    <div className="rounded-lg border border-gray-200 overflow-hidden">
+                      {/* Header */}
+                      <div className="grid grid-cols-[1fr_1fr_28px] bg-gray-50 border-b border-gray-200">
+                        <div className="px-3 py-2 text-[11px] font-medium text-gray-500 uppercase tracking-wider">Action</div>
+                        <div className="px-3 py-2 text-[11px] font-medium text-gray-500 uppercase tracking-wider">Script</div>
+                        <div />
+                      </div>
+                      {/* Rows */}
+                      {rows.map((row, idx) => (
+                        <div key={idx} className="grid grid-cols-[1fr_1fr_28px] border-b border-gray-100 last:border-b-0 group/row">
+                          <textarea
+                            value={row.action}
+                            onChange={e => updateRow(idx, 'action', e.target.value)}
+                            placeholder="e.g. Pick up the pen"
+                            rows={1}
+                            className="px-3 py-2 text-sm text-gray-700 bg-transparent border-r border-gray-100 outline-none resize-none placeholder:text-gray-300 focus:bg-gray-50/50"
+                            onInput={e => { const el = e.target as HTMLTextAreaElement; el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }}
+                            ref={el => { if (el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; } }}
+                          />
+                          <textarea
+                            value={row.script}
+                            onChange={e => updateRow(idx, 'script', e.target.value)}
+                            placeholder="Corresponding script line..."
+                            rows={1}
+                            className="px-3 py-2 text-sm text-gray-700 bg-transparent outline-none resize-none placeholder:text-gray-300 focus:bg-gray-50/50"
+                            onInput={e => { const el = e.target as HTMLTextAreaElement; el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }}
+                            ref={el => { if (el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; } }}
+                          />
+                          <button
+                            onClick={() => deleteRow(idx)}
+                            className="flex items-center justify-center text-gray-300 hover:text-red-400 opacity-0 group-hover/row:opacity-100 transition-all"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    <button
+                      onClick={addRow}
+                      className="mt-2 flex items-center gap-1 text-[12px] text-gray-400 hover:text-[#612A4F] transition-colors"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      Add row
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={addRow}
+                    className="flex items-center gap-1.5 text-[12px] text-gray-400 hover:text-[#612A4F] transition-colors"
+                  >
+                    <Clapperboard className="w-3.5 h-3.5" />
+                    Build video storyboard
+                  </button>
+                );
+              })()}
 
               {/* Metrics (only for Posted) */}
               {post.metrics && post.status === 'Posted' && (

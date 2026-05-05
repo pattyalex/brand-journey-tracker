@@ -14,6 +14,7 @@ export interface Post {
   hashtags?: string[];
   attachedFiles?: string[];
   notes?: string;
+  storyboard?: { action: string; script: string }[];
   metrics?: {
     likes?: number;
     comments?: number;
