@@ -29,8 +29,7 @@ const DayHeader: React.FC<DayHeaderProps> = ({ date, onPrev, onNext, onToday }) 
     <div className="flex items-center justify-between mb-6">
       <div>
         <h1
-          className="text-[22px] font-medium text-gray-900"
-          style={{ fontFamily: "'Playfair Display', serif" }}
+          className="text-lg font-semibold text-gray-900"
         >
           {dayName}
         </h1>

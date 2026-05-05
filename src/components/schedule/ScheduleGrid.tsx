@@ -50,8 +50,8 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({
   externalDraggingId,
 }) => {
   const filledCount = gridOrder.filter(Boolean).length;
-  const cellW = expanded ? 88 : 72;
-  const cellH = expanded ? 110 : 90;
+  const cellW = expanded ? 104 : 84;
+  const cellH = expanded ? 130 : 105;
 
   // Stable IDs for SortableContext
   const cellIds = useMemo(() =>
@@ -93,8 +93,10 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({
   return (
     <div className="h-full flex flex-col">
       <div className="flex items-center gap-2 px-4 py-3">
-        <span className="text-sm font-semibold text-gray-900">Grid</span>
-        <span className="text-[11px] text-gray-400">Preview how your content looks before you schedule it</span>
+        <span className="text-lg font-semibold text-gray-900">Grid</span>
+        {filledCount === 0 && (
+          <span className="text-[11px] text-gray-400">Preview how your content looks before you schedule it</span>
+        )}
       </div>
       <div className="flex-1 overflow-y-auto p-3 flex justify-center">
         <div className="relative">

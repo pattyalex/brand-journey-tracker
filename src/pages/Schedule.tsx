@@ -394,7 +394,7 @@ const Schedule: React.FC = () => {
             <div className="h-full flex flex-col bg-white overflow-hidden">
               {!readyCollapsed && !leftColumnCollapsed && (
                 <div
-                  className="flex-1 min-h-0 overflow-y-auto"
+                  className="min-h-0 overflow-y-auto"
                   style={{ scrollbarWidth: 'thin', scrollbarColor: 'transparent transparent' }}
                   onMouseEnter={e => { e.currentTarget.style.scrollbarColor = 'rgba(0,0,0,0.2) transparent'; }}
                   onMouseLeave={e => { e.currentTarget.style.scrollbarColor = 'transparent transparent'; }}
@@ -414,18 +414,18 @@ const Schedule: React.FC = () => {
               {readyCollapsed && (
                 <button
                   onClick={() => setReadyCollapsed(false)}
-                  className="flex items-center gap-1.5 px-4 py-2.5 hover:bg-gray-50 transition-colors"
+                  className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-gray-50 transition-colors"
                 >
-                  <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
-                  <span className="text-sm font-semibold text-gray-900">Ready</span>
-                  <span className="text-[11px] text-gray-400 bg-gray-100 rounded-full px-1.5 py-0.5 ml-1">{readyPosts.length}</span>
+                  <span className="text-lg font-semibold text-gray-900">Ready</span>
+                  <span className="text-[11px] text-gray-400 bg-gray-100 rounded-full px-1.5 py-0.5">{readyPosts.length}</span>
+                  <ChevronRight className="w-3.5 h-3.5 text-gray-400 ml-auto" />
                 </button>
               )}
               <div className="flex-shrink-0">
                 <ScheduleGrid
                   gridOrder={gridOrder}
                   postsMap={postsMap}
-                  expanded={readyCollapsed || readyPosts.length <= 3}
+                  expanded={readyCollapsed}
                   onReorder={setGridOrder}
                   onClickPost={setSelectedPost}
                   onRemoveFromGrid={handleRemoveFromGrid}
@@ -509,13 +509,13 @@ const DraggableReadyList: React.FC<{
   return (
     <div>
       <div className="flex items-center gap-2 px-4 py-3">
+        <span className="text-lg font-semibold text-gray-900">Ready</span>
+        <span className="text-[11px] text-gray-400 bg-gray-100 rounded-full px-1.5 py-0.5">{props.posts.length}</span>
         {props.onToggleCollapse && (
-          <button onClick={props.onToggleCollapse} className="p-1 rounded-lg hover:bg-gray-100 transition-colors">
+          <button onClick={props.onToggleCollapse} className="ml-auto p-1 rounded-lg hover:bg-gray-100 transition-colors">
             <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
           </button>
         )}
-        <span className="text-sm font-semibold text-gray-900">Ready</span>
-        <span className="text-[11px] text-gray-400 bg-gray-100 rounded-full px-1.5 py-0.5">{props.posts.length}</span>
       </div>
       {props.posts.length === 0 ? (
         <div className="flex items-center justify-center px-4 py-8">

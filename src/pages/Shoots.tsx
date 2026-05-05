@@ -149,7 +149,7 @@ const Shoots: React.FC = () => {
               {/* Header */}
               <div className="flex items-center justify-between mb-8">
                 <div>
-                  <h1 className="text-2xl font-semibold text-gray-800 tracking-[-0.02em]">Plan your capture days</h1>
+                  <h1 className="text-lg font-semibold text-gray-900">Plan your capture days</h1>
                 </div>
                 <button
                   onClick={() => setShowCreateModal(true)}

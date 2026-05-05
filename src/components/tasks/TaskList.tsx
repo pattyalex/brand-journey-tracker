@@ -188,7 +188,7 @@ const TaskList: React.FC<TaskListProps> = ({
         <TaskInput
           onAdd={onAdd}
           autoFocus={isEmpty}
-          placeholder={isEmpty ? "What's on your plate today?" : undefined}
+          placeholder={isEmpty ? "Add task" : undefined}
         />
       </div>
 
@@ -198,7 +198,7 @@ const TaskList: React.FC<TaskListProps> = ({
             className="text-[18px] text-gray-300 font-medium mb-1"
             style={{ fontFamily: "'Playfair Display', serif" }}
           >
-            What's on your plate today?
+            Add task
           </p>
           <p className="text-[13px] text-gray-300">Start typing above to add your first task.</p>
         </div>
