@@ -64,7 +64,7 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
     });
   }, [post?.attachedFiles]);
 
-  const inspirationImages = useMemo(() => {
+  const inspirationEntries = useMemo(() => {
     if (!post?.attachedFiles) return [];
     return post.attachedFiles
       .map((file) => {
@@ -76,9 +76,12 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
         const hasVideoThumb = videoThumbnails[url];
         return { displayName, url, isUrl, isImage: isImage || !!hasVideoThumb };
       })
-      .filter(x => x.isImage && x.isUrl)
-      .map(x => localBlobUrls[x.displayName] || videoThumbnails[x.url] || x.url);
-  }, [post?.attachedFiles, localBlobUrls, videoThumbnails]);
+      .filter(x => x.isImage && x.isUrl);
+  }, [post?.attachedFiles, videoThumbnails]);
+
+  const inspirationImages = useMemo(() => {
+    return inspirationEntries.map(x => localBlobUrls[x.displayName] || videoThumbnails[x.url] || x.url);
+  }, [inspirationEntries, localBlobUrls, videoThumbnails]);
 
   const handleThumbnailUpload = useCallback(async (file: File) => {
     if (!post || !file.type.startsWith('image/')) return;
@@ -726,10 +729,16 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
           <X className="w-5 h-5" />
         </button>
 
-        {/* Counter */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-full bg-white/15 text-white text-sm">
-          {lightboxIndex + 1} / {inspirationImages.length}
-        </div>
+        {/* Open original */}
+        <a
+          href={inspirationEntries[lightboxIndex]?.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-2 rounded-lg bg-white/15 hover:bg-white/25 text-white text-sm transition-colors"
+        >
+          <ExternalLink size={14} />
+          Open original
+        </a>
       </div>
     )}
     </>

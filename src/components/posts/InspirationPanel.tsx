@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
-import { Plus, ExternalLink, Trash2, Link as LinkIcon, Image, Paperclip } from 'lucide-react';
+import { Plus, ExternalLink, Trash2, Link as LinkIcon, Image, Paperclip, Maximize2, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { getJSON, setJSON } from '@/lib/storage';
 import { API_BASE } from '@/lib/api-base';
@@ -94,6 +95,29 @@ const LinkThumbnail: React.FC<{ item: InspirationItem }> = ({ item }) => {
   );
 };
 
+const InspirationLightboxImage: React.FC<{ item: InspirationItem }> = ({ item }) => {
+  const [imgSrc, setImgSrc] = useState<string | null>(null);
+  const microlinkUrl = `https://api.microlink.io/?url=${encodeURIComponent(item.url)}&screenshot=true&meta=false&embed=screenshot.url`;
+
+  useEffect(() => {
+    fetch(`${API_BASE}/api/video-thumbnail?url=${encodeURIComponent(item.url)}`)
+      .then(r => r.json())
+      .then(data => setImgSrc(data.thumbnail_url || microlinkUrl))
+      .catch(() => setImgSrc(microlinkUrl));
+  }, [item.url]);
+
+  if (!imgSrc) return <div className="w-32 h-32 bg-white/10 rounded-xl animate-pulse" />;
+
+  return (
+    <img
+      src={imgSrc}
+      alt={item.title}
+      className="max-w-[70vw] max-h-[85vh] object-contain rounded-xl shadow-2xl"
+      onError={() => { if (imgSrc !== microlinkUrl) setImgSrc(microlinkUrl); }}
+    />
+  );
+};
+
 interface InspirationPanelProps {
   open: boolean;
   onClose: () => void;
@@ -104,6 +128,7 @@ const InspirationPanel: React.FC<InspirationPanelProps> = ({ open, onClose, onCr
   const [items, setItems] = useState<InspirationItem[]>(() => getJSON<InspirationItem[]>(STORAGE_KEY, []));
   const [inputValue, setInputValue] = useState('');
   const [filter, setFilter] = useState<'all' | 'link' | 'photo' | 'file'>('all');
+  const [lightboxItem, setLightboxItem] = useState<InspirationItem | null>(null);
 
   useEffect(() => {
     setJSON(STORAGE_KEY, items);
@@ -184,7 +209,8 @@ const InspirationPanel: React.FC<InspirationPanelProps> = ({ open, onClose, onCr
   };
 
   return (
-    <Dialog open={open} onOpenChange={v => { if (!v) onClose(); }}>
+    <>
+    <Dialog open={open && !lightboxItem} onOpenChange={v => { if (!v) onClose(); }}>
       <DialogContent className="max-w-4xl max-h-[92vh] flex flex-col overflow-hidden p-0">
         {/* Header */}
         <DialogHeader className="px-6 pt-6 pb-4 border-b border-gray-100 flex-shrink-0">
@@ -278,31 +304,48 @@ const InspirationPanel: React.FC<InspirationPanelProps> = ({ open, onClose, onCr
                 >
                   {/* Thumbnail area */}
                   {item.type === 'photo' && item.url ? (
-                    <div className="aspect-[16/10] bg-gray-50 overflow-hidden">
+                    <div className="aspect-[16/10] bg-gray-50 overflow-hidden relative">
                       <img
                         src={item.url}
                         alt={item.title}
                         className="w-full h-full object-cover"
                       />
+                      <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={() => setLightboxItem(item)}
+                          className="p-1 rounded bg-black/40 hover:bg-black/60 text-white transition-colors"
+                          title="Expand"
+                        >
+                          <Maximize2 size={12} />
+                        </button>
+                      </div>
                     </div>
                   ) : item.type === 'file' ? (
                     <div className="aspect-[16/10] bg-gray-50 flex items-center justify-center">
                       <Paperclip size={28} className="text-gray-300" />
                     </div>
                   ) : (
-                    <a
-                      href={item.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block aspect-[16/10] bg-gray-50 overflow-hidden relative"
-                    >
+                    <div className="block aspect-[16/10] bg-gray-50 overflow-hidden relative">
                       <LinkThumbnail item={item} />
-                      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <div className="bg-white/90 backdrop-blur-sm rounded-full p-1 shadow-sm">
-                          <ExternalLink size={12} className="text-gray-500" />
-                        </div>
+                      <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <a
+                          href={item.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-1 rounded bg-black/40 hover:bg-black/60 text-white transition-colors"
+                          title="Open link"
+                        >
+                          <ExternalLink size={12} />
+                        </a>
+                        <button
+                          onClick={() => setLightboxItem(item)}
+                          className="p-1 rounded bg-black/40 hover:bg-black/60 text-white transition-colors"
+                          title="Expand"
+                        >
+                          <Maximize2 size={12} />
+                        </button>
                       </div>
-                    </a>
+                    </div>
                   )}
 
                   {/* Info */}
@@ -352,7 +395,91 @@ const InspirationPanel: React.FC<InspirationPanelProps> = ({ open, onClose, onCr
           )}
         </div>
       </DialogContent>
+
     </Dialog>
+
+    {/* Lightbox — rendered via portal so it's above the Dialog */}
+    {lightboxItem && createPortal(
+        (() => {
+          const expandable = filteredItems.filter(i => i.type === 'photo' || i.type === 'link');
+          const currentIdx = expandable.findIndex(i => i.id === lightboxItem.id);
+          const goPrev = () => setLightboxItem(expandable[(currentIdx - 1 + expandable.length) % expandable.length]);
+          const goNext = () => setLightboxItem(expandable[(currentIdx + 1) % expandable.length]);
+          return (
+            <div
+              className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm flex items-center justify-center"
+              onClick={() => setLightboxItem(null)}
+              onKeyDown={e => {
+                if (e.key === 'Escape') setLightboxItem(null);
+                if (e.key === 'ArrowLeft') goPrev();
+                if (e.key === 'ArrowRight') goNext();
+              }}
+              tabIndex={0}
+              ref={el => el?.focus()}
+            >
+              <div className="relative flex items-center gap-6" onClick={e => e.stopPropagation()}>
+                {expandable.length > 1 && (
+                  <button
+                    onClick={goPrev}
+                    className="p-3 rounded-full bg-white/15 hover:bg-white/30 text-white transition-colors flex-shrink-0"
+                  >
+                    <ChevronLeft className="w-7 h-7" />
+                  </button>
+                )}
+
+                <div className="flex flex-col items-center gap-4">
+                  {lightboxItem.type === 'photo' ? (
+                    <img
+                      src={lightboxItem.url}
+                      alt={lightboxItem.title}
+                      className="max-w-[70vw] max-h-[85vh] object-contain rounded-xl shadow-2xl"
+                    />
+                  ) : (
+                    <InspirationLightboxImage item={lightboxItem} />
+                  )}
+                  {lightboxItem.type === 'link' && (
+                    <a
+                      href={lightboxItem.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/15 hover:bg-white/25 text-white text-sm transition-colors"
+                    >
+                      <ExternalLink size={14} />
+                      Open original
+                    </a>
+                  )}
+                </div>
+
+                {expandable.length > 1 && (
+                  <button
+                    onClick={goNext}
+                    className="p-3 rounded-full bg-white/15 hover:bg-white/30 text-white transition-colors flex-shrink-0"
+                  >
+                    <ChevronRight className="w-7 h-7" />
+                  </button>
+                )}
+              </div>
+
+              <button
+                onClick={() => setLightboxItem(null)}
+                className="absolute top-6 right-6 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+              >
+                <X size={20} />
+              </button>
+
+              {/* progress bar */}
+              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-24 h-1 rounded-full bg-white/20 overflow-hidden">
+                <div
+                  className="h-full bg-white/70 rounded-full transition-all duration-200"
+                  style={{ width: `${((currentIdx + 1) / expandable.length) * 100}%` }}
+                />
+              </div>
+            </div>
+          );
+        })(),
+        document.body
+      )}
+    </>
   );
 };
 
