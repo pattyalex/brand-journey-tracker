@@ -31,7 +31,6 @@ interface PostsCalendarViewProps {
   onSendToSchedule?: (id: string) => void;
   onCreateOnDate: (date: string) => void;
   onSwitchToList: () => void;
-  filterSlot?: React.ReactNode;
 }
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -84,7 +83,6 @@ const PostsCalendarView: React.FC<PostsCalendarViewProps> = ({
   onSendToSchedule,
   onCreateOnDate,
   onSwitchToList,
-  filterSlot,
 }) => {
   const today = new Date();
   const [viewYear, setViewYear] = useState(today.getFullYear());
@@ -244,17 +242,20 @@ const PostsCalendarView: React.FC<PostsCalendarViewProps> = ({
         <div className="flex-1 min-w-0">
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <button onClick={goPrev} className="p-1.5 rounded-md hover:bg-gray-100 text-gray-500 transition-colors duration-150">
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <span className="text-sm font-semibold text-gray-800 min-w-[140px] text-center">{monthLabel}</span>
-              <button onClick={goNext} className="p-1.5 rounded-md hover:bg-gray-100 text-gray-500 transition-colors duration-150">
-                <ChevronRight className="w-4 h-4" />
-              </button>
+            <div>
+              <h2 className="text-sm font-semibold text-gray-700">Rough Planning</h2>
+              <p className="text-[10px] text-gray-400 mt-0.5">Use this timeline to sketch out your posting order. It's a planning tool, not a final calendar.</p>
             </div>
             <div className="flex items-center gap-2">
-              {filterSlot}
+              <div className="flex items-center gap-0.5">
+                <button onClick={goPrev} className="p-1 rounded-md hover:bg-gray-100 text-gray-500 transition-colors duration-150">
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                </button>
+                <span className="text-xs font-semibold text-gray-800 min-w-[100px] text-center">{monthLabel}</span>
+                <button onClick={goNext} className="p-1 rounded-md hover:bg-gray-100 text-gray-500 transition-colors duration-150">
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
               <button
                 onClick={goToday}
                 className="px-3 py-1 text-xs font-medium text-gray-500 hover:text-gray-700 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors duration-150"

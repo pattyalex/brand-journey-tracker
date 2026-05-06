@@ -65,6 +65,10 @@ const Posts: React.FC = () => {
   });
   const [pillarIdMap, setPillarIdMap] = useState<Record<string, string>>({});
   const [formats, setFormats] = useState<string[]>(DEFAULT_FORMATS);
+  const [, setPillarColorVersion] = useState(0);
+  const handleChangePillarColor = useCallback(() => {
+    setPillarColorVersion(v => v + 1);
+  }, []);
 
   // Load posts from Supabase on mount
   useEffect(() => {
@@ -522,15 +526,8 @@ const Posts: React.FC = () => {
           <ViewSwitcher active={activeView} onChange={setActiveView} />
         </div>
 
-        {activeView === 'Timeline' && (
-          <div className="mb-4">
-            <h2 className="text-sm font-semibold text-gray-700">Rough Planning</h2>
-            <p className="text-xs text-gray-400 mt-0.5">Use this timeline to sketch out your posting order. It's a planning tool, not a final calendar.</p>
-          </div>
-        )}
-
-        {/* Filter Bar (List + Pillars only) */}
-        {activeView !== 'Timeline' && <PostsFilterBar
+        {/* Filter Bar */}
+        <PostsFilterBar
           pillars={pillars}
           filterPillars={filterPillars}
           filterStatuses={filterStatuses}
@@ -547,11 +544,12 @@ const Posts: React.FC = () => {
           onAddPillar={handleAddPillar}
           onDeletePillar={handleDeletePillar}
           onRenamePillar={handleRenamePillar}
+          onChangePillarColor={handleChangePillarColor}
           formats={formats}
           onAddFormat={handleAddFormat}
           onDeleteFormat={handleDeleteFormat}
           onRenameFormat={handleRenameFormat}
-        />}
+        />
 
         {/* View body with crossfade */}
         <AnimatePresence mode="wait">
@@ -619,31 +617,6 @@ const Posts: React.FC = () => {
                 onSendToSchedule={handleSendToSchedule}
                 onCreateOnDate={handleCreateOnDate}
                 onSwitchToList={handleSwitchToListBank}
-                filterSlot={
-                  <PostsFilterBar
-                    pillars={pillars}
-                    filterPillars={filterPillars}
-                    filterStatuses={filterStatuses}
-                    filterFormats={filterFormats}
-                    onTogglePillar={handleTogglePillar}
-                    onToggleStatus={handleToggleStatus}
-                    onToggleFormat={handleToggleFormat}
-                    onClearAll={handleClearAllFilters}
-                    onApplyPreset={handleApplyPreset}
-                    activePreset={activePreset}
-                    onClearPillars={() => setFilterPillars(new Set())}
-                    onClearStatuses={() => { setFilterStatuses(new Set()); setActivePreset(null); }}
-                    onClearFormats={() => setFilterFormats(new Set())}
-                    onAddPillar={handleAddPillar}
-                    onDeletePillar={handleDeletePillar}
-                    onRenamePillar={handleRenamePillar}
-                    formats={formats}
-                    onAddFormat={handleAddFormat}
-                    onDeleteFormat={handleDeleteFormat}
-                    onRenameFormat={handleRenameFormat}
-                    compactMode
-                  />
-                }
               />
             )}
           </motion.div>

@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
-import { Plus, X, SlidersHorizontal, ChevronRight, Check } from 'lucide-react';
+import { Plus, X, SlidersHorizontal, ChevronRight, Check, MoreHorizontal, Pencil, Palette, Trash2 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { PostStatus, POST_STATUSES, STATUS_COLORS, getPillarStyle } from '@/types/posts';
+import { PostStatus, POST_STATUSES, STATUS_COLORS, getPillarStyle, setPillarStyle, PillarStyle, PILLAR_COLOR_PALETTE } from '@/types/posts';
 import { StatusIcon } from './StatusDropdown';
 
 interface PostsFilterBarProps {
@@ -25,6 +25,7 @@ interface PostsFilterBarProps {
   onAddFormat: (name: string) => void;
   onDeleteFormat: (name: string) => void;
   onRenameFormat: (oldName: string, newName: string) => void;
+  onChangePillarColor?: (pillar: string, style: PillarStyle) => void;
   compactMode?: boolean;
 }
 
@@ -51,6 +52,7 @@ const PostsFilterBar: React.FC<PostsFilterBarProps> = ({
   onAddFormat,
   onDeleteFormat,
   onRenameFormat,
+  onChangePillarColor,
   compactMode = false,
 }) => {
   const [addingPillar, setAddingPillar] = useState(false);
@@ -59,6 +61,7 @@ const PostsFilterBar: React.FC<PostsFilterBarProps> = ({
   const [editDraft, setEditDraft] = useState('');
   const [filterOpen, setFilterOpen] = useState(false);
   const [filterMenu, setFilterMenu] = useState<FilterMenu>('main');
+  const [, setForceRender] = useState(0);
   const pillarInputRef = useRef<HTMLInputElement>(null);
 
   const hasFilters = filterPillars.size > 0 || filterStatuses.size > 0 || filterFormats.size > 0;
@@ -232,17 +235,6 @@ const PostsFilterBar: React.FC<PostsFilterBarProps> = ({
     <div className="flex items-center gap-2 py-3 flex-wrap">
       {/* Pillar pills */}
       <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">Pillars</span>
-      <button
-        onClick={() => onClearPillars()}
-        className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold border transition-all duration-200"
-        style={{
-          backgroundColor: filterPillars.size === 0 ? '#F3F4F6' : 'transparent',
-          color: filterPillars.size === 0 ? '#374151' : '#9CA3AF',
-          borderColor: filterPillars.size === 0 ? '#D1D5DB' : '#E5E7EB',
-        }}
-      >
-        All
-      </button>
       {pillars.map(pillar => {
         const isActive = filterPillars.has(pillar);
         const style = getPillarStyle(pillar);
@@ -285,28 +277,24 @@ const PostsFilterBar: React.FC<PostsFilterBarProps> = ({
 
         return (
           <div key={pillar} className="relative group/pill inline-flex">
-            <button
-              onClick={() => onTogglePillar(pillar)}
-              onDoubleClick={e => {
-                e.stopPropagation();
-                setEditingPillar(pillar);
-                setEditDraft(pillar);
-              }}
-              className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold border transition-all duration-200"
+            <span
+              className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold border cursor-default"
               style={{
-                backgroundColor: isActive ? '#F3F4F6' : 'transparent',
-                color: isActive ? '#374151' : '#9CA3AF',
-                borderColor: isActive ? '#D1D5DB' : '#E5E7EB',
+                backgroundColor: style.bg,
+                color: style.text,
+                borderColor: style.border,
               }}
             >
               {pillar}
-            </button>
-            <button
-              onClick={e => { e.stopPropagation(); onDeletePillar(pillar); }}
-              className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-500 hover:text-gray-700 flex items-center justify-center opacity-0 group-hover/pill:opacity-100 transition-opacity duration-150"
-            >
-              <X className="w-2 h-2" />
-            </button>
+            </span>
+            <div className="absolute -top-2 -right-2 opacity-0 group-hover/pill:opacity-100 transition-opacity duration-150">
+              <PillarPillMenu
+                pillar={pillar}
+                onEdit={() => { setEditingPillar(pillar); setEditDraft(pillar); }}
+                onDelete={() => onDeletePillar(pillar)}
+                onChangeColor={(newStyle) => { setPillarStyle(pillar, newStyle); setForceRender(r => r + 1); onChangePillarColor?.(pillar, newStyle); }}
+              />
+            </div>
           </div>
         );
       })}
@@ -559,6 +547,95 @@ const PostsFilterBar: React.FC<PostsFilterBarProps> = ({
         </button>
       )}
     </div>
+  );
+};
+
+// ── Pillar Pill Menu ─────────────────────────────────────────
+
+const PillarPillMenu: React.FC<{
+  pillar: string;
+  onEdit: () => void;
+  onDelete: () => void;
+  onChangeColor: (style: PillarStyle) => void;
+}> = ({ pillar, onEdit, onDelete, onChangeColor }) => {
+  const [open, setOpen] = useState(false);
+  const [showColors, setShowColors] = useState(false);
+  const currentStyle = getPillarStyle(pillar);
+
+  const handle = (fn: () => void) => () => {
+    setOpen(false);
+    setShowColors(false);
+    fn();
+  };
+
+  return (
+    <Popover open={open} onOpenChange={v => { setOpen(v); if (!v) setShowColors(false); }}>
+      <PopoverTrigger asChild>
+        <button
+          onClick={e => e.stopPropagation()}
+          className="w-4 h-4 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-500 hover:text-gray-700 flex items-center justify-center transition-colors duration-150"
+        >
+          <MoreHorizontal className="w-3 h-3" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        className="p-1 bg-white rounded-lg border border-gray-200 shadow-lg w-[160px] z-[60]"
+        align="start"
+        sideOffset={4}
+        onOpenAutoFocus={e => e.preventDefault()}
+      >
+        {!showColors ? (
+          <>
+            <button
+              onClick={handle(onEdit)}
+              className="w-full text-left px-2.5 py-1.5 text-[13px] text-gray-700 hover:bg-gray-50 rounded flex items-center gap-2 transition-colors duration-100"
+            >
+              <Pencil className="w-3.5 h-3.5 text-gray-400" />
+              Edit
+            </button>
+            <button
+              onClick={() => setShowColors(true)}
+              className="w-full text-left px-2.5 py-1.5 text-[13px] text-gray-700 hover:bg-gray-50 rounded flex items-center gap-2 transition-colors duration-100"
+            >
+              <Palette className="w-3.5 h-3.5 text-gray-400" />
+              Pick color
+            </button>
+            <button
+              onClick={handle(onDelete)}
+              className="w-full text-left px-2.5 py-1.5 text-[13px] text-red-500 hover:bg-red-50 rounded flex items-center gap-2 transition-colors duration-100"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              Delete
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              onClick={() => setShowColors(false)}
+              className="w-full text-left px-2.5 py-1.5 text-[11px] font-medium text-gray-400 hover:text-gray-600 transition-colors duration-100 flex items-center gap-1"
+            >
+              <ChevronRight className="w-3 h-3 rotate-180" />
+              Pick color
+            </button>
+            <div className="border-t border-gray-100 my-0.5" />
+            <div className="grid grid-cols-5 gap-1 p-1.5">
+              {PILLAR_COLOR_PALETTE.map((style, i) => (
+                <button
+                  key={i}
+                  onClick={() => { onChangeColor(style); setOpen(false); setShowColors(false); }}
+                  className="w-6 h-6 rounded-full border-2 transition-transform hover:scale-110"
+                  style={{
+                    backgroundColor: style.bg,
+                    borderColor: currentStyle.border === style.border ? style.text : style.border,
+                    boxShadow: currentStyle.border === style.border ? `0 0 0 1px ${style.text}` : 'none',
+                  }}
+                />
+              ))}
+            </div>
+          </>
+        )}
+      </PopoverContent>
+    </Popover>
   );
 };
 

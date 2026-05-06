@@ -48,6 +48,19 @@ export const STATUS_COLORS: Record<PostStatus, { dot: string; bg: string; text: 
 
 export interface PillarStyle { bg: string; text: string; border: string }
 
+export const PILLAR_COLOR_PALETTE: PillarStyle[] = [
+  { bg: '#FEF2F2', text: '#991B1B', border: '#F87171' }, // red
+  { bg: '#EFF6FF', text: '#1E40AF', border: '#60A5FA' }, // blue
+  { bg: '#F0FDF4', text: '#166534', border: '#4ADE80' }, // green
+  { bg: '#FEFCE8', text: '#854D0E', border: '#FACC15' }, // yellow
+  { bg: '#F5F3FF', text: '#5B21B6', border: '#A78BFA' }, // purple
+  { bg: '#FFF7ED', text: '#9A3412', border: '#FB923C' }, // orange
+  { bg: '#FDF4FF', text: '#86198F', border: '#E879F9' }, // fuchsia
+  { bg: '#F0FDFA', text: '#115E59', border: '#2DD4BF' }, // teal
+  { bg: '#FFF1F2', text: '#9F1239', border: '#FDA4AF' }, // rose
+  { bg: '#F0F9FF', text: '#075985', border: '#7DD3FC' }, // sky
+];
+
 const PILLAR_PRESET_STYLES: Record<string, PillarStyle> = {
   Fashion:          { bg: '#FEF2F2', text: '#991B1B', border: '#F87171' }, // red
   POV:              { bg: '#EFF6FF', text: '#1E40AF', border: '#60A5FA' }, // blue
@@ -69,10 +82,14 @@ let extraIndex = 0;
 const dynamicMap = new Map<string, PillarStyle>();
 
 export function getPillarStyle(pillar: string): PillarStyle {
-  if (PILLAR_PRESET_STYLES[pillar]) return PILLAR_PRESET_STYLES[pillar];
   if (dynamicMap.has(pillar)) return dynamicMap.get(pillar)!;
+  if (PILLAR_PRESET_STYLES[pillar]) return PILLAR_PRESET_STYLES[pillar];
   const style = PILLAR_EXTRA_PALETTE[extraIndex % PILLAR_EXTRA_PALETTE.length];
   extraIndex++;
   dynamicMap.set(pillar, style);
   return style;
+}
+
+export function setPillarStyle(pillar: string, style: PillarStyle): void {
+  dynamicMap.set(pillar, style);
 }
