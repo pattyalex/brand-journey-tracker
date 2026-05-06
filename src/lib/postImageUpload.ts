@@ -1,8 +1,20 @@
+import heic2any from 'heic2any';
 import { supabase } from './supabase';
 
 const BUCKET = 'post-thumbnails';
 
+async function convertHeicIfNeeded(file: File): Promise<File> {
+  const name = file.name.toLowerCase();
+  if (name.endsWith('.heic') || name.endsWith('.heif') || file.type === 'image/heic' || file.type === 'image/heif') {
+    const blob = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.9 });
+    const converted = Array.isArray(blob) ? blob[0] : blob;
+    return new File([converted], file.name.replace(/\.heic$|\.heif$/i, '.jpg'), { type: 'image/jpeg' });
+  }
+  return file;
+}
+
 export async function uploadPostThumbnail(file: File, postId: string): Promise<string> {
+  file = await convertHeicIfNeeded(file);
   const ext = file.name.split('.').pop() || 'jpg';
   const path = `${postId}/${Date.now()}.${ext}`;
 

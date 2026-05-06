@@ -188,7 +188,7 @@ const PostsFilterBar: React.FC<PostsFilterBarProps> = ({
           >
             <Plus className="w-2.5 h-2.5" />
           </button>
-          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 rounded bg-gray-600 text-white text-[11px] font-medium whitespace-nowrap opacity-0 group-hover/add:opacity-100 transition-opacity duration-100 pointer-events-none">
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 rounded bg-gray-500 text-white text-[11px] font-medium whitespace-nowrap opacity-0 group-hover/add:opacity-100 transition-opacity duration-100 pointer-events-none">
             Add pillar
           </div>
         </div>

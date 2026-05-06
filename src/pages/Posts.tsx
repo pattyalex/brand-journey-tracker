@@ -14,6 +14,7 @@ import { seedPosts } from '@/data/postsSeedData';
 import { getJSON, setJSON } from '@/lib/storage';
 import { useAuth } from '@/contexts/AuthContext';
 import * as postsApi from '@/services/postsService';
+import * as contentApi from '@/services/contentService';
 import PostsPipeline from '@/components/posts/PostsPipeline';
 import PostsTable from '@/components/posts/PostsTable';
 import PostDetailPanel from '@/components/posts/PostDetailPanel';
@@ -58,7 +59,11 @@ const Posts: React.FC = () => {
     const raw = saved && saved.length > 0 ? saved : seedPosts;
     return cleanBlobUrls(raw);
   });
-  const [pillars, setPillars] = useState<string[]>(DEFAULT_PILLARS);
+  const [pillars, setPillars] = useState<string[]>(() => {
+    const saved = getJSON<string[] | null>('meg_pillars', null);
+    return saved || [];
+  });
+  const [pillarIdMap, setPillarIdMap] = useState<Record<string, string>>({});
   const [formats, setFormats] = useState<string[]>(DEFAULT_FORMATS);
 
   // Load posts from Supabase on mount
@@ -83,6 +88,27 @@ const Posts: React.FC = () => {
   useEffect(() => {
     setJSON('meg_posts', posts);
   }, [posts]);
+  // Load pillars from Supabase on mount
+  useEffect(() => {
+    if (!userId) return;
+    contentApi.getUserContentPillars(userId).then(remote => {
+      if (remote.length > 0) {
+        const names = remote.sort((a, b) => (a.position ?? 0) - (b.position ?? 0)).map(p => p.name);
+        const idMap: Record<string, string> = {};
+        remote.forEach(p => { idMap[p.name] = p.id; });
+        setPillars(names);
+        setPillarIdMap(idMap);
+        setJSON('meg_pillars', names);
+      }
+    }).catch(err => {
+      console.error('[Posts] Failed to load pillars from Supabase:', err);
+    });
+  }, [userId]);
+
+  // Persist pillars to localStorage
+  useEffect(() => {
+    setJSON('meg_pillars', pillars);
+  }, [pillars]);
   const [activeView, setActiveView] = useState<ViewMode>(loadView);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -358,18 +384,27 @@ const Posts: React.FC = () => {
 
   const handleAddPillar = (name: string) => {
     setPillars(prev => [...prev, name]);
+    if (userId) {
+      contentApi.createContentPillar(userId, { name, position: pillars.length }).then(created => {
+        if (created) setPillarIdMap(prev => ({ ...prev, [name]: created.id }));
+      }).catch(console.error);
+    }
   };
 
   const handleDeletePillar = (pillar: string) => {
     setPillars(prev => prev.filter(p => p !== pillar));
     setFilterPillars(prev => { const n = new Set(prev); n.delete(pillar); return n; });
+    const pillarId = pillarIdMap[pillar];
+    if (pillarId) {
+      contentApi.deleteContentPillar(pillarId).catch(console.error);
+      setPillarIdMap(prev => { const n = { ...prev }; delete n[pillar]; return n; });
+    }
   };
 
   const handleRenamePillar = (oldName: string, newName: string) => {
     setPillars(prev => prev.map(p => p === oldName ? newName : p));
     setPosts(prev => {
       const updated = prev.map(p => p.pillar === oldName ? { ...p, pillar: newName } : p);
-      // Sync affected posts to Supabase
       updated.filter(p => p.pillar === newName).forEach(p =>
         postsApi.updatePost(p.id, { pillar: newName }).catch(console.error)
       );
@@ -382,6 +417,11 @@ const Posts: React.FC = () => {
       n.add(newName);
       return n;
     });
+    const pillarId = pillarIdMap[oldName];
+    if (pillarId) {
+      contentApi.updateContentPillar(pillarId, { name: newName }).catch(console.error);
+      setPillarIdMap(prev => { const n = { ...prev }; delete n[oldName]; n[newName] = pillarId; return n; });
+    }
   };
 
   // ── Format management ───────────────────────────────────────
