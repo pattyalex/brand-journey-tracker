@@ -280,9 +280,9 @@ const PostsFilterBar: React.FC<PostsFilterBarProps> = ({
             <span
               className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold border cursor-default"
               style={{
-                backgroundColor: style.bg,
+                backgroundColor: `${style.bg}60`,
                 color: style.text,
-                borderColor: style.border,
+                borderColor: `${style.border}60`,
               }}
             >
               {pillar}

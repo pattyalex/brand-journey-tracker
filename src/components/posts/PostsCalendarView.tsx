@@ -120,7 +120,7 @@ const PostsCalendarView: React.FC<PostsCalendarViewProps> = ({
       if (!seen.has(pil)) groups.push({ pillar: pil, posts });
     });
     return groups;
-  }, [unscheduledPosts, pillars]);
+  }, [unscheduledPosts, pillars, sidebarPillarFilter]);
 
   const postsByDate = useMemo(() => {
     const map: Record<string, Post[]> = {};

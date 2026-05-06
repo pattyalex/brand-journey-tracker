@@ -216,10 +216,10 @@ const PillarColumn: React.FC<PillarColumnProps> = ({ pillar, posts, allPosts, on
   return (
     <div
       ref={setNodeRef}
-      className="flex-1 min-w-[240px] flex flex-col rounded-lg transition-all duration-200"
+      className="flex-1 min-w-[240px] flex flex-col rounded-lg transition-all duration-200 self-start"
       style={{
-        backgroundColor: showColumnHighlight ? style.bg : `${style.bg}80`,
-        border: showColumnHighlight ? `1px solid ${style.border}` : `1px solid ${style.border}20`,
+        backgroundColor: showColumnHighlight ? style.bg : `${style.bg}60`,
+        border: showColumnHighlight ? `1px solid ${style.border}` : `1px solid ${style.border}40`,
       }}
     >
       {/* Column header */}
@@ -229,7 +229,7 @@ const PillarColumn: React.FC<PillarColumnProps> = ({ pillar, posts, allPosts, on
 
       {/* Cards */}
       <SortableContext items={posts.map(p => p.id)} strategy={verticalListSortingStrategy}>
-        <div className="flex-1 px-2 pb-2 min-h-[60px]">
+        <div className="px-2 pb-2 min-h-[40px]">
           {posts.length === 0 && !addingIdea && (
             <p className="text-xs text-gray-300 text-center py-6 italic">Nothing here yet</p>
           )}
@@ -273,7 +273,7 @@ const PillarColumn: React.FC<PillarColumnProps> = ({ pillar, posts, allPosts, on
         ) : (
           <button
             onClick={() => { setAddingIdea(true); setTimeout(() => inputRef.current?.focus(), 50); }}
-            className="w-full flex items-center gap-1.5 px-2 py-1.5 text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-100/60 rounded-md transition-colors duration-150"
+            className="w-full flex items-center gap-1.5 px-2 py-1.5 text-xs text-gray-400 hover:text-gray-600 hover:bg-white rounded-md transition-colors duration-150"
           >
             <Plus className="w-3 h-3" />
             Add idea
