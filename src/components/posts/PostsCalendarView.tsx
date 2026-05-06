@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, CalendarPlus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, LayoutList } from 'lucide-react';
 import {
   DndContext,
   DragOverlay,
@@ -136,7 +136,7 @@ const PostsCalendarView: React.FC<PostsCalendarViewProps> = ({
   return (
     <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       <div className="flex gap-4">
-        {/* No date yet sidebar */}
+        {/* All Posts sidebar */}
         {unscheduledPosts.length > 0 && (
           <div
             className="flex-shrink-0 transition-all duration-300 ease-in-out"
@@ -146,8 +146,8 @@ const PostsCalendarView: React.FC<PostsCalendarViewProps> = ({
               <div className="bg-gray-50/80 rounded-lg border border-gray-100 h-full">
                 <div className="flex items-center justify-between px-3 py-2.5 border-b border-gray-100">
                   <div className="flex items-center gap-1.5">
-                    <CalendarPlus className="w-3.5 h-3.5 text-gray-400" />
-                    <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">No date yet</span>
+                    <LayoutList className="w-3.5 h-3.5 text-gray-400" />
+                    <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">All Posts</span>
                   </div>
                   <button
                     onClick={() => setSidebarOpen(false)}
@@ -167,7 +167,7 @@ const PostsCalendarView: React.FC<PostsCalendarViewProps> = ({
                 onClick={() => setSidebarOpen(true)}
                 className="w-10 h-full bg-gray-50/80 rounded-lg border border-gray-100 flex flex-col items-center pt-3 gap-1 hover:bg-gray-100/60 transition-colors duration-150"
               >
-                <CalendarPlus className="w-3.5 h-3.5 text-gray-400" />
+                <LayoutList className="w-3.5 h-3.5 text-gray-400" />
                 <span className="text-[9px] font-semibold text-gray-400 writing-vertical" style={{ writingMode: 'vertical-lr' }}>
                   {unscheduledPosts.length} unscheduled
                 </span>

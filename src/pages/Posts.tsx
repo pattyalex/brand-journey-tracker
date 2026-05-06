@@ -464,7 +464,7 @@ const Posts: React.FC = () => {
         {activeView === 'Timeline' && (
           <div className="mb-4">
             <h2 className="text-sm font-semibold text-gray-700">Rough Planning</h2>
-            <p className="text-xs text-gray-400 mt-0.5">Use this timeline to sketch out your posting order. It's a planning tool, not a final calendar — adjust anytime.</p>
+            <p className="text-xs text-gray-400 mt-0.5">Use this timeline to sketch out your posting order. It's a planning tool, not a final calendar.</p>
           </div>
         )}
 
