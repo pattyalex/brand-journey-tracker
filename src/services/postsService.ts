@@ -30,6 +30,7 @@ interface DbPost {
   sort_order: number;
   shoot_id: string | null;
   sent_to_shoots: boolean;
+  platforms: string[] | null;
   created_at: string;
   updated_at: string;
 }
@@ -63,6 +64,7 @@ function dbToPost(row: DbPost): Post {
     order: row.sort_order,
     shoot_id: row.shoot_id,
     sentToShoots: row.sent_to_shoots || undefined,
+    platforms: row.platforms?.length ? row.platforms : undefined,
     createdAt: row.created_at,
   };
 }
@@ -95,6 +97,7 @@ function postToDb(post: Partial<Post>, userId: string): Record<string, unknown> 
   if (post.order !== undefined) row.sort_order = post.order;
   if (post.shoot_id !== undefined) row.shoot_id = post.shoot_id || null;
   if (post.sentToShoots !== undefined) row.sent_to_shoots = post.sentToShoots;
+  if (post.platforms !== undefined) row.platforms = post.platforms || [];
   if (post.createdAt !== undefined) row.created_at = post.createdAt;
 
   return row;
@@ -128,6 +131,7 @@ function postUpdatesToDb(updates: Partial<Post>): Record<string, unknown> {
   if (updates.order !== undefined) row.sort_order = updates.order;
   if (updates.shoot_id !== undefined) row.shoot_id = updates.shoot_id || null;
   if (updates.sentToShoots !== undefined) row.sent_to_shoots = updates.sentToShoots;
+  if (updates.platforms !== undefined) row.platforms = updates.platforms || [];
 
   return row;
 }

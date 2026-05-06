@@ -28,6 +28,7 @@ export interface Post {
   order: number;
   shoot_id?: string | null;
   sentToShoots?: boolean;
+  platforms?: string[];
   createdAt: string;
 }
 

@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GripVertical, Trash2, ArrowRight, ImageIcon } from 'lucide-react';
-import PostsDatePicker from './PostsDatePicker';
+import PlatformSelector from './PlatformSelector';
 import FormatDropdown from './FormatDropdown';
 import PillarDropdown from './PillarDropdown';
 import StatusDropdown from './StatusDropdown';
@@ -49,12 +49,6 @@ interface PostsTableProps {
   selectedIds: Set<string>;
   onSelectToggle: (id: string, shiftKey: boolean) => void;
 }
-
-const formatDate = (dateStr?: string) => {
-  if (!dateStr) return '\u2014';
-  const d = new Date(dateStr + 'T00:00:00');
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-};
 
 const PostsTable: React.FC<PostsTableProps> = ({
   posts,
@@ -106,7 +100,7 @@ const PostsTable: React.FC<PostsTableProps> = ({
             <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Pillar</th>
             <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Format</th>
             <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
-            <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Aim for</th>
+            <th className="text-center px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Platforms</th>
             <th className="w-10 px-2 py-3" />
           </tr>
         </thead>
@@ -170,7 +164,9 @@ const PostsTable: React.FC<PostsTableProps> = ({
                         <span className="text-sm font-medium text-gray-700">{activePost.status}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-500">{activePost.scheduledDate ? formatDate(activePost.scheduledDate) : 'Set date'}</td>
+                    <td className="px-4 py-3 text-sm text-gray-500">
+                      <PlatformSelector value={activePost.platforms} onChange={() => {}} size={14} />
+                    </td>
                     <td className="w-10 px-2 py-3" />
                   </tr>
                 </tbody>
@@ -271,11 +267,6 @@ const SortableRow: React.FC<SortableRowProps> = ({
       onUpdate(post.id, { title: trimmed });
     }
     setEditingTitle(false);
-  };
-
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.stopPropagation();
-    onUpdate(post.id, { scheduledDate: e.target.value || undefined });
   };
 
   const pillarStyle = getPillarStyle(post.pillar);
@@ -418,15 +409,14 @@ const SortableRow: React.FC<SortableRowProps> = ({
         </div>
       </td>
 
-      {/* Date */}
-      <td className="px-4 py-3 text-sm" onClick={e => e.stopPropagation()}>
-        <PostsDatePicker
-          value={post.scheduledDate}
-          allPosts={allPosts}
-          onChange={date => onUpdate(post.id, { scheduledDate: date })}
-          onClickPost={onClick}
-          detailPanelOpen={detailPanelOpen}
-        />
+      {/* Platforms */}
+      <td className="px-4 py-3 text-sm text-center" onClick={e => e.stopPropagation()}>
+        <div className="flex justify-center">
+          <PlatformSelector
+            value={post.platforms}
+            onChange={platforms => onUpdate(post.id, { platforms })}
+          />
+        </div>
       </td>
 
       {/* Delete */}

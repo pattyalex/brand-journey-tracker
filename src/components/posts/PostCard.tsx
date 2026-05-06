@@ -1,9 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, GripVertical, Trash2, ImageIcon, ArrowRight } from 'lucide-react';
+import { GripVertical, Trash2, ImageIcon, ArrowRight } from 'lucide-react';
 import { Post, STATUS_COLORS, PostStatus, getPillarStyle } from '@/types/posts';
 import { StatusIcon } from './StatusDropdown';
-import PostsDatePicker from './PostsDatePicker';
+import { PlatformIconsDisplay } from './PlatformSelector';
 
 interface PostCardProps {
   post: Post;
@@ -126,26 +126,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, variant, onClick, allPosts = 
               </button>
             )}
           </div>
-          <div onClick={e => e.stopPropagation()}>
-            <PostsDatePicker
-            value={post.scheduledDate}
-            allPosts={allPosts}
-            onChange={date => onUpdatePost?.(post.id, { scheduledDate: date })}
-            onClickPost={onClickPost}
-            triggerSlot={
-              post.scheduledDate ? (
-                <button className="flex items-center gap-1 text-[10px] text-gray-400 hover:text-gray-600 transition-colors duration-150">
-                  <Calendar className="w-3 h-3" />
-                  {new Date(post.scheduledDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                </button>
-              ) : (
-                <button className="text-gray-300 hover:text-gray-500 transition-colors duration-150">
-                  <Calendar className="w-3 h-3" />
-                </button>
-              )
-            }
-          />
-          </div>
+          <PlatformIconsDisplay platforms={post.platforms} size={12} />
         </div>
       </div>
     </motion.div>

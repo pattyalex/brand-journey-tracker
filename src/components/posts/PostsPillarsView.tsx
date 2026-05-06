@@ -214,7 +214,7 @@ const PillarColumn: React.FC<PillarColumnProps> = ({ pillar, posts, allPosts, on
       ref={setNodeRef}
       className="flex-1 min-w-[240px] flex flex-col rounded-lg transition-all duration-200"
       style={{
-        backgroundColor: showColumnHighlight ? style.bg : '#FFFFFF',
+        backgroundColor: showColumnHighlight ? style.bg : '#FAFAFA',
         border: showColumnHighlight ? `1px solid ${style.border}` : '1px solid transparent',
       }}
     >
