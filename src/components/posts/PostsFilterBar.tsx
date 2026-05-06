@@ -326,6 +326,25 @@ const PostsFilterBar: React.FC<PostsFilterBarProps> = ({
                     </button>
                   );
                 })}
+                <div className="border-t border-gray-100 my-0.5" />
+                {[
+                  { key: 'Shoot in progress' as PostStatus, parentStatus: 'Ready to shoot' as PostStatus, label: 'Shoot in progress' },
+                  { key: 'Sent to schedule' as PostStatus, parentStatus: 'Edited' as PostStatus, label: 'Sent to schedule' },
+                ].map(({ key, parentStatus, label }) => {
+                  const isActive = filterStatuses.has(key);
+                  const colors = STATUS_COLORS[parentStatus];
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => onToggleStatus(key)}
+                      className={`w-full text-left px-3 py-1.5 text-sm flex items-center gap-2 transition-colors duration-100 ${isActive ? 'text-gray-900 font-medium' : 'text-gray-500 hover:bg-gray-50'}`}
+                    >
+                      <StatusIcon status={parentStatus} className="w-3.5 h-3.5 flex-shrink-0" style={{ color: colors.dot }} />
+                      <span className="flex-1">{label}</span>
+                      {isActive && <Check className="w-3 h-3 text-[#612a4f]" />}
+                    </button>
+                  );
+                })}
               </div>
             )}
 

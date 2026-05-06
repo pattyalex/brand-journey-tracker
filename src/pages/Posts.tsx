@@ -163,7 +163,12 @@ const Posts: React.FC = () => {
   const filteredPosts = useMemo(() => {
     let result = posts;
     if (filterPillars.size > 0) result = result.filter(p => filterPillars.has(p.pillar));
-    if (filterStatuses.size > 0) result = result.filter(p => filterStatuses.has(p.status));
+    if (filterStatuses.size > 0) result = result.filter(p => {
+      if (filterStatuses.has(p.status as any)) return true;
+      if (filterStatuses.has('Shoot in progress' as any) && p.status === 'Ready to shoot' && p.sentToShoots) return true;
+      if (filterStatuses.has('Sent to schedule' as any) && p.status === 'Edited' && p.sent_to_schedule) return true;
+      return false;
+    });
     if (filterFormats.size > 0) result = result.filter(p => filterFormats.has(p.format));
     return result;
   }, [posts, filterPillars, filterStatuses, filterFormats]);
