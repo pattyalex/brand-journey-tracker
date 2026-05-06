@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { GripVertical, Trash2, ArrowRight, ImageIcon } from 'lucide-react';
+import { GripVertical, Trash2, ArrowRight, ImageIcon, MoreVertical, Maximize2, Copy } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import PlatformSelector from './PlatformSelector';
 import FormatDropdown from './FormatDropdown';
 import PillarDropdown from './PillarDropdown';
@@ -40,6 +41,7 @@ interface PostsTableProps {
   onRowClick: (post: Post) => void;
   onUpdatePost: (id: string, updates: Partial<Post>) => void;
   onDeletePost: (id: string) => void;
+  onDuplicatePost: (id: string) => void;
   onSendToShoots?: (id: string) => void;
   onSendToSchedule?: (id: string) => void;
   onAddFormat: (name: string) => void;
@@ -59,6 +61,7 @@ const PostsTable: React.FC<PostsTableProps> = ({
   onRowClick,
   onUpdatePost,
   onDeletePost,
+  onDuplicatePost,
   onSendToShoots,
   onSendToSchedule,
   onAddFormat,
@@ -99,8 +102,8 @@ const PostsTable: React.FC<PostsTableProps> = ({
             <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Title</th>
             <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Pillar</th>
             <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Format</th>
-            <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
-            <th className="text-center px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Platforms</th>
+            <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Platforms</th>
+            <th className="text-right px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
             <th className="w-10 px-2 py-3" />
           </tr>
         </thead>
@@ -124,6 +127,7 @@ const PostsTable: React.FC<PostsTableProps> = ({
                     onClick={onRowClick}
                     onUpdate={onUpdatePost}
                     onDelete={onDeletePost}
+                    onDuplicate={onDuplicatePost}
                     onSendToShoots={onSendToShoots}
                     onSendToSchedule={onSendToSchedule}
                   />
@@ -158,14 +162,14 @@ const PostsTable: React.FC<PostsTableProps> = ({
                       )}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600">{activePost.format}</td>
+                    <td className="px-4 py-3 text-sm text-gray-500">
+                      <PlatformSelector value={activePost.platforms} onChange={() => {}} size={14} />
+                    </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <StatusIcon status={activePost.status} className="w-3.5 h-3.5" style={{ color: STATUS_COLORS[activePost.status].dot }} />
                         <span className="text-sm font-medium text-gray-700">{activePost.status}</span>
                       </div>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-500">
-                      <PlatformSelector value={activePost.platforms} onChange={() => {}} size={14} />
                     </td>
                     <td className="w-10 px-2 py-3" />
                   </tr>
@@ -195,6 +199,7 @@ interface SortableRowProps {
   onClick: (post: Post) => void;
   onUpdate: (id: string, updates: Partial<Post>) => void;
   onDelete: (id: string) => void;
+  onDuplicate: (id: string) => void;
   onSendToShoots?: (id: string) => void;
   onSendToSchedule?: (id: string) => void;
 }
@@ -213,6 +218,7 @@ const SortableRow: React.FC<SortableRowProps> = ({
   onClick,
   onUpdate,
   onDelete,
+  onDuplicate,
   onSendToShoots,
   onSendToSchedule,
 }) => {
@@ -292,16 +298,56 @@ const SortableRow: React.FC<SortableRowProps> = ({
       className={`border-b cursor-pointer group hover:bg-gray-50/60 border-gray-50`} style={{ borderTop: showInsertLine ? '1.5px solid #9CA3AF' : undefined }}
       onClick={() => onClick(post)}
     >
-      {/* Drag handle */}
+      {/* Drag handle + menu */}
       <td className="px-2 py-3">
-        <button
-          {...attributes}
-          {...listeners}
-          className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 cursor-grab active:cursor-grabbing p-0.5 rounded text-gray-300 hover:text-gray-500"
-          onClick={e => e.stopPropagation()}
-        >
-          <GripVertical className="w-3.5 h-3.5" />
-        </button>
+        <div className="flex items-center gap-0.5">
+          <button
+            {...attributes}
+            {...listeners}
+            className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 cursor-grab active:cursor-grabbing p-0.5 rounded text-gray-300 hover:text-gray-500"
+            onClick={e => e.stopPropagation()}
+          >
+            <GripVertical className="w-3.5 h-3.5" />
+          </button>
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-0.5 rounded text-gray-300 hover:text-gray-500 hover:bg-gray-100"
+                onClick={e => e.stopPropagation()}
+              >
+                <MoreVertical className="w-3.5 h-3.5" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent
+              className="p-1 bg-white rounded-lg border border-gray-200 shadow-lg w-[140px] z-[60]"
+              align="start"
+              sideOffset={4}
+              onOpenAutoFocus={e => e.preventDefault()}
+            >
+              <button
+                onClick={e => { e.stopPropagation(); onClick(post); }}
+                className="w-full text-left px-2.5 py-1.5 text-[13px] text-gray-700 hover:bg-gray-50 rounded flex items-center gap-2 transition-colors duration-100"
+              >
+                <Maximize2 className="w-3.5 h-3.5 text-gray-400" />
+                Expand
+              </button>
+              <button
+                onClick={e => { e.stopPropagation(); onDuplicate(post.id); }}
+                className="w-full text-left px-2.5 py-1.5 text-[13px] text-gray-700 hover:bg-gray-50 rounded flex items-center gap-2 transition-colors duration-100"
+              >
+                <Copy className="w-3.5 h-3.5 text-gray-400" />
+                Duplicate
+              </button>
+              <button
+                onClick={e => { e.stopPropagation(); onDelete(post.id); }}
+                className="w-full text-left px-2.5 py-1.5 text-[13px] text-red-500 hover:bg-red-50 rounded flex items-center gap-2 transition-colors duration-100"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                Delete
+              </button>
+            </PopoverContent>
+          </Popover>
+        </div>
       </td>
 
       {/* Title */}
@@ -368,9 +414,17 @@ const SortableRow: React.FC<SortableRowProps> = ({
         />
       </td>
 
+      {/* Platforms */}
+      <td className="px-4 py-3 text-sm" onClick={e => e.stopPropagation()}>
+        <PlatformSelector
+          value={post.platforms}
+          onChange={platforms => onUpdate(post.id, { platforms })}
+        />
+      </td>
+
       {/* Status + shoot action */}
-      <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
-        <div className="flex items-center gap-2.5">
+      <td className="px-4 py-3 text-right" onClick={e => e.stopPropagation()}>
+        <div className="inline-flex items-center gap-2.5">
           <StatusDropdown
             value={post.status}
             onChange={handleStatusChange}
@@ -409,25 +463,7 @@ const SortableRow: React.FC<SortableRowProps> = ({
         </div>
       </td>
 
-      {/* Platforms */}
-      <td className="px-4 py-3 text-sm text-center" onClick={e => e.stopPropagation()}>
-        <div className="flex justify-center">
-          <PlatformSelector
-            value={post.platforms}
-            onChange={platforms => onUpdate(post.id, { platforms })}
-          />
-        </div>
-      </td>
-
-      {/* Delete */}
-      <td className="px-2 py-3">
-        <button
-          onClick={e => { e.stopPropagation(); onDelete(post.id); }}
-          className="opacity-0 group-hover:opacity-100 p-1 rounded text-gray-300 hover:text-red-400 transition-all duration-150"
-        >
-          <Trash2 className="w-3.5 h-3.5" />
-        </button>
-      </td>
+      <td className="w-10 px-2 py-3" />
     </motion.tr>
   );
 };

@@ -260,6 +260,22 @@ const Posts: React.FC = () => {
     postsApi.deletePost(id).catch(console.error);
   }, []);
 
+  const handleDuplicatePost = useCallback((id: string) => {
+    setPosts(prev => {
+      const original = prev.find(p => p.id === id);
+      if (!original) return prev;
+      const duplicate: Post = {
+        ...original,
+        id: Date.now().toString(),
+        title: `${original.title} (copy)`,
+        order: prev.length,
+        createdAt: new Date().toISOString(),
+      };
+      if (userId) postsApi.createPost(duplicate, userId).catch(console.error);
+      return [...prev, duplicate];
+    });
+  }, [userId]);
+
   const handleSendToShoots = useCallback((id: string) => {
     // Mark post as sent to shoots and copy to shoots store
     setPosts(prev => {
@@ -556,6 +572,7 @@ const Posts: React.FC = () => {
                     onRowClick={setSelectedPost}
                     onUpdatePost={handleUpdatePost}
                     onDeletePost={handleDeletePost}
+                    onDuplicatePost={handleDuplicatePost}
                     onSendToShoots={handleSendToShoots}
                     onSendToSchedule={handleSendToSchedule}
                     onAddFormat={handleAddFormat}
@@ -577,6 +594,7 @@ const Posts: React.FC = () => {
                 onClickPost={setSelectedPost}
                 onUpdatePost={handleUpdatePost}
                 onDeletePost={handleDeletePost}
+                onDuplicatePost={handleDuplicatePost}
                 onSendToShoots={handleSendToShoots}
                 onSendToSchedule={handleSendToSchedule}
                 onAddPost={handleAddPost}

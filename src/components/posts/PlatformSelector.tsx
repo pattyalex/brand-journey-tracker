@@ -77,7 +77,8 @@ const PlatformSelector: React.FC<{
   value?: string[];
   onChange: (platforms: string[]) => void;
   size?: number;
-}> = ({ value = [], onChange, size = 14 }) => {
+  compact?: boolean;
+}> = ({ value = [], onChange, size = 14, compact = false }) => {
   const [open, setOpen] = React.useState(false);
 
   const toggle = (id: PlatformId) => {
@@ -101,21 +102,27 @@ const PlatformSelector: React.FC<{
         >
           {value.length > 0 ? (
             <PlatformIconsDisplay platforms={value} size={size} />
+          ) : compact ? (
+            <span className="text-gray-300 hover:text-gray-500 transition-colors duration-150 text-sm leading-none">+</span>
           ) : (
             <span className="text-[11px] text-gray-300">+ Platform</span>
           )}
-          <svg className="w-3 h-3 text-gray-300" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M3 4.5L6 7.5L9 4.5" />
-          </svg>
+          {!(compact && value.length === 0) && (
+            <svg className="w-3 h-3 text-gray-300" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 4.5L6 7.5L9 4.5" />
+            </svg>
+          )}
         </button>
       </PopoverTrigger>
       <PopoverContent
-        className="p-2 bg-white rounded-lg border border-gray-200 shadow-lg w-auto z-[60]"
+        className="p-1.5 bg-white rounded-lg border border-gray-200 shadow-lg w-auto z-[100]"
         align="center"
-        sideOffset={4}
+        side="top"
+        sideOffset={6}
+        collisionPadding={16}
         onOpenAutoFocus={e => e.preventDefault()}
       >
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1">
           {PLATFORMS.map(id => {
             const Icon = PlatformSvg[id];
             const isActive = value.includes(id);
@@ -123,13 +130,13 @@ const PlatformSelector: React.FC<{
               <button
                 key={id}
                 onClick={() => toggle(id)}
-                className={`relative group/sel w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-150 ${
+                className={`relative group/sel w-6 h-6 rounded-md flex items-center justify-center transition-all duration-150 ${
                   isActive
                     ? 'bg-gray-100 text-gray-700'
                     : 'text-gray-300 hover:text-gray-500 hover:bg-gray-50'
                 }`}
               >
-                <Icon className="w-4 h-4" />
+                <Icon className="w-3.5 h-3.5" />
                 <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-1.5 py-0.5 rounded bg-gray-500 text-white text-[10px] font-medium whitespace-nowrap opacity-0 group-hover/sel:opacity-100 transition-opacity duration-100 pointer-events-none">
                   {PLATFORM_LABELS[id]}
                 </div>
