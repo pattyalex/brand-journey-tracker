@@ -9,8 +9,7 @@ interface TaskCheckboxProps {
 }
 
 const TaskCheckbox: React.FC<TaskCheckboxProps> = ({ checked, onChange, size = 'md' }) => {
-  const px = size === 'sm' ? 14 : 16;
-  const mobilePx = size === 'sm' ? 20 : 24;
+  const px = size === 'sm' ? 16 : 18;
 
   return (
     <button
@@ -19,14 +18,14 @@ const TaskCheckbox: React.FC<TaskCheckboxProps> = ({ checked, onChange, size = '
       style={{ width: px, height: px }}
     >
       <motion.div
-        animate={checked ? { scale: [1, 1.15, 1] } : { scale: 1 }}
-        transition={{ duration: 0.2, ease: 'easeOut' }}
-        className="rounded flex items-center justify-center transition-colors duration-200"
+        animate={checked ? { scale: [1, 1.1, 1] } : { scale: 1 }}
+        transition={{ duration: 0.25, ease: 'easeOut' }}
+        className="flex items-center justify-center transition-all duration-200"
         style={{
           width: px,
           height: px,
-          borderRadius: 4,
-          border: checked ? 'none' : '1.5px solid #8B7082',
+          borderRadius: '50%',
+          border: checked ? '1.5px solid #612A4F' : '1.5px solid #C4B5BD',
           backgroundColor: checked ? '#612A4F' : 'transparent',
         }}
       >
@@ -36,7 +35,7 @@ const TaskCheckbox: React.FC<TaskCheckboxProps> = ({ checked, onChange, size = '
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.15 }}
           >
-            <Check className="text-white" style={{ width: px * 0.65, height: px * 0.65 }} strokeWidth={3} />
+            <Check className="text-white" style={{ width: px * 0.55, height: px * 0.55 }} strokeWidth={2.5} />
           </motion.div>
         )}
       </motion.div>

@@ -43,19 +43,21 @@ const TaskInput: React.FC<TaskInputProps> = ({ onAdd, autoFocus = false, placeho
 
   if (!active) {
     return (
-      <button
+      <div
+        className="flex items-center gap-2.5 py-1.5 px-2 -mx-2 rounded-lg text-gray-300 hover:text-gray-500 transition-colors duration-150 cursor-pointer"
         onClick={() => setActive(true)}
-        className="flex items-center gap-2 py-2 px-2 -mx-2 rounded-lg text-gray-300 hover:text-gray-500 hover:bg-[#f9f7f5] transition-colors duration-150 w-full"
       >
-        <Plus className="w-4 h-4" />
+        <div className="w-[108px] flex-shrink-0" />
+        <Plus className="w-4 h-4 flex-shrink-0" />
         <span className="text-[14px]">Add task</span>
-      </button>
+      </div>
     );
   }
 
   return (
-    <div className="py-1.5 px-2 -mx-2 rounded-lg bg-[#f9f7f5]">
-      <div className="flex items-center gap-2">
+    <div className="py-1.5 px-2 -mx-2 rounded-lg">
+      <div className="flex items-center gap-2.5">
+        <div className="w-[108px] flex-shrink-0" />
         <Plus className="w-4 h-4 text-gray-300 flex-shrink-0" />
         <input
           ref={inputRef}
@@ -63,7 +65,7 @@ const TaskInput: React.FC<TaskInputProps> = ({ onAdd, autoFocus = false, placeho
           onChange={e => setValue(e.target.value)}
           onKeyDown={handleKeyDown}
           onBlur={() => { if (!value.trim()) setActive(false); }}
-          placeholder={placeholder || 'Type a task... (try "9am meeting #work 1h")'}
+          placeholder=""
           className="flex-1 bg-transparent border-none outline-none text-[14px] text-gray-800 placeholder:text-gray-300"
         />
       </div>

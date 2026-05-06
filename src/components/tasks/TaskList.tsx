@@ -1,7 +1,10 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   DndContext,
   DragEndEvent,
+  DragStartEvent,
+  DragOverEvent,
+  DragOverlay,
   PointerSensor,
   TouchSensor,
   useSensor,
@@ -16,6 +19,8 @@ import {
 import { Task } from '@/types/tasks';
 import TaskRow from './TaskRow';
 import TaskInput from './TaskInput';
+import TaskCheckbox from './TaskCheckbox';
+import { formatTimeShort } from '@/lib/taskParser';
 
 interface TaskListProps {
   tasks: Task[];
@@ -44,7 +49,7 @@ const TaskList: React.FC<TaskListProps> = ({
   onOutdent,
   onAddSubtask,
 }) => {
-  const { timedParents, untimedParents, childrenMap } = useMemo(() => {
+  const { allParents, childrenMap } = useMemo(() => {
     const childrenMap: Record<string, Task[]> = {};
     const parentTasks: Task[] = [];
 
@@ -59,57 +64,68 @@ const TaskList: React.FC<TaskListProps> = ({
 
     Object.values(childrenMap).forEach(arr => arr.sort((a, b) => a.order_index - b.order_index));
 
-    const timed = parentTasks
-      .filter(t => !!t.time)
-      .sort((a, b) => (a.time || '').localeCompare(b.time || ''));
+    // Keep tasks in the order they were created (by order_index)
+    const sorted = parentTasks.sort((a, b) => a.order_index - b.order_index);
 
-    const untimed = parentTasks
-      .filter(t => !t.time)
-      .sort((a, b) => a.order_index - b.order_index);
-
-    return { timedParents: timed, untimedParents: untimed, childrenMap };
+    return { allParents: sorted, childrenMap };
   }, [tasks]);
 
-  const visibleTimed = showCompleted ? timedParents : timedParents.filter(t => !t.completed || (childrenMap[t.id]?.some(c => !c.completed)));
-  const visibleUntimed = showCompleted ? untimedParents : untimedParents.filter(t => !t.completed);
+  const visibleParents = showCompleted ? allParents : allParents.filter(t => !t.completed || (childrenMap[t.id]?.some(c => !c.completed)));
+
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [overId, setOverId] = useState<string | null>(null);
+
+  const activeTask = activeId ? tasks.find(t => t.id === activeId) : null;
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
+    useSensor(PointerSensor, { activationConstraint: { distance: 3 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 5 } }),
   );
 
-  // Collect all draggable IDs: untimed parents + all subtasks without time (from any parent)
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
+  };
+
+  const handleDragOver = (event: DragOverEvent) => {
+    setOverId(event.over?.id as string ?? null);
+  };
+
+  const handleDragCancel = () => {
+    setActiveId(null);
+    setOverId(null);
+  };
+
+  // Collect all draggable IDs: all parents + all subtasks
   const allDraggableIds = useMemo(() => {
     const ids: string[] = [];
     const addChildren = (parentId: string) => {
       const children = childrenMap[parentId] || [];
       const visible = showCompleted ? children : children.filter(c => !c.completed);
       visible.forEach(child => {
-        if (!child.time) ids.push(child.id);
+        ids.push(child.id);
         const grandchildren = childrenMap[child.id] || [];
         const visibleGC = showCompleted ? grandchildren : grandchildren.filter(c => !c.completed);
-        visibleGC.forEach(gc => { if (!gc.time) ids.push(gc.id); });
+        visibleGC.forEach(gc => { ids.push(gc.id); });
       });
     };
-    // Untimed parents and their children
-    visibleUntimed.forEach(t => {
+    visibleParents.forEach(t => {
       ids.push(t.id);
       addChildren(t.id);
     });
-    // Subtasks of timed parents that have no time
-    visibleTimed.forEach(t => addChildren(t.id));
     return ids;
-  }, [visibleUntimed, visibleTimed, childrenMap, showCompleted]);
+  }, [visibleParents, childrenMap, showCompleted]);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
+    setActiveId(null);
+    setOverId(null);
     if (!over || active.id === over.id) return;
 
     const oldIndex = allDraggableIds.indexOf(active.id as string);
     const newIndex = allDraggableIds.indexOf(over.id as string);
     if (oldIndex === -1 || newIndex === -1) return;
 
-    const reordered = arrayMove(visibleUntimed, oldIndex, newIndex);
+    const reordered = arrayMove(visibleParents, oldIndex, newIndex);
     const updatedTasks = tasks.map(t => {
       const idx = reordered.findIndex(r => r.id === t.id);
       if (idx !== -1) return { ...t, order_index: idx + 100 };
@@ -124,13 +140,29 @@ const TaskList: React.FC<TaskListProps> = ({
     return { count: children.length, completed: children.filter(c => c.completed).length };
   };
 
+  const renderInsertLine = (taskId: string) => {
+    if (!activeId || !overId || overId !== taskId || activeId === taskId) return null;
+    const activeIndex = allDraggableIds.indexOf(activeId);
+    const overIndex = allDraggableIds.indexOf(taskId);
+    if (activeIndex === -1 || overIndex === -1) return null;
+    const isBefore = activeIndex > overIndex;
+    return (
+      <div
+        className={`h-[1px] bg-[#612A4F] rounded-full mx-2 ${isBefore ? 'mb-0.5' : 'mt-0.5'}`}
+        style={{ marginLeft: 120 }}
+      />
+    );
+  };
+
   const renderTaskWithChildren = (task: Task, isDraggable: boolean) => {
     const children = childrenMap[task.id] || [];
     const visibleChildren = showCompleted ? children : children.filter(c => !c.completed);
     const info = getSubtaskInfo(task.id);
+    const isBeingDragged = activeId === task.id;
 
     return (
       <div key={task.id}>
+        {renderInsertLine(task.id)}
         <TaskRow
           task={task}
           depth={0}
@@ -183,15 +215,6 @@ const TaskList: React.FC<TaskListProps> = ({
 
   return (
     <div>
-      {/* Add task input */}
-      <div className="mb-4">
-        <TaskInput
-          onAdd={onAdd}
-          autoFocus={isEmpty}
-          placeholder={isEmpty ? "Add task" : undefined}
-        />
-      </div>
-
       {isEmpty && (
         <div className="py-8 text-center">
           <p
@@ -200,31 +223,46 @@ const TaskList: React.FC<TaskListProps> = ({
           >
             Add task
           </p>
-          <p className="text-[13px] text-gray-300">Start typing above to add your first task.</p>
+          <p className="text-[13px] text-gray-300">Start typing below to add your first task.</p>
         </div>
       )}
 
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
+        onDragEnd={handleDragEnd}
+        onDragCancel={handleDragCancel}
+      >
         <SortableContext items={allDraggableIds} strategy={verticalListSortingStrategy}>
-          {visibleTimed.length > 0 && (
-            <div className="mb-2">
-              {visibleTimed.map(task => renderTaskWithChildren(task, false))}
-            </div>
-          )}
-
-          {visibleUntimed.length > 0 && visibleTimed.length > 0 && (
-            <div className="mt-4 mb-2">
-              <div className="border-t border-gray-100 pt-3 mb-1">
-                <p className="text-[11px] font-medium text-gray-300 uppercase tracking-wider">No time set</p>
-              </div>
-            </div>
-          )}
-
-          {visibleUntimed.length > 0 && (
-            visibleUntimed.map(task => renderTaskWithChildren(task, true))
-          )}
+          {visibleParents.map(task => renderTaskWithChildren(task, true))}
         </SortableContext>
+        <DragOverlay dropAnimation={{ duration: 200, easing: 'ease' }}>
+          {activeTask ? (
+            <div className="bg-white rounded-lg shadow-lg border border-gray-200 px-4 py-2 flex items-center gap-2.5 opacity-90">
+              {activeTask.time && (
+                <span className="text-[10px] font-medium text-gray-400 whitespace-nowrap">
+                  {formatTimeShort(activeTask.time)}
+                </span>
+              )}
+              <TaskCheckbox checked={activeTask.completed} onChange={() => {}} size="md" />
+              <span className={`text-[14px] ${activeTask.completed ? 'text-gray-300 line-through' : 'text-gray-800'}`}>
+                {activeTask.title}
+              </span>
+            </div>
+          ) : null}
+        </DragOverlay>
       </DndContext>
+
+      {/* Add task input */}
+      <div className="mt-4">
+        <TaskInput
+          onAdd={onAdd}
+          autoFocus={isEmpty}
+          placeholder={isEmpty ? "Add task" : undefined}
+        />
+      </div>
     </div>
   );
 };

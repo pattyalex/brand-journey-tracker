@@ -61,8 +61,8 @@ const TaskRow: React.FC<TaskRowProps> = ({
 
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.3 : 1,
+    transition: transition || 'transform 200ms ease',
+    opacity: isDragging ? 0.15 : 1,
     paddingLeft: depth * 32,
   };
 
@@ -206,7 +206,7 @@ const TaskRow: React.FC<TaskRowProps> = ({
       <div className="flex items-center gap-2.5 py-1.5 px-2 -mx-2 rounded-lg group hover:bg-[#f9f7f5] transition-colors duration-150">
         {/* Grip icon + Time column — no gap between them */}
         {/* Grip + Time: fixed total width, content right-aligned */}
-        <div className="w-[108px] flex-shrink-0 flex items-center justify-end gap-0">
+        <div className="w-[108px] flex-shrink-0 flex items-center justify-end gap-2">
           {isDraggable && (
             <span {...listeners} className="cursor-grab opacity-0 group-hover:opacity-100 transition-opacity duration-150">
               <GripVertical className="w-3.5 h-3.5 text-gray-300" />
@@ -218,11 +218,11 @@ const TaskRow: React.FC<TaskRowProps> = ({
           >
             {timeDisplay || (
               <span className="opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center gap-0.5 text-gray-300 hover:text-[#612A4F]">
-                <Clock className="w-2.5 h-2.5" />
+                <Clock className="w-3 h-3 translate-y-[2.5px]" />
               </span>
             )}
             <span className="absolute left-1/2 -translate-x-1/2 bottom-[calc(100%+4px)] px-2 py-0.5 rounded bg-gray-500 text-white text-[10px] font-medium whitespace-nowrap opacity-0 group-hover/time:opacity-100 transition-opacity duration-100 pointer-events-none z-30">
-              Click To Set Time
+              Set Time
             </span>
           </span>
         </div>
@@ -255,13 +255,17 @@ const TaskRow: React.FC<TaskRowProps> = ({
 
         {/* Add subtask button — only on top-level tasks */}
         {onAddSubtask && depth === 0 && !editing && (
-          <button
-            onClick={e => { e.stopPropagation(); setAddingSubtask(true); }}
-            className="flex-shrink-0 p-1 rounded text-gray-300 hover:text-gray-500 opacity-0 group-hover:opacity-100 transition-all duration-150"
-            title="Add subtask"
-          >
-            <Plus className="w-3.5 h-3.5" />
-          </button>
+          <div className="relative group/addsub flex-shrink-0">
+            <button
+              onClick={e => { e.stopPropagation(); setAddingSubtask(true); }}
+              className="p-1 rounded text-gray-300 hover:text-gray-500 opacity-0 group-hover:opacity-100 transition-all duration-150"
+            >
+              <Plus className="w-3.5 h-3.5" />
+            </button>
+            <span className="absolute left-1/2 -translate-x-1/2 bottom-[calc(100%+4px)] px-2 py-0.5 rounded bg-gray-500 text-white text-[10px] font-medium whitespace-nowrap opacity-0 group-hover/addsub:opacity-100 transition-opacity duration-100 pointer-events-none z-30">
+              Add Subtask
+            </span>
+          </div>
         )}
 
         {/* Add tag button — when no tag */}
