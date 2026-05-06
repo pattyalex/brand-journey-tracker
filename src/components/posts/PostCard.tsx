@@ -34,7 +34,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, variant, onClick, allPosts = 
         whileTap={{ scale: 0.98 }}
         transition={{ duration: 0.15 }}
       >
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-start gap-1.5">
           {post.thumbnail_url ? (
             <motion.img
               key={post.thumbnail_url}
@@ -43,10 +43,10 @@ const PostCard: React.FC<PostCardProps> = ({ post, variant, onClick, allPosts = 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.25, ease: 'easeOut' }}
-              className="w-6 h-6 rounded-sm object-cover flex-shrink-0"
+              className="w-6 h-6 rounded-sm object-cover flex-shrink-0 mt-0.5"
             />
           ) : (
-            <div className="w-6 h-6 rounded-sm bg-gray-100/50 flex items-center justify-center flex-shrink-0">
+            <div className="w-6 h-6 rounded-sm bg-gray-100/50 flex items-center justify-center flex-shrink-0 mt-0.5">
               <ImageIcon className="w-2.5 h-2.5 text-gray-300" />
             </div>
           )}
@@ -140,14 +140,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, variant, onClick, allPosts = 
           ) : (
             <span />
           )}
-          <div onClick={e => e.stopPropagation()}>
-            <PlatformSelector
-              value={post.platforms}
-              onChange={platforms => onUpdatePost?.(post.id, { platforms })}
-              size={10}
-              compact
-            />
-          </div>
+          <PlatformIconsDisplay platforms={post.platforms} size={10} />
         </div>
         <div className="flex items-center gap-1">
           <StatusIcon status={post.status} className="w-2.5 h-2.5" style={{ color: statusColor.dot }} />

@@ -529,7 +529,7 @@ const Posts: React.FC = () => {
           </div>
         )}
 
-        {/* Filter Bar (hidden in Calendar view) */}
+        {/* Filter Bar (List + Pillars only) */}
         {activeView !== 'Timeline' && <PostsFilterBar
           pillars={pillars}
           filterPillars={filterPillars}
@@ -552,7 +552,6 @@ const Posts: React.FC = () => {
           onDeleteFormat={handleDeleteFormat}
           onRenameFormat={handleRenameFormat}
         />}
-
 
         {/* View body with crossfade */}
         <AnimatePresence mode="wait">
@@ -620,6 +619,31 @@ const Posts: React.FC = () => {
                 onSendToSchedule={handleSendToSchedule}
                 onCreateOnDate={handleCreateOnDate}
                 onSwitchToList={handleSwitchToListBank}
+                filterSlot={
+                  <PostsFilterBar
+                    pillars={pillars}
+                    filterPillars={filterPillars}
+                    filterStatuses={filterStatuses}
+                    filterFormats={filterFormats}
+                    onTogglePillar={handleTogglePillar}
+                    onToggleStatus={handleToggleStatus}
+                    onToggleFormat={handleToggleFormat}
+                    onClearAll={handleClearAllFilters}
+                    onApplyPreset={handleApplyPreset}
+                    activePreset={activePreset}
+                    onClearPillars={() => setFilterPillars(new Set())}
+                    onClearStatuses={() => { setFilterStatuses(new Set()); setActivePreset(null); }}
+                    onClearFormats={() => setFilterFormats(new Set())}
+                    onAddPillar={handleAddPillar}
+                    onDeletePillar={handleDeletePillar}
+                    onRenamePillar={handleRenamePillar}
+                    formats={formats}
+                    onAddFormat={handleAddFormat}
+                    onDeleteFormat={handleDeleteFormat}
+                    onRenameFormat={handleRenameFormat}
+                    compactMode
+                  />
+                }
               />
             )}
           </motion.div>

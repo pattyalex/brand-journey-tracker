@@ -25,6 +25,7 @@ interface PostsFilterBarProps {
   onAddFormat: (name: string) => void;
   onDeleteFormat: (name: string) => void;
   onRenameFormat: (oldName: string, newName: string) => void;
+  compactMode?: boolean;
 }
 
 type FilterMenu = 'main' | 'status' | 'format' | 'pillar';
@@ -50,6 +51,7 @@ const PostsFilterBar: React.FC<PostsFilterBarProps> = ({
   onAddFormat,
   onDeleteFormat,
   onRenameFormat,
+  compactMode = false,
 }) => {
   const [addingPillar, setAddingPillar] = useState(false);
   const [newPillarName, setNewPillarName] = useState('');
@@ -82,6 +84,149 @@ const PostsFilterBar: React.FC<PostsFilterBarProps> = ({
     else if (pill.type === 'format') onToggleFormat(pill.value);
     else onTogglePillar(pill.value);
   };
+
+  if (compactMode) {
+    return (
+      <div className="flex items-center gap-2">
+        <Popover open={filterOpen} onOpenChange={(v) => { setFilterOpen(v); if (!v) setFilterMenu('main'); }}>
+          <PopoverTrigger asChild>
+            <button
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium border transition-all duration-200"
+              style={{
+                backgroundColor: totalFilterCount > 0 ? '#F3F4F6' : 'transparent',
+                color: totalFilterCount > 0 ? '#374151' : '#9CA3AF',
+                borderColor: totalFilterCount > 0 ? '#D1D5DB' : '#E5E7EB',
+              }}
+            >
+              <SlidersHorizontal className="w-3 h-3" />
+              Filter
+              {totalFilterCount > 0 && (
+                <span className="w-4 h-4 rounded-full bg-[#612a4f] text-white text-[9px] flex items-center justify-center font-semibold">
+                  {totalFilterCount}
+                </span>
+              )}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent
+            className="p-0 bg-white rounded-lg border border-gray-200 shadow-lg w-[200px] z-[60]"
+            align="end"
+            sideOffset={4}
+            onOpenAutoFocus={e => e.preventDefault()}
+          >
+            {filterMenu === 'main' && (
+              <div className="py-1">
+                <div className="px-3 py-1.5">
+                  <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">Add filter</span>
+                </div>
+                <button onClick={() => setFilterMenu('pillar')} className="w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-100 flex items-center justify-between">
+                  <span>Pillar</span>
+                  <div className="flex items-center gap-1">
+                    {filterPillars.size > 0 && <span className="text-[10px] text-gray-400">{filterPillars.size}</span>}
+                    <ChevronRight className="w-3 h-3 text-gray-400" />
+                  </div>
+                </button>
+                <button onClick={() => setFilterMenu('format')} className="w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-100 flex items-center justify-between">
+                  <span>Format</span>
+                  <div className="flex items-center gap-1">
+                    {filterFormats.size > 0 && <span className="text-[10px] text-gray-400">{filterFormats.size}</span>}
+                    <ChevronRight className="w-3 h-3 text-gray-400" />
+                  </div>
+                </button>
+                <button onClick={() => setFilterMenu('status')} className="w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-100 flex items-center justify-between">
+                  <span>Status</span>
+                  <div className="flex items-center gap-1">
+                    {filterStatuses.size > 0 && <span className="text-[10px] text-gray-400">{filterStatuses.size}</span>}
+                    <ChevronRight className="w-3 h-3 text-gray-400" />
+                  </div>
+                </button>
+                {hasFilters && (
+                  <>
+                    <div className="border-t border-gray-100 my-1" />
+                    <button onClick={() => { onClearAll(); setFilterOpen(false); setFilterMenu('main'); }} className="w-full text-left px-3 py-1.5 text-sm text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors duration-100">
+                      Clear all filters
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+            {filterMenu === 'status' && (
+              <div className="py-1">
+                <button onClick={() => setFilterMenu('main')} className="w-full text-left px-3 py-1.5 text-[11px] font-medium text-gray-400 hover:text-gray-600 transition-colors duration-100 flex items-center gap-1">
+                  <ChevronRight className="w-3 h-3 rotate-180" /> Status
+                </button>
+                <div className="border-t border-gray-100 my-0.5" />
+                {POST_STATUSES.map(status => {
+                  const isActive = filterStatuses.has(status);
+                  const colors = STATUS_COLORS[status];
+                  return (
+                    <button key={status} onClick={() => onToggleStatus(status)} className={`w-full text-left px-3 py-1.5 text-sm flex items-center gap-2 transition-colors duration-100 ${isActive ? 'text-gray-900 font-medium' : 'text-gray-500 hover:bg-gray-50'}`}>
+                      <StatusIcon status={status} className="w-3.5 h-3.5 flex-shrink-0" style={{ color: colors.dot }} />
+                      <span className="flex-1">{status}</span>
+                      {isActive && <Check className="w-3 h-3 text-[#612a4f]" />}
+                    </button>
+                  );
+                })}
+                <div className="border-t border-gray-100 my-0.5" />
+                {[
+                  { key: 'Shoot in progress' as PostStatus, parentStatus: 'Ready to shoot' as PostStatus, label: 'Shoot in progress' },
+                  { key: 'Sent to schedule' as PostStatus, parentStatus: 'Edited' as PostStatus, label: 'Sent to schedule' },
+                ].map(({ key, parentStatus, label }) => {
+                  const isActive = filterStatuses.has(key);
+                  const colors = STATUS_COLORS[parentStatus];
+                  return (
+                    <button key={key} onClick={() => onToggleStatus(key)} className={`w-full text-left px-3 py-1.5 text-sm flex items-center gap-2 transition-colors duration-100 ${isActive ? 'text-gray-900 font-medium' : 'text-gray-500 hover:bg-gray-50'}`}>
+                      <StatusIcon status={parentStatus} className="w-3.5 h-3.5 flex-shrink-0" style={{ color: colors.dot }} />
+                      <span className="flex-1">{label}</span>
+                      {isActive && <Check className="w-3 h-3 text-[#612a4f]" />}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            {filterMenu === 'format' && (
+              <div className="py-1">
+                <button onClick={() => setFilterMenu('main')} className="w-full text-left px-3 py-1.5 text-[11px] font-medium text-gray-400 hover:text-gray-600 transition-colors duration-100 flex items-center gap-1">
+                  <ChevronRight className="w-3 h-3 rotate-180" /> Format
+                </button>
+                <div className="border-t border-gray-100 my-0.5" />
+                {formats.map(format => {
+                  const isActive = filterFormats.has(format);
+                  return (
+                    <button key={format} onClick={() => onToggleFormat(format)} className={`w-full text-left px-3 py-1.5 text-sm flex items-center justify-between transition-colors duration-100 ${isActive ? 'text-gray-900 font-medium' : 'text-gray-500 hover:bg-gray-50'}`}>
+                      <span>{format}</span>
+                      {isActive && <Check className="w-3 h-3 text-[#612a4f]" />}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            {filterMenu === 'pillar' && (
+              <div className="py-1">
+                <button onClick={() => setFilterMenu('main')} className="w-full text-left px-3 py-1.5 text-[11px] font-medium text-gray-400 hover:text-gray-600 transition-colors duration-100 flex items-center gap-1">
+                  <ChevronRight className="w-3 h-3 rotate-180" /> Pillar
+                </button>
+                <div className="border-t border-gray-100 my-0.5" />
+                {pillars.map(pillar => {
+                  const isActive = filterPillars.has(pillar);
+                  return (
+                    <button key={pillar} onClick={() => onTogglePillar(pillar)} className={`w-full text-left px-3 py-1.5 text-sm flex items-center gap-2 transition-colors duration-100 ${isActive ? 'text-gray-900 font-medium' : 'text-gray-500 hover:bg-gray-50'}`}>
+                      <span className="flex-1">{pillar}</span>
+                      {isActive && <Check className="w-3 h-3 text-[#612a4f]" />}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </PopoverContent>
+        </Popover>
+        {hasFilters && (
+          <button onClick={onClearAll} className="text-[11px] text-gray-400 hover:text-gray-600 transition-colors duration-150">
+            Clear
+          </button>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center gap-2 py-3 flex-wrap">

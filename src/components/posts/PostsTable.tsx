@@ -103,7 +103,7 @@ const PostsTable: React.FC<PostsTableProps> = ({
             <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Pillar</th>
             <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Format</th>
             <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Platforms</th>
-            <th className="text-right px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
+            <th className="text-right pl-16 pr-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
             <th className="w-10 px-2 py-3" />
           </tr>
         </thead>
@@ -319,7 +319,7 @@ const SortableRow: React.FC<SortableRowProps> = ({
       </td>
 
       {/* Title */}
-      <td className="px-4 py-3 min-w-[300px]">
+      <td className="px-4 py-3 min-w-[340px]">
         <div className="flex items-center gap-2.5">
           {post.thumbnail_url ? (
             <motion.img
@@ -391,7 +391,7 @@ const SortableRow: React.FC<SortableRowProps> = ({
       </td>
 
       {/* Status + shoot action */}
-      <td className="px-4 py-3 text-right" onClick={e => e.stopPropagation()}>
+      <td className="pl-16 pr-4 py-3 text-right" onClick={e => e.stopPropagation()}>
         <div className="inline-flex items-center gap-2.5">
           <StatusDropdown
             value={post.status}

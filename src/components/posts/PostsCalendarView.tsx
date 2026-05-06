@@ -31,6 +31,7 @@ interface PostsCalendarViewProps {
   onSendToSchedule?: (id: string) => void;
   onCreateOnDate: (date: string) => void;
   onSwitchToList: () => void;
+  filterSlot?: React.ReactNode;
 }
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -83,6 +84,7 @@ const PostsCalendarView: React.FC<PostsCalendarViewProps> = ({
   onSendToSchedule,
   onCreateOnDate,
   onSwitchToList,
+  filterSlot,
 }) => {
   const today = new Date();
   const [viewYear, setViewYear] = useState(today.getFullYear());
@@ -251,12 +253,15 @@ const PostsCalendarView: React.FC<PostsCalendarViewProps> = ({
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
-            <button
-              onClick={goToday}
-              className="px-3 py-1 text-xs font-medium text-gray-500 hover:text-gray-700 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors duration-150"
-            >
-              Today
-            </button>
+            <div className="flex items-center gap-2">
+              {filterSlot}
+              <button
+                onClick={goToday}
+                className="px-3 py-1 text-xs font-medium text-gray-500 hover:text-gray-700 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors duration-150"
+              >
+                Today
+              </button>
+            </div>
           </div>
 
           {/* Weekday headers */}
