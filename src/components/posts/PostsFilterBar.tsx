@@ -181,12 +181,17 @@ const PostsFilterBar: React.FC<PostsFilterBarProps> = ({
           className="text-[11px] px-2 py-0.5 rounded-full border border-gray-300 bg-white outline-none w-24 focus:border-gray-400 transition-colors duration-150"
         />
       ) : (
-        <button
-          onClick={() => { setAddingPillar(true); setTimeout(() => pillarInputRef.current?.focus(), 50); }}
-          className="w-5 h-5 rounded-full border border-dashed border-gray-300 hover:border-gray-400 text-gray-400 hover:text-gray-500 flex items-center justify-center transition-colors duration-200"
-        >
-          <Plus className="w-2.5 h-2.5" />
-        </button>
+        <div className="relative group/add">
+          <button
+            onClick={() => { setAddingPillar(true); setTimeout(() => pillarInputRef.current?.focus(), 50); }}
+            className="w-5 h-5 rounded-full border border-dashed border-gray-300 hover:border-gray-400 text-gray-400 hover:text-gray-500 flex items-center justify-center transition-colors duration-200"
+          >
+            <Plus className="w-2.5 h-2.5" />
+          </button>
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 rounded bg-gray-600 text-white text-[11px] font-medium whitespace-nowrap opacity-0 group-hover/add:opacity-100 transition-opacity duration-100 pointer-events-none">
+            Add pillar
+          </div>
+        </div>
       )}
 
       {/* Active filter pills */}

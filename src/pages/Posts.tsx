@@ -437,18 +437,18 @@ const Posts: React.FC = () => {
         <div className="flex items-center justify-between gap-3 mb-4">
           <div className="flex items-center gap-3">
             <button
-              onClick={() => setShowInspiration(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] text-gray-500 hover:text-[#612A4F] hover:bg-[#612A4F]/5 transition-colors"
-            >
-              <Bookmark size={14} />
-              Inspiration
-            </button>
-            <button
               onClick={() => setShowHooksDialog(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] text-gray-500 hover:text-[#E07A5F] hover:bg-[#E07A5F]/5 transition-colors"
             >
               <TrendingUp size={14} />
               Trending Hooks
+            </button>
+            <button
+              onClick={() => setShowInspiration(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] text-gray-500 hover:text-[#612A4F] hover:bg-[#612A4F]/5 transition-colors"
+            >
+              <Bookmark size={14} />
+              Inspiration
             </button>
             <button
               onClick={() => setShowBrainstormDialog(true)}

@@ -45,7 +45,7 @@ const TaskRow: React.FC<TaskRowProps> = ({
   const [startTimeVal, setStartTimeVal] = useState(task.time || '');
   const [endTimeVal, setEndTimeVal] = useState(task.end_time || '');
   const inputRef = useRef<HTMLInputElement>(null);
-  const startTimeRef = useRef<HTMLInputElement>(null);
+  const startTimeRef = useRef<HTMLSelectElement>(null);
 
   const {
     setNodeRef,
@@ -340,45 +340,43 @@ const TaskRow: React.FC<TaskRowProps> = ({
             className="overflow-hidden"
             style={{ paddingLeft: depth * 32 }}
           >
-            <div className="flex items-center gap-2 py-1.5 px-2 ml-[14px]">
-              <label className="text-[10px] text-gray-400 font-medium">Start</label>
-              <input
-                ref={startTimeRef}
-                type="time"
-                value={startTimeVal}
-                onChange={e => setStartTimeVal(e.target.value)}
-                onKeyDown={handleTimeKeyDown}
-                className="text-[12px] text-gray-700 bg-white border border-gray-200 rounded-md px-1.5 py-0.5 outline-none focus:border-[#612A4F] transition-colors w-[90px]"
-              />
-              <label className="text-[10px] text-gray-400 font-medium">End</label>
-              <input
-                type="time"
-                value={endTimeVal}
-                onChange={e => setEndTimeVal(e.target.value)}
-                onKeyDown={handleTimeKeyDown}
-                className="text-[12px] text-gray-700 bg-white border border-gray-200 rounded-md px-1.5 py-0.5 outline-none focus:border-[#612A4F] transition-colors w-[90px]"
-              />
-              <button
-                onClick={saveTime}
-                className="text-[11px] font-medium text-[#612A4F] hover:underline px-1"
-              >
-                Save
-              </button>
-              {task.time && (
-                <button
-                  onClick={clearTime}
-                  className="p-0.5 text-gray-300 hover:text-red-400 transition-colors"
-                  title="Remove time"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              )}
-              <button
-                onClick={() => setEditingTime(false)}
-                className="text-[11px] text-gray-400 hover:text-gray-600 px-1"
-              >
-                Cancel
-              </button>
+            <div className="py-2 px-2 ml-[14px]">
+              <div className="flex items-center gap-3 flex-wrap">
+                {/* Start time picker */}
+                <div className="flex items-center gap-1.5">
+                  <label className="text-[11px] text-gray-400 font-medium w-8">Start</label>
+                  <TimePickerInline value={startTimeVal} onChange={setStartTimeVal} />
+                </div>
+                {/* End time picker */}
+                <div className="flex items-center gap-1.5">
+                  <label className="text-[11px] text-gray-400 font-medium w-6">End</label>
+                  <TimePickerInline value={endTimeVal} onChange={setEndTimeVal} />
+                </div>
+                {/* Actions */}
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={saveTime}
+                    className="text-[11px] font-medium text-white bg-[#612A4F] hover:bg-[#7a3563] rounded-md px-2.5 py-1 transition-colors"
+                  >
+                    Save
+                  </button>
+                  {task.time && (
+                    <button
+                      onClick={clearTime}
+                      className="p-1 text-gray-300 hover:text-red-400 transition-colors"
+                      title="Remove time"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setEditingTime(false)}
+                    className="text-[11px] text-gray-400 hover:text-gray-600 px-1.5 py-1"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
             </div>
           </motion.div>
         )}
@@ -421,6 +419,59 @@ const TaskRow: React.FC<TaskRowProps> = ({
           </motion.div>
         )}
       </AnimatePresence>
+    </div>
+  );
+};
+
+// --- Inline 12-hour time picker ---
+function parse24to12(val: string): { hour: number; minute: number; period: 'AM' | 'PM' } {
+  if (!val || !val.includes(':')) return { hour: 12, minute: 0, period: 'AM' };
+  const [h, m] = val.split(':').map(Number);
+  const period: 'AM' | 'PM' = h >= 12 ? 'PM' : 'AM';
+  const hour = h === 0 ? 12 : h > 12 ? h - 12 : h;
+  return { hour, minute: m, period };
+}
+
+function to24(hour: number, minute: number, period: 'AM' | 'PM'): string {
+  let h = hour;
+  if (period === 'AM' && h === 12) h = 0;
+  else if (period === 'PM' && h !== 12) h += 12;
+  return `${String(h).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+}
+
+const TimePickerInline: React.FC<{ value: string; onChange: (v: string) => void }> = ({ value, onChange }) => {
+  const { hour, minute, period } = parse24to12(value);
+
+  const setHour = (h: number) => onChange(to24(h, minute, period));
+  const setMinute = (m: number) => onChange(to24(hour, m, period));
+  const setPeriod = (p: 'AM' | 'PM') => onChange(to24(hour, minute, p));
+
+  const hours = Array.from({ length: 12 }, (_, i) => i + 1);
+  const minutes = Array.from({ length: 12 }, (_, i) => i * 5);
+
+  const selectClass = "appearance-none text-[12px] text-gray-700 bg-white border border-gray-200 rounded-lg px-2 py-1.5 outline-none focus:border-[#612A4F] focus:ring-1 focus:ring-[#612A4F]/20 transition-all cursor-pointer hover:border-gray-300";
+
+  return (
+    <div className="flex items-center gap-1">
+      <select value={hour} onChange={e => setHour(Number(e.target.value))} className={`${selectClass} w-[52px]`}>
+        {hours.map(h => <option key={h} value={h}>{String(h).padStart(2, '0')}</option>)}
+      </select>
+      <span className="text-gray-400 text-[12px] font-medium">:</span>
+      <select value={minute} onChange={e => setMinute(Number(e.target.value))} className={`${selectClass} w-[52px]`}>
+        {minutes.map(m => <option key={m} value={m}>{String(m).padStart(2, '0')}</option>)}
+      </select>
+      <button
+        onClick={() => setPeriod('AM')}
+        className={`text-[10px] font-semibold px-1 transition-colors ${period === 'AM' ? 'text-[#612A4F]' : 'text-gray-300 hover:text-gray-500'}`}
+      >
+        AM
+      </button>
+      <button
+        onClick={() => setPeriod('PM')}
+        className={`text-[10px] font-semibold px-1 transition-colors ${period === 'PM' ? 'text-[#612A4F]' : 'text-gray-300 hover:text-gray-500'}`}
+      >
+        PM
+      </button>
     </div>
   );
 };
