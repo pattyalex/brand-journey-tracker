@@ -7,6 +7,7 @@ import { API_BASE } from '@/lib/api-base';
 import FormatDropdown from './FormatDropdown';
 import PillarDropdown from './PillarDropdown';
 import StatusDropdown from './StatusDropdown';
+import PlatformSelector from './PlatformSelector';
 
 interface PostDetailPanelProps {
   post: Post | null;
@@ -198,19 +199,17 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
                       />
                     </div>
                     <div className={rowClass}>
+                      <span className={labelClass}>Platforms</span>
+                      <PlatformSelector
+                        value={post.platforms}
+                        onChange={platforms => onUpdate(post.id, { platforms })}
+                      />
+                    </div>
+                    <div className={rowClass}>
                       <span className={labelClass}>Status</span>
                       <StatusDropdown
                         value={post.status}
                         onChange={val => onUpdate(post.id, { status: val })}
-                      />
-                    </div>
-                    <div className={rowClass}>
-                      <span className={labelClass}>Date</span>
-                      <input
-                        type="date"
-                        value={post.scheduledDate || ''}
-                        onChange={e => onUpdate(post.id, { scheduledDate: e.target.value || undefined })}
-                        className="text-sm text-gray-700 bg-transparent outline-none hover:bg-gray-50 rounded px-1 py-0.5 transition-colors duration-150"
                       />
                     </div>
                   </div>
