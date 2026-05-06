@@ -376,7 +376,7 @@ const Tasks: React.FC = () => {
         onMouseEnter={e => { e.currentTarget.style.scrollbarColor = 'rgba(0,0,0,0.15) transparent'; }}
         onMouseLeave={e => { e.currentTarget.style.scrollbarColor = 'transparent transparent'; }}
       >
-        <div className="px-4 py-8">
+        <div className="px-4 pt-8 pb-8">
           <ToDoSoonSection
             tasks={backlogTasks}
             onMoveToToday={handleMoveBacklogToToday}

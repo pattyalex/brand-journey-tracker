@@ -33,7 +33,7 @@ export interface Post {
 
 export const POST_STATUSES: PostStatus[] = ['Idea', 'Scripted', 'Ready to shoot', 'Shot', 'Edited', 'Scheduled', 'Posted'];
 
-export const DEFAULT_PILLARS: string[] = ['Fashion', 'POV', 'Day in my life', 'The build'];
+export const DEFAULT_PILLARS: string[] = [];
 
 export const STATUS_COLORS: Record<PostStatus, { dot: string; bg: string; text: string }> = {
   Idea:             { dot: '#FACC15', bg: '#FEF9C3', text: '#854D0E' },

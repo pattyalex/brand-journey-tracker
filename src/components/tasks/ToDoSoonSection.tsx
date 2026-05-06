@@ -40,10 +40,10 @@ const ToDoSoonSection: React.FC<ToDoSoonSectionProps> = ({ tasks, onMoveToToday,
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-2">
-        <p className="text-[13px] font-semibold text-gray-600 uppercase tracking-wider">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-lg font-semibold text-gray-900">
           To do soon
-        </p>
+        </h1>
         {!adding && (
           <button
             onClick={() => setAdding(true)}
