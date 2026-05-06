@@ -611,6 +611,7 @@ const Posts: React.FC = () => {
                 onUpdatePost={handleUpdatePost}
                 onDeletePost={handleDeletePost}
                 onDuplicatePost={handleDuplicatePost}
+                onSendToShoots={handleSendToShoots}
                 onSendToSchedule={handleSendToSchedule}
                 onCreateOnDate={handleCreateOnDate}
                 onSwitchToList={handleSwitchToListBank}

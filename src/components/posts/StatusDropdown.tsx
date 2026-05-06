@@ -26,9 +26,10 @@ export const StatusIcon: React.FC<{ status: PostStatus; className?: string; styl
 interface StatusDropdownProps {
   value: PostStatus;
   onChange: (val: PostStatus) => void;
+  displayOverride?: string;
 }
 
-const StatusDropdown: React.FC<StatusDropdownProps> = ({ value, onChange }) => {
+const StatusDropdown: React.FC<StatusDropdownProps> = ({ value, onChange, displayOverride }) => {
   const [open, setOpen] = useState(false);
   const [recentChange, setRecentChange] = useState(false);
 
@@ -54,7 +55,7 @@ const StatusDropdown: React.FC<StatusDropdownProps> = ({ value, onChange }) => {
           >
             <StatusIcon status={value} className="w-3.5 h-3.5" style={{ color: colors.dot }} />
           </motion.div>
-          <span className="text-gray-700">{value}</span>
+          <span className="text-gray-700">{displayOverride || value}</span>
           <svg className="w-3 h-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
           </svg>

@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, LayoutList } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, LayoutList, ImageIcon, ArrowRight } from 'lucide-react';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 import PostContextMenu from './PostContextMenu';
 import {
   DndContext,
@@ -26,6 +27,7 @@ interface PostsCalendarViewProps {
   onUpdatePost: (id: string, updates: Partial<Post>) => void;
   onDeletePost: (id: string) => void;
   onDuplicatePost: (id: string) => void;
+  onSendToShoots?: (id: string) => void;
   onSendToSchedule?: (id: string) => void;
   onCreateOnDate: (date: string) => void;
   onSwitchToList: () => void;
@@ -77,6 +79,7 @@ const PostsCalendarView: React.FC<PostsCalendarViewProps> = ({
   onUpdatePost,
   onDeletePost,
   onDuplicatePost,
+  onSendToShoots,
   onSendToSchedule,
   onCreateOnDate,
   onSwitchToList,
@@ -211,7 +214,7 @@ const PostsCalendarView: React.FC<PostsCalendarViewProps> = ({
                         </div>
                         <div className="space-y-1">
                           {pillarPosts.map(post => (
-                            <DraggableSidebarCard key={post.id} post={post} onClick={onClickPost} onDelete={onDeletePost} onDuplicate={onDuplicatePost} />
+                            <DraggableSidebarCard key={post.id} post={post} onClick={onClickPost} onDelete={onDeletePost} onDuplicate={onDuplicatePost} onSendToShoots={onSendToShoots} onSendToSchedule={onSendToSchedule} />
                           ))}
                         </div>
                       </div>
@@ -276,6 +279,9 @@ const PostsCalendarView: React.FC<PostsCalendarViewProps> = ({
                 isToday={date === todayKey}
                 posts={postsByDate[date] || []}
                 onClickPost={onClickPost}
+                onDeletePost={onDeletePost}
+                onDuplicatePost={onDuplicatePost}
+                onSendToShoots={onSendToShoots}
                 onSendToSchedule={onSendToSchedule}
                 onClickEmpty={() => onCreateOnDate(date)}
               />
@@ -339,7 +345,7 @@ const PillarGroup: React.FC<{ pillar: string; posts: Post[]; onClickPost: (post:
           >
             <div className="space-y-1 pt-1">
               {posts.map(post => (
-                <DraggableSidebarCard key={post.id} post={post} onClick={onClickPost} onDelete={onDeletePost} onDuplicate={onDuplicatePost} />
+                <DraggableSidebarCard key={post.id} post={post} onClick={onClickPost} onDelete={onDeletePost} onDuplicate={onDuplicatePost} onSendToShoots={onSendToShoots} onSendToSchedule={onSendToSchedule} />
               ))}
             </div>
           </motion.div>
@@ -356,7 +362,9 @@ const DraggableSidebarCard: React.FC<{
   onClick: (post: Post) => void;
   onDelete: (id: string) => void;
   onDuplicate: (id: string) => void;
-}> = ({ post, onClick, onDelete, onDuplicate }) => {
+  onSendToShoots?: (id: string) => void;
+  onSendToSchedule?: (id: string) => void;
+}> = ({ post, onClick, onDelete, onDuplicate, onSendToShoots, onSendToSchedule }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: post.id });
   const pillarStyle = getPillarStyle(post.pillar);
 
@@ -373,7 +381,14 @@ const DraggableSidebarCard: React.FC<{
       className="px-2 py-1.5 rounded-md cursor-grab active:cursor-grabbing hover:shadow-sm transition-all duration-150 group/card"
       style={{ backgroundColor: pillarStyle.bg }}
     >
-      <div className="flex items-start gap-1">
+      <div className="flex items-start gap-1.5">
+        {post.thumbnail_url ? (
+          <img src={post.thumbnail_url} alt="" className="w-6 h-6 rounded-sm object-cover flex-shrink-0" />
+        ) : (
+          <div className="w-6 h-6 rounded-sm bg-gray-100/50 flex items-center justify-center flex-shrink-0">
+            <ImageIcon className="w-2.5 h-2.5 text-gray-300" />
+          </div>
+        )}
         <p className="text-[11px] font-medium text-gray-800 truncate flex-1">{post.title}</p>
         <PostContextMenu
           onExpand={() => onClick(post)}
@@ -390,7 +405,41 @@ const DraggableSidebarCard: React.FC<{
         </div>
         <span className="flex items-center gap-0.5 text-[9px] text-gray-400">
           <StatusIcon status={post.status} className="w-2 h-2" style={{ color: STATUS_COLORS[post.status]?.dot }} />
-          {post.status}
+          {post.status === 'Ready to shoot' && post.sentToShoots ? 'Shoot in progress' : post.status === 'Edited' && post.sent_to_schedule ? 'Sent to schedule' : post.status}
+          {post.status === 'Ready to shoot' && onSendToShoots && !post.sentToShoots && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={e => { e.stopPropagation(); onSendToShoots(post.id); }}
+                    className="ml-0.5 flex items-center justify-center w-3.5 h-3.5 rounded-full bg-[#612A4F]/8 hover:bg-[#612A4F]/20 transition-colors"
+                  >
+                    <ArrowRight size={7} className="text-[#612A4F]" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="bg-gray-500 text-white text-[10px] font-medium px-1.5 py-0.5">
+                  Plan the shoot
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+          {post.status === 'Edited' && onSendToSchedule && !post.sent_to_schedule && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={e => { e.stopPropagation(); onSendToSchedule(post.id); }}
+                    className="ml-0.5 flex items-center justify-center w-3.5 h-3.5 rounded-full bg-[#612A4F]/8 hover:bg-[#612A4F]/20 transition-colors"
+                  >
+                    <ArrowRight size={7} className="text-[#612A4F]" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="bg-gray-500 text-white text-[10px] font-medium px-1.5 py-0.5">
+                  Schedule this post
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
         </span>
       </div>
     </div>
@@ -406,6 +455,9 @@ interface CalendarCellProps {
   isToday: boolean;
   posts: Post[];
   onClickPost: (post: Post) => void;
+  onDeletePost: (id: string) => void;
+  onDuplicatePost: (id: string) => void;
+  onSendToShoots?: (id: string) => void;
   onSendToSchedule?: (id: string) => void;
   onClickEmpty: () => void;
 }
@@ -417,6 +469,9 @@ const CalendarCell: React.FC<CalendarCellProps> = ({
   isToday,
   posts,
   onClickPost,
+  onDeletePost,
+  onDuplicatePost,
+  onSendToShoots,
   onSendToSchedule,
   onClickEmpty,
 }) => {
@@ -459,7 +514,7 @@ const CalendarCell: React.FC<CalendarCellProps> = ({
       </div>
       <div className="space-y-0.5">
         {posts.map(post => (
-          <DraggableCalendarCard key={post.id} post={post} onClick={onClickPost} onSendToSchedule={onSendToSchedule} />
+          <DraggableCalendarCard key={post.id} post={post} onClick={onClickPost} onDelete={onDeletePost} onDuplicate={onDuplicatePost} onSendToShoots={onSendToShoots} onSendToSchedule={onSendToSchedule} />
         ))}
       </div>
     </div>
@@ -468,7 +523,14 @@ const CalendarCell: React.FC<CalendarCellProps> = ({
 
 // ── Draggable Calendar Card ──────────────────────────────────
 
-const DraggableCalendarCard: React.FC<{ post: Post; onClick: (post: Post) => void; onSendToSchedule?: (id: string) => void }> = ({ post, onClick, onSendToSchedule }) => {
+const DraggableCalendarCard: React.FC<{
+  post: Post;
+  onClick: (post: Post) => void;
+  onDelete: (id: string) => void;
+  onDuplicate: (id: string) => void;
+  onSendToShoots?: (id: string) => void;
+  onSendToSchedule?: (id: string) => void;
+}> = ({ post, onClick, onDelete, onDuplicate, onSendToShoots, onSendToSchedule }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: post.id });
 
   return (
@@ -481,7 +543,7 @@ const DraggableCalendarCard: React.FC<{ post: Post; onClick: (post: Post) => voi
       {...attributes}
       {...listeners}
     >
-      <PostCard post={post} variant="calendar" onClick={onClick} onSendToSchedule={onSendToSchedule} />
+      <PostCard post={post} variant="calendar" onClick={onClick} onDelete={onDelete} onDuplicate={onDuplicate} onSendToShoots={onSendToShoots} onSendToSchedule={onSendToSchedule} />
     </div>
   );
 };

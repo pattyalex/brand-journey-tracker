@@ -396,6 +396,7 @@ const SortableRow: React.FC<SortableRowProps> = ({
           <StatusDropdown
             value={post.status}
             onChange={handleStatusChange}
+            displayOverride={post.status === 'Ready to shoot' && post.sentToShoots ? 'Shoot in progress' : post.status === 'Edited' && post.sent_to_schedule ? 'Sent to schedule' : undefined}
           />
           {post.status === 'Ready to shoot' && onSendToShoots && !post.sentToShoots && (
             <div className="relative group/arrow flex-shrink-0">
@@ -409,11 +410,6 @@ const SortableRow: React.FC<SortableRowProps> = ({
                 Plan the shoot
               </div>
             </div>
-          )}
-          {post.sentToShoots && (
-            <span className="text-[10px] text-[#612A4F]/60 font-medium whitespace-nowrap">
-              Shoot in progress
-            </span>
           )}
           {post.status === 'Edited' && onSendToSchedule && !post.sent_to_schedule && (
             <div className="relative group/sched flex-shrink-0">

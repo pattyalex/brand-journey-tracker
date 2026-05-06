@@ -50,7 +50,14 @@ const PostCard: React.FC<PostCardProps> = ({ post, variant, onClick, allPosts = 
               <ImageIcon className="w-2.5 h-2.5 text-gray-300" />
             </div>
           )}
-          <p className="text-[11px] font-medium text-gray-800 truncate flex-1">{post.title}</p>
+          <p className="text-[11px] font-medium text-gray-800 line-clamp-2 flex-1">{post.title}</p>
+          <PostContextMenu
+            onExpand={() => onClick(post)}
+            onDuplicate={() => onDuplicate?.(post.id)}
+            onDelete={() => onDelete?.(post.id)}
+            iconSize="w-3 h-3"
+            triggerClass="opacity-0 group-hover/card:opacity-100 p-0.5 rounded text-gray-400 hover:text-gray-600 hover:bg-black/5 transition-all duration-150 flex-shrink-0"
+          />
         </div>
         <div className="flex items-center justify-between">
           <span className="flex items-center gap-1 text-[9px] text-gray-500 flex-shrink-0">
@@ -59,7 +66,20 @@ const PostCard: React.FC<PostCardProps> = ({ post, variant, onClick, allPosts = 
           </span>
           <span className="flex items-center gap-0.5 text-[9px] text-gray-400 flex-shrink-0">
             <StatusIcon status={post.status} className="w-2 h-2" style={{ color: statusColor.dot }} />
-            {post.status}
+            {post.status === 'Ready to shoot' && post.sentToShoots ? 'Shoot in progress' : post.status === 'Edited' && post.sent_to_schedule ? 'Sent to schedule' : post.status}
+            {post.status === 'Ready to shoot' && onSendToShoots && !post.sentToShoots && (
+              <div className="relative group/arrow ml-0.5">
+                <button
+                  onClick={e => { e.stopPropagation(); onSendToShoots(post.id); }}
+                  className="flex items-center justify-center w-3.5 h-3.5 rounded-full bg-[#612A4F]/8 hover:bg-[#612A4F]/20 transition-colors"
+                >
+                  <ArrowRight size={7} className="text-[#612A4F]" />
+                </button>
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-1.5 py-0.5 rounded bg-gray-500 text-white text-[10px] font-medium whitespace-nowrap opacity-0 group-hover/arrow:opacity-100 transition-opacity duration-100 pointer-events-none">
+                  Plan the shoot
+                </div>
+              </div>
+            )}
             {post.status === 'Edited' && onSendToSchedule && !post.sent_to_schedule && (
               <div className="relative group/sched ml-0.5">
                 <button
@@ -131,15 +151,32 @@ const PostCard: React.FC<PostCardProps> = ({ post, variant, onClick, allPosts = 
         </div>
         <div className="flex items-center gap-1">
           <StatusIcon status={post.status} className="w-2.5 h-2.5" style={{ color: statusColor.dot }} />
-          <span className="text-[10px] text-gray-400">{post.status}</span>
+          <span className="text-[10px] text-gray-400">{post.status === 'Ready to shoot' && post.sentToShoots ? 'Shoot in progress' : post.status === 'Edited' && post.sent_to_schedule ? 'Sent to schedule' : post.status}</span>
+          {post.status === 'Ready to shoot' && onSendToShoots && !post.sentToShoots && (
+            <div className="relative group/arrow">
+              <button
+                onClick={e => { e.stopPropagation(); onSendToShoots(post.id); }}
+                className="flex items-center justify-center w-4 h-4 rounded-full bg-[#612A4F]/8 hover:bg-[#612A4F]/20 transition-colors"
+              >
+                <ArrowRight size={9} className="text-[#612A4F]" />
+              </button>
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-1.5 py-0.5 rounded bg-gray-500 text-white text-[10px] font-medium whitespace-nowrap opacity-0 group-hover/arrow:opacity-100 transition-opacity duration-100 pointer-events-none">
+                Plan the shoot
+              </div>
+            </div>
+          )}
           {post.status === 'Edited' && onSendToSchedule && !post.sent_to_schedule && (
-            <button
-              onClick={e => { e.stopPropagation(); onSendToSchedule(post.id); }}
-              className="flex items-center justify-center w-4 h-4 rounded-full bg-[#612A4F]/8 hover:bg-[#612A4F]/20 transition-colors"
-              title="Schedule this post"
-            >
-              <ArrowRight size={9} className="text-[#612A4F]" />
-            </button>
+            <div className="relative group/sched2">
+              <button
+                onClick={e => { e.stopPropagation(); onSendToSchedule(post.id); }}
+                className="flex items-center justify-center w-4 h-4 rounded-full bg-[#612A4F]/8 hover:bg-[#612A4F]/20 transition-colors"
+              >
+                <ArrowRight size={9} className="text-[#612A4F]" />
+              </button>
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-1.5 py-0.5 rounded bg-gray-500 text-white text-[10px] font-medium whitespace-nowrap opacity-0 group-hover/sched2:opacity-100 transition-opacity duration-100 pointer-events-none">
+                Schedule this post
+              </div>
+            </div>
           )}
         </div>
       </div>
