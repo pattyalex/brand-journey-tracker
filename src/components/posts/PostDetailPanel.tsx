@@ -8,6 +8,7 @@ import FormatDropdown from './FormatDropdown';
 import PillarDropdown from './PillarDropdown';
 import StatusDropdown from './StatusDropdown';
 import PlatformSelector from './PlatformSelector';
+import ScriptEditor from './ScriptEditor';
 
 interface PostDetailPanelProps {
   post: Post | null;
@@ -582,35 +583,11 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
                   <FileText className="w-3 h-3" />
                   Script
                 </label>
-                {editingScript ? (
-                  <textarea
-                    value={scriptDraft}
-                    onChange={e => {
-                      setScriptDraft(e.target.value);
-                      e.target.style.height = 'auto';
-                      e.target.style.height = Math.min(e.target.scrollHeight, 600) + 'px';
-                    }}
-                    onBlur={() => {
-                      onUpdate(post.id, { script: scriptDraft });
-                      setEditingScript(false);
-                    }}
-                    autoFocus
-                    ref={el => {
-                      if (el) {
-                        el.style.height = 'auto';
-                        el.style.height = Math.min(el.scrollHeight, 600) + 'px';
-                      }
-                    }}
-                    className="w-full text-sm text-gray-700 bg-white rounded-md p-2.5 outline-none border border-gray-200 focus:border-gray-300 resize-none transition-colors duration-150 min-h-[6rem] max-h-[600px] overflow-y-auto"
-                  />
-                ) : (
-                  <p
-                    onClick={() => setEditingScript(true)}
-                    className="text-sm text-gray-600 leading-relaxed cursor-text bg-gray-100/80 hover:bg-gray-100 rounded-md p-2 -m-2 transition-colors duration-150 min-h-[2.5rem] whitespace-pre-wrap"
-                  >
-                    {post.script || <span className="text-gray-300 italic">Add a script...</span>}
-                  </p>
-                )}
+                <ScriptEditor
+                  value={post.script || ''}
+                  onChange={val => setScriptDraft(val)}
+                  onBlur={() => onUpdate(post.id, { script: scriptDraft })}
+                />
               </div>
 
               {/* Caption */}

@@ -1,10 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { GripVertical, Trash2, ImageIcon, ArrowRight, MoreVertical, Maximize2, Copy, Plus } from 'lucide-react';
+import { GripVertical, ImageIcon, ArrowRight, Plus } from 'lucide-react';
 import { Post, STATUS_COLORS, PostStatus, getPillarStyle } from '@/types/posts';
 import { StatusIcon } from './StatusDropdown';
 import PlatformSelector, { PlatformIconsDisplay } from './PlatformSelector';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import PostContextMenu from './PostContextMenu';
 
 interface PostCardProps {
   post: Post;
@@ -53,11 +53,11 @@ const PostCard: React.FC<PostCardProps> = ({ post, variant, onClick, allPosts = 
           <p className="text-[11px] font-medium text-gray-800 truncate flex-1">{post.title}</p>
         </div>
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            {post.format ? <span className="text-[9px] text-gray-500">{post.format}</span> : <span />}
+          <span className="flex items-center gap-1 text-[9px] text-gray-500 flex-shrink-0">
+            {post.format || ''}
             <PlatformIconsDisplay platforms={post.platforms} size={9} />
-          </div>
-          <span className="flex items-center gap-0.5 text-[9px] text-gray-400">
+          </span>
+          <span className="flex items-center gap-0.5 text-[9px] text-gray-400 flex-shrink-0">
             <StatusIcon status={post.status} className="w-2 h-2" style={{ color: statusColor.dot }} />
             {post.status}
             {post.status === 'Edited' && onSendToSchedule && !post.sent_to_schedule && (
@@ -106,48 +106,12 @@ const PostCard: React.FC<PostCardProps> = ({ post, variant, onClick, allPosts = 
           </div>
         )}
         <p className="text-sm font-medium text-gray-900 line-clamp-2 flex-1">{post.title}</p>
-        <Popover>
-          <PopoverTrigger asChild>
-            <button
-              onClick={e => e.stopPropagation()}
-              className="opacity-0 group-hover/card:opacity-100 p-0.5 rounded text-gray-300 hover:text-gray-500 hover:bg-gray-100 transition-all duration-150 flex-shrink-0"
-            >
-              <MoreVertical className="w-3.5 h-3.5" />
-            </button>
-          </PopoverTrigger>
-          <PopoverContent
-            className="p-1 bg-white rounded-lg border border-gray-200 shadow-lg w-[140px] z-[60]"
-            align="end"
-            sideOffset={4}
-            onOpenAutoFocus={e => e.preventDefault()}
-          >
-            <button
-              onClick={e => { e.stopPropagation(); onClick(post); }}
-              className="w-full text-left px-2.5 py-1.5 text-[13px] text-gray-700 hover:bg-gray-50 rounded flex items-center gap-2 transition-colors duration-100"
-            >
-              <Maximize2 className="w-3.5 h-3.5 text-gray-400" />
-              Expand
-            </button>
-            {onDuplicate && (
-              <button
-                onClick={e => { e.stopPropagation(); onDuplicate(post.id); }}
-                className="w-full text-left px-2.5 py-1.5 text-[13px] text-gray-700 hover:bg-gray-50 rounded flex items-center gap-2 transition-colors duration-100"
-              >
-                <Copy className="w-3.5 h-3.5 text-gray-400" />
-                Duplicate
-              </button>
-            )}
-            {onDelete && (
-              <button
-                onClick={e => { e.stopPropagation(); onDelete(post.id); }}
-                className="w-full text-left px-2.5 py-1.5 text-[13px] text-red-500 hover:bg-red-50 rounded flex items-center gap-2 transition-colors duration-100"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                Delete
-              </button>
-            )}
-          </PopoverContent>
-        </Popover>
+        <PostContextMenu
+          onExpand={() => onClick(post)}
+          onDuplicate={() => onDuplicate?.(post.id)}
+          onDelete={() => onDelete?.(post.id)}
+          triggerClass="opacity-0 group-hover/card:opacity-100 p-0.5 rounded text-gray-300 hover:text-gray-500 hover:bg-gray-100 transition-all duration-150 flex-shrink-0"
+        />
       </div>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">

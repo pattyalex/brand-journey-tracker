@@ -609,6 +609,8 @@ const Posts: React.FC = () => {
                 pillars={pillars}
                 onClickPost={setSelectedPost}
                 onUpdatePost={handleUpdatePost}
+                onDeletePost={handleDeletePost}
+                onDuplicatePost={handleDuplicatePost}
                 onSendToSchedule={handleSendToSchedule}
                 onCreateOnDate={handleCreateOnDate}
                 onSwitchToList={handleSwitchToListBank}

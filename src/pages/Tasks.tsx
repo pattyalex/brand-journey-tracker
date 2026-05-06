@@ -366,8 +366,8 @@ const Tasks: React.FC = () => {
       <div
         className="h-full flex-shrink-0 border-l border-gray-100 transition-all duration-300 ease-out"
         style={{
-          width: soonCollapsed ? 0 : '25%',
-          minWidth: soonCollapsed ? 0 : 300,
+          width: soonCollapsed ? 0 : '30%',
+          minWidth: soonCollapsed ? 0 : 340,
           opacity: soonCollapsed ? 0 : 1,
           overflow: soonCollapsed ? 'hidden' : 'auto',
           scrollbarWidth: 'thin',
@@ -394,7 +394,7 @@ const Tasks: React.FC = () => {
       {/* Collapse/expand toggle — absolutely positioned, always visible, sits just left of the sidebar edge */}
       <div
         className="absolute top-10 group transition-all duration-300 ease-out z-20"
-        style={{ right: soonCollapsed ? 12 : 'calc(25% + 12px)' }}
+        style={{ right: soonCollapsed ? 12 : 'calc(30% + 12px)' }}
       >
         <button
           onClick={() => setSoonCollapsed(prev => !prev)}

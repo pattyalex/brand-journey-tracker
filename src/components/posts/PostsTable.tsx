@@ -1,8 +1,8 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { GripVertical, Trash2, ArrowRight, ImageIcon, MoreVertical, Maximize2, Copy } from 'lucide-react';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { GripVertical, ArrowRight, ImageIcon } from 'lucide-react';
 import PlatformSelector from './PlatformSelector';
+import PostContextMenu from './PostContextMenu';
 import FormatDropdown from './FormatDropdown';
 import PillarDropdown from './PillarDropdown';
 import StatusDropdown from './StatusDropdown';
@@ -309,44 +309,12 @@ const SortableRow: React.FC<SortableRowProps> = ({
           >
             <GripVertical className="w-3.5 h-3.5" />
           </button>
-          <Popover>
-            <PopoverTrigger asChild>
-              <button
-                className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-0.5 rounded text-gray-300 hover:text-gray-500 hover:bg-gray-100"
-                onClick={e => e.stopPropagation()}
-              >
-                <MoreVertical className="w-3.5 h-3.5" />
-              </button>
-            </PopoverTrigger>
-            <PopoverContent
-              className="p-1 bg-white rounded-lg border border-gray-200 shadow-lg w-[140px] z-[60]"
-              align="start"
-              sideOffset={4}
-              onOpenAutoFocus={e => e.preventDefault()}
-            >
-              <button
-                onClick={e => { e.stopPropagation(); onClick(post); }}
-                className="w-full text-left px-2.5 py-1.5 text-[13px] text-gray-700 hover:bg-gray-50 rounded flex items-center gap-2 transition-colors duration-100"
-              >
-                <Maximize2 className="w-3.5 h-3.5 text-gray-400" />
-                Expand
-              </button>
-              <button
-                onClick={e => { e.stopPropagation(); onDuplicate(post.id); }}
-                className="w-full text-left px-2.5 py-1.5 text-[13px] text-gray-700 hover:bg-gray-50 rounded flex items-center gap-2 transition-colors duration-100"
-              >
-                <Copy className="w-3.5 h-3.5 text-gray-400" />
-                Duplicate
-              </button>
-              <button
-                onClick={e => { e.stopPropagation(); onDelete(post.id); }}
-                className="w-full text-left px-2.5 py-1.5 text-[13px] text-red-500 hover:bg-red-50 rounded flex items-center gap-2 transition-colors duration-100"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                Delete
-              </button>
-            </PopoverContent>
-          </Popover>
+          <PostContextMenu
+            onExpand={() => onClick(post)}
+            onDuplicate={() => onDuplicate(post.id)}
+            onDelete={() => onDelete(post.id)}
+            triggerClass="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-0.5 rounded text-gray-300 hover:text-gray-500 hover:bg-gray-100 flex-shrink-0"
+          />
         </div>
       </td>
 
