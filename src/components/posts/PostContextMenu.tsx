@@ -36,7 +36,7 @@ const PostContextMenu: React.FC<PostContextMenuProps> = ({
         </button>
       </PopoverTrigger>
       <PopoverContent
-        className="p-1 bg-white rounded-lg border border-gray-200 shadow-lg w-[140px] z-[100]"
+        className="p-1 bg-white rounded-lg border border-gray-200 shadow-lg w-[140px] z-[10010]"
         align="end"
         sideOffset={4}
         onOpenAutoFocus={e => e.preventDefault()}

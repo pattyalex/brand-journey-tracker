@@ -64,18 +64,36 @@ const Posts: React.FC = () => {
     return saved || [];
   });
   const [pillarIdMap, setPillarIdMap] = useState<Record<string, string>>({});
-  const [formats, setFormats] = useState<string[]>(DEFAULT_FORMATS);
+  const [formats, setFormats] = useState<string[]>(() => {
+    const saved = getJSON<string[] | null>('meg_formats', null);
+    return saved && saved.length > 0 ? saved : DEFAULT_FORMATS;
+  });
   const [, setPillarColorVersion] = useState(0);
   const handleChangePillarColor = useCallback(() => {
     setPillarColorVersion(v => v + 1);
   }, []);
 
-  // Load posts from Supabase on mount
+  // Load posts from Supabase on mount, merging with local cache to avoid losing unsynced posts
   useEffect(() => {
     if (!userId) return;
     postsApi.fetchPosts(userId).then(remote => {
       if (remote.length > 0) {
-        setPosts(cleanBlobUrls(remote));
+        const cleanedRemote = cleanBlobUrls(remote);
+        // Merge: keep any local posts not yet in Supabase (unsynced optimistic adds)
+        const cached = getJSON<Post[] | null>('meg_posts', null);
+        if (cached && cached.length > 0) {
+          const remoteIds = new Set(cleanedRemote.map(p => p.id));
+          const unsyncedLocal = cleanBlobUrls(cached).filter(p => !remoteIds.has(p.id));
+          if (unsyncedLocal.length > 0) {
+            // Re-sync unsynced posts to Supabase
+            unsyncedLocal.forEach(p => postsApi.createPost(p, userId).catch(console.error));
+            setPosts([...cleanedRemote, ...unsyncedLocal]);
+          } else {
+            setPosts(cleanedRemote);
+          }
+        } else {
+          setPosts(cleanedRemote);
+        }
       } else {
         // First time: migrate localStorage posts to Supabase
         const local = getJSON<Post[] | null>('meg_posts', null);
@@ -113,6 +131,21 @@ const Posts: React.FC = () => {
   useEffect(() => {
     setJSON('meg_pillars', pillars);
   }, [pillars]);
+
+  // Persist formats to localStorage
+  useEffect(() => {
+    setJSON('meg_formats', formats);
+  }, [formats]);
+
+  // On mount, ensure any custom formats used on posts are included in the formats list
+  useEffect(() => {
+    const formatsFromPosts = posts.map(p => p.format).filter(f => f && f.trim() !== '');
+    const missing = [...new Set(formatsFromPosts)].filter(f => !formats.includes(f));
+    if (missing.length > 0) {
+      setFormats(prev => [...prev, ...missing.filter(f => !prev.includes(f))]);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const [activeView, setActiveView] = useState<ViewMode>(loadView);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());

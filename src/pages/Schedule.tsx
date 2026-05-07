@@ -10,6 +10,7 @@ import {
   DragStartEvent,
   DragEndEvent,
   useDraggable,
+  useDroppable,
   closestCenter,
   rectIntersection,
   CollisionDetection,
@@ -195,11 +196,13 @@ const Schedule: React.FC = () => {
   }, [posts]);
 
   const handleUnschedule = useCallback((postId: string) => {
+    const updates = { scheduledDate: undefined, scheduled_time: undefined, status: 'Edited' as PostStatus };
     setPosts(prev => prev.map(p =>
-      p.id === postId
-        ? { ...p, scheduledDate: undefined, scheduled_time: undefined, status: 'Edited' as PostStatus }
-        : p
+      p.id === postId ? { ...p, ...updates } : p
     ));
+    setSelectedPost(prev => prev && prev.id === postId ? { ...prev, ...updates } : prev);
+    postsApi.updatePost(postId, updates).catch(console.error);
+    toast.success('Post unscheduled');
   }, []);
 
   // ── Drag and Drop ──────────────────────────────────────────
@@ -228,6 +231,15 @@ const Schedule: React.FC = () => {
     if (!event.over || !draggedId) return;
 
     const overId = event.over.id as string;
+
+    // Drop on Ready sidebar — unschedule the post
+    if (overId === 'ready-drop-zone') {
+      const post = posts.find(p => p.id === draggedId);
+      if (post?.scheduledDate) {
+        handleUnschedule(draggedId);
+      }
+      return;
+    }
 
     // Drop on grid cell (from Ready via external drop zone)
     if (overId.startsWith('grid-ext-')) {
@@ -412,14 +424,10 @@ const Schedule: React.FC = () => {
                 </div>
               )}
               {readyCollapsed && (
-                <button
-                  onClick={() => setReadyCollapsed(false)}
-                  className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-gray-50 transition-colors"
-                >
-                  <span className="text-lg font-semibold text-gray-900">Ready</span>
-                  <span className="text-[11px] text-gray-400 bg-gray-100 rounded-full px-1.5 py-0.5">{readyPosts.length}</span>
-                  <ChevronRight className="w-3.5 h-3.5 text-gray-400 ml-auto" />
-                </button>
+                <CollapsedReadyDropZone
+                  count={readyPosts.length}
+                  onExpand={() => setReadyCollapsed(false)}
+                />
               )}
               <div className="flex-shrink-0">
                 <ScheduleGrid
@@ -506,8 +514,19 @@ const DraggableReadyList: React.FC<{
   draggingId: string | null;
   onToggleCollapse?: () => void;
 }> = (props) => {
+  const { setNodeRef, isOver } = useDroppable({ id: 'ready-drop-zone' });
+
   return (
-    <div>
+    <div
+      ref={setNodeRef}
+      className={`transition-colors duration-200 ${isOver ? 'bg-[#612A4F]/[0.04]' : ''}`}
+      style={{
+        outline: isOver ? '2px dashed rgba(97, 42, 79, 0.3)' : 'none',
+        outlineOffset: '-2px',
+        borderRadius: isOver ? '12px' : '0',
+        minHeight: '80px',
+      }}
+    >
       <div className="flex items-center gap-2 px-4 py-3">
         <span className="text-lg font-semibold text-gray-900">Ready</span>
         <span className="text-[11px] text-gray-400 bg-gray-100 rounded-full px-1.5 py-0.5">{props.posts.length}</span>
@@ -520,7 +539,7 @@ const DraggableReadyList: React.FC<{
       {props.posts.length === 0 ? (
         <div className="flex items-center justify-center px-4 py-8">
           <p className="text-[12px] text-gray-400 text-center leading-relaxed">
-            No posts ready yet. Mark posts as Edited in Posts and click the arrow to send them here.
+            {isOver ? 'Drop here to unschedule' : 'No posts ready yet. Mark posts as Edited in Posts and click the arrow to send them here.'}
           </p>
         </div>
       ) : (
@@ -606,6 +625,31 @@ const DraggableReadyCard: React.FC<{
         <X className="w-3 h-3" />
       </button>
     </motion.div>
+  );
+};
+
+// ── Collapsed Ready Drop Zone ─────────────────────────────────
+
+const CollapsedReadyDropZone: React.FC<{ count: number; onExpand: () => void }> = ({ count, onExpand }) => {
+  const { setNodeRef, isOver } = useDroppable({ id: 'ready-drop-zone' });
+
+  return (
+    <button
+      ref={setNodeRef}
+      onClick={onExpand}
+      className={`w-full flex items-center gap-2 px-4 py-2.5 transition-colors ${
+        isOver ? 'bg-[#612A4F]/[0.06]' : 'hover:bg-gray-50'
+      }`}
+      style={{
+        outline: isOver ? '2px dashed rgba(97, 42, 79, 0.3)' : 'none',
+        outlineOffset: '-2px',
+        borderRadius: isOver ? '12px' : '0',
+      }}
+    >
+      <span className="text-lg font-semibold text-gray-900">Ready</span>
+      <span className="text-[11px] text-gray-400 bg-gray-100 rounded-full px-1.5 py-0.5">{count}</span>
+      <ChevronRight className="w-3.5 h-3.5 text-gray-400 ml-auto" />
+    </button>
   );
 };
 

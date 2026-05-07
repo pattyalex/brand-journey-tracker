@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Plus } from 'lucide-react';
 import {
@@ -48,6 +48,19 @@ const PostsPillarsView: React.FC<PostsPillarsViewProps> = ({
   onAddPost,
   onReorder,
 }) => {
+  // Merge explicit pillars with any pillar names used by posts
+  const allPillars = useMemo(() => {
+    const seen = new Set(pillars);
+    const result = [...pillars];
+    posts.forEach(p => {
+      if (p.pillar && !seen.has(p.pillar)) {
+        seen.add(p.pillar);
+        result.push(p.pillar);
+      }
+    });
+    return result;
+  }, [pillars, posts]);
+
   const [activeId, setActiveId] = useState<string | null>(null);
   const [overColumnId, setOverColumnId] = useState<string | null>(null);
   const [overCardId, setOverCardId] = useState<string | null>(null);
@@ -69,7 +82,7 @@ const PostsPillarsView: React.FC<PostsPillarsViewProps> = ({
       return;
     }
     const overId = over.id as string;
-    if (pillars.includes(overId)) {
+    if (allPillars.includes(overId)) {
       setOverColumnId(overId);
       setOverCardId(null);
     } else {
@@ -92,7 +105,7 @@ const PostsPillarsView: React.FC<PostsPillarsViewProps> = ({
     const overId = over.id as string;
 
     // Check if dropped on a column header (pillar droppable)
-    if (pillars.includes(overId)) {
+    if (allPillars.includes(overId)) {
       const post = posts.find(p => p.id === postId);
       if (post && post.pillar !== overId) {
         onUpdatePost(postId, { pillar: overId });
@@ -137,7 +150,7 @@ const PostsPillarsView: React.FC<PostsPillarsViewProps> = ({
       onDragCancel={handleDragCancel}
     >
       <div className="flex gap-4 overflow-x-auto pb-4 min-h-[400px]">
-        {pillars.map(pillar => {
+        {allPillars.map(pillar => {
           const columnPosts = posts.filter(p => p.pillar === pillar);
           return (
             <PillarColumn
