@@ -40,18 +40,10 @@ const ToDoSoonSection: React.FC<ToDoSoonSectionProps> = ({ tasks, onMoveToToday,
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="mb-[42px]">
         <h1 className="text-lg font-semibold text-gray-900">
           To do soon
         </h1>
-        {!adding && (
-          <button
-            onClick={() => setAdding(true)}
-            className="text-gray-300 hover:text-gray-600 hover:bg-gray-200 rounded-full p-0.5 transition-all duration-150"
-          >
-            <Plus className="w-4 h-4" />
-          </button>
-        )}
       </div>
       {visible.length === 0 && !adding && (
         <p className="text-[13px] text-gray-300 italic py-4">
@@ -117,7 +109,7 @@ const ToDoSoonSection: React.FC<ToDoSoonSectionProps> = ({ tasks, onMoveToToday,
           );
         })}
       </AnimatePresence>
-      {adding && (
+      {adding ? (
         <div className="flex items-center gap-2.5 py-1.5 px-2 -mx-2">
           <Plus className="w-4 h-4 text-gray-300 flex-shrink-0" />
           <input
@@ -130,6 +122,14 @@ const ToDoSoonSection: React.FC<ToDoSoonSectionProps> = ({ tasks, onMoveToToday,
             className="flex-1 bg-transparent border-none outline-none text-[14px] text-gray-800 placeholder:text-gray-300"
           />
         </div>
+      ) : (
+        <button
+          onClick={() => setAdding(true)}
+          className="flex items-center gap-2 mt-3 text-[13px] text-gray-300 hover:text-gray-500 transition-colors duration-150"
+        >
+          <Plus className="w-3.5 h-3.5" />
+          Add task
+        </button>
       )}
     </div>
   );

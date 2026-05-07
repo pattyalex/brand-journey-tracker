@@ -529,7 +529,7 @@ const Tasks: React.FC = () => {
         onMouseEnter={e => { e.currentTarget.style.scrollbarColor = 'rgba(0,0,0,0.15) transparent'; }}
         onMouseLeave={e => { e.currentTarget.style.scrollbarColor = 'transparent transparent'; }}
       >
-        <div className="px-4 pt-8 pb-8">
+        <div className="px-5 pt-[76px] pb-8">
           <ToDoSoonSection
             tasks={backlogTasks}
             onMoveToToday={handleMoveBacklogToToday}
@@ -544,16 +544,16 @@ const Tasks: React.FC = () => {
       </div>
       </div>
 
-      {/* Collapse/expand toggle — absolutely positioned, always visible, sits just left of the sidebar edge */}
+      {/* Collapse/expand toggle */}
       <div
-        className="absolute top-14 group transition-all duration-300 ease-out z-20"
+        className="absolute top-[78px] group transition-all duration-300 ease-out z-20"
         style={{ right: soonCollapsed ? 12 : 'calc(22% - 12px)' }}
       >
         <button
           onClick={() => setSoonCollapsed(prev => !prev)}
-          className="w-[24px] h-[24px] flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-400 hover:text-gray-600 hover:border-gray-300 shadow-sm transition-colors"
+          className="w-[22px] h-[22px] flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-400 hover:text-gray-600 hover:border-gray-300 shadow-sm transition-colors"
         >
-          {soonCollapsed ? <ChevronLeft className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+          {soonCollapsed ? <ChevronLeft className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
         </button>
         <div className="absolute right-0 top-[calc(100%+6px)] px-2.5 py-1 rounded-md bg-gray-500 text-white text-[11px] font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-100 pointer-events-none">
           {soonCollapsed ? 'Show To Do Soon' : 'Hide To Do Soon'}
