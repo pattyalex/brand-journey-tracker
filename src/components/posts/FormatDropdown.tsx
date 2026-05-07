@@ -30,10 +30,11 @@ const FormatDropdown: React.FC<FormatDropdownProps> = ({ value, formats, onChang
     <Popover open={open} onOpenChange={(v) => { setOpen(v); if (!v) { setAdding(false); setDraft(''); } }}>
       <PopoverTrigger asChild>
         <button
-          className={`text-sm transition-colors duration-150 flex items-center gap-1 ${value ? 'text-gray-600 hover:text-gray-800' : 'text-gray-300 hover:text-gray-400'}`}
+          className={`text-sm transition-colors duration-150 flex items-center gap-1 max-w-[140px] ${value ? 'text-gray-600 hover:text-gray-800' : 'text-gray-300 hover:text-gray-400'}`}
+          title={value || undefined}
         >
-          {value || 'Set format'}
-          <svg className="w-3 h-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <span className="truncate">{value || 'Set format'}</span>
+          <svg className="w-3 h-3 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
           </svg>
         </button>
