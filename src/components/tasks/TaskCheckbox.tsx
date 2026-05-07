@@ -5,11 +5,11 @@ import { Check } from 'lucide-react';
 interface TaskCheckboxProps {
   checked: boolean;
   onChange: () => void;
-  size?: 'sm' | 'md';
+  size?: 'xs' | 'sm' | 'md';
 }
 
 const TaskCheckbox: React.FC<TaskCheckboxProps> = ({ checked, onChange, size = 'md' }) => {
-  const px = size === 'sm' ? 16 : 18;
+  const px = size === 'xs' ? 12 : size === 'sm' ? 16 : 18;
 
   return (
     <button

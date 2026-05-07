@@ -419,7 +419,7 @@ const SortableRow: React.FC<SortableRowProps> = ({
               >
                 <ArrowRight size={11} className="text-[#612A4F]" />
               </button>
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 rounded-md bg-gray-800 text-white text-[10px] font-medium whitespace-nowrap opacity-0 group-hover/sched:opacity-100 transition-opacity duration-100 pointer-events-none">
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 rounded-md bg-gray-400 text-white text-[10px] font-medium whitespace-nowrap opacity-0 group-hover/sched:opacity-100 transition-opacity duration-100 pointer-events-none">
                 Schedule this post
               </div>
             </div>

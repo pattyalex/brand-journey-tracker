@@ -1,5 +1,5 @@
 import React, { useState, KeyboardEvent } from "react";
-import { Check } from "lucide-react";
+import { Check, MapPin, Calendar, FileText, Shirt, Package, StickyNote, Camera } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -100,47 +100,66 @@ export default function CreateShootModal({
     setNotes(""); setOutfitInput(""); setGearInput(""); setSelectedPostIds(new Set());
   };
 
-  const labelClass = "text-xs uppercase tracking-wider text-gray-400 font-medium mb-1.5 block";
-  const inputClass = "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:border-[#612A4F] focus:ring-0 focus-visible:ring-0 outline-none transition-colors";
-
   const totalSelected = selectedPostIds.size + (selectedPostCount > 0 && selectedPostIds.size === 0 ? selectedPostCount : 0);
+
+  const inputClass = "w-full bg-gray-50/80 border border-gray-200/80 rounded-xl px-3.5 py-2.5 text-[13px] text-gray-700 placeholder:text-gray-300 focus:bg-white focus:border-[#612A4F]/40 focus:ring-0 focus-visible:ring-0 outline-none transition-all duration-200";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-lg font-semibold text-gray-800">Plan a Shoot</DialogTitle>
-          {(totalSelected > 0 || selectedPostIds.size > 0) && (
-            <DialogDescription className="text-sm text-gray-400">
-              {selectedPostIds.size || selectedPostCount} post{(selectedPostIds.size || selectedPostCount) !== 1 ? "s" : ""} selected
-            </DialogDescription>
-          )}
-        </DialogHeader>
+      <DialogContent className="max-w-[440px] max-h-[90vh] overflow-y-auto p-0 rounded-2xl border-0 shadow-[0_24px_48px_rgba(0,0,0,0.12)]">
+        {/* Header */}
+        <div className="px-6 pt-6 pb-4">
+          <DialogHeader>
+            <div className="flex items-center gap-2.5 mb-1">
+              <div className="w-8 h-8 rounded-xl bg-[#612A4F]/10 flex items-center justify-center">
+                <Camera className="w-4 h-4 text-[#612A4F]" />
+              </div>
+              <DialogTitle className="text-[17px] font-semibold text-gray-900">Plan a Shoot</DialogTitle>
+            </div>
+            {(totalSelected > 0 || selectedPostIds.size > 0) && (
+              <DialogDescription className="text-[13px] text-gray-400 ml-[42px]">
+                {selectedPostIds.size || selectedPostCount} post{(selectedPostIds.size || selectedPostCount) !== 1 ? "s" : ""} selected
+              </DialogDescription>
+            )}
+          </DialogHeader>
+        </div>
 
-        <div className="flex flex-col gap-4">
+        {/* Form */}
+        <div className="px-6 pb-6 flex flex-col gap-5">
           {/* Name */}
           <div>
-            <label className={labelClass}>Shoot name</label>
+            <label className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-gray-400 font-semibold mb-2">
+              Shoot name
+            </label>
             <input type="text" value={name} onChange={e => setName(e.target.value)} className={inputClass} placeholder="e.g. Beach Golden Hour" />
           </div>
 
-          {/* Main Location */}
+          {/* Location */}
           <div>
-            <label className={labelClass}>Main location</label>
+            <label className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-gray-400 font-semibold mb-2">
+              <MapPin className="w-3 h-3" />
+              Location
+            </label>
             <input type="text" value={mainLocation} onChange={e => setMainLocation(e.target.value)} placeholder="e.g. Half Moon Bay" className={inputClass} />
           </div>
 
           {/* Date */}
           <div>
-            <label className={labelClass}>Date of shoot</label>
+            <label className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-gray-400 font-semibold mb-2">
+              <Calendar className="w-3 h-3" />
+              Date of shoot
+            </label>
             <input type="date" value={date} onChange={e => setDate(e.target.value)} className={inputClass} />
           </div>
 
-          {/* Content to shoot — post picker */}
+          {/* Content to shoot */}
           {availablePosts.length > 0 && (
             <div>
-              <label className={labelClass}>Content to shoot</label>
-              <div className="space-y-1.5 max-h-[200px] overflow-y-auto rounded-lg border border-gray-200 p-2">
+              <label className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-gray-400 font-semibold mb-2">
+                <FileText className="w-3 h-3" />
+                Content to shoot
+              </label>
+              <div className="space-y-1 max-h-[200px] overflow-y-auto rounded-xl border border-gray-200/80 bg-gray-50/50 p-2">
                 {availablePosts.map(post => {
                   const isChecked = selectedPostIds.has(post.id);
                   const sc = STATUS_COLORS[post.status] || { dot: '#9CA3AF' };
@@ -148,16 +167,16 @@ export default function CreateShootModal({
                     <div
                       key={post.id}
                       onClick={() => togglePost(post.id)}
-                      className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg cursor-pointer transition-colors duration-150 ${
-                        isChecked ? 'bg-[#612A4F]/[0.04]' : 'hover:bg-gray-50'
+                      className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg cursor-pointer transition-all duration-150 ${
+                        isChecked ? 'bg-[#612A4F]/[0.06] border border-[#612A4F]/10' : 'hover:bg-white border border-transparent'
                       }`}
                     >
-                      <div className={`w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 transition-colors ${
+                      <div className={`w-[18px] h-[18px] rounded-full border-[1.5px] flex items-center justify-center flex-shrink-0 transition-all ${
                         isChecked ? 'bg-[#612A4F] border-[#612A4F]' : 'border-gray-300'
                       }`}>
-                        {isChecked && <Check size={10} className="text-white" strokeWidth={3} />}
+                        {isChecked && <Check size={10} className="text-white" strokeWidth={2.5} />}
                       </div>
-                      <span className="text-sm text-gray-700 flex-1 truncate">{post.title}</span>
+                      <span className="text-[13px] text-gray-700 flex-1 truncate">{post.title}</span>
                       <StatusIcon status={post.status} className="w-3 h-3 flex-shrink-0" style={{ color: sc.dot }} />
                     </div>
                   );
@@ -168,13 +187,16 @@ export default function CreateShootModal({
 
           {/* Outfits */}
           <div>
-            <label className={labelClass}>Outfits</label>
+            <label className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-gray-400 font-semibold mb-2">
+              <Shirt className="w-3 h-3" />
+              Outfits
+            </label>
             {outfits.length > 0 && (
               <div className="flex flex-wrap gap-1.5 mb-2">
                 {outfits.map((o, i) => (
-                  <span key={i} className="inline-flex items-center gap-1 bg-gray-100 text-gray-600 text-[11px] px-2 py-0.5 rounded-full">
+                  <span key={i} className="inline-flex items-center gap-1.5 bg-[#612A4F]/[0.06] text-[#612A4F] text-[11px] font-medium px-2.5 py-1 rounded-full">
                     {o}
-                    <button type="button" onClick={() => removeOutfit(i)} className="text-gray-400 hover:text-gray-600">&times;</button>
+                    <button type="button" onClick={() => removeOutfit(i)} className="text-[#612A4F]/40 hover:text-[#612A4F]/80 transition-colors">&times;</button>
                   </span>
                 ))}
               </div>
@@ -184,13 +206,16 @@ export default function CreateShootModal({
 
           {/* Props */}
           <div>
-            <label className={labelClass}>Props</label>
+            <label className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-gray-400 font-semibold mb-2">
+              <Package className="w-3 h-3" />
+              Props
+            </label>
             {gear.length > 0 && (
               <div className="flex flex-wrap gap-1.5 mb-2">
                 {gear.map((g, i) => (
-                  <span key={i} className="inline-flex items-center gap-1 bg-gray-100 text-gray-600 text-[11px] px-2 py-0.5 rounded-full">
+                  <span key={i} className="inline-flex items-center gap-1.5 bg-[#612A4F]/[0.06] text-[#612A4F] text-[11px] font-medium px-2.5 py-1 rounded-full">
                     {g}
-                    <button type="button" onClick={() => removeGear(i)} className="text-gray-400 hover:text-gray-600">&times;</button>
+                    <button type="button" onClick={() => removeGear(i)} className="text-[#612A4F]/40 hover:text-[#612A4F]/80 transition-colors">&times;</button>
                   </span>
                 ))}
               </div>
@@ -200,8 +225,11 @@ export default function CreateShootModal({
 
           {/* Notes */}
           <div>
-            <label className={labelClass}>Notes</label>
-            <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} placeholder="Any notes for the shoot day..." className={inputClass} />
+            <label className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-gray-400 font-semibold mb-2">
+              <StickyNote className="w-3 h-3" />
+              Notes
+            </label>
+            <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} placeholder="Any notes for the shoot day..." className={`${inputClass} resize-none`} />
           </div>
 
           {/* Save */}
@@ -209,7 +237,7 @@ export default function CreateShootModal({
             type="button"
             onClick={handleSave}
             disabled={!isValid}
-            className={`w-full bg-[#612A4F] text-white py-2.5 rounded-xl text-sm font-medium hover:bg-[#4e2140] transition-colors ${!isValid ? "opacity-50 cursor-not-allowed" : ""}`}
+            className={`w-full bg-[#612A4F] text-white py-3 rounded-xl text-[13px] font-semibold hover:bg-[#4e2140] transition-all duration-200 shadow-sm hover:shadow-md ${!isValid ? "opacity-40 cursor-not-allowed" : ""}`}
           >
             Create shoot
           </button>

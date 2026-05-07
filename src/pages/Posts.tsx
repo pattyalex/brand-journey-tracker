@@ -635,6 +635,8 @@ const Posts: React.FC = () => {
         onDeleteFormat={handleDeleteFormat}
         onDeletePillar={handleDeletePillar}
         onReplaceAttachment={handleReplaceAttachment}
+        onSendToShoots={handleSendToShoots}
+        onSendToSchedule={handleSendToSchedule}
       />
 
       <InspirationPanel
