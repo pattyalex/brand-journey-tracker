@@ -334,7 +334,7 @@ const MonthCell: React.FC<{
                 <div
                   onMouseDown={e => e.stopPropagation()}
                   onClick={e => { e.stopPropagation(); onEditTime?.(post.id); }}
-                  style={{ position: 'relative', zIndex: 100 }}
+                  style={{ position: 'relative', zIndex: 5 }}
                   className="flex items-center gap-0.5 px-2 mt-0.5 cursor-pointer text-[10px] text-gray-400 hover:text-[#612A4F] transition-colors"
                 >
                   <Clock className="w-2.5 h-2.5" />
@@ -410,7 +410,7 @@ const WeekCell: React.FC<{
                 <div
                   onMouseDown={e => e.stopPropagation()}
                   onClick={e => { e.stopPropagation(); onEditTime?.(post.id); }}
-                  style={{ position: 'relative', zIndex: 100 }}
+                  style={{ position: 'relative', zIndex: 5 }}
                   className="flex items-center gap-1 mt-1 px-1 cursor-pointer text-[10px] text-gray-400 hover:text-[#612A4F] transition-colors"
                 >
                   <Clock className="w-2.5 h-2.5" />
