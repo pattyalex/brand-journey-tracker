@@ -1,10 +1,13 @@
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, EyeOff, ChevronRight, ChevronLeft, Camera, MapPin, CalendarDays, List } from 'lucide-react';
+import { Eye, EyeOff, ChevronRight, ChevronLeft, Camera, MapPin, CalendarDays, List, Send, X } from 'lucide-react';
 import { Task, DailyNote } from '@/types/tasks';
 import { Shoot } from '@/types/shoots';
+import { Post, getPillarStyle, DEFAULT_FORMATS } from '@/types/posts';
+import * as postsApi from '@/services/postsService';
 import { getJSON, setJSON } from '@/lib/storage';
+import PostDetailPanel from '@/components/posts/PostDetailPanel';
 import { getSeedTasks, getSeedDailyNote } from '@/data/tasksSeedData';
 import { useAuth } from '@/contexts/AuthContext';
 import * as tasksApi from '@/services/tasksService';
@@ -75,6 +78,10 @@ const Tasks: React.FC = () => {
   const [showCompleted, setShowCompleted] = useState(true);
   const [soonCollapsed, setSoonCollapsed] = useState(false);
   const [viewMode, setViewMode] = useState<TaskViewMode>('day');
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [selectedShoot, setSelectedShoot] = useState<Shoot | null>(null);
+  const postPillars = useMemo(() => getJSON<string[]>('meg_pillars', []), []);
+  const postFormats = useMemo(() => DEFAULT_FORMATS, []);
 
   // Week dates: Monday to Sunday of the current week
   const weekDates = useMemo(() => {
@@ -94,6 +101,12 @@ const Tasks: React.FC = () => {
   const dayShoots = useMemo(() => {
     const allShoots = getJSON<Shoot[]>('meg_shoots', []);
     return allShoots.filter(s => s.date === currentDate && s.status !== 'Archived');
+  }, [currentDate]);
+
+  // Load scheduled posts for the current day
+  const dayScheduledPosts = useMemo(() => {
+    const allPosts = getJSON<Post[]>('meg_posts', []);
+    return allPosts.filter(p => p.scheduledDate === currentDate && p.sent_to_schedule);
   }, [currentDate]);
 
   // Load from Supabase on mount
@@ -448,7 +461,8 @@ const Tasks: React.FC = () => {
               {dayShoots.map(shoot => (
                 <div
                   key={shoot.id}
-                  className="flex items-center gap-3 mb-4 px-4 py-3 rounded-xl bg-[#612A4F]/[0.05] border border-[#612A4F]/10"
+                  onClick={() => setSelectedShoot(shoot)}
+                  className="flex items-center gap-3 mb-4 px-4 py-3 rounded-xl bg-[#612A4F]/[0.05] border border-[#612A4F]/10 cursor-pointer hover:shadow-md transition-shadow duration-150"
                 >
                   <div className="w-8 h-8 rounded-lg bg-[#612A4F]/10 flex items-center justify-center flex-shrink-0">
                     <Camera className="w-4 h-4 text-[#612A4F]" />
@@ -462,9 +476,39 @@ const Tasks: React.FC = () => {
                       </p>
                     )}
                   </div>
-                  <span className="text-[10px] font-medium text-[#612A4F]/60 uppercase tracking-wider flex-shrink-0">Shoot day</span>
+                  <span className="text-[10px] font-medium text-[#612A4F]/60 uppercase tracking-wider flex-shrink-0">Shoot today</span>
                 </div>
               ))}
+
+              {/* Scheduled posts for this day */}
+              {dayScheduledPosts.map(post => {
+                const pillarStyle = getPillarStyle(post.pillar);
+                return (
+                  <div
+                    key={post.id}
+                    onClick={() => setSelectedPost(post)}
+                    className="flex items-center gap-3 mb-4 px-4 py-3 rounded-xl border cursor-pointer hover:shadow-md transition-shadow duration-150"
+                    style={{ backgroundColor: `${pillarStyle.bg}60`, borderColor: `${pillarStyle.border}30` }}
+                  >
+                    {post.thumbnail_url ? (
+                      <img src={post.thumbnail_url} alt="" className="w-8 h-8 rounded-lg object-cover flex-shrink-0" />
+                    ) : (
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${pillarStyle.border}20` }}>
+                        <Send className="w-3.5 h-3.5" style={{ color: pillarStyle.text }} />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[13px] font-semibold text-gray-800 truncate">{post.title}</p>
+                      <p className="text-[11px] text-gray-400 mt-0.5">
+                        {post.pillar}{post.format ? ` · ${post.format}` : ''}{post.scheduled_time ? ` · ${post.scheduled_time}` : ''}
+                      </p>
+                    </div>
+                    <span className="text-[10px] font-medium uppercase tracking-wider flex-shrink-0" style={{ color: `${pillarStyle.text}99` }}>
+                      Post today
+                    </span>
+                  </div>
+                );
+              })}
 
               {dayTasks.some(t => t.completed) && (
                 <div className="flex justify-end mb-3">
@@ -559,6 +603,153 @@ const Tasks: React.FC = () => {
           {soonCollapsed ? 'Show To Do Soon' : 'Hide To Do Soon'}
         </div>
       </div>
+
+      <PostDetailPanel
+        post={selectedPost}
+        pillars={postPillars}
+        formats={postFormats}
+        onClose={() => setSelectedPost(null)}
+        onUpdate={(id, updates) => {
+          setSelectedPost(prev => prev && prev.id === id ? { ...prev, ...updates } : prev);
+          postsApi.updatePost(id, updates).catch(console.error);
+        }}
+        onDelete={(id) => {
+          setSelectedPost(null);
+          postsApi.deletePost(id).catch(console.error);
+        }}
+        onAddFormat={() => {}}
+        onDeleteFormat={() => {}}
+        onDeletePillar={() => {}}
+        onReplaceAttachment={() => {}}
+      />
+
+      {/* Shoot detail panel */}
+      <AnimatePresence>
+        {selectedShoot && (() => {
+          const shootPosts = getJSON<Post[]>('meg_posts', []).filter(p => p.shoot_id === selectedShoot.id || p.sentToShoots);
+          return (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/30"
+              onClick={() => setSelectedShoot(null)}
+            >
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                transition={{ duration: 0.2 }}
+                className="bg-white rounded-2xl shadow-2xl border border-gray-200 w-[720px] max-h-[85vh] overflow-y-auto"
+                onClick={e => e.stopPropagation()}
+              >
+                {/* Header */}
+                <div className="sticky top-0 bg-white/95 backdrop-blur-sm border-b border-gray-100 px-8 py-5 flex items-start justify-between rounded-t-2xl z-10">
+                  <div>
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-9 h-9 rounded-lg bg-[#612A4F]/10 flex items-center justify-center">
+                        <Camera className="w-4.5 h-4.5 text-[#612A4F]" />
+                      </div>
+                      <div>
+                        <h2 className="text-lg font-semibold text-gray-900">{selectedShoot.name}</h2>
+                        <p className="text-[13px] text-gray-400">
+                          {new Date(selectedShoot.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setSelectedShoot(null)}
+                    className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="px-8 py-6 space-y-6">
+                  {/* Locations */}
+                  {selectedShoot.locations && selectedShoot.locations.length > 0 && (
+                    <div>
+                      <p className="text-[11px] font-medium text-gray-400 uppercase tracking-wider mb-2">Locations</p>
+                      <div className="space-y-2">
+                        {selectedShoot.locations.map(loc => (
+                          <div key={loc.id} className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-gray-50">
+                            <MapPin className="w-3.5 h-3.5 text-[#612A4F] flex-shrink-0" />
+                            <div>
+                              <p className="text-[13px] font-medium text-gray-800">{loc.name}</p>
+                              {loc.address && <p className="text-[11px] text-gray-400">{loc.address}</p>}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Posts for this shoot */}
+                  {shootPosts.length > 0 && (
+                    <div>
+                      <p className="text-[11px] font-medium text-gray-400 uppercase tracking-wider mb-2">Content to shoot</p>
+                      <div className="space-y-1.5">
+                        {shootPosts.map(post => {
+                          const ps = getPillarStyle(post.pillar);
+                          return (
+                            <div key={post.id} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-gray-50">
+                              {post.thumbnail_url ? (
+                                <img src={post.thumbnail_url} alt="" className="w-8 h-8 rounded object-cover flex-shrink-0" />
+                              ) : (
+                                <div className="w-8 h-8 rounded flex items-center justify-center flex-shrink-0" style={{ backgroundColor: ps.bg }}>
+                                  <Camera className="w-3.5 h-3.5" style={{ color: ps.text }} />
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-[13px] font-medium text-gray-800 truncate">{post.title}</p>
+                                <p className="text-[11px] text-gray-400">{post.pillar}{post.format ? ` · ${post.format}` : ''}</p>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Outfits & Gear */}
+                  <div className="grid grid-cols-2 gap-6">
+                    {selectedShoot.outfits && selectedShoot.outfits.length > 0 && (
+                      <div>
+                        <p className="text-[11px] font-medium text-gray-400 uppercase tracking-wider mb-2">Outfits</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {selectedShoot.outfits.map((o, i) => (
+                            <span key={i} className="text-[12px] px-2.5 py-1 rounded-lg bg-gray-50 text-gray-700">{o}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {selectedShoot.gear && selectedShoot.gear.length > 0 && (
+                      <div>
+                        <p className="text-[11px] font-medium text-gray-400 uppercase tracking-wider mb-2">Gear</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {selectedShoot.gear.map((g, i) => (
+                            <span key={i} className="text-[12px] px-2.5 py-1 rounded-lg bg-gray-50 text-gray-700">{g}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Notes */}
+                  {selectedShoot.notes && (
+                    <div>
+                      <p className="text-[11px] font-medium text-gray-400 uppercase tracking-wider mb-2">Notes</p>
+                      <p className="text-[13px] text-gray-600 leading-relaxed whitespace-pre-wrap bg-gray-50 rounded-lg px-3 py-2.5">{selectedShoot.notes}</p>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            </motion.div>
+          );
+        })()}
+      </AnimatePresence>
     </div>
   );
 };

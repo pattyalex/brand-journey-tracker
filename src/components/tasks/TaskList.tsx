@@ -215,17 +215,6 @@ const TaskList: React.FC<TaskListProps> = ({
 
   return (
     <div>
-      {isEmpty && (
-        <div className="py-8 text-center">
-          <p
-            className="text-[18px] text-gray-300 font-medium mb-1"
-            style={{ fontFamily: "'Playfair Display', serif" }}
-          >
-            Add task
-          </p>
-          <p className="text-[13px] text-gray-300">Start typing below to add your first task.</p>
-        </div>
-      )}
 
       <DndContext
         sensors={sensors}
@@ -256,7 +245,7 @@ const TaskList: React.FC<TaskListProps> = ({
       </DndContext>
 
       {/* Add task input */}
-      <div className="mt-4">
+      <div className="mt-6">
         <TaskInput
           onAdd={onAdd}
           autoFocus={isEmpty}

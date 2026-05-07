@@ -44,7 +44,7 @@ const TaskInput: React.FC<TaskInputProps> = ({ onAdd, autoFocus = false, placeho
   if (!active) {
     return (
       <div
-        className="flex items-center gap-2.5 py-1.5 px-2 -mx-2 rounded-lg text-gray-300 hover:text-gray-500 transition-colors duration-150 cursor-pointer"
+        className="flex items-center gap-2.5 py-1.5 px-2 -mx-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors duration-150 cursor-pointer"
         onClick={() => setActive(true)}
       >
         <div className="w-[108px] flex-shrink-0" />
