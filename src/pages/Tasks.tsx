@@ -554,6 +554,8 @@ const Tasks: React.FC = () => {
             onReorder={handleReorder}
             onDayClick={(date) => { goToDate(date); setViewMode('day'); }}
             onAddSubtask={handleAddSubtask}
+            onClickShoot={setSelectedShoot}
+            onClickPost={setSelectedPost}
           />
         </div>
         )}

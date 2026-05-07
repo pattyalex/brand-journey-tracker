@@ -22,10 +22,11 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { Task } from '@/types/tasks';
 import { Shoot } from '@/types/shoots';
+import { Post, getPillarStyle } from '@/types/posts';
 import TaskCheckbox from './TaskCheckbox';
 import { formatTimeShort, parseTaskInput } from '@/lib/taskParser';
 import { getJSON } from '@/lib/storage';
-import { Clock, X, MoreHorizontal, Trash2 } from 'lucide-react';
+import { Clock, X, MoreHorizontal, Trash2, Send } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 // ── Time helpers ──
@@ -56,6 +57,8 @@ interface WeekViewProps {
   onReorder: (tasks: Task[]) => void;
   onDayClick: (date: string) => void;
   onAddSubtask: (parentId: string, title: string) => void;
+  onClickShoot?: (shoot: Shoot) => void;
+  onClickPost?: (post: Post) => void;
 }
 
 function parseDateLocal(dateStr: string): Date {
@@ -75,6 +78,8 @@ const WeekView: React.FC<WeekViewProps> = ({
   onReorder,
   onDayClick,
   onAddSubtask,
+  onClickShoot,
+  onClickPost,
 }) => {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
@@ -86,6 +91,10 @@ const WeekView: React.FC<WeekViewProps> = ({
   );
 
   const allShoots = useMemo(() => getJSON<Shoot[]>('meg_shoots', []), []);
+  const allScheduledPosts = useMemo(() => {
+    const posts = getJSON<Post[]>('meg_posts', []);
+    return posts.filter(p => p.scheduledDate && p.sent_to_schedule);
+  }, []);
 
   const handleDragStart = (e: DragStartEvent) => setActiveId(e.active.id as string);
   const handleDragOver = (e: DragOverEvent) => setOverId(e.over?.id as string ?? null);
@@ -149,6 +158,7 @@ const WeekView: React.FC<WeekViewProps> = ({
             .filter(t => t.date === date && !t.parent_task_id)
             .sort((a, b) => a.order_index - b.order_index);
           const dayShoots = allShoots.filter(s => s.date === date && s.status !== 'Archived');
+          const dayPosts = allScheduledPosts.filter(p => p.scheduledDate === date);
           const isToday = date === today;
           const isSelected = date === currentDate;
           const d = parseDateLocal(date);
@@ -166,6 +176,7 @@ const WeekView: React.FC<WeekViewProps> = ({
               tasks={dayTasks}
               allTasks={allTasks}
               shoots={dayShoots}
+              scheduledPosts={dayPosts}
               activeId={activeId}
               overId={overId}
               onToggle={onToggle}
@@ -174,6 +185,8 @@ const WeekView: React.FC<WeekViewProps> = ({
               onAddTask={onAddTask}
               onDayClick={onDayClick}
               onAddSubtask={onAddSubtask}
+              onClickShoot={onClickShoot}
+              onClickPost={onClickPost}
             />
           );
         })}
@@ -203,6 +216,7 @@ interface DayColumnProps {
   tasks: Task[];
   allTasks: Task[];
   shoots: Shoot[];
+  scheduledPosts: Post[];
   activeId: string | null;
   overId: string | null;
   onToggle: (id: string) => void;
@@ -211,11 +225,13 @@ interface DayColumnProps {
   onAddTask: (title: string, date: string) => void;
   onDayClick: (date: string) => void;
   onAddSubtask: (parentId: string, title: string) => void;
+  onClickShoot?: (shoot: Shoot) => void;
+  onClickPost?: (post: Post) => void;
 }
 
 const DayColumn: React.FC<DayColumnProps> = ({
-  date, dayName, dayNum, isToday, isSelected, tasks, allTasks, shoots,
-  activeId, overId, onToggle, onUpdate, onDelete, onAddTask, onDayClick, onAddSubtask,
+  date, dayName, dayNum, isToday, isSelected, tasks, allTasks, shoots, scheduledPosts,
+  activeId, overId, onToggle, onUpdate, onDelete, onAddTask, onDayClick, onAddSubtask, onClickShoot, onClickPost,
 }) => {
   const { setNodeRef, isOver } = useDroppable({ id: date });
   const [adding, setAdding] = useState(false);
@@ -259,7 +275,7 @@ const DayColumn: React.FC<DayColumnProps> = ({
 
       {/* Shoot banners */}
       {shoots.map(shoot => (
-        <div key={shoot.id} className="mx-1.5 mb-1.5 px-2 py-1.5 rounded-lg bg-[#612A4F]/[0.05] border border-[#612A4F]/10">
+        <div key={shoot.id} onClick={() => onClickShoot?.(shoot)} className="mx-1.5 mb-1.5 px-2 py-1.5 rounded-lg bg-[#612A4F]/[0.05] border border-[#612A4F]/10 cursor-pointer hover:shadow-sm transition-shadow duration-150">
           <div className="flex items-center gap-1.5">
             <Camera className="w-3 h-3 text-[#612A4F] flex-shrink-0" />
             <span className="text-[10px] font-semibold text-gray-700 truncate">{shoot.name}</span>
@@ -272,6 +288,28 @@ const DayColumn: React.FC<DayColumnProps> = ({
           )}
         </div>
       ))}
+
+      {/* Scheduled post banners */}
+      {scheduledPosts.map(post => {
+        const ps = getPillarStyle(post.pillar);
+        return (
+          <div key={post.id} onClick={() => onClickPost?.(post)} className="mx-1.5 mb-1.5 px-2 py-1.5 rounded-lg border cursor-pointer hover:shadow-sm transition-shadow duration-150" style={{ backgroundColor: `${ps.bg}60`, borderColor: `${ps.border}30` }}>
+            <div className="flex items-center gap-1.5">
+              {post.thumbnail_url ? (
+                <img src={post.thumbnail_url} alt="" className="w-4 h-4 rounded-sm object-cover flex-shrink-0" />
+              ) : (
+                <div className="w-4 h-4 rounded-sm flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${ps.border}20` }}>
+                  <Send className="w-2 h-2" style={{ color: ps.text }} />
+                </div>
+              )}
+              <span className="text-[10px] font-semibold text-gray-700 truncate">{post.title}</span>
+            </div>
+            {post.scheduled_time && (
+              <p className="text-[9px] text-gray-400 mt-0.5 ml-[22px]">{post.scheduled_time}</p>
+            )}
+          </div>
+        );
+      })}
 
       {/* Tasks */}
       <div className="flex-1 px-1 pb-2 overflow-y-auto">
