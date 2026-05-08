@@ -12,6 +12,7 @@ import {
   DragStartEvent,
   DragEndEvent,
   closestCenter,
+  useDraggable,
 } from '@dnd-kit/core';
 import {
   SortableContext,
@@ -59,37 +60,6 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({
     [gridOrder]
   );
 
-  // Grid's own DndContext for internal reordering
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
-  );
-
-  const [internalDragId, setInternalDragId] = React.useState<string | null>(null);
-  const internalDragPost = internalDragId ? postsMap.get(internalDragId) : null;
-
-  const handleDragStart = (event: DragStartEvent) => {
-    const id = event.active.id as string;
-    if (!id.startsWith('empty-')) {
-      setInternalDragId(id);
-    }
-  };
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    setInternalDragId(null);
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
-
-    const oldIndex = cellIds.indexOf(active.id as string);
-    const newIndex = cellIds.indexOf(over.id as string);
-    if (oldIndex !== -1 && newIndex !== -1) {
-      onReorder(arrayMove(gridOrder, oldIndex, newIndex));
-    }
-  };
-
-  const handleDragCancel = () => {
-    setInternalDragId(null);
-  };
-
   return (
     <div className="h-full flex flex-col">
       <div className="flex items-center gap-2 px-4 py-3">
@@ -100,7 +70,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({
       </div>
       <div className="flex-1 overflow-y-auto p-3 flex justify-center">
         <div className="relative">
-          {/* External drop zones — register with PARENT DndContext (for Ready → Grid drops) */}
+          {/* External drop zones — for Ready → Grid drops */}
           {externalDraggingId && (
             <div style={{
               position: 'absolute',
@@ -118,51 +88,33 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({
             </div>
           )}
 
-          {/* Grid's own DndContext for internal reordering */}
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragStart={handleDragStart}
-            onDragEnd={handleDragEnd}
-            onDragCancel={handleDragCancel}
-          >
-            <SortableContext items={cellIds} strategy={rectSortingStrategy}>
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: `repeat(3, ${cellW}px)`,
-                gridAutoRows: `${cellH}px`,
-                gap: '2px',
-                transition: 'all 0.25s ease-out',
-              }}>
-              {gridOrder.map((postId, idx) => {
-                const post = postId ? postsMap.get(postId) || null : null;
-                return (
-                  <SortableCell
-                    key={cellIds[idx]}
-                    id={cellIds[idx]}
-                    index={idx}
-                    postId={postId}
-                    post={post}
-                    onClickPost={onClickPost}
-                    onRemoveFromGrid={onRemoveFromGrid}
-                    onUploadThumbnail={onUploadThumbnail}
-                    onUploadToEmptyCell={onUploadToEmptyCell}
-                    onHover={onHover}
-                    isHovered={postId ? hoveredId === postId : false}
-                    isExternallyDragged={postId ? externalDraggingId === postId : false}
-                  />
-                );
-              })}
-            </div>
-          </SortableContext>
-          <DragOverlay dropAnimation={{ duration: 200, easing: 'ease-out' }}>
-            {internalDragPost?.thumbnail_url && (
-              <div style={{ width: cellW, height: cellH }} className="rounded-xl overflow-hidden shadow-2xl opacity-95 rotate-1">
-                <img src={internalDragPost.thumbnail_url} alt="" className="w-full h-full object-cover" />
-              </div>
-            )}
-          </DragOverlay>
-        </DndContext>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: `repeat(3, ${cellW}px)`,
+            gridAutoRows: `${cellH}px`,
+            gap: '2px',
+            transition: 'all 0.25s ease-out',
+          }}>
+            {gridOrder.map((postId, idx) => {
+              const post = postId ? postsMap.get(postId) || null : null;
+              return (
+                <DraggableGridCell
+                  key={cellIds[idx]}
+                  id={postId || `empty-${idx}`}
+                  index={idx}
+                  postId={postId}
+                  post={post}
+                  onClickPost={onClickPost}
+                  onRemoveFromGrid={onRemoveFromGrid}
+                  onUploadThumbnail={onUploadThumbnail}
+                  onUploadToEmptyCell={onUploadToEmptyCell}
+                  onHover={onHover}
+                  isHovered={postId ? hoveredId === postId : false}
+                  isExternallyDragged={postId ? externalDraggingId === postId : false}
+                />
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>
@@ -187,9 +139,9 @@ const ExternalDropZone: React.FC<{ index: number }> = ({ index }) => {
   );
 };
 
-// ── Sortable Cell ────────────────────────────────────────────
+// ── Draggable Grid Cell ────────────────────────────────────────────
 
-const SortableCell: React.FC<{
+const DraggableGridCell: React.FC<{
   id: string;
   index: number;
   postId: string | null;
@@ -219,18 +171,15 @@ const SortableCell: React.FC<{
     attributes,
     listeners,
     transform,
-    transition,
     isDragging,
-  } = useSortable({
-    id,
+  } = useDraggable({
+    id: postId || `empty-${index}`,
     disabled: !post,
-    transition: { duration: 200, easing: 'ease' },
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform),
-    transition,
+    transform: transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined,
     opacity: isDragging ? 0.3 : isExternallyDragged ? 0 : 1,
     zIndex: isDragging ? 50 : 'auto',
   };

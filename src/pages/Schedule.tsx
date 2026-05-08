@@ -110,10 +110,11 @@ const Schedule: React.FC = () => {
   const readyPosts = useMemo(() => {
     return posts.filter(p => {
       if (!p.sent_to_schedule || p.status === 'Posted') return false;
-      const inGrid = gridPostIds.has(p.id);
-      const inCalendar = !!p.scheduledDate;
-      // Show in ready unless BOTH are done
-      return !(inGrid && inCalendar);
+      // Hide from Ready if already on the calendar
+      if (p.scheduledDate) return false;
+      // Hide from Ready if already in the grid
+      if (gridPostIds.has(p.id)) return false;
+      return true;
     });
   }, [posts, gridPostIds]);
 

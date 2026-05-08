@@ -104,7 +104,7 @@ const PostsCalendarView: React.FC<PostsCalendarViewProps> = ({
 
   const handleCommitConfirm = useCallback((time: string) => {
     if (commitPostId) {
-      onUpdatePost(commitPostId, { scheduled_time: time, sent_to_schedule: true });
+      onUpdatePost(commitPostId, { scheduled_time: time, sent_to_schedule: true, status: 'Scheduled' });
       toast.success('Post scheduled on content calendar', {
         action: {
           label: 'Go to Schedule Page',
