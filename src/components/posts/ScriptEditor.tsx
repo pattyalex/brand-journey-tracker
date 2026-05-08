@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
@@ -37,6 +37,8 @@ const ToolbarButton: React.FC<{
 );
 
 const ScriptEditor: React.FC<ScriptEditorProps> = ({ value, onChange, onBlur }) => {
+  const isInternalUpdate = useRef(false);
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -46,6 +48,7 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ value, onChange, onBlur }) 
     ],
     content: value || '',
     onUpdate: ({ editor }) => {
+      isInternalUpdate.current = true;
       onChange(editor.getHTML());
     },
     onBlur: () => {
@@ -60,6 +63,10 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ value, onChange, onBlur }) 
   });
 
   useEffect(() => {
+    if (isInternalUpdate.current) {
+      isInternalUpdate.current = false;
+      return;
+    }
     if (editor && value !== editor.getHTML()) {
       editor.commands.setContent(value || '');
     }

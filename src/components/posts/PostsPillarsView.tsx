@@ -149,7 +149,7 @@ const PostsPillarsView: React.FC<PostsPillarsViewProps> = ({
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
-      <div className="flex gap-4 overflow-x-auto pb-4 min-h-[400px]">
+      <div className="flex gap-4 overflow-x-auto pb-4" style={{ height: 'calc(100vh - 220px)' }}>
         {allPillars.map(pillar => {
           const columnPosts = posts.filter(p => p.pillar === pillar);
           return (
@@ -229,20 +229,20 @@ const PillarColumn: React.FC<PillarColumnProps> = ({ pillar, posts, allPosts, on
   return (
     <div
       ref={setNodeRef}
-      className="flex-1 min-w-[240px] flex flex-col rounded-lg transition-all duration-200 self-start"
+      className="flex-1 min-w-[240px] flex flex-col rounded-lg transition-all duration-200 max-h-full"
       style={{
         backgroundColor: showColumnHighlight ? style.bg : `${style.bg}60`,
         border: showColumnHighlight ? `1px solid ${style.border}` : `1px solid ${style.border}40`,
       }}
     >
       {/* Column header */}
-      <div className="flex items-center gap-2 px-3 py-3">
+      <div className="flex items-center gap-2 px-3 py-3 flex-shrink-0">
         <span className="text-sm font-semibold text-gray-800">{pillar}</span>
       </div>
 
-      {/* Cards */}
+      {/* Cards — scrollable */}
       <SortableContext items={posts.map(p => p.id)} strategy={verticalListSortingStrategy}>
-        <div className="px-2 pb-2 min-h-[40px]">
+        <div className="px-2 pb-2 min-h-[40px] flex-1 overflow-y-auto scrollbar-thin">
           {posts.length === 0 && !addingIdea && (
             <p className="text-xs text-gray-300 text-center py-6 italic">Nothing here yet</p>
           )}
@@ -265,7 +265,7 @@ const PillarColumn: React.FC<PillarColumnProps> = ({ pillar, posts, allPosts, on
       </SortableContext>
 
       {/* Add idea */}
-      <div className="px-2 pb-2">
+      <div className="px-2 pb-2 flex-shrink-0">
         {addingIdea ? (
           <div className="rounded-lg border border-gray-200 bg-white p-2">
             <input
