@@ -65,21 +65,25 @@ const PostCard: React.FC<PostCardProps> = ({ post, variant, onClick, allPosts = 
             {post.format || ''}
             <PlatformIconsDisplay platforms={post.platforms} size={9} />
           </span>
-          <span className="flex items-center gap-0.5 text-[9px] text-gray-400 flex-shrink-0 max-w-[55%] truncate">
+          <span className="flex items-center gap-0.5 text-[9px] text-gray-400 flex-shrink-0">
             <StatusIcon status={post.status} className="w-2 h-2" style={{ color: statusColor.dot }} />
             {post.status === 'Ready to shoot' && post.sentToShoots ? 'Shoot in progress' : post.status === 'Edited' && post.sent_to_schedule ? 'Sent to schedule' : post.status}
             {post.status === 'Ready to shoot' && onSendToShoots && !post.sentToShoots && (
-              <div className="relative group/arrow ml-0.5">
-                <button
-                  onClick={e => { e.stopPropagation(); onSendToShoots(post.id); }}
-                  className="flex items-center justify-center w-3.5 h-3.5 rounded-full bg-[#612A4F]/8 hover:bg-[#612A4F]/20 transition-colors"
-                >
-                  <ArrowRight size={7} className="text-[#612A4F]" />
-                </button>
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-1.5 py-0.5 rounded bg-gray-700 text-white text-[10px] font-medium whitespace-nowrap opacity-0 group-hover/arrow:opacity-100 transition-opacity duration-100 pointer-events-none z-50">
-                  Plan the shoot
-                </div>
-              </div>
+              <TooltipProvider delayDuration={100}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={e => { e.stopPropagation(); onSendToShoots(post.id); }}
+                      className="ml-0.5 flex items-center justify-center w-3.5 h-3.5 rounded-full bg-[#612A4F]/8 hover:bg-[#612A4F]/20 transition-colors"
+                    >
+                      <ArrowRight size={7} className="text-[#612A4F]" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="bg-gray-700 text-white text-[10px] font-medium px-1.5 py-0.5 z-[9999]">
+                    Plan the shoot
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             )}
             {post.status === 'Edited' && onSendToSchedule && !post.sent_to_schedule && (
               <span
