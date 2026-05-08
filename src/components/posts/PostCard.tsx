@@ -34,6 +34,15 @@ const PostCard: React.FC<PostCardProps> = ({ post, variant, onClick, allPosts = 
         whileTap={{ scale: 0.98 }}
         transition={{ duration: 0.15 }}
       >
+        <div className="absolute top-1 right-1 z-10">
+          <PostContextMenu
+            onExpand={() => onClick(post)}
+            onDuplicate={() => onDuplicate?.(post.id)}
+            onDelete={() => onDelete?.(post.id)}
+            iconSize="w-3 h-3"
+            triggerClass="opacity-0 group-hover/card:opacity-100 p-0.5 rounded text-gray-400 hover:text-gray-600 hover:bg-black/5 transition-all duration-150"
+          />
+        </div>
         <div className="flex items-start gap-1.5">
           {post.thumbnail_url ? (
             <motion.img
@@ -43,28 +52,17 @@ const PostCard: React.FC<PostCardProps> = ({ post, variant, onClick, allPosts = 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.25, ease: 'easeOut' }}
-              className="w-6 h-6 rounded-sm object-cover flex-shrink-0 mt-0.5"
+              className="w-4 h-4 rounded-sm object-cover flex-shrink-0 mt-0.5"
             />
-          ) : (
-            <div className="w-6 h-6 rounded-sm bg-gray-100/50 flex items-center justify-center flex-shrink-0 mt-0.5">
-              <ImageIcon className="w-2.5 h-2.5 text-gray-300" />
-            </div>
-          )}
+          ) : null}
           <p className="text-[11px] font-medium text-gray-800 line-clamp-2 flex-1">{post.title}</p>
-          <PostContextMenu
-            onExpand={() => onClick(post)}
-            onDuplicate={() => onDuplicate?.(post.id)}
-            onDelete={() => onDelete?.(post.id)}
-            iconSize="w-3 h-3"
-            triggerClass="opacity-0 group-hover/card:opacity-100 p-0.5 rounded text-gray-400 hover:text-gray-600 hover:bg-black/5 transition-all duration-150 flex-shrink-0"
-          />
         </div>
-        <div className="flex items-center justify-between">
-          <span className="flex items-center gap-1 text-[9px] text-gray-500 flex-shrink-0">
+        <div className="flex items-center justify-between overflow-hidden">
+          <span className="flex items-center gap-1 text-[9px] text-gray-500 min-w-0 flex-shrink truncate">
             {post.format || ''}
             <PlatformIconsDisplay platforms={post.platforms} size={9} />
           </span>
-          <span className="flex items-center gap-0.5 text-[9px] text-gray-400 flex-shrink-0">
+          <span className="flex items-center gap-0.5 text-[9px] text-gray-400 flex-shrink-0 max-w-[55%] truncate">
             <StatusIcon status={post.status} className="w-2 h-2" style={{ color: statusColor.dot }} />
             {post.status === 'Ready to shoot' && post.sentToShoots ? 'Shoot in progress' : post.status === 'Edited' && post.sent_to_schedule ? 'Sent to schedule' : post.status}
             {post.status === 'Ready to shoot' && onSendToShoots && !post.sentToShoots && (

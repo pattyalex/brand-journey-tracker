@@ -201,7 +201,7 @@ const PostsCalendarView: React.FC<PostsCalendarViewProps> = ({
                   ))}
                 </select>
               </div>
-              <div className="overflow-y-auto p-2 space-y-3" style={{ maxHeight: 'calc(100vh - 280px)' }}>
+              <div className="overflow-y-auto p-2 space-y-3" style={{ maxHeight: 'calc(100vh - 180px)' }}>
                 {unscheduledByPillar.length > 0 ? (
                   unscheduledByPillar.map(({ pillar, posts: pillarPosts }) => {
                     const style = getPillarStyle(pillar);
@@ -244,7 +244,7 @@ const PostsCalendarView: React.FC<PostsCalendarViewProps> = ({
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="text-sm font-semibold text-gray-700">Rough Planning</h2>
-              <p className="text-[10px] text-gray-400 mt-0.5">Use this timeline to sketch out your posting order. It's a planning tool, not a final calendar.</p>
+              <p className="text-xs text-gray-400 mt-0.5">Use this timeline to sketch out your posting order. It's a planning tool, not a final calendar.</p>
             </div>
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-0.5">
@@ -384,18 +384,11 @@ const DraggableSidebarCard: React.FC<{
       {...attributes}
       {...listeners}
       onClick={() => onClick(post)}
-      className="px-2 py-1.5 rounded-md cursor-grab active:cursor-grabbing hover:shadow-sm transition-all duration-150 group/card"
+      className="px-2 py-1.5 rounded-md cursor-grab active:cursor-grabbing hover:shadow-sm transition-all duration-150 group/card overflow-hidden"
       style={{ backgroundColor: pillarStyle.bg }}
     >
-      <div className="flex items-start gap-1.5">
-        {post.thumbnail_url ? (
-          <img src={post.thumbnail_url} alt="" className="w-6 h-6 rounded-sm object-cover flex-shrink-0" />
-        ) : (
-          <div className="w-6 h-6 rounded-sm bg-gray-100/50 flex items-center justify-center flex-shrink-0">
-            <ImageIcon className="w-2.5 h-2.5 text-gray-300" />
-          </div>
-        )}
-        <p className="text-[11px] font-medium text-gray-800 truncate flex-1">{post.title}</p>
+      <div className="flex items-start justify-between gap-1">
+        <p className="text-[11px] font-medium text-gray-800 line-clamp-2">{post.title}</p>
         <PostContextMenu
           onExpand={() => onClick(post)}
           onDuplicate={() => onDuplicate(post.id)}
@@ -404,14 +397,14 @@ const DraggableSidebarCard: React.FC<{
           triggerClass="opacity-0 group-hover/card:opacity-100 p-0.5 rounded text-gray-400 hover:text-gray-600 hover:bg-black/5 transition-all duration-150 flex-shrink-0"
         />
       </div>
-      <div className="flex items-center justify-between mt-0.5">
-        <div className="flex items-center gap-1.5">
-          <span className="text-[9px] text-gray-400">{post.format || 'No format'}</span>
+      <div className="flex items-center justify-between mt-0.5 overflow-hidden">
+        <div className="flex items-center gap-1.5 min-w-0 flex-shrink">
+          <span className="text-[9px] text-gray-400 truncate">{post.format || 'No format'}</span>
           <PlatformIconsDisplay platforms={post.platforms} size={9} />
         </div>
-        <span className="flex items-center gap-0.5 text-[9px] text-gray-400">
-          <StatusIcon status={post.status} className="w-2 h-2" style={{ color: STATUS_COLORS[post.status]?.dot }} />
-          {post.status === 'Ready to shoot' && post.sentToShoots ? 'Shoot in progress' : post.status === 'Edited' && post.sent_to_schedule ? 'Sent to schedule' : post.status}
+        <span className="flex items-center gap-0.5 text-[9px] text-gray-400 flex-shrink-0 truncate max-w-[50%]">
+          <StatusIcon status={post.status} className="w-2 h-2 flex-shrink-0" style={{ color: STATUS_COLORS[post.status]?.dot }} />
+          <span className="truncate">{post.status === 'Ready to shoot' && post.sentToShoots ? 'Shoot in progress' : post.status === 'Edited' && post.sent_to_schedule ? 'Sent to schedule' : post.status}</span>
           {post.status === 'Ready to shoot' && onSendToShoots && !post.sentToShoots && (
             <TooltipProvider>
               <Tooltip>
@@ -498,7 +491,7 @@ const CalendarCell: React.FC<CalendarCellProps> = ({
       onClick={() => { if (posts.length === 0) onClickEmpty(); }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="border-r border-b border-gray-100 min-h-[105px] p-1 cursor-pointer transition-colors duration-150"
+      className="border-r border-b border-gray-100 min-h-[105px] p-1 cursor-pointer transition-colors duration-150 overflow-hidden"
       style={{
         backgroundColor: bg,
         outline: isOver ? '1px solid rgba(0, 0, 0, 0.15)' : 'none',
