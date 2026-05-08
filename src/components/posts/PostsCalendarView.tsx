@@ -1,8 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, LayoutList, ImageIcon, ArrowRight } from 'lucide-react';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 import PostContextMenu from './PostContextMenu';
+import TimePickerPopover from '@/components/schedule/TimePickerPopover';
+import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 import {
   DndContext,
   DragOverlay,
@@ -84,12 +87,33 @@ const PostsCalendarView: React.FC<PostsCalendarViewProps> = ({
   onCreateOnDate,
   onSwitchToList,
 }) => {
+  const navigate = useNavigate();
   const today = new Date();
   const [viewYear, setViewYear] = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
   const [activeId, setActiveId] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [sidebarPillarFilter, setSidebarPillarFilter] = useState<string>('all');
+
+  const [commitPostId, setCommitPostId] = useState<string | null>(null);
+  const commitPost = commitPostId ? allPosts.find(p => p.id === commitPostId) : null;
+
+  const handleCommitToDate = useCallback((postId: string) => {
+    setCommitPostId(postId);
+  }, []);
+
+  const handleCommitConfirm = useCallback((time: string) => {
+    if (commitPostId) {
+      onUpdatePost(commitPostId, { scheduled_time: time, sent_to_schedule: true });
+      toast.success('Post scheduled on content calendar', {
+        action: {
+          label: 'Go to Schedule Page',
+          onClick: () => navigate('/schedule'),
+        },
+      });
+    }
+    setCommitPostId(null);
+  }, [commitPostId, onUpdatePost, navigate]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
@@ -168,6 +192,7 @@ const PostsCalendarView: React.FC<PostsCalendarViewProps> = ({
   };
 
   return (
+    <>
     <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       <div className="flex gap-4">
         {/* Unplanned sidebar */}
@@ -289,6 +314,7 @@ const PostsCalendarView: React.FC<PostsCalendarViewProps> = ({
                 onDuplicatePost={onDuplicatePost}
                 onSendToShoots={onSendToShoots}
                 onSendToSchedule={onSendToSchedule}
+                onCommitToDate={handleCommitToDate}
                 onClickEmpty={() => onCreateOnDate(date)}
               />
             ))}
@@ -304,6 +330,15 @@ const PostsCalendarView: React.FC<PostsCalendarViewProps> = ({
         )}
       </DragOverlay>
     </DndContext>
+
+    <TimePickerPopover
+      open={!!commitPostId}
+      date={commitPost?.scheduledDate || formatDateKey(viewYear, viewMonth, 1)}
+      defaultTime={commitPost?.scheduled_time}
+      onConfirm={handleCommitConfirm}
+      onCancel={() => setCommitPostId(null)}
+    />
+  </>
   );
 };
 
@@ -384,7 +419,7 @@ const DraggableSidebarCard: React.FC<{
       {...attributes}
       {...listeners}
       onClick={() => onClick(post)}
-      className="px-2 py-1.5 rounded-md cursor-grab active:cursor-grabbing hover:shadow-sm transition-all duration-150 group/card overflow-hidden"
+      className="px-2 py-1.5 rounded-md cursor-grab active:cursor-grabbing hover:shadow-sm transition-all duration-150 group/card"
       style={{ backgroundColor: pillarStyle.bg }}
     >
       <div className="flex items-start justify-between gap-1">
@@ -397,8 +432,8 @@ const DraggableSidebarCard: React.FC<{
           triggerClass="opacity-0 group-hover/card:opacity-100 p-0.5 rounded text-gray-400 hover:text-gray-600 hover:bg-black/5 transition-all duration-150 flex-shrink-0"
         />
       </div>
-      <div className="flex items-center justify-between mt-0.5 overflow-hidden">
-        <div className="flex items-center gap-1.5 min-w-0 flex-shrink">
+      <div className="flex items-center justify-between mt-0.5">
+        <div className="flex items-center gap-1.5 min-w-0 flex-shrink overflow-hidden">
           <span className="text-[9px] text-gray-400 truncate">{post.format || 'No format'}</span>
           <PlatformIconsDisplay platforms={post.platforms} size={9} />
         </div>
@@ -423,21 +458,29 @@ const DraggableSidebarCard: React.FC<{
             </TooltipProvider>
           )}
           {post.status === 'Edited' && onSendToSchedule && !post.sent_to_schedule && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={e => { e.stopPropagation(); onSendToSchedule(post.id); }}
-                    className="ml-0.5 flex items-center justify-center w-3.5 h-3.5 rounded-full bg-[#612A4F]/8 hover:bg-[#612A4F]/20 transition-colors"
-                  >
-                    <ArrowRight size={7} className="text-[#612A4F]" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="top" className="bg-gray-500 text-white text-[10px] font-medium px-1.5 py-0.5">
-                  Schedule this post
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <span
+              onPointerDown={e => e.stopPropagation()}
+              onPointerMove={e => e.stopPropagation()}
+              onMouseDown={e => e.stopPropagation()}
+              onTouchStart={e => e.stopPropagation()}
+              style={{ touchAction: 'auto' }}
+            >
+              <TooltipProvider delayDuration={100}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={e => { e.stopPropagation(); onSendToSchedule(post.id); }}
+                      className="ml-0.5 flex items-center justify-center w-[18px] h-[18px] rounded-full bg-[#612A4F]/8 hover:bg-[#612A4F]/20 transition-colors"
+                    >
+                      <ArrowRight size={7} className="text-[#612A4F]" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="bg-gray-700 text-white text-[10px] font-medium px-1.5 py-0.5">
+                    Send to schedule
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </span>
           )}
         </span>
       </div>
@@ -458,6 +501,7 @@ interface CalendarCellProps {
   onDuplicatePost: (id: string) => void;
   onSendToShoots?: (id: string) => void;
   onSendToSchedule?: (id: string) => void;
+  onCommitToDate?: (id: string) => void;
   onClickEmpty: () => void;
 }
 
@@ -472,6 +516,7 @@ const CalendarCell: React.FC<CalendarCellProps> = ({
   onDuplicatePost,
   onSendToShoots,
   onSendToSchedule,
+  onCommitToDate,
   onClickEmpty,
 }) => {
   const { setNodeRef, isOver } = useDroppable({ id: date });
@@ -491,7 +536,7 @@ const CalendarCell: React.FC<CalendarCellProps> = ({
       onClick={() => { if (posts.length === 0) onClickEmpty(); }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="border-r border-b border-gray-100 min-h-[105px] p-1 cursor-pointer transition-colors duration-150 overflow-hidden"
+      className="border-r border-b border-gray-100 min-h-[105px] p-1 cursor-pointer transition-colors duration-150"
       style={{
         backgroundColor: bg,
         outline: isOver ? '1px solid rgba(0, 0, 0, 0.15)' : 'none',
@@ -513,7 +558,7 @@ const CalendarCell: React.FC<CalendarCellProps> = ({
       </div>
       <div className="space-y-0.5">
         {posts.map(post => (
-          <DraggableCalendarCard key={post.id} post={post} onClick={onClickPost} onDelete={onDeletePost} onDuplicate={onDuplicatePost} onSendToShoots={onSendToShoots} onSendToSchedule={onSendToSchedule} />
+          <DraggableCalendarCard key={post.id} post={post} onClick={onClickPost} onDelete={onDeletePost} onDuplicate={onDuplicatePost} onSendToShoots={onSendToShoots} onSendToSchedule={onSendToSchedule} onCommitToDate={onCommitToDate} />
         ))}
       </div>
     </div>
@@ -529,7 +574,8 @@ const DraggableCalendarCard: React.FC<{
   onDuplicate: (id: string) => void;
   onSendToShoots?: (id: string) => void;
   onSendToSchedule?: (id: string) => void;
-}> = ({ post, onClick, onDelete, onDuplicate, onSendToShoots, onSendToSchedule }) => {
+  onCommitToDate?: (id: string) => void;
+}> = ({ post, onClick, onDelete, onDuplicate, onSendToShoots, onSendToSchedule, onCommitToDate }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: post.id });
 
   return (
@@ -542,7 +588,7 @@ const DraggableCalendarCard: React.FC<{
       {...attributes}
       {...listeners}
     >
-      <PostCard post={post} variant="calendar" onClick={onClick} onDelete={onDelete} onDuplicate={onDuplicate} onSendToShoots={onSendToShoots} onSendToSchedule={onSendToSchedule} />
+      <PostCard post={post} variant="calendar" onClick={onClick} onDelete={onDelete} onDuplicate={onDuplicate} onSendToShoots={onSendToShoots} onSendToSchedule={onSendToSchedule} onCommitToDate={onCommitToDate} />
     </div>
   );
 };

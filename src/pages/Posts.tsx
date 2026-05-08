@@ -339,7 +339,7 @@ const Posts: React.FC = () => {
     toast.success('Added to Shoots', {
       description: 'Plan your shoot day on the Shoots page.',
       action: {
-        label: 'Go to Shoots',
+        label: 'Go to Shoots Page',
         onClick: () => navigate('/shoots'),
       },
     });
@@ -351,8 +351,13 @@ const Posts: React.FC = () => {
     setPosts(prev => prev.map(p => p.id === id ? { ...p, sent_to_schedule: true } : p));
     setSelectedPost(prev => prev && prev.id === id ? { ...prev, sent_to_schedule: true } : prev);
     postsApi.updatePost(id, { sent_to_schedule: true }).catch(console.error);
-    toast.success('Sent to Schedule');
-  }, [posts]);
+    toast.success('Sent to Schedule', {
+      action: {
+        label: 'Go to Schedule Page',
+        onClick: () => navigate('/schedule'),
+      },
+    });
+  }, [posts, navigate]);
 
   const handleSelectToggle = useCallback((id: string, shiftKey: boolean) => {
     setSelectedIds(prev => {

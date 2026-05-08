@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { MoreVertical, Maximize2, Copy, Trash2 } from 'lucide-react';
+import { MoreVertical, Maximize2, Copy, Trash2, CalendarCheck } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 interface PostContextMenuProps {
   onExpand: () => void;
   onDuplicate: () => void;
   onDelete: () => void;
+  onCommitToDate?: () => void;
   iconSize?: string;
   triggerClass?: string;
 }
@@ -14,6 +15,7 @@ const PostContextMenu: React.FC<PostContextMenuProps> = ({
   onExpand,
   onDuplicate,
   onDelete,
+  onCommitToDate,
   iconSize = 'w-3.5 h-3.5',
   triggerClass = 'opacity-0 group-hover:opacity-100 p-0.5 rounded text-gray-300 hover:text-gray-500 hover:bg-gray-100 transition-all duration-150 flex-shrink-0',
 }) => {
@@ -36,7 +38,7 @@ const PostContextMenu: React.FC<PostContextMenuProps> = ({
         </button>
       </PopoverTrigger>
       <PopoverContent
-        className="p-1 bg-white rounded-lg border border-gray-200 shadow-lg w-[140px] z-[10010]"
+        className="p-1 bg-white rounded-lg border border-gray-200 shadow-lg w-auto min-w-[140px] z-[10010]"
         align="end"
         sideOffset={4}
         onOpenAutoFocus={e => e.preventDefault()}
@@ -55,6 +57,15 @@ const PostContextMenu: React.FC<PostContextMenuProps> = ({
           <Copy className="w-3.5 h-3.5 text-gray-400" />
           Duplicate
         </button>
+        {onCommitToDate && (
+          <button
+            onClick={handle(onCommitToDate)}
+            className="w-full text-left px-2.5 py-1.5 text-[13px] text-gray-700 hover:bg-gray-50 rounded flex items-center gap-2 transition-colors duration-100"
+          >
+            <CalendarCheck className="w-3.5 h-3.5 text-gray-400" />
+            Schedule for this date
+          </button>
+        )}
         <button
           onClick={handle(onDelete)}
           className="w-full text-left px-2.5 py-1.5 text-[13px] text-red-500 hover:bg-red-50 rounded flex items-center gap-2 transition-colors duration-100"
