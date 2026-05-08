@@ -149,7 +149,7 @@ const PostsPillarsView: React.FC<PostsPillarsViewProps> = ({
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
-      <div className="flex gap-4 overflow-x-auto pb-4" style={{ height: 'calc(100vh - 220px)' }}>
+      <div className="flex gap-4 overflow-x-auto pb-4" style={{ height: 'calc(100vh - 132px)' }}>
         {allPillars.map(pillar => {
           const columnPosts = posts.filter(p => p.pillar === pillar);
           return (
