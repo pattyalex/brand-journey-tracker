@@ -8,7 +8,7 @@ import { Shoot } from '@/types/shoots';
 import CreateShootModal from '@/components/shoots/CreateShootModal';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Post, PostStatus, DEFAULT_PILLARS, DEFAULT_FORMATS, POST_STATUSES, STATUS_COLORS } from '@/types/posts';
+import { Post, PostStatus, DEFAULT_PILLARS, DEFAULT_FORMATS, POST_STATUSES, STATUS_COLORS, getPillarStyle, setPillarStyle } from '@/types/posts';
 import { StatusIcon } from '@/components/posts/StatusDropdown';
 import { seedPosts } from '@/data/postsSeedData';
 import { getJSON, setJSON } from '@/lib/storage';
@@ -465,6 +465,9 @@ const Posts: React.FC = () => {
   };
 
   const handleRenamePillar = (oldName: string, newName: string) => {
+    // Preserve the pillar's color when renaming
+    const oldStyle = getPillarStyle(oldName);
+    setPillarStyle(newName, oldStyle);
     setPillars(prev => prev.map(p => p === oldName ? newName : p));
     setPosts(prev => {
       const updated = prev.map(p => p.pillar === oldName ? { ...p, pillar: newName } : p);

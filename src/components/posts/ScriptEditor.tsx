@@ -56,7 +56,7 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ value, onChange, onBlur }) 
     },
     editorProps: {
       attributes: {
-        class: 'outline-none text-sm text-gray-700 leading-relaxed min-h-[6rem] max-h-[500px] overflow-y-auto px-3 py-2',
+        class: 'outline-none text-sm text-gray-700 leading-relaxed min-h-[6rem] max-h-[500px] overflow-y-auto px-3 py-2 bg-gray-50',
         spellCheck: 'true',
       },
     },
