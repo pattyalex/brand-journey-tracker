@@ -274,7 +274,14 @@ const Posts: React.FC = () => {
     setPosts(prev => {
       const reorderedIds = new Set(reordered.map(p => p.id));
       const rest = prev.filter(p => !reorderedIds.has(p.id));
-      return [...reordered, ...rest];
+      const merged = [...reordered, ...rest];
+      // Persist order to Supabase
+      merged.forEach((p, i) => {
+        if (p.order !== i) {
+          postsApi.updatePost(p.id, { order: i }).catch(console.error);
+        }
+      });
+      return merged.map((p, i) => ({ ...p, order: i }));
     });
   }, []);
 
