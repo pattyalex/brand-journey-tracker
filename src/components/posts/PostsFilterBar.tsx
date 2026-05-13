@@ -69,7 +69,7 @@ const PostsFilterBar: React.FC<PostsFilterBarProps> = ({
 
   const handleAddPillar = () => {
     const name = newPillarName.trim();
-    if (name && !pillars.some(p => p.toLowerCase() === name.toLowerCase())) {
+    if (name) {
       onAddPillar(name);
     }
     setAddingPillar(false);

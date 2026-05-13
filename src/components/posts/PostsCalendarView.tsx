@@ -186,6 +186,9 @@ const PostsCalendarView: React.FC<PostsCalendarViewProps> = ({
     const targetId = over.id as string;
     if (targetId === 'all-posts-sidebar') {
       onUpdatePost(postId, { scheduledDate: undefined });
+    } else if (targetId.startsWith('sidebar-pillar-')) {
+      const pillar = targetId.replace('sidebar-pillar-', '');
+      onUpdatePost(postId, { scheduledDate: undefined, pillar });
     } else if (/^\d{4}-\d{2}-\d{2}$/.test(targetId)) {
       onUpdatePost(postId, { scheduledDate: targetId });
     }
@@ -228,23 +231,13 @@ const PostsCalendarView: React.FC<PostsCalendarViewProps> = ({
               </div>
               <div className="overflow-y-auto p-2 space-y-3" style={{ maxHeight: 'calc(100vh - 180px)' }}>
                 {unscheduledByPillar.length > 0 ? (
-                  unscheduledByPillar.map(({ pillar, posts: pillarPosts }) => {
-                    const style = getPillarStyle(pillar);
-                    return (
-                      <div key={pillar}>
-                        <div className="flex items-center gap-1.5 px-1 py-1">
-                          <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: style.text }}>
-                            {pillar}
-                          </span>
-                        </div>
-                        <div className="space-y-1">
-                          {pillarPosts.map(post => (
-                            <DraggableSidebarCard key={post.id} post={post} onClick={onClickPost} onDelete={onDeletePost} onDuplicate={onDuplicatePost} onSendToShoots={onSendToShoots} onSendToSchedule={onSendToSchedule} />
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  })
+                  unscheduledByPillar.map(({ pillar, posts: pillarPosts }) => (
+                    <DroppablePillarSection key={pillar} pillar={pillar}>
+                      {pillarPosts.map(post => (
+                        <DraggableSidebarCard key={post.id} post={post} onClick={onClickPost} onDelete={onDeletePost} onDuplicate={onDuplicatePost} onSendToShoots={onSendToShoots} onSendToSchedule={onSendToSchedule} />
+                      ))}
+                    </DroppablePillarSection>
+                  ))
                 ) : (
                   <p className="text-[11px] text-gray-400 text-center py-6">
                     Drag posts here to remove from timeline
@@ -356,6 +349,34 @@ const DroppableSidebar: React.FC<{ children: React.ReactNode }> = ({ children })
       }}
     >
       {children}
+    </div>
+  );
+};
+
+// ── Droppable Pillar Section ──────────────────────────────────
+
+const DroppablePillarSection: React.FC<{ pillar: string; children: React.ReactNode }> = ({ pillar, children }) => {
+  const { setNodeRef, isOver } = useDroppable({ id: `sidebar-pillar-${pillar}` });
+  const style = getPillarStyle(pillar);
+
+  return (
+    <div
+      ref={setNodeRef}
+      className="rounded-md transition-colors duration-150 p-1"
+      style={{
+        backgroundColor: isOver ? `${style.bg}` : undefined,
+        outline: isOver ? `2px dashed ${style.border}` : 'none',
+        outlineOffset: '-2px',
+      }}
+    >
+      <div className="flex items-center gap-1.5 px-1 py-1">
+        <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: style.text }}>
+          {pillar}
+        </span>
+      </div>
+      <div className="space-y-1">
+        {children}
+      </div>
     </div>
   );
 };
