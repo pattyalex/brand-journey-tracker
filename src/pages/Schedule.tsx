@@ -242,12 +242,17 @@ const Schedule: React.FC = () => {
       return;
     }
 
-    // Drop on grid cell (from Ready via external drop zone)
+    // Drop on grid cell (from Ready or reorder within grid)
     if (overId.startsWith('grid-ext-')) {
       const cellIndex = parseInt(overId.replace('grid-ext-', ''), 10);
       if (!isNaN(cellIndex)) {
         setGridOrder(prev => {
           const next = [...prev];
+          // Remove from old position if already in grid (reorder)
+          const oldIndex = next.indexOf(draggedId);
+          if (oldIndex !== -1) {
+            next[oldIndex] = null;
+          }
           // Place in target cell if empty, otherwise insert and shift
           if (next[cellIndex] === null) {
             next[cellIndex] = draggedId;
