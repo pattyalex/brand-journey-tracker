@@ -1,24 +1,11 @@
 import React, { useRef, useMemo } from 'react';
-import { motion } from 'framer-motion';
 import { Plus, ImagePlus, Trash2, PanelRight } from 'lucide-react';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { Post } from '@/types/posts';
 import {
-  DndContext,
-  DragOverlay,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragStartEvent,
-  DragEndEvent,
-  closestCenter,
-  useDraggable,
-} from '@dnd-kit/core';
-import {
   SortableContext,
   rectSortingStrategy,
   useSortable,
-  arrayMove,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useDroppable } from '@dnd-kit/core';
@@ -88,33 +75,35 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({
             </div>
           )}
 
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: `repeat(3, ${cellW}px)`,
-            gridAutoRows: `${cellH}px`,
-            gap: '2px',
-            transition: 'all 0.25s ease-out',
-          }}>
-            {gridOrder.map((postId, idx) => {
-              const post = postId ? postsMap.get(postId) || null : null;
-              return (
-                <DraggableGridCell
-                  key={cellIds[idx]}
-                  id={postId || `empty-${idx}`}
-                  index={idx}
-                  postId={postId}
-                  post={post}
-                  onClickPost={onClickPost}
-                  onRemoveFromGrid={onRemoveFromGrid}
-                  onUploadThumbnail={onUploadThumbnail}
-                  onUploadToEmptyCell={onUploadToEmptyCell}
-                  onHover={onHover}
-                  isHovered={postId ? hoveredId === postId : false}
-                  isExternallyDragged={postId ? externalDraggingId === postId : false}
-                />
-              );
-            })}
-          </div>
+          <SortableContext items={cellIds} strategy={rectSortingStrategy}>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: `repeat(3, ${cellW}px)`,
+              gridAutoRows: `${cellH}px`,
+              gap: '2px',
+              transition: 'all 0.25s ease-out',
+            }}>
+              {gridOrder.map((postId, idx) => {
+                const post = postId ? postsMap.get(postId) || null : null;
+                return (
+                  <SortableGridCell
+                    key={cellIds[idx]}
+                    id={cellIds[idx]}
+                    index={idx}
+                    postId={postId}
+                    post={post}
+                    onClickPost={onClickPost}
+                    onRemoveFromGrid={onRemoveFromGrid}
+                    onUploadThumbnail={onUploadThumbnail}
+                    onUploadToEmptyCell={onUploadToEmptyCell}
+                    onHover={onHover}
+                    isHovered={postId ? hoveredId === postId : false}
+                    isExternallyDragged={postId ? externalDraggingId === postId : false}
+                  />
+                );
+              })}
+            </div>
+          </SortableContext>
         </div>
       </div>
     </div>
@@ -141,7 +130,7 @@ const ExternalDropZone: React.FC<{ index: number }> = ({ index }) => {
 
 // ── Draggable Grid Cell ────────────────────────────────────────────
 
-const DraggableGridCell: React.FC<{
+const SortableGridCell: React.FC<{
   id: string;
   index: number;
   postId: string | null;
@@ -171,15 +160,17 @@ const DraggableGridCell: React.FC<{
     attributes,
     listeners,
     transform,
+    transition,
     isDragging,
-  } = useDraggable({
-    id: postId || `empty-${index}`,
+  } = useSortable({
+    id,
     disabled: !post,
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const style: React.CSSProperties = {
-    transform: transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined,
+    transform: CSS.Transform.toString(transform),
+    transition,
     opacity: isDragging ? 0.3 : isExternallyDragged ? 0 : 1,
     zIndex: isDragging ? 50 : 'auto',
   };

@@ -15,7 +15,7 @@ import {
   rectIntersection,
   CollisionDetection,
 } from '@dnd-kit/core';
-// arrayMove used internally by ScheduleGrid
+import { arrayMove } from '@dnd-kit/sortable';
 import { toast } from 'sonner';
 import { Post, PostStatus, DEFAULT_PILLARS, DEFAULT_FORMATS } from '@/types/posts';
 import { getJSON, setJSON } from '@/lib/storage';
@@ -242,13 +242,13 @@ const Schedule: React.FC = () => {
       return;
     }
 
-    // Drop on grid cell (from Ready or reorder within grid)
+    // Drop on grid cell from Ready sidebar (external drop)
     if (overId.startsWith('grid-ext-')) {
       const cellIndex = parseInt(overId.replace('grid-ext-', ''), 10);
       if (!isNaN(cellIndex)) {
         setGridOrder(prev => {
           const next = [...prev];
-          // Remove from old position if already in grid (reorder)
+          // Remove from old position if already in grid
           const oldIndex = next.indexOf(draggedId);
           if (oldIndex !== -1) {
             next[oldIndex] = null;
@@ -266,6 +266,23 @@ const Schedule: React.FC = () => {
           }
           return next;
         });
+        return;
+      }
+    }
+
+    // Grid internal reorder — insert+shift (Planoly-style)
+    const fromIndex = gridOrder.indexOf(draggedId);
+    if (fromIndex !== -1) {
+      // Determine target index from the sortable cell ID
+      let toIndex = -1;
+      const overPostIndex = gridOrder.indexOf(overId);
+      if (overPostIndex !== -1) {
+        toIndex = overPostIndex;
+      } else if (overId.startsWith('empty-')) {
+        toIndex = parseInt(overId.replace('empty-', ''), 10);
+      }
+      if (toIndex !== -1 && toIndex !== fromIndex) {
+        setGridOrder(prev => arrayMove(prev, fromIndex, toIndex));
         return;
       }
     }
@@ -351,13 +368,14 @@ const Schedule: React.FC = () => {
               <ScheduleGrid
                 gridOrder={gridOrder}
                 postsMap={postsMap}
+                onReorder={setGridOrder}
                 onClickPost={setSelectedPost}
                 onRemoveFromGrid={handleRemoveFromGrid}
                 onUploadThumbnail={handleUploadThumbnail}
                 onUploadToEmptyCell={handleUploadToEmptyCell}
                 onHover={setHoveredPostId}
                 hoveredId={hoveredPostId}
-                draggingId={activeId}
+                externalDraggingId={activeId && !gridPostIds.has(activeId) ? activeId : null}
               />
             )}
             {mobileTab === 'Calendar' && (
@@ -447,7 +465,7 @@ const Schedule: React.FC = () => {
                   onUploadToEmptyCell={handleUploadToEmptyCell}
                   onHover={setHoveredPostId}
                   hoveredId={hoveredPostId}
-                  externalDraggingId={activeId}
+                  externalDraggingId={activeId && !gridPostIds.has(activeId) ? activeId : null}
                 />
               </div>
             </div>
