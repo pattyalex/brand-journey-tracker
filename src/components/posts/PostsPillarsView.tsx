@@ -48,18 +48,9 @@ const PostsPillarsView: React.FC<PostsPillarsViewProps> = ({
   onAddPost,
   onReorder,
 }) => {
-  // Merge explicit pillars with any pillar names used by posts
-  const allPillars = useMemo(() => {
-    const seen = new Set(pillars);
-    const result = [...pillars];
-    posts.forEach(p => {
-      if (p.pillar && !seen.has(p.pillar)) {
-        seen.add(p.pillar);
-        result.push(p.pillar);
-      }
-    });
-    return result;
-  }, [pillars, posts]);
+  // Only show columns for defined pillars — don't create ghost columns
+  // from stale pillar values on old posts
+  const allPillars = pillars;
 
   const [activeId, setActiveId] = useState<string | null>(null);
   const [overColumnId, setOverColumnId] = useState<string | null>(null);

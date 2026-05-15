@@ -37,8 +37,7 @@ export async function uploadPostThumbnail(file: File, postId: string): Promise<s
     console.log('[Upload] Success:', urlData.publicUrl);
     return urlData.publicUrl;
   } catch (err) {
-    console.error('[Upload] Failed, falling back to blob URL:', err);
-    // Fallback: local object URL (won't persist across sessions)
-    return URL.createObjectURL(file);
+    console.error('[Upload] Failed:', err);
+    throw err;
   }
 }

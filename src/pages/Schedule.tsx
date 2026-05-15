@@ -150,13 +150,23 @@ const Schedule: React.FC = () => {
   }, []);
 
   const handleUploadThumbnail = useCallback(async (postId: string, file: File) => {
-    const url = await uploadPostThumbnail(file, postId);
-    handleUpdatePost(postId, { thumbnail_url: url });
+    try {
+      const url = await uploadPostThumbnail(file, postId);
+      handleUpdatePost(postId, { thumbnail_url: url });
+    } catch {
+      toast.error('Image upload failed. Please try again.');
+    }
   }, [handleUpdatePost]);
 
   const handleUploadToEmptyCell = useCallback(async (cellIndex: number, file: File) => {
     const newId = Date.now().toString();
-    const url = await uploadPostThumbnail(file, newId);
+    let url: string;
+    try {
+      url = await uploadPostThumbnail(file, newId);
+    } catch {
+      toast.error('Image upload failed. Please try again.');
+      return;
+    }
     const newPost: Post = {
       id: newId,
       title: 'Untitled post',

@@ -1,4 +1,4 @@
-import React, { useRef, useMemo } from 'react';
+import React, { useRef, useMemo, useState } from 'react';
 import { Plus, ImagePlus, Trash2, PanelRight } from 'lucide-react';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { Post } from '@/types/posts';
@@ -167,6 +167,7 @@ const SortableGridCell: React.FC<{
     disabled: !post,
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [imgError, setImgError] = useState(false);
 
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
@@ -211,8 +212,8 @@ const SortableGridCell: React.FC<{
     );
   }
 
-  // Post with no thumbnail
-  if (!post.thumbnail_url) {
+  // Post with no thumbnail (or broken URL)
+  if (!post.thumbnail_url || imgError) {
     return (
       <div
         ref={setNodeRef}
@@ -297,6 +298,7 @@ const SortableGridCell: React.FC<{
             src={post.thumbnail_url}
             alt=""
             className="w-full h-full object-cover"
+            onError={() => setImgError(true)}
           />
           <PopoverTrigger asChild>
             <button
