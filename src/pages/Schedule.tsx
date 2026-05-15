@@ -476,6 +476,8 @@ const Schedule: React.FC = () => {
                   onHover={setHoveredPostId}
                   hoveredId={hoveredPostId}
                   externalDraggingId={activeId && !gridPostIds.has(activeId) ? activeId : null}
+                  onExpand={() => setReadyCollapsed(true)}
+                  onCollapse={() => setReadyCollapsed(false)}
                 />
               </div>
             </div>

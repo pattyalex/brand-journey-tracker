@@ -77,6 +77,8 @@ const Tasks: React.FC = () => {
 
   const [showCompleted, setShowCompleted] = useState(true);
   const [soonCollapsed, setSoonCollapsed] = useState(false);
+  const [soonWidth, setSoonWidth] = useState<number | null>(null);
+  const isDraggingDivider = useRef(false);
   const [viewMode, setViewMode] = useState<TaskViewMode>('day');
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [selectedShoot, setSelectedShoot] = useState<Shoot | null>(null);
@@ -370,6 +372,32 @@ const Tasks: React.FC = () => {
     });
   }, [currentDate]);
 
+  // Divider drag handlers
+  const handleDividerMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    isDraggingDivider.current = true;
+    document.body.style.cursor = 'grabbing';
+    document.body.style.userSelect = 'none';
+
+    const onMouseMove = (ev: MouseEvent) => {
+      if (!isDraggingDivider.current) return;
+      const containerWidth = window.innerWidth - 240; // approximate sidebar nav width
+      const newWidth = Math.max(260, Math.min(containerWidth * 0.5, window.innerWidth - ev.clientX));
+      setSoonWidth(newWidth);
+    };
+
+    const onMouseUp = () => {
+      isDraggingDivider.current = false;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+  }, []);
+
   // Keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -561,16 +589,27 @@ const Tasks: React.FC = () => {
         )}
       </div>
 
+      {/* Draggable divider */}
+      {!soonCollapsed && (
+        <div
+          onMouseDown={handleDividerMouseDown}
+          className="h-full w-[5px] flex-shrink-0 cursor-grab active:cursor-grabbing group relative"
+        >
+          <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-[1px] bg-gray-100 group-hover:bg-[#612A4F]/30 group-active:bg-[#612A4F]/50 transition-colors" />
+        </div>
+      )}
+
       {/* Right: To do soon sidebar — 1/4 width, collapsible */}
       <div
-        className="h-full flex-shrink-0 border-l border-gray-100 transition-all duration-300 ease-out"
+        className="h-full flex-shrink-0 transition-all duration-300 ease-out"
         style={{
-          width: soonCollapsed ? 0 : '22%',
-          minWidth: soonCollapsed ? 0 : 260,
+          width: soonCollapsed ? 0 : (soonWidth ?? '22%'),
+          minWidth: soonCollapsed ? 0 : (soonWidth ? undefined : 260),
           opacity: soonCollapsed ? 0 : 1,
           overflow: soonCollapsed ? 'hidden' : 'auto',
           scrollbarWidth: 'thin',
           scrollbarColor: 'transparent transparent',
+          transition: isDraggingDivider.current ? 'none' : undefined,
         }}
         onMouseEnter={e => { e.currentTarget.style.scrollbarColor = 'rgba(0,0,0,0.15) transparent'; }}
         onMouseLeave={e => { e.currentTarget.style.scrollbarColor = 'transparent transparent'; }}
@@ -593,10 +632,10 @@ const Tasks: React.FC = () => {
       {/* Collapse/expand toggle */}
       <div
         className="absolute top-[78px] group transition-all duration-300 ease-out z-20"
-        style={{ right: soonCollapsed ? 12 : 'calc(22% - 12px)' }}
+        style={{ right: soonCollapsed ? 12 : soonWidth ? `${soonWidth - 7}px` : 'calc(22% - 12px)' }}
       >
         <button
-          onClick={() => setSoonCollapsed(prev => !prev)}
+          onClick={() => { setSoonCollapsed(prev => !prev); setSoonWidth(null); }}
           className="w-[22px] h-[22px] flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-400 hover:text-gray-600 hover:border-gray-300 shadow-sm transition-colors"
         >
           {soonCollapsed ? <ChevronLeft className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}

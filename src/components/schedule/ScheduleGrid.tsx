@@ -1,5 +1,5 @@
 import React, { useRef, useMemo, useState } from 'react';
-import { Plus, ImagePlus, Trash2, PanelRight } from 'lucide-react';
+import { Plus, ImagePlus, Trash2, PanelRight, Maximize2, Minimize2 } from 'lucide-react';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { Post } from '@/types/posts';
 import {
@@ -22,6 +22,8 @@ interface ScheduleGridProps {
   onHover: (id: string | null) => void;
   hoveredId: string | null;
   externalDraggingId: string | null;
+  onExpand?: () => void;
+  onCollapse?: () => void;
 }
 
 const ScheduleGrid: React.FC<ScheduleGridProps> = ({
@@ -36,6 +38,8 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({
   onHover,
   hoveredId,
   externalDraggingId,
+  onExpand,
+  onCollapse,
 }) => {
   const filledCount = gridOrder.filter(Boolean).length;
   const cellW = expanded ? 104 : 84;
@@ -53,6 +57,24 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({
         <span className="text-lg font-semibold text-gray-900">Grid</span>
         {filledCount === 0 && (
           <span className="text-[11px] text-gray-400">Preview how your content looks before you schedule it</span>
+        )}
+        {!expanded && onExpand && (
+          <button
+            onClick={onExpand}
+            className="ml-auto p-1 rounded-lg hover:bg-gray-100 transition-colors"
+            title="Expand grid"
+          >
+            <Maximize2 className="w-3.5 h-3.5 text-gray-400" />
+          </button>
+        )}
+        {expanded && onCollapse && (
+          <button
+            onClick={onCollapse}
+            className="ml-auto p-1 rounded-lg hover:bg-gray-100 transition-colors"
+            title="Collapse grid"
+          >
+            <Minimize2 className="w-3.5 h-3.5 text-gray-400" />
+          </button>
         )}
       </div>
       <div className="flex-1 overflow-y-auto p-3 flex justify-center">
