@@ -65,7 +65,14 @@ const HOOK_DATA = {
           "X simple steps to master [skill]",
           "The beginner's guide to [topic]",
           "Learn how to [task] like a pro",
-          "The easiest way to [solve problem]"
+          "The easiest way to [solve problem]",
+          "The step-by-step process I use to [specific outcome].",
+          "How I went from [starting point] to [result] using this method.",
+          "A no-fluff guide to [skill] for people who hate tutorials.",
+          "How to fix [common problem] in under 10 minutes.",
+          "The framework I use every time I need to [task].",
+          "How to [ambitious goal] even if you're starting from scratch.",
+          "Everything you need to know about [topic] in one video."
         ]
       },
       {
@@ -75,7 +82,14 @@ const HOOK_DATA = {
           "The truth about [common misconception]",
           "Why everything you know about [topic] is wrong",
           "The hidden science behind [everyday thing]",
-          "What they don't tell you about [industry topic]"
+          "What they don't tell you about [industry topic]",
+          "The one thing about [topic] that changes everything once you understand it.",
+          "Most people have no idea this exists — and it solves [problem].",
+          "The gap between what you think you know and what's actually true about [topic].",
+          "I was wrong about [topic] for years. Here's what I finally learned.",
+          "The question nobody asks about [topic] that matters more than anything.",
+          "What [X]% of people misunderstand about [topic].",
+          "The real reason [common thing] works — and it's not what you've been told."
         ]
       },
       {
@@ -84,7 +98,14 @@ const HOOK_DATA = {
           "Struggling with [X]? Here's the fix!",
           "I stopped doing this ONE thing, and my life changed!",
           "This is why [X] isn't working for you (and how to fix it).",
-          "You don't need [X] to [Y]."
+          "You don't need [X] to [Y].",
+          "The real reason [problem] keeps happening and how to stop it for good.",
+          "I wasted [time/money] on [X] before I found this solution.",
+          "If [problem] keeps coming back, you're treating the symptom, not the cause.",
+          "The fix for [problem] is simpler than you think — here's proof.",
+          "Everyone overcomplicates [X]. Here's the straightforward answer.",
+          "What to do when [X] fails and nothing seems to work.",
+          "The one adjustment that solved [problem] after I tried everything else."
         ]
       },
       {
@@ -95,7 +116,14 @@ const HOOK_DATA = {
           "This tiny hack will change your life.",
           "3 easy ways to level up your wardrobe without spending a dime.",
           "The quickest way to get glowing skin every day.",
-          "These 5 beauty products will save you time and money."
+          "These 5 beauty products will save you time and money.",
+          "The shortcut nobody told me about until last year.",
+          "One small change that made [routine] twice as fast.",
+          "The lazy person's guide to [desired result].",
+          "This 2-minute trick replaced my entire [routine].",
+          "The hack that sounds too simple to work — but it does every time.",
+          "Save this for the next time you're stuck on [problem].",
+          "The cheat code for [task] that I use on repeat."
         ]
       },
       {
@@ -109,7 +137,14 @@ const HOOK_DATA = {
           "5 mistakes you're making with [X].",
           "The top 10 [X] of all time!",
           "Do these 3 things if you want to [desired outcome].",
-          "I tried 7 different methods to [X]—here's what actually worked."
+          "I tried 7 different methods to [X]—here's what actually worked.",
+          "The only [X] checklist you'll ever need.",
+          "7 signs you're ready to [next level action].",
+          "The [X]-step morning routine that changed my productivity.",
+          "4 red flags that mean [something is wrong with X].",
+          "6 free tools that replaced everything I was paying for.",
+          "The 3 rules I follow every single [day/week] without exception.",
+          "8 things successful [role] do before [time of day]."
         ]
       },
       {
@@ -117,7 +152,14 @@ const HOOK_DATA = {
         hooks: [
           "Let me take you behind the scenes of [X].",
           "This is how I REALLY [do X].",
-          "What [industry insiders] don't want you to know!"
+          "What [industry insiders] don't want you to know!",
+          "A day in my life as a [profession] — the unfiltered version.",
+          "Here's what my process actually looks like before I clean it up.",
+          "The messy middle of [project/launch] nobody shows you.",
+          "What really goes into making [content/product] from start to finish.",
+          "I recorded my entire [workflow] so you can see exactly what I do.",
+          "The part of my job I never talk about — until now.",
+          "This is what [X] looks like before the final version."
         ]
       },
       {
@@ -128,7 +170,14 @@ const HOOK_DATA = {
           "Think you're doing your skincare right? You're probably wrong.",
           "I used to believe this myth until I learned the truth.",
           "This 'fashion tip' is actually a huge mistake!",
-          "Don't fall for this [beauty/fashion] myth!"
+          "Don't fall for this [beauty/fashion] myth!",
+          "The [X] advice that's actually doing more harm than good.",
+          "I believed this for years — turns out it was completely wrong.",
+          "The mistake almost everyone makes when starting [X].",
+          "Stop doing [X] — here's what to do instead.",
+          "This popular advice sounds smart but leads to [bad outcome].",
+          "The myth that's costing you [time/money/results] and you don't even know it.",
+          "If someone tells you [common advice], run the other way."
         ]
       }
     ]
