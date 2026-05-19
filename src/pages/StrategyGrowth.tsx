@@ -13,7 +13,7 @@ const StrategyGrowth = () => {
   return (
     <>
       <GoalsOnboarding run={state.showOnboarding && state.activeTab === 'growth-goals'} onComplete={state.completeOnboarding} />
-      <div className="w-full h-full mx-auto px-8 py-6 bg-gradient-to-br from-[#F7F4F5] via-[#FAFAFA] to-[#FFFDF9] overflow-auto">
+      <div className="w-full h-full mx-auto px-8 py-6 bg-white overflow-auto">
         <div className="max-w-[1600px] mx-auto space-y-6">
 
           {/* Tabs */}

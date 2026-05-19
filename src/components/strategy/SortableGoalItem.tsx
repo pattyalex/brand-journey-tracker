@@ -61,15 +61,8 @@ const SortableGoalItem: React.FC<SortableGoalItemProps> = ({
   return (
     <div
       ref={setNodeRef}
-      style={{
-        ...style,
-        padding: '14px 16px',
-        borderRadius: '14px',
-        border: '1px solid rgba(139, 115, 130, 0.25)',
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
-        background: 'white',
-      }}
-      className={`flex items-center gap-3 group bg-white hover:shadow-md transition-shadow duration-200`}
+      style={style}
+      className="flex items-center gap-3 group bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200 px-4 py-3.5"
     >
       {/* Drag Handle */}
       <TooltipProvider>

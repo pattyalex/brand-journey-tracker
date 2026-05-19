@@ -123,39 +123,19 @@ const GrowthGoalsTab: React.FC<GrowthGoalsTabProps> = (props) => {
       {/* SECTION 1: Monthly Goals */}
       <div
         id="monthly-goals"
-        className="relative overflow-hidden p-6"
-        style={{
-          background: 'linear-gradient(135deg, #4a3442 0%, #6b4a5e 50%, #8b6a7e 100%)',
-          borderRadius: '24px',
-          boxShadow: '0_8px_32px_rgba(97,42,79,0.25)'
-        }}
+        className="bg-white rounded-xl border border-gray-100 shadow-sm p-6"
       >
-        <div className="absolute top-0 right-0 w-80 h-80 rounded-full -translate-y-1/3 translate-x-1/3" style={{ background: 'rgba(255,255,255,0.05)' }} />
-        <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full translate-y-1/2 -translate-x-1/3" style={{ background: 'rgba(255,255,255,0.03)' }} />
-        <div className="absolute top-1/2 right-1/4 w-32 h-32 rounded-full" style={{ background: 'rgba(255,255,255,0.03)' }} />
-        <div className="absolute bottom-1/4 right-1/3 w-20 h-20 rounded-full" style={{ background: 'rgba(255,255,255,0.05)' }} />
-
-        <div className="relative z-10">
         <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <div
-              className="flex items-center justify-center text-white backdrop-blur-sm"
-              style={{
-                width: '48px',
-                height: '48px',
-                borderRadius: '14px',
-                background: 'rgba(255,255,255,0.15)'
-              }}
-            >
-              <Calendar className="w-5 h-5" />
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-[#612A4F] text-white shadow-sm">
+              <Calendar className="w-4 h-4" />
             </div>
-            <h3 className="text-xl font-semibold text-white" style={{ fontFamily: "'Playfair Display', serif" }}>Monthly Goals</h3>
+            <h3 className="text-base font-semibold text-[#612A4F]">Monthly Goals</h3>
           </div>
           <select
             value={selectedYear}
             onChange={(e) => setSelectedYear(Number(e.target.value))}
-            className="px-4 py-2 text-sm border border-white/20 bg-white/10 text-white font-medium focus:outline-none focus:border-white/40"
-            style={{ borderRadius: '12px' }}
+            className="px-4 py-2 text-sm border border-gray-100 bg-white text-gray-700 font-medium rounded-xl focus:outline-none focus:border-[#612a4f]"
           >
             {[...Array(5)].map((_, i) => {
               const year = 2026 + i;
@@ -173,7 +153,7 @@ const GrowthGoalsTab: React.FC<GrowthGoalsTabProps> = (props) => {
           onDragEnd={handleDragEndMonthlyGoals}
           onDragCancel={handleDragCancel}
         >
-          <div className="flex flex-wrap gap-2" style={{ marginBottom: '-60px' }}>
+          <div className="flex flex-wrap gap-2 mb-4">
             {["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"].map((month) => {
               const fullMonth = monthShortToFull[month];
               const isSelected = selectedMonthPill === month;
@@ -200,23 +180,16 @@ const GrowthGoalsTab: React.FC<GrowthGoalsTabProps> = (props) => {
             const completedCount = goals.filter(g => g.status === 'completed').length;
 
             return (
-              <div
-                style={{
-                  background: 'white',
-                  borderRadius: '18px',
-                  padding: '24px',
-                  border: 'none'
-                }}
-              >
+              <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
                 <div className="flex items-center justify-between mb-5">
                   <div className="flex items-center gap-2">
-                    <Calendar className="w-5 h-5 text-[#612A4F]" />
-                    <h4 className="text-xl text-[#612A4F]" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>
+                    <Calendar className="w-4 h-4 text-[#612A4F]" />
+                    <h4 className="text-base font-semibold text-[#612A4F]">
                       {fullMonth} {selectedYear}
                     </h4>
                   </div>
                   {goals.length > 0 && (
-                    <span className="text-sm font-medium" style={{ color: '#7a9a7a' }}>
+                    <span className="text-xs font-medium text-[#7a9a7a]">
                       {completedCount}/{goals.length} completed
                     </span>
                   )}
@@ -227,7 +200,7 @@ const GrowthGoalsTab: React.FC<GrowthGoalsTabProps> = (props) => {
                     <div className="flex flex-col lg:flex-row items-center gap-8 py-2">
                       <div className="group relative w-full lg:w-72 flex-shrink-0 flex items-center gap-3 px-4 py-3.5 rounded-xl border-2 border-dashed border-[#D8C8D3] opacity-50 hover:opacity-70 transition-opacity">
                         <div className="w-5 h-5 rounded-full border-2 border-[#D8C8D3] flex-shrink-0" />
-                        <span className="text-sm font-medium text-[#3d3a38] flex-1" style={{ fontFamily: "'DM Sans', sans-serif" }}>Post 3x per week consistently</span>
+                        <span className="text-sm font-medium text-[#3d3a38] flex-1">Post 3x per week consistently</span>
                         <span className="text-[9px] font-semibold uppercase tracking-wide text-[#8B7082] bg-[#8B7082]/10 px-1.5 py-0.5 rounded flex-shrink-0">Example</span>
                         <button
                           onClick={(e) => dismissGoalPlaceholder(`mg-${fullMonth}`, e)}
@@ -241,16 +214,15 @@ const GrowthGoalsTab: React.FC<GrowthGoalsTabProps> = (props) => {
                       <div className="hidden lg:block w-px self-stretch bg-gradient-to-b from-transparent via-[#D8C8D3] to-transparent" />
 
                       <div className="flex flex-col gap-3 max-w-xs">
-                        <h3 className="text-xl font-bold text-[#2d2a26]" style={{ fontFamily: "'Playfair Display', serif" }}>No goals set yet</h3>
-                        <p className="text-sm text-[#8B7082] leading-relaxed" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                        <h3 className="text-xl font-bold text-[#2d2a26]" >No goals set yet</h3>
+                        <p className="text-sm text-[#8B7082] leading-relaxed">
                           Set your intentions for {fullMonth}. Break big goals into monthly wins.
                         </p>
                         <button
                           onClick={() => {
                             setShowMonthlyInput(true);
                           }}
-                          className="w-fit h-10 px-5 rounded-xl bg-gradient-to-r from-[#612a4f] to-[#4d2140] hover:from-[#4d2140] hover:to-[#3a1830] text-white text-sm font-semibold shadow-[0_4px_16px_rgba(97,42,79,0.3)] hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2"
-                          style={{ fontFamily: "'DM Sans', sans-serif" }}
+                          className="w-fit h-10 px-5 rounded-xl bg-[#612A4F] hover:bg-[#4e2140] text-white text-sm font-medium transition-colors flex items-center gap-2"
                         >
                           <Plus className="w-4 h-4" />
                           Add your first goal
@@ -307,8 +279,7 @@ const GrowthGoalsTab: React.FC<GrowthGoalsTabProps> = (props) => {
                         }
                       }}
                       autoFocus
-                      className="flex-1 h-12 text-sm bg-white border border-[#E8E4E6] focus:outline-none focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)]"
-                      style={{ borderRadius: '14px' }}
+                      className="flex-1 h-12 text-sm bg-white border border-gray-100 rounded-xl focus:outline-none focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)]"
                     />
                     <button
                       onClick={() => {
@@ -317,13 +288,7 @@ const GrowthGoalsTab: React.FC<GrowthGoalsTabProps> = (props) => {
                         }
                         setShowMonthlyInput(false);
                       }}
-                      className="flex items-center justify-center text-white transition-all"
-                      style={{
-                        width: '48px',
-                        height: '48px',
-                        borderRadius: '14px',
-                        background: 'linear-gradient(145deg, #612A4F 0%, #4d2140 100%)'
-                      }}
+                      className="flex items-center justify-center w-12 h-12 rounded-xl bg-[#612A4F] hover:bg-[#4e2140] text-white transition-colors"
                     >
                       <Check className="w-5 h-5" />
                     </button>
@@ -379,31 +344,16 @@ const GrowthGoalsTab: React.FC<GrowthGoalsTabProps> = (props) => {
           </DragOverlay>
         </DndContext>
       </div>
-      </div>
 
       {/* SECTION 2: 1-Year Goals */}
-      <div
-        className="bg-white p-6"
-        style={{
-          borderRadius: '24px',
-          boxShadow: '0 4px 24px rgba(45, 42, 38, 0.04)'
-        }}
-      >
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
         <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <div
-              className="flex items-center justify-center text-white"
-              style={{
-                width: '48px',
-                height: '48px',
-                borderRadius: '14px',
-                background: 'linear-gradient(145deg, #7a9a7a 0%, #5a8a5a 100%)'
-              }}
-            >
-              <Target className="w-5 h-5" />
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-[#612A4F] text-white shadow-sm">
+              <Target className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-xl font-semibold text-[#612A4F]" style={{ fontFamily: "'Playfair Display', serif" }}>1-Year Goals</h3>
+              <h3 className="text-base font-semibold text-[#612A4F]">1-Year Goals</h3>
               {filteredShortTermGoals.length > 0 && (
                 <span className="text-xs text-[#7a9a7a]">
                   {filteredShortTermGoals.filter(g => g.status === 'completed').length}/{filteredShortTermGoals.length} completed
@@ -415,8 +365,7 @@ const GrowthGoalsTab: React.FC<GrowthGoalsTabProps> = (props) => {
           <select
             value={selectedShortTermYear}
             onChange={(e) => setSelectedShortTermYear(Number(e.target.value))}
-            className="px-4 py-2 text-sm border border-[#E8E4E6] bg-white text-[#612A4F] font-medium focus:outline-none focus:border-[#612a4f]"
-            style={{ borderRadius: '12px' }}
+            className="px-4 py-2 text-sm border border-gray-100 bg-white text-gray-700 font-medium rounded-xl focus:outline-none focus:border-[#612a4f]"
           >
             {[...Array(5)].map((_, i) => {
               const year = new Date().getFullYear() + i;
@@ -440,8 +389,7 @@ const GrowthGoalsTab: React.FC<GrowthGoalsTabProps> = (props) => {
                   }
                 }}
                 autoFocus
-                className="w-64 h-10 text-sm border border-[#E8E4E6] focus:outline-none focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)]"
-                style={{ borderRadius: '14px' }}
+                className="w-64 h-10 text-sm border border-gray-100 rounded-xl focus:outline-none focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)]"
               />
               <button
                 onClick={() => {
@@ -451,10 +399,7 @@ const GrowthGoalsTab: React.FC<GrowthGoalsTabProps> = (props) => {
                   setIsAddingShortTermGoal(false);
                 }}
                 className="px-5 h-10 text-sm font-medium text-white transition-all flex items-center gap-2"
-                style={{
-                  background: 'linear-gradient(145deg, #612A4F 0%, #4d2140 100%)',
-                  borderRadius: '14px'
-                }}
+                style={{ borderRadius: '14px', background: '#612A4F' }}
               >
                 <Check className="w-4 h-4" />
                 Save
@@ -474,7 +419,7 @@ const GrowthGoalsTab: React.FC<GrowthGoalsTabProps> = (props) => {
               onClick={() => setIsAddingShortTermGoal(true)}
               className="px-5 h-10 text-sm font-medium text-white transition-all flex items-center gap-2 hover:opacity-90"
               style={{
-                background: 'linear-gradient(145deg, #612A4F 0%, #4d2140 100%)',
+                background: '#612A4F',
                 borderRadius: '14px'
               }}
             >
@@ -488,21 +433,6 @@ const GrowthGoalsTab: React.FC<GrowthGoalsTabProps> = (props) => {
         {/* Goal Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredShortTermGoals.map((goal, index) => {
-            const softColors = [
-              { bg: 'rgba(180, 140, 165, 0.12)', accent: '#a07090', accentRgb: '180, 140, 165' },
-              { bg: 'rgba(165, 180, 190, 0.09)', accent: '#8a9ba5', accentRgb: '165, 180, 190' },
-              { bg: 'rgba(200, 175, 155, 0.12)', accent: '#b09080', accentRgb: '200, 175, 155' },
-              { bg: 'rgba(175, 160, 190, 0.08)', accent: '#9585a8', accentRgb: '175, 160, 190' },
-              { bg: 'rgba(185, 200, 180, 0.12)', accent: '#95a890', accentRgb: '185, 200, 180' },
-              { bg: 'rgba(210, 180, 170, 0.11)', accent: '#c0a095', accentRgb: '210, 180, 170' },
-            ];
-
-            const completedScheme = { bg: 'rgba(122, 154, 122, 0.12)', accent: '#5a8a5a', accentRgb: '90, 138, 90' };
-
-            const scheme = goal.status === 'completed'
-              ? completedScheme
-              : softColors[index % softColors.length];
-
             const statusConfig = {
               'not-started': { percent: 0, color: '#9ca3af', label: '0%', barColor: '#9ca3af' },
               'somewhat-done': { percent: 25, color: '#d4a520', label: '25%', barColor: '#d4a520' },
@@ -514,27 +444,9 @@ const GrowthGoalsTab: React.FC<GrowthGoalsTabProps> = (props) => {
             return (
               <div
                 key={goal.id}
-                className="relative group transition-all duration-300 hover:shadow-md overflow-hidden"
-                style={{
-                  background: scheme.bg,
-                  borderRadius: '16px',
-                  padding: '20px 24px'
-                }}
+                className="relative group transition-all duration-200 hover:shadow-md overflow-hidden bg-white rounded-xl border border-gray-100 p-5"
               >
-                <span
-                  className="absolute top-[38px] right-5"
-                  style={{
-                    fontFamily: "'Playfair Display', serif",
-                    fontSize: '32px',
-                    fontWeight: 600,
-                    color: scheme.accent,
-                    opacity: 0.6
-                  }}
-                >
-                  {index + 1}
-                </span>
-
-                <div className="pr-10">
+                <div>
                   {editingShortTermId === goal.id ? (
                     <Input
                       value={editingShortTermText}
@@ -665,16 +577,15 @@ const GrowthGoalsTab: React.FC<GrowthGoalsTabProps> = (props) => {
 
                   <div className="flex flex-col gap-4 max-w-sm">
                     <div>
-                      <h2 className="text-2xl font-bold text-[#2d2a26] leading-tight mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>No goals set yet</h2>
-                      <p className="text-sm text-[#8B7082] leading-relaxed" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                      <h2 className="text-2xl font-bold text-[#2d2a26] leading-tight mb-3" >No goals set yet</h2>
+                      <p className="text-sm text-[#8B7082] leading-relaxed">
                         Set ambitious goals for the year ahead. Track your progress and stay focused on what matters most for your growth.
                       </p>
                     </div>
                     <button
                       onClick={() => setIsAddingShortTermGoal(true)}
                       className="w-fit h-10 px-5 rounded-xl bg-gradient-to-r from-[#612a4f] to-[#4d2140] hover:from-[#4d2140] hover:to-[#3a1830] text-white text-sm font-semibold shadow-[0_4px_16px_rgba(97,42,79,0.3)] hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2"
-                      style={{ fontFamily: "'DM Sans', sans-serif" }}
-                    >
+                                          >
                       <Plus className="w-4 h-4" />
                       Add your first goal
                     </button>
@@ -694,62 +605,24 @@ const GrowthGoalsTab: React.FC<GrowthGoalsTabProps> = (props) => {
         </div>
       </div>
 
-      {/* SECTION 3: 3-Year Vision Hero Banner */}
-      <div
-        className="relative overflow-hidden p-10 shadow-[0_8px_32px_rgba(97,42,79,0.25)]"
-        style={{
-          background: 'linear-gradient(135deg, #4a3442 0%, #6b4a5e 50%, #8b6a7e 100%)',
-          borderRadius: '24px'
-        }}
-      >
-        <div className="absolute top-0 right-0 w-80 h-80 rounded-full -translate-y-1/3 translate-x-1/3" style={{ background: 'rgba(255,255,255,0.05)' }} />
-        <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full translate-y-1/2 -translate-x-1/3" style={{ background: 'rgba(255,255,255,0.03)' }} />
-        <div className="absolute top-1/2 right-1/4 w-32 h-32 rounded-full" style={{ background: 'rgba(255,255,255,0.03)' }} />
-        <div className="absolute bottom-1/4 right-1/3 w-20 h-20 rounded-full" style={{ background: 'rgba(255,255,255,0.05)' }} />
-
-        <div className="relative z-10">
-          <div className="flex items-center gap-4 mb-1">
-            <div
-              className="flex items-center justify-center backdrop-blur-sm"
-              style={{
-                width: '44px',
-                height: '44px',
-                borderRadius: '14px',
-                background: 'rgba(255,255,255,0.15)'
-              }}
-            >
-              <TrendingUp className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.15em] mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
-                Your North Star
-              </p>
-              <h2 className="text-[32px] font-semibold text-white leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
-                3-Year Vision
-              </h2>
-            </div>
+      {/* SECTION 3: 3-Year Vision */}
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+        <div className="flex items-center gap-3 mb-1">
+          <div className="p-2 rounded-lg bg-[#612A4F] text-white shadow-sm">
+            <TrendingUp className="w-4 h-4" />
           </div>
-          <p className="text-sm mb-6 ml-[60px]" style={{ color: 'rgba(255,255,255,0.7)', fontFamily: "'DM Sans', sans-serif" }}>
-            Where do you see yourself and your brand in 3 years? Dream big.
-          </p>
-
-          <div
-            className="backdrop-blur-sm"
-            style={{
-              background: 'rgba(255,255,255,0.1)',
-              borderRadius: '16px',
-              padding: '4px'
-            }}
-          >
-            <textarea
-              value={threeYearVision}
-              onChange={(e) => setThreeYearVision(e.target.value)}
-              placeholder="In 3 years, I want to..."
-              className="w-full min-h-[160px] bg-transparent border-0 rounded-xl p-5 text-white placeholder:text-white/40 text-base leading-relaxed resize-none focus:outline-none transition-all duration-200"
-              style={{ fontFamily: "'DM Sans', sans-serif" }}
-            />
-          </div>
+          <h3 className="text-base font-semibold text-[#612A4F]">3-Year Vision</h3>
         </div>
+        <p className="text-sm text-gray-500 mb-4 ml-11">
+          Where do you see yourself and your brand in 3 years? Dream big.
+        </p>
+
+        <textarea
+          value={threeYearVision}
+          onChange={(e) => setThreeYearVision(e.target.value)}
+          placeholder="In 3 years, I want to..."
+          className="w-full min-h-[160px] border border-gray-100 rounded-xl p-5 text-sm text-gray-800 placeholder:text-gray-300 leading-relaxed resize-none focus:outline-none focus:border-[#612a4f] focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] transition-all duration-200"
+        />
       </div>
 
     </TabsContent>

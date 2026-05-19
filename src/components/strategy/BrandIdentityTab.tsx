@@ -88,7 +88,7 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
   return (
     <TabsContent value="brand-identity" className="space-y-4 mt-0">
       {/* Mission Statement */}
-      <Card id="mission" className="rounded-xl bg-white border border-[#E8E4E6] shadow-[0_4px_20px_rgba(0,0,0,0.04)] scroll-mt-24">
+      <Card id="mission" className="rounded-xl bg-white border border-gray-100 shadow-sm scroll-mt-24">
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-3 text-base">
             <div className="p-2 rounded-lg bg-[#612A4F] text-white shadow-sm">
@@ -123,7 +123,7 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
                     setMissionStatement(e.target.value);
                   }
                 }}
-                className="min-h-[80px] w-full resize-none border border-[#E8E4E6] rounded-xl focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] transition-shadow duration-200 p-4 text-sm leading-relaxed bg-white"
+                className="min-h-[80px] w-full resize-none border border-gray-100 rounded-xl focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] transition-shadow duration-200 p-4 text-sm leading-relaxed bg-white"
                 placeholder={missionStatementFocused ? "" : "Write a short sentence that explains who your content is for and what you want it to do for them..."}
                 onFocus={() => setMissionStatementFocused(true)}
                 onBlur={() => setMissionStatementFocused(false)}
@@ -135,7 +135,7 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
 
             <div>
               <p className="text-[11px] font-medium text-[#8B7082] mb-2">Examples</p>
-              <div className="bg-gradient-to-br from-[#FAF7F8] via-[#F5F0F3] to-[#F0EBE8] rounded-2xl px-3 py-2 border-l-4 border-[#8B7082]/30">
+              <div className="bg-gray-50 rounded-xl px-3 py-2 border border-gray-100">
                 <div className="grid grid-cols-3 gap-2">
                   {[
                     "I create content to help busy people build healthy routines they can actually stick to.",
@@ -158,7 +158,7 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
       </Card>
 
       {/* Brand Values */}
-      <Card className="rounded-xl bg-white border border-[#E8E4E6] shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
+      <Card className="rounded-xl bg-white border border-gray-100 shadow-sm">
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-3 text-base">
             <div className="p-2 rounded-lg bg-[#612A4F] text-white shadow-sm">
@@ -195,7 +195,7 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
                   }}
                   placeholder="Add a value (e.g., 'I don't take myself too seriously online')..."
                   disabled={brandValues.length >= 5}
-                  className="flex-1 px-4 py-3 text-sm border border-[#E8E4E6] rounded-xl focus:outline-none focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] transition-shadow duration-200 disabled:bg-gray-50 disabled:text-gray-400"
+                  className="flex-1 px-4 py-3 text-sm border border-gray-100 rounded-xl focus:outline-none focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] transition-shadow duration-200 disabled:bg-gray-50 disabled:text-gray-400"
                 />
                 <button
                   onClick={() => {
@@ -205,7 +205,7 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
                     }
                   }}
                   disabled={!customValueInput.trim() || brandValues.length >= 5}
-                  className="px-5 py-3 text-sm font-medium bg-[#8B7082] text-white rounded-lg hover:bg-[#7A6171] disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors"
+                  className="px-5 py-3 text-sm font-medium bg-[#612A4F] text-white rounded-xl hover:bg-[#4e2140] disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors"
                 >
                   Add
                 </button>
@@ -278,7 +278,7 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
             <div className="w-[420px] flex-shrink-0">
               <p className="text-[11px] text-[#8B7082] font-medium px-1 mb-3">Examples</p>
               <div className="grid grid-cols-2 gap-2">
-                <div className="bg-gradient-to-br from-[#FAF7F8] via-[#F5F0F3] to-[#F0EBE8] rounded-xl p-3 border-l-2 border-[#8B7082]/25">
+                <div className="bg-gray-50 rounded-xl p-3 border-l-2 border-[#612A4F]/15">
                   <p className="text-[11px] font-medium text-gray-700 mb-1">Alignment</p>
                   <p className="text-[10px] text-gray-400 mb-2">Being true to yourself</p>
                   <div className="space-y-1">
@@ -301,7 +301,7 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-br from-[#FAF7F8] via-[#F5F0F3] to-[#F0EBE8] rounded-xl p-3 border-l-2 border-[#8B7082]/25">
+                <div className="bg-gray-50 rounded-xl p-3 border-l-2 border-[#612A4F]/15">
                   <p className="text-[11px] font-medium text-gray-700 mb-1">Boundaries</p>
                   <p className="text-[10px] text-gray-400 mb-2">Your non-negotiables</p>
                   <div className="space-y-1">
@@ -325,7 +325,7 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-br from-[#FAF7F8] via-[#F5F0F3] to-[#F0EBE8] rounded-xl p-3 border-l-2 border-[#8B7082]/25">
+                <div className="bg-gray-50 rounded-xl p-3 border-l-2 border-[#612A4F]/15">
                   <p className="text-[11px] font-medium text-gray-700 mb-1">Craft Values</p>
                   <p className="text-[10px] text-gray-400 mb-2">How you create</p>
                   <div className="flex flex-wrap gap-1">
@@ -345,7 +345,7 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-br from-[#FAF7F8] via-[#F5F0F3] to-[#F0EBE8] rounded-xl p-3 border-l-2 border-[#8B7082]/25">
+                <div className="bg-gray-50 rounded-xl p-3 border-l-2 border-[#612A4F]/15">
                   <p className="text-[11px] font-medium text-gray-700 mb-1">Presence</p>
                   <p className="text-[10px] text-gray-400 mb-2">The energy people feel from you</p>
                   <div className="flex flex-wrap gap-1">
@@ -371,7 +371,7 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
       </Card>
 
       {/* Content Style */}
-      <Card className="rounded-xl bg-white border border-[#E8E4E6] shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
+      <Card className="rounded-xl bg-white border border-gray-100 shadow-sm">
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-3 text-base">
             <div className="p-2 rounded-lg bg-[#612A4F] text-white shadow-sm">
@@ -406,8 +406,8 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
                   }}
                   className={`py-2.5 rounded-xl text-[13px] font-medium transition-all ${
                     isSelected
-                      ? "bg-gradient-to-b from-[#6d3358] to-[#612A4F] text-white shadow-[0_2px_8px_rgba(97,42,79,0.3),inset_0_1px_0_rgba(255,255,255,0.1)]"
-                      : "bg-gradient-to-b from-white to-[#FAF7F8] text-[#6B5B63] hover:text-[#612A4F] hover:from-[#FAF7F8] hover:to-[#F5F0F3] border border-[#E8E4E6] hover:border-[#D5CDD2] shadow-[0_1px_3px_rgba(0,0,0,0.04)]"
+                      ? "bg-[#612A4F] text-white shadow-sm"
+                      : "bg-white text-gray-500 hover:text-[#612A4F] hover:bg-gray-50 border border-gray-100"
                   }`}
                 >
                   {tone}
@@ -419,7 +419,7 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
       </Card>
 
       {/* Target Audience */}
-      <Card className="rounded-xl bg-white border border-[#E8E4E6] shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
+      <Card className="rounded-xl bg-white border border-gray-100 shadow-sm">
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-3 text-base">
             <div className="p-2 rounded-lg bg-[#612A4F] text-white shadow-sm">
@@ -440,7 +440,7 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
         <CardContent className="space-y-6 pt-4 pb-6">
           <div className="space-y-3">
             <Label htmlFor="age-range" className="text-sm font-semibold text-gray-800">Age Range</Label>
-            <div className="inline-flex rounded-xl border border-[#E8E4E6] overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+            <div className="inline-flex rounded-xl border border-gray-100 overflow-hidden shadow-sm">
               {["18-24", "25-34", "35-44", "45-54", "55+"].map((range, index) => {
                 const isSelected = audienceAgeRanges.includes(range);
                 return (
@@ -459,11 +459,11 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
                       }
                     }}
                     className={`px-5 py-2.5 text-[13px] font-medium transition-all ${
-                      index > 0 ? "border-l border-[#E8E4E6]" : ""
+                      index > 0 ? "border-l border-gray-100" : ""
                     } ${
                       isSelected
-                        ? "bg-gradient-to-b from-[#6d3358] to-[#612A4F] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] rounded-lg"
-                        : "bg-gradient-to-b from-white to-[#FAF7F8] text-[#6B5B63] hover:text-[#612A4F] hover:from-[#FAF7F8] hover:to-[#F5F0F3]"
+                        ? "bg-[#612A4F] text-white rounded-lg"
+                        : "bg-white text-gray-500 hover:text-[#612A4F] hover:bg-gray-50"
                     }`}
                   >
                     {range}
@@ -483,7 +483,7 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
                 placeholder={strugglesFocused ? "" : "What pain points or challenges does your audience face? What problems are they trying to solve?"}
                 onFocus={() => setStrugglesFocused(true)}
                 onBlur={() => setStrugglesFocused(false)}
-                className="h-[240px] resize-none border border-[#E8E4E6] rounded-xl focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] transition-shadow duration-200 p-4 text-sm leading-relaxed"
+                className="h-[240px] resize-none border border-gray-100 rounded-xl focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] transition-shadow duration-200 p-4 text-sm leading-relaxed"
               />
             </div>
 
@@ -496,7 +496,7 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
                 placeholder={desiresFocused ? "" : "What are your audience's goals and aspirations? What transformation are they seeking?"}
                 onFocus={() => setDesiresFocused(true)}
                 onBlur={() => setDesiresFocused(false)}
-                className="h-[240px] resize-none border border-[#E8E4E6] rounded-xl focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] transition-shadow duration-200 p-4 text-sm leading-relaxed"
+                className="h-[240px] resize-none border border-gray-100 rounded-xl focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] transition-shadow duration-200 p-4 text-sm leading-relaxed"
               />
             </div>
           </div>
@@ -552,7 +552,7 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
                       type="text"
                       placeholder="Paste Pinterest board URL..."
                       autoFocus
-                      className="px-4 py-2.5 text-sm border border-[#E8E4E6] rounded-xl focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] transition-shadow duration-200 w-64"
+                      className="px-4 py-2.5 text-sm border border-gray-100 rounded-xl focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] transition-shadow duration-200 w-64"
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' && (e.target as HTMLInputElement).value) {
                           updatePinterestUrl((e.target as HTMLInputElement).value);
@@ -580,7 +580,7 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
                           setShowPinterestInput(true);
                         }
                       }}
-                      className="flex items-center justify-center gap-2 py-3 px-5 bg-gradient-to-b from-white to-[#FAF7F8] border border-[#E8E4E6] rounded-xl hover:border-[#D5CDD2] hover:bg-[#F5F0F3]/50 transition-all"
+                      className="flex items-center justify-center gap-2 py-3 px-5 bg-white border border-gray-100 rounded-xl hover:border-gray-200 hover:bg-gray-50 transition-all"
                     >
                       <ArrowUpRight className="w-4 h-4 text-[#8B7082]" />
                       <span className="text-sm font-medium text-[#4A4A4A]">{pinterestUrl ? 'Open Pinterest Board' : 'Link Pinterest Board'}</span>
@@ -601,7 +601,7 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
 
                 <button
                   onClick={handleUploadClick}
-                  className="flex items-center justify-center gap-2 py-3 px-5 bg-gradient-to-b from-white to-[#FAF7F8] border border-[#E8E4E6] rounded-xl hover:border-[#D5CDD2] hover:bg-[#F5F0F3]/50 transition-all"
+                  className="flex items-center justify-center gap-2 py-3 px-5 bg-white border border-gray-100 rounded-xl hover:border-gray-200 hover:bg-gray-50 transition-all"
                 >
                   <Upload className="w-4 h-4 text-[#8B7082]" />
                   <span className="text-sm font-medium text-[#4A4A4A]">Upload image instead</span>
@@ -633,7 +633,7 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
       </Card>
 
       {/* Additional Notes */}
-      <Card className="rounded-xl bg-white border border-[#E8E4E6] shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
+      <Card className="rounded-xl bg-white border border-gray-100 shadow-sm">
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-3 text-base">
             <div className="p-2 rounded-lg bg-[#612A4F] text-white shadow-sm">
@@ -658,11 +658,11 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
                 value={additionalNotes}
                 onChange={(e) => setAdditionalNotes(e.target.value)}
                 placeholder="Write any additional notes about your brand strategy..."
-                className="min-h-[180px] h-full resize-none border border-[#E8E4E6] rounded-xl focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] transition-shadow duration-200 p-4 text-sm leading-relaxed"
+                className="min-h-[180px] h-full resize-none border border-gray-100 rounded-xl focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] transition-shadow duration-200 p-4 text-sm leading-relaxed"
               />
             </div>
 
-            <div className="w-72 flex-shrink-0 bg-gradient-to-b from-[#FAF8F9] to-[#F0E8ED] rounded-xl p-4 space-y-4 border-l-4 border-[#612A4F]/30">
+            <div className="w-72 flex-shrink-0 bg-gray-50 rounded-xl p-4 space-y-4 border border-gray-100">
               <div className="space-y-2.5">
                 <p className="text-[11px] text-[#8B7082] font-medium flex items-center gap-1.5">
                   <ArrowUpRight className="w-3 h-3" /> Links
@@ -720,7 +720,7 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
                           }
                         }}
                         disabled={!newLinkUrl.trim() || !newLinkTitle.trim()}
-                        className="text-[11px] px-3 py-1.5 bg-[#8B7082] text-white rounded-lg hover:bg-[#7A6171] disabled:bg-gray-300 disabled:text-gray-500"
+                        className="text-[11px] px-3 py-1.5 bg-[#612A4F] text-white rounded-lg hover:bg-[#4e2140] disabled:bg-gray-300 disabled:text-gray-500"
                       >
                         Add
                       </button>
