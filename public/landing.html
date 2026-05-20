@@ -233,6 +233,19 @@
       background: linear-gradient(160deg, #1c0e1a 0%, #2d1528 55%, #1e1020 100%);
     }
 
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background-image: radial-gradient(circle, rgba(201,123,168,0.3) 1.2px, transparent 1.2px);
+      background-size: 18px 18px;
+      -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 45%, transparent 20%, rgba(0,0,0,0.15) 45%, rgba(0,0,0,0.6) 75%, rgba(0,0,0,1) 100%);
+      mask-image: radial-gradient(ellipse 70% 60% at 50% 45%, transparent 20%, rgba(0,0,0,0.15) 45%, rgba(0,0,0,0.6) 75%, rgba(0,0,0,1) 100%);
+    }
+
     .hero::after {
       display: none;
     }
@@ -1187,10 +1200,10 @@
       padding: 100px 24px 100px;
       text-align: center;
       overflow: hidden;
-      background: linear-gradient(to bottom, transparent 0px, #ffffff 200px);
+      background: #ffffff;
       scroll-margin-top: 40px;
-      margin-top: -80px;
-      padding-top: 140px;
+      margin-top: 0px;
+      padding-top: 100px;
     }
 
     .problem-section h2 {
