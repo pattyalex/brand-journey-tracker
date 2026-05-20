@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, LayoutList, ImageIcon, ArrowRight } from 'lucide-react';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
@@ -91,6 +91,19 @@ const PostsCalendarView: React.FC<PostsCalendarViewProps> = ({
 }) => {
   const navigate = useNavigate();
   const today = new Date();
+  const gridScrollRef = useRef<HTMLDivElement>(null);
+
+  // Restore & save timeline grid scroll position
+  useEffect(() => {
+    const el = gridScrollRef.current;
+    if (!el) return;
+    const saved = sessionStorage.getItem('heymeg-timeline-scroll');
+    if (saved) el.scrollTop = parseInt(saved, 10);
+    const handler = () => sessionStorage.setItem('heymeg-timeline-scroll', String(el.scrollTop));
+    el.addEventListener('scroll', handler, { passive: true });
+    return () => el.removeEventListener('scroll', handler);
+  }, []);
+
   const [viewYear, setViewYear] = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -296,7 +309,7 @@ const PostsCalendarView: React.FC<PostsCalendarViewProps> = ({
           </div>
 
           {/* Grid — scrollable */}
-          <div className="relative flex-1 overflow-y-auto min-h-0" style={{ scrollbarWidth: 'thin', scrollbarColor: '#D1D5DB transparent' }}>
+          <div ref={gridScrollRef} className="relative flex-1 overflow-y-auto min-h-0" style={{ scrollbarWidth: 'thin', scrollbarColor: '#D1D5DB transparent' }}>
             <div className="grid grid-cols-7 border-t border-l border-gray-100">
               {days.map(({ date, day, isCurrentMonth }) => (
                 <CalendarCell
@@ -504,19 +517,17 @@ const DraggableSidebarCard: React.FC<{
           <StatusIcon status={post.status} className="w-2 h-2 flex-shrink-0" style={{ color: STATUS_COLORS[post.status]?.dot }} />
           <span className="truncate">{post.status === 'Ready to shoot' && post.sentToShoots ? 'Shoot in progress' : post.status === 'Edited' && post.sent_to_schedule ? 'Sent to schedule' : post.status}</span>
           {post.status === 'Ready to shoot' && onSendToShoots && !post.sentToShoots && (
-            <TooltipProvider>
+            <TooltipProvider delayDuration={0}>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
                     onClick={e => { e.stopPropagation(); onSendToShoots(post.id); }}
-                    className="ml-0.5 flex items-center justify-center w-3.5 h-3.5 rounded-full bg-[#612A4F]/8 hover:bg-[#612A4F]/20 transition-colors"
+                    className="ml-0.5 flex items-center justify-center w-3.5 h-3.5 rounded-full bg-[#7B3F8F] hover:bg-[#6A3580] transition-colors"
                   >
-                    <ArrowRight size={7} className="text-[#612A4F]" />
+                    <ArrowRight size={7} className="text-white" />
                   </button>
                 </TooltipTrigger>
-                <TooltipContent side="top" className="bg-gray-500 text-white text-[10px] font-medium px-1.5 py-0.5">
-                  Plan the shoot
-                </TooltipContent>
+                <TooltipContent side="top" className="bg-gray-700 text-white text-[10px] font-medium px-1.5 py-0.5">Plan the shoot</TooltipContent>
               </Tooltip>
             </TooltipProvider>
           )}
@@ -528,19 +539,17 @@ const DraggableSidebarCard: React.FC<{
               onTouchStart={e => e.stopPropagation()}
               style={{ touchAction: 'auto' }}
             >
-              <TooltipProvider delayDuration={100}>
+              <TooltipProvider delayDuration={0}>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button
                       onClick={e => { e.stopPropagation(); onSendToSchedule(post.id); }}
-                      className="ml-0.5 flex items-center justify-center w-[18px] h-[18px] rounded-full bg-[#612A4F]/8 hover:bg-[#612A4F]/20 transition-colors"
+                      className="ml-0.5 flex items-center justify-center w-[18px] h-[18px] rounded-full bg-[#5B8EC9] hover:bg-[#4A7DB8] transition-colors"
                     >
-                      <ArrowRight size={7} className="text-[#612A4F]" />
+                      <ArrowRight size={7} className="text-white" />
                     </button>
                   </TooltipTrigger>
-                  <TooltipContent side="top" className="bg-gray-700 text-white text-[10px] font-medium px-1.5 py-0.5">
-                    Send to schedule
-                  </TooltipContent>
+                  <TooltipContent side="top" className="bg-gray-700 text-white text-[10px] font-medium px-1.5 py-0.5">Schedule this post</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             </span>

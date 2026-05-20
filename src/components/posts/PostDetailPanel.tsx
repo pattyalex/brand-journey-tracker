@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Calendar, MessageSquare, FileText, BarChart3, StickyNote, Paperclip, Trash2, ImageIcon, Pencil, ExternalLink, Maximize2, ChevronLeft, ChevronRight, Clapperboard, Plus } from 'lucide-react';
+import { X, Calendar, MessageSquare, FileText, BarChart3, StickyNote, Paperclip, Trash2, ImageIcon, Pencil, ExternalLink, Maximize2, ChevronLeft, ChevronRight, Clapperboard, Plus, ArrowRight } from 'lucide-react';
 import { Post, PostStatus, POST_STATUSES, STATUS_COLORS, getPillarStyle } from '@/types/posts';
 import { uploadPostThumbnail } from '@/lib/postImageUpload';
 import { API_BASE } from '@/lib/api-base';
@@ -8,6 +8,7 @@ import FormatDropdown from './FormatDropdown';
 import PillarDropdown from './PillarDropdown';
 import StatusDropdown from './StatusDropdown';
 import PlatformSelector from './PlatformSelector';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 import ScriptEditor from './ScriptEditor';
 
 interface PostDetailPanelProps {
@@ -20,10 +21,12 @@ interface PostDetailPanelProps {
   onAddFormat: (name: string) => void;
   onDeleteFormat: (name: string) => void;
   onDeletePillar: (name: string) => void;
-  onReplaceAttachment: (id: string, blobUrl: string, newEntry: string) => void;
+  onReplaceAttachment?: (id: string, blobUrl: string, newEntry: string) => void;
+  onSendToShoots?: (id: string) => void;
+  onSendToSchedule?: (id: string) => void;
 }
 
-const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, formats, onClose, onUpdate, onDelete, onAddFormat, onDeleteFormat, onDeletePillar, onReplaceAttachment }) => {
+const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, formats, onClose, onUpdate, onDelete, onAddFormat, onDeleteFormat, onDeletePillar, onReplaceAttachment, onSendToShoots, onSendToSchedule }) => {
   const [editingScript, setEditingScript] = useState(false);
   const [scriptDraft, setScriptDraft] = useState('');
   const [editingCaption, setEditingCaption] = useState(false);
@@ -208,10 +211,42 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
                     </div>
                     <div className={rowClass}>
                       <span className={labelClass}>Status</span>
-                      <StatusDropdown
-                        value={post.status}
-                        onChange={val => onUpdate(post.id, { status: val })}
-                      />
+                      <div className="flex items-center gap-2">
+                        <StatusDropdown
+                          value={post.status}
+                          onChange={val => onUpdate(post.id, { status: val })}
+                        />
+                        {post.status === 'Ready to shoot' && onSendToShoots && !post.sentToShoots && (
+                          <TooltipProvider delayDuration={0}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  onClick={() => onSendToShoots(post.id)}
+                                  className="flex items-center justify-center w-5 h-5 rounded-full bg-[#7B3F8F] hover:bg-[#6A3580] transition-colors"
+                                >
+                                  <ArrowRight size={11} className="text-white" />
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="bg-gray-700 text-white text-[10px] font-medium px-1.5 py-0.5">Plan the shoot</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
+                        {post.status === 'Edited' && onSendToSchedule && !post.sent_to_schedule && (
+                          <TooltipProvider delayDuration={0}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  onClick={() => onSendToSchedule(post.id)}
+                                  className="flex items-center justify-center w-5 h-5 rounded-full bg-[#5B8EC9] hover:bg-[#4A7DB8] transition-colors"
+                                >
+                                  <ArrowRight size={11} className="text-white" />
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="bg-gray-700 text-white text-[10px] font-medium px-1.5 py-0.5">Schedule this post</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );

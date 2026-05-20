@@ -107,31 +107,31 @@ function postToDb(post: Partial<Post>, userId: string): Record<string, unknown> 
 function postUpdatesToDb(updates: Partial<Post>): Record<string, unknown> {
   const row: Record<string, unknown> = {};
 
-  if (updates.title !== undefined) row.title = updates.title;
-  if (updates.pillar !== undefined) row.pillar = updates.pillar;
-  if (updates.format !== undefined) row.format = updates.format;
-  if (updates.status !== undefined) row.status = updates.status;
-  if (updates.scheduledDate !== undefined) row.scheduled_date = updates.scheduledDate || null;
-  if (updates.script !== undefined) row.script = updates.script || null;
-  if (updates.caption !== undefined) row.caption = updates.caption || null;
-  if (updates.hashtags !== undefined) row.hashtags = updates.hashtags || [];
-  if (updates.attachedFiles !== undefined) row.attached_files = updates.attachedFiles || [];
-  if (updates.notes !== undefined) row.notes = updates.notes || null;
-  if (updates.storyboard !== undefined) row.storyboard = updates.storyboard || [];
-  if (updates.metrics !== undefined) {
+  if ('title' in updates) row.title = updates.title;
+  if ('pillar' in updates) row.pillar = updates.pillar;
+  if ('format' in updates) row.format = updates.format;
+  if ('status' in updates) row.status = updates.status;
+  if ('scheduledDate' in updates) row.scheduled_date = updates.scheduledDate || null;
+  if ('script' in updates) row.script = updates.script || null;
+  if ('caption' in updates) row.caption = updates.caption || null;
+  if ('hashtags' in updates) row.hashtags = updates.hashtags || [];
+  if ('attachedFiles' in updates) row.attached_files = updates.attachedFiles || [];
+  if ('notes' in updates) row.notes = updates.notes || null;
+  if ('storyboard' in updates) row.storyboard = updates.storyboard || [];
+  if ('metrics' in updates) {
     row.metrics_likes = updates.metrics?.likes ?? null;
     row.metrics_comments = updates.metrics?.comments ?? null;
     row.metrics_shares = updates.metrics?.shares ?? null;
     row.metrics_saves = updates.metrics?.saves ?? null;
     row.metrics_reach = updates.metrics?.reach ?? null;
   }
-  if (updates.thumbnail_url !== undefined) row.thumbnail_url = updates.thumbnail_url || null;
-  if (updates.sent_to_schedule !== undefined) row.sent_to_schedule = updates.sent_to_schedule;
-  if (updates.scheduled_time !== undefined) row.scheduled_time = updates.scheduled_time || null;
-  if (updates.order !== undefined) row.sort_order = updates.order;
-  if (updates.shoot_id !== undefined) row.shoot_id = updates.shoot_id || null;
-  if (updates.sentToShoots !== undefined) row.sent_to_shoots = updates.sentToShoots;
-  if (updates.platforms !== undefined) row.platforms = updates.platforms || [];
+  if ('thumbnail_url' in updates) row.thumbnail_url = updates.thumbnail_url || null;
+  if ('sent_to_schedule' in updates) row.sent_to_schedule = updates.sent_to_schedule;
+  if ('scheduled_time' in updates) row.scheduled_time = updates.scheduled_time || null;
+  if ('order' in updates) row.sort_order = updates.order;
+  if ('shoot_id' in updates) row.shoot_id = updates.shoot_id || null;
+  if ('sentToShoots' in updates) row.sent_to_shoots = updates.sentToShoots;
+  if ('platforms' in updates) row.platforms = updates.platforms || [];
 
   return row;
 }

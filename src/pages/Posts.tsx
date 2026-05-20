@@ -27,6 +27,7 @@ type ViewMode = 'List' | 'Pillars' | 'Timeline';
 const VIEW_MODES: ViewMode[] = ['List', 'Pillars', 'Timeline'];
 
 const STORAGE_KEY = 'heymeg-posts-active-view';
+const SCROLL_KEY = 'heymeg-posts-scroll';
 
 function loadView(): ViewMode {
   try {
@@ -150,6 +151,18 @@ const Posts: React.FC = () => {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const lastSelectedId = useRef<string | null>(null);
+  const mainScrollRef = useRef<HTMLDivElement>(null);
+
+  // Save main scroll position on scroll
+  useEffect(() => {
+    const el = mainScrollRef.current;
+    if (!el) return;
+    const saved = sessionStorage.getItem(SCROLL_KEY);
+    if (saved) el.scrollTop = parseInt(saved, 10);
+    const handler = () => sessionStorage.setItem(SCROLL_KEY, String(el.scrollTop));
+    el.addEventListener('scroll', handler, { passive: true });
+    return () => el.removeEventListener('scroll', handler);
+  }, []);
   const [showInspiration, setShowInspiration] = useState(false);
   const [showHooksDialog, setShowHooksDialog] = useState(false);
   const [showBrainstormDialog, setShowBrainstormDialog] = useState(false);
@@ -545,7 +558,7 @@ const Posts: React.FC = () => {
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
-      <div className="flex-1 overflow-y-auto px-6 py-6 md:px-8 lg:px-10">
+      <div ref={mainScrollRef} className="flex-1 overflow-y-auto px-6 py-6 md:px-8 lg:px-10">
         {/* Header: View Switcher + Inspiration */}
         <div className="flex items-center justify-between gap-3 mb-4">
           <div className="flex items-center gap-3">

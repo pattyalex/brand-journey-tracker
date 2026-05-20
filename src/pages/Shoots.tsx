@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Plus, MapPin, Camera, ChevronDown, ArrowRight, Check, X, MoreHorizontal, Copy, Trash2 } from 'lucide-react';
+import { Plus, MapPin, Camera, ChevronDown, ArrowRight, Check, X, MoreHorizontal, Copy, Trash2, ImageIcon, Calendar, Aperture } from 'lucide-react';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 import { useShootsStore } from '@/hooks/useShootsStore';
@@ -13,7 +13,7 @@ import ShootDetail from '@/components/shoots/ShootDetail';
 import CreateShootModal from '@/components/shoots/CreateShootModal';
 import MobileExecutionView from '@/components/shoots/MobileExecutionView';
 import PostDetailPanel from '@/components/posts/PostDetailPanel';
-import { format } from 'date-fns';
+import { format, formatDistanceToNow, isAfter } from 'date-fns';
 
 type Screen = 'list' | 'detail';
 
@@ -40,6 +40,7 @@ const Shoots: React.FC = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [pastExpanded, setPastExpanded] = useState(false);
   const [selectedPostIds, setSelectedPostIds] = useState<Set<string>>(new Set());
+  const [detailPost, setDetailPost] = useState<Post | null>(null);
 
   const togglePostSelection = useCallback((id: string) => {
     setSelectedPostIds(prev => {
@@ -127,7 +128,10 @@ const Shoots: React.FC = () => {
     [selectedShootId, assignPostsToShoot]
   );
   const handleRemovePost = useCallback((postId: string) => removePostFromShoot(postId), [removePostFromShoot]);
-  const handleUpdatePost = useCallback((postId: string, updates: Partial<Post>) => updatePost(postId, updates), [updatePost]);
+  const handleUpdatePost = useCallback((postId: string, updates: Partial<Post>) => {
+    updatePost(postId, updates);
+    setDetailPost(prev => prev && prev.id === postId ? { ...prev, ...updates } : prev);
+  }, [updatePost]);
   const handleMarkAsShot = useCallback((postId: string) => updatePost(postId, { status: 'Shot' }), [updatePost]);
 
   const today = new Date().toISOString().split('T')[0];
@@ -147,17 +151,19 @@ const Shoots: React.FC = () => {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
           >
-            <div className="max-w-5xl mx-auto px-6 md:px-8 py-8">
+            <div className="max-w-6xl mx-auto px-6 md:px-10 py-8">
               {/* Header */}
-              <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center justify-between mb-10">
                 <div>
-                  <h1 className="text-lg font-semibold text-gray-900">Plan your capture days</h1>
+                  <h1 className="text-[22px] font-bold text-gray-900 tracking-tight">Shoots</h1>
+                  <p className="text-[13px] text-gray-400 mt-0.5">Plan, organize, and execute your content capture days</p>
                 </div>
                 <button
                   onClick={() => setShowCreateModal(true)}
-                  className="flex items-center gap-2 bg-[#612A4F] text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-[#4e2140] transition-colors shadow-sm"
+                  className="flex items-center gap-2 text-white px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 shadow-[0_2px_10px_rgba(97,42,79,0.3)] hover:shadow-[0_4px_20px_rgba(97,42,79,0.4)] hover:scale-[1.03] active:scale-[0.98]"
+                  style={{ background: 'linear-gradient(135deg, #612A4F 0%, #8B3A6B 100%)' }}
                 >
-                  <Plus size={16} />
+                  <Plus size={16} strokeWidth={2.5} />
                   Plan a shoot
                 </button>
               </div>
@@ -170,65 +176,106 @@ const Shoots: React.FC = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5 }}
                 >
-                  <div className="w-16 h-16 bg-[#612a4f]/[0.04] rounded-2xl flex items-center justify-center mb-5">
-                    <Camera size={24} className="text-[#612a4f]/20" />
+                  <div className="w-20 h-20 rounded-3xl flex items-center justify-center mb-6" style={{ background: 'linear-gradient(135deg, rgba(97,42,79,0.06) 0%, rgba(139,58,107,0.08) 100%)' }}>
+                    <Aperture size={28} className="text-[#612a4f]/25" />
                   </div>
-                  <p className="text-[15px] font-medium text-gray-600 mb-1">Plan your first shoot</p>
-                  <p className="text-sm text-gray-400 max-w-xs leading-relaxed">
+                  <p className="text-[16px] font-semibold text-gray-700 mb-2">Plan your first shoot</p>
+                  <p className="text-[13px] text-gray-400 max-w-sm leading-relaxed">
                     Group your content ideas into a shoot day — pick a location, set a date, and see everything you need to capture.
                   </p>
                 </motion.div>
               )}
 
-              {/* Two-column layout: Unassigned posts (left) + Upcoming shoots (right) */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* Left column: Unassigned posts */}
-                <div>
-                  <p className="text-[13px] text-gray-900 font-semibold mb-4">Content to shoot</p>
+              {/* Upcoming shoots — full width hero section */}
+              {upcomingShoots.length > 0 && (
+                <div className="mb-10">
+                  <div className="flex items-center gap-2 mb-5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#612A4F]" />
+                    <p className="text-[11px] text-gray-400 font-semibold uppercase tracking-wider">Upcoming shoots</p>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    {upcomingShoots.map((shoot, i) => (
+                      <ShootCard
+                        key={shoot.id}
+                        shoot={shoot}
+                        posts={getPostsForShoot(shoot.id)}
+                        onClick={() => handleSelectShoot(shoot.id)}
+                        index={i}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Content to shoot */}
+              {(unassignedPosts.length > 0 || nonArchivedShoots.length > 0) && (
+                <div className="mb-10">
+                  <div className="flex items-center gap-2 mb-5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                    <p className="text-[11px] text-gray-400 font-semibold uppercase tracking-wider">Content to shoot</p>
+                    {unassignedPosts.length > 0 && (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 font-semibold">{unassignedPosts.length}</span>
+                    )}
+                  </div>
                   {unassignedPosts.length > 0 ? (
-                    <div className="rounded-xl border border-gray-100 bg-white overflow-hidden divide-y divide-gray-50">
-                      {unassignedPosts.map((post) => {
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                      {unassignedPosts.map((post, i) => {
                         const isChecked = selectedPostIds.has(post.id);
+                        const pillarStyle = post.pillar ? getPillarStyle(post.pillar) : null;
                         return (
-                          <div
+                          <motion.div
                             key={post.id}
-                            onClick={() => togglePostSelection(post.id)}
-                            className={`group flex items-center gap-3 px-4 py-3 cursor-pointer transition-all duration-150 ${
-                              isChecked ? 'bg-[#612A4F]/[0.03]' : 'hover:bg-gray-50/60'
+                            onClick={() => setDetailPost(post)}
+                            initial={{ opacity: 0, y: 6 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.2, delay: i * 0.03 }}
+                            className={`group relative rounded-2xl border bg-white cursor-pointer transition-all duration-200 overflow-hidden ${
+                              isChecked
+                                ? 'border-[#612A4F]/30 shadow-[0_0_0_1px_rgba(97,42,79,0.15),0_4px_12px_rgba(97,42,79,0.08)]'
+                                : 'border-gray-100 hover:border-gray-200 hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)]'
                             }`}
                           >
-                            <TooltipProvider delayDuration={100}>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <div className={`w-4 h-4 rounded border-[1.5px] flex items-center justify-center flex-shrink-0 transition-all duration-150 ${
-                                    isChecked ? 'bg-[#612A4F] border-[#612A4F]' : 'border-gray-300 group-hover:border-gray-400'
-                                  }`}>
-                                    {isChecked && <Check size={10} className="text-white" strokeWidth={3} />}
-                                  </div>
-                                </TooltipTrigger>
-                                <TooltipContent side="top" className="text-[11px] bg-gray-500 text-white">
-                                  Select to group into a shoot
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                            <span className="text-sm text-gray-800 flex-1 truncate">{post.title}</span>
-                            {post.pillar && (
-                              <span
-                                className="text-[10px] px-2 py-0.5 rounded-full flex-shrink-0 font-medium"
-                                style={{
-                                  backgroundColor: getPillarStyle(post.pillar).bg,
-                                  color: getPillarStyle(post.pillar).text,
-                                  border: `1px solid ${getPillarStyle(post.pillar).border}`,
-                                }}
-                              >
-                                {post.pillar}
-                              </span>
-                            )}
-                            {post.format && (
-                              <span className="text-[10px] px-2 py-0.5 rounded-full flex-shrink-0 font-medium bg-gray-100 text-gray-500">
-                                {post.format}
-                              </span>
-                            )}
+                            {/* Selection indicator */}
+                            <div
+                              onClick={(e) => { e.stopPropagation(); togglePostSelection(post.id); }}
+                              className={`absolute top-3 right-3 w-5 h-5 rounded-full border-[1.5px] flex items-center justify-center transition-all duration-200 z-10 cursor-pointer ${
+                              isChecked ? 'bg-[#612A4F] border-[#612A4F] scale-100' : 'border-gray-200 bg-white opacity-0 group-hover:opacity-100 hover:border-gray-400'
+                            }`}>
+                              {isChecked && <Check size={10} className="text-white" strokeWidth={3} />}
+                            </div>
+
+                            <div className="p-4">
+                              {/* Title with thumbnail */}
+                              <div className="flex items-start gap-2.5 mb-2.5 pr-6">
+                                {post.thumbnail_url && (
+                                  <img src={post.thumbnail_url} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
+                                )}
+                                <p className="text-[13px] font-semibold text-gray-800 leading-snug">{post.title}</p>
+                              </div>
+
+                              {/* Tags row */}
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                {pillarStyle && (
+                                  <span
+                                    className="text-[10px] px-2 py-0.5 rounded-full font-medium"
+                                    style={{
+                                      backgroundColor: pillarStyle.bg,
+                                      color: pillarStyle.text,
+                                      border: `1px solid ${pillarStyle.border}`,
+                                    }}
+                                  >
+                                    {post.pillar}
+                                  </span>
+                                )}
+                                {post.format && (
+                                  <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-gray-50 text-gray-500 border border-gray-100">
+                                    {post.format}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Remove button */}
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -236,17 +283,18 @@ const Shoots: React.FC = () => {
                                 const stored = getJSON<Post[]>('meg_shoots_posts', []);
                                 setJSON('meg_shoots_posts', stored.map(p => p.id === post.id ? { ...p, sentToShoots: false } : p));
                               }}
-                              className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-400 transition-all duration-150 flex-shrink-0 ml-1"
+                              className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 p-1.5 rounded-lg text-gray-300 hover:text-red-400 hover:bg-red-50/80 transition-all duration-150"
                             >
-                              <X size={14} />
+                              <X size={12} />
                             </button>
-                          </div>
+                          </motion.div>
                         );
                       })}
                     </div>
                   ) : (
-                    <div className="rounded-xl border border-dashed border-gray-200 p-8 text-center">
+                    <div className="rounded-2xl border border-dashed border-gray-200 p-10 text-center">
                       <p className="text-[13px] text-gray-400">No content waiting to be grouped into a shoot</p>
+                      <p className="text-[11px] text-gray-300 mt-1">Mark posts as "Ready to shoot" and send them here from the Posts page</p>
                     </div>
                   )}
 
@@ -254,100 +302,80 @@ const Shoots: React.FC = () => {
                   <AnimatePresence>
                     {selectedPostIds.size > 0 && (
                       <motion.div
-                        initial={{ opacity: 0, y: 6 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 6 }}
-                        transition={{ duration: 0.15 }}
-                        className="mt-3 rounded-xl bg-[#612A4F] text-white px-5 py-3 shadow-lg flex items-center justify-between"
+                        initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 8, scale: 0.98 }}
+                        transition={{ duration: 0.2, ease: 'easeOut' }}
+                        className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 rounded-2xl text-white px-6 py-3.5 shadow-[0_8px_32px_rgba(97,42,79,0.35)] flex items-center gap-5 backdrop-blur-sm"
+                        style={{ background: 'linear-gradient(135deg, #612A4F 0%, #7B3461 100%)' }}
                       >
-                        <span className="text-[13px] font-medium">
+                        <span className="text-[13px] font-semibold tabular-nums">
                           {selectedPostIds.size} selected
                         </span>
-                        <div className="flex items-center gap-3">
-                          <button
-                            onClick={() => setShowCreateModal(true)}
-                            className="flex items-center gap-1.5 bg-white text-[#612A4F] px-4 py-1.5 rounded-lg text-[13px] font-semibold hover:bg-white/90 transition-colors"
-                          >
-                            <Camera className="w-3.5 h-3.5" />
-                            Plan a shoot
-                          </button>
-                          <button
-                            onClick={() => setSelectedPostIds(new Set())}
-                            className="text-white/40 hover:text-white/70 text-[13px] transition-colors"
-                          >
-                            Clear
-                          </button>
+                        <div className="w-px h-5 bg-white/20" />
+                        <button
+                          onClick={() => setShowCreateModal(true)}
+                          className="flex items-center gap-1.5 bg-white text-[#612A4F] px-4 py-2 rounded-xl text-[13px] font-semibold hover:bg-white/90 transition-all duration-150 shadow-sm"
+                        >
+                          <Camera className="w-3.5 h-3.5" />
+                          Plan a shoot
+                        </button>
+                        <button
+                          onClick={() => setSelectedPostIds(new Set())}
+                          className="text-white/40 hover:text-white/80 transition-colors"
+                        >
+                          <X size={16} />
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              )}
+
+              {/* Past shoots — collapsible */}
+              {pastShoots.length > 0 && (
+                <div className="pt-2">
+                  <button
+                    onClick={() => setPastExpanded(p => !p)}
+                    className="flex items-center gap-2 mb-4 group"
+                  >
+                    <div className="w-1.5 h-1.5 rounded-full bg-gray-300" />
+                    <p className="text-[11px] text-gray-400 font-semibold uppercase tracking-wider group-hover:text-gray-500 transition-colors">
+                      Past shoots
+                    </p>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-400 font-medium">{pastShoots.length}</span>
+                    <motion.span animate={{ rotate: pastExpanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                      <ChevronDown size={12} className="text-gray-300" />
+                    </motion.span>
+                  </button>
+                  <AnimatePresence initial={false}>
+                    {pastExpanded && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.25 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 pb-4">
+                          {pastShoots.map((shoot, i) => (
+                            <ShootCard
+                              key={shoot.id}
+                              shoot={shoot}
+                              posts={getPostsForShoot(shoot.id)}
+                              onClick={() => handleSelectShoot(shoot.id)}
+                              index={i}
+                              isPast
+                              onDelete={deleteShoot}
+                              onDuplicate={duplicateShoot}
+                            />
+                          ))}
                         </div>
                       </motion.div>
                     )}
                   </AnimatePresence>
                 </div>
-
-                {/* Right column: Upcoming shoots */}
-                <div>
-                  <p className="text-[13px] text-gray-900 font-semibold mb-4">Upcoming</p>
-                  {upcomingShoots.length > 0 ? (
-                    <div className="space-y-3">
-                      {upcomingShoots.map((shoot, i) => (
-                        <ShootCard
-                          key={shoot.id}
-                          shoot={shoot}
-                          posts={getPostsForShoot(shoot.id)}
-                          onClick={() => handleSelectShoot(shoot.id)}
-                          index={i}
-                        />
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="rounded-xl border border-dashed border-gray-200 p-8 text-center">
-                      <p className="text-[13px] text-gray-400">No upcoming shoots planned</p>
-                    </div>
-                  )}
-
-                  {/* Past shoots — collapsible, under upcoming */}
-                  {pastShoots.length > 0 && (
-                    <div className="mt-6 pt-4 border-t border-gray-100">
-                      <button
-                        onClick={() => setPastExpanded(p => !p)}
-                        className="flex items-center gap-1.5 mb-3"
-                      >
-                        <p className="text-[12px] text-gray-400 font-medium">
-                          Past
-                        </p>
-                        <motion.span animate={{ rotate: pastExpanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
-                          <ChevronDown size={12} className="text-gray-400" />
-                        </motion.span>
-                      </button>
-                      <AnimatePresence initial={false}>
-                        {pastExpanded && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.25 }}
-                            className="overflow-hidden"
-                          >
-                            <div className="space-y-2 pt-1">
-                              {pastShoots.map((shoot, i) => (
-                                <ShootCard
-                                  key={shoot.id}
-                                  shoot={shoot}
-                                  posts={getPostsForShoot(shoot.id)}
-                                  onClick={() => handleSelectShoot(shoot.id)}
-                                  index={i}
-                                  isPast
-                                  onDelete={deleteShoot}
-                                  onDuplicate={duplicateShoot}
-                                />
-                              ))}
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  )}
-                </div>
-              </div>
+              )}
             </div>
           </motion.div>
         )}
@@ -398,6 +426,18 @@ const Shoots: React.FC = () => {
           setSelectedPostIds(new Set());
         }}
       />
+
+      <PostDetailPanel
+        post={detailPost}
+        pillars={DEFAULT_PILLARS}
+        formats={DEFAULT_FORMATS}
+        onClose={() => setDetailPost(null)}
+        onUpdate={handleUpdatePost}
+        onDelete={(id) => { handleDeletePost(id); setDetailPost(null); }}
+        onAddFormat={() => {}}
+        onDeleteFormat={() => {}}
+        onDeletePillar={() => {}}
+      />
     </div>
   );
 };
@@ -417,106 +457,132 @@ interface ShootCardProps {
 function ShootCard({ shoot, posts, onClick, index, isPast, onDelete, onDuplicate }: ShootCardProps) {
   const shootDate = new Date(shoot.date + 'T00:00:00');
   const primaryLocation = shoot.locations?.[0]?.name;
+  const isFuture = isAfter(shootDate, new Date());
+  const timeLabel = isPast
+    ? formatDistanceToNow(shootDate, { addSuffix: true })
+    : isFuture
+    ? formatDistanceToNow(shootDate, { addSuffix: true })
+    : 'Today';
+  const thumbnails = posts.filter(p => p.thumbnail_url).slice(0, 4);
 
   return (
     <motion.div
       onClick={onClick}
-      className={`rounded-xl border bg-white cursor-pointer transition-all duration-200 hover:shadow-[0_4px_16px_rgba(93,63,90,0.1)] hover:border-gray-200 overflow-hidden group/card ${
-        isPast ? 'border-gray-100/80 opacity-75 hover:opacity-100' : 'border-gray-100'
+      className={`group/card relative rounded-2xl border bg-white cursor-pointer transition-all duration-200 overflow-hidden ${
+        isPast ? 'border-gray-100 opacity-70 hover:opacity-100' : 'border-gray-100 hover:border-gray-200'
       }`}
       initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: isPast ? 0.75 : 1, y: 0 }}
-      whileHover={{ opacity: 1, y: -1 }}
-      transition={{ duration: 0.2, delay: index * 0.04 }}
+      animate={{ opacity: isPast ? 0.7 : 1, y: 0 }}
+      whileHover={{ opacity: 1, y: -2, boxShadow: '0 8px 30px rgba(97, 42, 79, 0.1)' }}
+      transition={{ duration: 0.25, delay: index * 0.04 }}
     >
-      <div className="flex">
-        {!isPast && (
-          <div className="w-[3px] flex-shrink-0 bg-gradient-to-b from-[#612A4F] to-[#612A4F]/30" />
+      {/* Thumbnail mosaic */}
+      {thumbnails.length > 0 && (
+        <div className={`grid gap-[1px] bg-gray-100 ${thumbnails.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`} style={{ height: thumbnails.length > 2 ? 140 : 100 }}>
+          {thumbnails.map((post, i) => (
+            <img key={post.id} src={post.thumbnail_url} alt="" className="w-full h-full object-cover" />
+          ))}
+          {thumbnails.length === 3 && <div className="bg-gray-50" />}
+        </div>
+      )}
+
+      {/* Card body */}
+      <div className="p-4">
+        {/* Date badge + time label */}
+        <div className="flex items-center gap-2.5 mb-3">
+          <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold ${
+            isPast ? 'bg-gray-50 text-gray-400' : 'bg-[#612A4F]/[0.06] text-[#612A4F]'
+          }`}>
+            <Calendar size={11} />
+            {format(shootDate, 'EEE, MMM d')}
+          </div>
+          <span className="text-[10px] text-gray-400">{timeLabel}</span>
+        </div>
+
+        {/* Shoot name — full, no truncation */}
+        <p className={`text-[15px] font-semibold leading-snug mb-1.5 ${isPast ? 'text-gray-500' : 'text-gray-900'}`}>
+          {shoot.name}
+        </p>
+
+        {/* Location */}
+        {primaryLocation && (
+          <div className="flex items-center gap-1 mb-3">
+            <MapPin size={11} className="text-gray-300 flex-shrink-0" />
+            <span className="text-[11px] text-gray-400">{primaryLocation}</span>
+          </div>
         )}
-        <div className="flex-1 p-4">
-          {/* Top row: date + name + location */}
-          <div className="flex items-start gap-3 mb-2">
-            <div className="flex-shrink-0 text-center min-w-[40px]">
-              <p className="text-[10px] uppercase tracking-wider text-gray-400 leading-tight">
-                {format(shootDate, 'EEE')}
-              </p>
-              <p className={`text-sm font-semibold leading-tight ${isPast ? 'text-gray-500' : 'text-gray-800'}`}>
-                {format(shootDate, 'MMM d')}
-              </p>
-            </div>
 
-            <div className="flex-1 min-w-0">
-              <p className={`text-[14px] font-semibold truncate ${isPast ? 'text-gray-600' : 'text-gray-800'}`}>{shoot.name}</p>
-              {primaryLocation && (
-                <div className="flex items-center gap-1 mt-0.5">
-                  <MapPin size={11} className="text-gray-400 flex-shrink-0" />
-                  <span className="text-[11px] text-gray-400 truncate">{primaryLocation}</span>
+        {/* Posts list */}
+        {posts.length > 0 ? (
+          <div className="space-y-1">
+            {posts.slice(0, 3).map(post => {
+              const sc = STATUS_COLORS[post.status] || { dot: '#9CA3AF' };
+              return (
+                <div key={post.id} className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: sc.dot }} />
+                  <span className="text-[11px] text-gray-600 leading-tight">{post.title}</span>
                 </div>
-              )}
-            </div>
-
-            {posts.length > 0 && (
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 flex-shrink-0">
-                {posts.length} {posts.length === 1 ? 'post' : 'posts'}
-              </span>
-            )}
-
-            {isPast && onDelete && onDuplicate && (
-              <Popover>
-                <PopoverTrigger asChild>
-                  <button
-                    onClick={e => e.stopPropagation()}
-                    className="p-1 rounded-lg text-gray-300 hover:text-gray-500 hover:bg-gray-100 opacity-0 group-hover/card:opacity-100 transition-all duration-150 flex-shrink-0"
-                  >
-                    <MoreHorizontal size={14} />
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent align="end" sideOffset={4} className="w-40 p-1 rounded-lg border border-gray-100 bg-white shadow-lg" onClick={e => e.stopPropagation()}>
-                  <button
-                    onClick={() => onDuplicate(shoot.id)}
-                    className="flex items-center gap-2 px-3 py-1.5 text-[12px] text-gray-600 hover:bg-gray-50 rounded-md cursor-pointer w-full"
-                  >
-                    <Copy className="w-3.5 h-3.5" />
-                    Duplicate
-                  </button>
-                  <button
-                    onClick={() => onDelete(shoot.id)}
-                    className="flex items-center gap-2 px-3 py-1.5 text-[12px] text-red-500 hover:bg-red-50 rounded-md cursor-pointer w-full"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    Delete
-                  </button>
-                </PopoverContent>
-              </Popover>
+              );
+            })}
+            {posts.length > 3 && (
+              <p className="text-[10px] text-gray-400 pl-3.5">+{posts.length - 3} more</p>
             )}
           </div>
-
-          {/* Content ideas */}
-          {posts.length > 0 ? (
-            <div className="flex flex-wrap gap-1.5 pl-[52px]">
-              {posts.map(post => {
-                const sc = STATUS_COLORS[post.status] || { dot: '#9CA3AF' };
-                return (
-                  <span
-                    key={post.id}
-                    className="inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-lg bg-gray-50 text-gray-600 border border-gray-100"
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: sc.dot }} />
-                    <span className="truncate max-w-[160px]">{post.title}</span>
-                  </span>
-                );
-              })}
+        ) : !isPast ? (
+          <div className="flex items-center gap-1.5 mt-1">
+            <div className="w-4 h-4 rounded-full border border-dashed border-gray-200 flex items-center justify-center">
+              <Plus size={8} className="text-gray-300" />
             </div>
-          ) : !isPast ? (
-            <div className="flex items-center gap-1.5 pl-[52px]">
-              <div className="w-4 h-4 rounded-full border border-dashed border-gray-300 flex items-center justify-center">
-                <Plus size={8} className="text-gray-300" />
-              </div>
-              <span className="text-[11px] text-gray-400">Add content ideas</span>
-            </div>
-          ) : null}
-        </div>
+            <span className="text-[11px] text-gray-400">Add content ideas</span>
+          </div>
+        ) : null}
       </div>
+
+      {/* Post count badge */}
+      {posts.length > 0 && (
+        <div className="absolute top-3 right-3 text-[10px] px-2 py-0.5 rounded-full font-semibold bg-white/80 backdrop-blur-sm text-gray-500 shadow-sm border border-white/50">
+          {posts.length} {posts.length === 1 ? 'post' : 'posts'}
+        </div>
+      )}
+
+      {/* Past shoot actions */}
+      {isPast && onDelete && onDuplicate && (
+        <div className="absolute top-3 right-3">
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                onClick={e => e.stopPropagation()}
+                className="p-1.5 rounded-lg bg-white/80 backdrop-blur-sm text-gray-300 hover:text-gray-500 hover:bg-white border border-white/50 shadow-sm opacity-0 group-hover/card:opacity-100 transition-all duration-150"
+              >
+                <MoreHorizontal size={14} />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent align="end" sideOffset={4} className="w-40 p-1 rounded-xl border border-gray-100 bg-white shadow-xl" onClick={e => e.stopPropagation()}>
+              <button
+                onClick={() => onDuplicate(shoot.id)}
+                className="flex items-center gap-2 px-3 py-2 text-[12px] text-gray-600 hover:bg-gray-50 rounded-lg cursor-pointer w-full"
+              >
+                <Copy className="w-3.5 h-3.5" />
+                Duplicate
+              </button>
+              <button
+                onClick={() => onDelete(shoot.id)}
+                className="flex items-center gap-2 px-3 py-2 text-[12px] text-red-500 hover:bg-red-50 rounded-lg cursor-pointer w-full"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                Delete
+              </button>
+            </PopoverContent>
+          </Popover>
+        </div>
+      )}
+
+      {/* Hover arrow indicator */}
+      {!isPast && (
+        <div className="absolute bottom-4 right-4 opacity-0 group-hover/card:opacity-100 transition-all duration-200 translate-x-1 group-hover/card:translate-x-0">
+          <ArrowRight size={14} className="text-[#612A4F]/40" />
+        </div>
+      )}
     </motion.div>
   );
 }

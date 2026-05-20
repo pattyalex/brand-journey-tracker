@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GripVertical, ArrowRight, ImageIcon } from 'lucide-react';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 import PlatformSelector from './PlatformSelector';
 import PostContextMenu from './PostContextMenu';
 import FormatDropdown from './FormatDropdown';
@@ -399,30 +400,34 @@ const SortableRow: React.FC<SortableRowProps> = ({
             displayOverride={post.status === 'Ready to shoot' && post.sentToShoots ? 'Shoot in progress' : post.status === 'Edited' && post.sent_to_schedule ? 'Sent to schedule' : undefined}
           />
           {post.status === 'Ready to shoot' && onSendToShoots && !post.sentToShoots && (
-            <div className="relative group/arrow flex-shrink-0">
-              <button
-                onClick={() => onSendToShoots(post.id)}
-                className="flex items-center justify-center w-5 h-5 rounded-full bg-[#612A4F]/8 hover:bg-[#612A4F]/20 transition-colors"
-              >
-                <ArrowRight size={11} className="text-[#612A4F]" />
-              </button>
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 rounded-md bg-gray-800 text-white text-[10px] font-medium whitespace-nowrap opacity-0 group-hover/arrow:opacity-100 transition-opacity duration-100 pointer-events-none">
-                Plan the shoot
-              </div>
-            </div>
+            <TooltipProvider delayDuration={0}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => onSendToShoots(post.id)}
+                    className="flex items-center justify-center w-5 h-5 rounded-full bg-[#7B3F8F] hover:bg-[#6A3580] transition-colors flex-shrink-0"
+                  >
+                    <ArrowRight size={11} className="text-white" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="bg-gray-700 text-white text-[10px] font-medium px-1.5 py-0.5">Plan the shoot</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           )}
           {post.status === 'Edited' && onSendToSchedule && !post.sent_to_schedule && (
-            <div className="relative group/sched flex-shrink-0">
-              <button
-                onClick={() => onSendToSchedule(post.id)}
-                className="flex items-center justify-center w-5 h-5 rounded-full bg-[#612A4F]/8 hover:bg-[#612A4F]/20 transition-colors"
-              >
-                <ArrowRight size={11} className="text-[#612A4F]" />
-              </button>
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 rounded-md bg-gray-400 text-white text-[10px] font-medium whitespace-nowrap opacity-0 group-hover/sched:opacity-100 transition-opacity duration-100 pointer-events-none">
-                Schedule this post
-              </div>
-            </div>
+            <TooltipProvider delayDuration={0}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => onSendToSchedule(post.id)}
+                    className="flex items-center justify-center w-5 h-5 rounded-full bg-[#5B8EC9] hover:bg-[#4A7DB8] transition-colors flex-shrink-0"
+                  >
+                    <ArrowRight size={11} className="text-white" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="bg-gray-700 text-white text-[10px] font-medium px-1.5 py-0.5">Schedule this post</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           )}
         </div>
       </td>
