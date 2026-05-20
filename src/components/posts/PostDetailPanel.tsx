@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Calendar, MessageSquare, FileText, BarChart3, StickyNote, Paperclip, Trash2, ImageIcon, Pencil, ExternalLink, Maximize2, ChevronLeft, ChevronRight, Clapperboard, Plus, ArrowRight } from 'lucide-react';
+import { X, Calendar, MessageSquare, FileText, BarChart3, StickyNote, Paperclip, Trash2, ImageIcon, Pencil, ExternalLink, Maximize2, ChevronLeft, ChevronRight, Clapperboard, Plus, ArrowRight, Sparkles, Loader2 } from 'lucide-react';
 import { Post, PostStatus, POST_STATUSES, STATUS_COLORS, getPillarStyle } from '@/types/posts';
 import { uploadPostThumbnail } from '@/lib/postImageUpload';
 import { API_BASE } from '@/lib/api-base';
@@ -10,6 +10,7 @@ import StatusDropdown from './StatusDropdown';
 import PlatformSelector from './PlatformSelector';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 import ScriptEditor from './ScriptEditor';
+import { callClaudeForJSON } from '@/services/claudeService';
 
 interface PostDetailPanelProps {
   post: Post | null;
@@ -43,6 +44,7 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
   const [addingLink, setAddingLink] = useState(false);
   const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
+  const [splittingScript, setSplittingScript] = useState(false);
   const thumbnailInputRef = useRef<HTMLInputElement>(null);
 
   const isVideoUrl = (url: string) =>
@@ -99,6 +101,37 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
       setUploadingThumbnail(false);
     }
   }, [post, onUpdate]);
+
+  const handleAISplitScript = useCallback(async () => {
+    if (splittingScript || !post) return;
+    // Use scriptDraft (latest in-editor value) falling back to saved post.script
+    const rawHtml = scriptDraft || post.script || '';
+    // Strip HTML to plain text
+    const tmp = document.createElement('div');
+    tmp.innerHTML = rawHtml;
+    const plainText = (tmp.textContent || tmp.innerText || '').trim();
+    if (!plainText) return;
+
+    setSplittingScript(true);
+    try {
+      const result = await callClaudeForJSON<string[]>({
+        system: 'You break video scripts into short, logical lines for a storyboard. Return a JSON array of strings, each being one script line. Keep the original wording exactly — do not rewrite, summarize, or add anything. Split at natural sentence boundaries or logical pauses.',
+        messages: [
+          { role: 'user', content: `Split this script into individual lines for a video storyboard. Return ONLY a JSON array of strings.\n\nScript:\n${plainText}` },
+        ],
+        maxTokens: 1024,
+      }, 'array');
+
+      if (result.ok && result.data && result.data.length > 0) {
+        const newRows = result.data.map(line => ({ action: '', script: line }));
+        const existing = post.storyboard || [];
+        const hasContent = existing.some(r => r.action.trim() || r.script.trim());
+        onUpdate(post.id, { storyboard: hasContent ? [...existing, ...newRows] : newRows });
+      }
+    } finally {
+      setSplittingScript(false);
+    }
+  }, [post, scriptDraft, splittingScript, onUpdate]);
 
   useEffect(() => {
     if (post) {
@@ -697,6 +730,12 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
                   onUpdate(post.id, { storyboard: [...rows, { action: '', script: '' }] });
                 };
 
+                const insertRow = (afterIdx: number) => {
+                  const updated = [...rows];
+                  updated.splice(afterIdx + 1, 0, { action: '', script: '' });
+                  onUpdate(post.id, { storyboard: updated });
+                };
+
                 const deleteRow = (idx: number) => {
                   onUpdate(post.id, { storyboard: rows.filter((_, i) => i !== idx) });
                 };
@@ -716,50 +755,87 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
                       </div>
                       {/* Rows */}
                       {rows.map((row, idx) => (
-                        <div key={idx} className="grid grid-cols-[1fr_1fr_28px] border-b border-gray-100 last:border-b-0 group/row">
-                          <textarea
-                            value={row.action}
-                            onChange={e => updateRow(idx, 'action', e.target.value)}
-                            placeholder="e.g. Pick up the pen"
-                            rows={1}
-                            className="px-3 py-2 text-sm text-gray-700 bg-transparent border-r border-gray-100 outline-none resize-none placeholder:text-gray-300 focus:bg-gray-50/50"
-                            onInput={e => { const el = e.target as HTMLTextAreaElement; el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }}
-                            ref={el => { if (el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; } }}
-                          />
-                          <textarea
-                            value={row.script}
-                            onChange={e => updateRow(idx, 'script', e.target.value)}
-                            placeholder="Corresponding script line..."
-                            rows={1}
-                            className="px-3 py-2 text-sm text-gray-700 bg-transparent outline-none resize-none placeholder:text-gray-300 focus:bg-gray-50/50"
-                            onInput={e => { const el = e.target as HTMLTextAreaElement; el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }}
-                            ref={el => { if (el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; } }}
-                          />
-                          <button
-                            onClick={() => deleteRow(idx)}
-                            className="flex items-center justify-center text-gray-300 hover:text-red-400 opacity-0 group-hover/row:opacity-100 transition-all"
-                          >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
+                        <React.Fragment key={idx}>
+                          <div className="grid grid-cols-[1fr_1fr_28px] border-b border-gray-100 last:border-b-0 group/row">
+                            <textarea
+                              value={row.action}
+                              onChange={e => updateRow(idx, 'action', e.target.value)}
+                              placeholder="Describe the visual..."
+                              rows={1}
+                              className="px-3 py-2 text-sm text-gray-700 bg-transparent border-r border-gray-100 outline-none resize-none placeholder:text-gray-300 focus:bg-gray-50/50"
+                              onInput={e => { const el = e.target as HTMLTextAreaElement; el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }}
+                              ref={el => { if (el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; } }}
+                            />
+                            <textarea
+                              value={row.script}
+                              onChange={e => updateRow(idx, 'script', e.target.value)}
+                              placeholder="Corresponding script line..."
+                              rows={1}
+                              className="px-3 py-2 text-sm text-gray-700 bg-transparent outline-none resize-none placeholder:text-gray-300 focus:bg-gray-50/50"
+                              onInput={e => { const el = e.target as HTMLTextAreaElement; el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }}
+                              ref={el => { if (el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; } }}
+                            />
+                            <button
+                              onClick={() => deleteRow(idx)}
+                              className="flex items-center justify-center text-gray-300 hover:text-red-400 opacity-0 group-hover/row:opacity-100 transition-all"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                          {idx < rows.length - 1 && (
+                            <div className="relative h-0 group/insert">
+                              <button
+                                onClick={() => insertRow(idx)}
+                                className="absolute inset-x-0 -top-1.5 h-3 flex items-center justify-center z-10 opacity-0 group-hover/insert:opacity-100 transition-opacity"
+                              >
+                                <div className="w-full h-px bg-[#612A4F]/30" />
+                                <span className="absolute flex items-center justify-center w-4 h-4 rounded-full bg-[#612A4F] text-white text-[10px] shadow-sm">+</span>
+                              </button>
+                            </div>
+                          )}
+                        </React.Fragment>
                       ))}
                     </div>
-                    <button
-                      onClick={addRow}
-                      className="mt-2 flex items-center gap-1 text-[12px] text-gray-400 hover:text-[#612A4F] transition-colors"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      Add row
-                    </button>
+                    <div className="mt-2 flex items-center gap-3">
+                      <button
+                        onClick={addRow}
+                        className="flex items-center gap-1 text-[12px] text-gray-400 hover:text-[#612A4F] transition-colors"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        Add row
+                      </button>
+                      {(scriptDraft || post.script) && (
+                        <button
+                          onClick={handleAISplitScript}
+                          disabled={splittingScript}
+                          className="flex items-center gap-1 text-[12px] text-gray-400 hover:text-[#612A4F] transition-colors disabled:opacity-50"
+                        >
+                          {splittingScript ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+                          {splittingScript ? 'Splitting...' : 'Split script with AI'}
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ) : (
-                  <button
-                    onClick={addRow}
-                    className="flex items-center gap-1.5 text-[12px] text-gray-400 hover:text-[#612A4F] transition-colors"
-                  >
-                    <Clapperboard className="w-3.5 h-3.5" />
-                    Build video storyboard
-                  </button>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={addRow}
+                      className="flex items-center gap-1.5 text-[12px] text-gray-400 hover:text-[#612A4F] transition-colors"
+                    >
+                      <Clapperboard className="w-3.5 h-3.5" />
+                      Build video storyboard
+                    </button>
+                    {post.script && (
+                      <button
+                        onClick={handleAISplitScript}
+                        disabled={splittingScript}
+                        className="flex items-center gap-1 text-[12px] text-gray-400 hover:text-[#612A4F] transition-colors disabled:opacity-50"
+                      >
+                        {splittingScript ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+                        {splittingScript ? 'Splitting...' : 'Split script with AI'}
+                      </button>
+                    )}
+                  </div>
                 );
               })()}
 

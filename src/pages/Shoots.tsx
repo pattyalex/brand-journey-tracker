@@ -188,7 +188,6 @@ const Shoots: React.FC = () => {
                 const now = new Date();
                 const diffMs = nextDate.getTime() - now.getTime();
                 const diffDays = Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
-                const shotCount = nextPosts.filter(p => ['Shot', 'Edited', 'Scheduled', 'Posted'].includes(p.status)).length;
                 const nextLocation = nextShoot.locations?.[0]?.name;
                 return (
                   <motion.div
@@ -237,23 +236,6 @@ const Shoots: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* Right: progress */}
-                      {nextPosts.length > 0 && (
-                        <div className="flex-shrink-0 flex items-center gap-3">
-                          <div className="relative w-14 h-14">
-                            <svg className="w-14 h-14 -rotate-90" viewBox="0 0 56 56">
-                              <circle cx="28" cy="28" r="24" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="4" />
-                              <circle cx="28" cy="28" r="24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round"
-                                strokeDasharray={`${(shotCount / nextPosts.length) * 150.8} 150.8`}
-                              />
-                            </svg>
-                            <span className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-white">
-                              {shotCount}/{nextPosts.length}
-                            </span>
-                          </div>
-                          <span className="text-[11px] text-white/60 hidden md:block">captured</span>
-                        </div>
-                      )}
                     </div>
 
                     {/* Hover arrow */}
@@ -265,17 +247,17 @@ const Shoots: React.FC = () => {
               })()}
 
               {/* Other upcoming shoots */}
-              {upcomingShoots.length > 1 && (
+              {upcomingShoots.length > 0 && (
                 <div className="mb-10">
                   <div className="flex items-center gap-2.5 mb-5">
                     <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #612A4F, #8B3A6B)' }}>
                       <Camera size={13} className="text-white" />
                     </div>
                     <p className="text-[13px] text-gray-700 font-semibold">Upcoming</p>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#612A4F]/10 text-[#612A4F] font-semibold">{upcomingShoots.length - 1}</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#612A4F]/10 text-[#612A4F] font-semibold">{upcomingShoots.length}</span>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                    {upcomingShoots.slice(1).map((shoot, i) => (
+                    {upcomingShoots.map((shoot, i) => (
                       <ShootCard
                         key={shoot.id}
                         shoot={shoot}
