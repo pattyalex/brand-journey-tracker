@@ -34,6 +34,7 @@ interface PostsCalendarViewProps {
   onSendToSchedule?: (id: string) => void;
   onCreateOnDate: (date: string) => void;
   onSwitchToList: () => void;
+  onSwitchView?: (view: string) => void;
 }
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -86,6 +87,7 @@ const PostsCalendarView: React.FC<PostsCalendarViewProps> = ({
   onSendToSchedule,
   onCreateOnDate,
   onSwitchToList,
+  onSwitchView,
 }) => {
   const navigate = useNavigate();
   const today = new Date();
@@ -95,6 +97,7 @@ const PostsCalendarView: React.FC<PostsCalendarViewProps> = ({
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [sidebarPillarFilter, setSidebarPillarFilter] = useState<string>('all');
 
+  const [emptyOverlayDismissed, setEmptyOverlayDismissed] = useState(false);
   const [commitPostId, setCommitPostId] = useState<string | null>(null);
   const commitPost = commitPostId ? allPosts.find(p => p.id === commitPostId) : null;
 
@@ -197,7 +200,7 @@ const PostsCalendarView: React.FC<PostsCalendarViewProps> = ({
   return (
     <>
     <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <div className="flex gap-4">
+      <div className="relative flex gap-4">
         {/* Unplanned sidebar */}
         <div
           className="flex-shrink-0 transition-all duration-300 ease-in-out"
@@ -262,7 +265,7 @@ const PostsCalendarView: React.FC<PostsCalendarViewProps> = ({
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="text-sm font-semibold text-gray-700">Rough Planning</h2>
-              <p className="text-xs text-gray-400 mt-0.5">Use this timeline to sketch out your posting order. It's a planning tool, not a final calendar.</p>
+              <p className="text-xs text-gray-400 mt-0.5">This is not your final content calendar. Use this timeline to roughly plan out your posting order.</p>
             </div>
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-0.5">
@@ -293,26 +296,65 @@ const PostsCalendarView: React.FC<PostsCalendarViewProps> = ({
           </div>
 
           {/* Grid */}
-          <div className="grid grid-cols-7 border-t border-l border-gray-100">
-            {days.map(({ date, day, isCurrentMonth }) => (
-              <CalendarCell
-                key={date}
-                date={date}
-                day={day}
-                isCurrentMonth={isCurrentMonth}
-                isToday={date === todayKey}
-                posts={postsByDate[date] || []}
-                onClickPost={onClickPost}
-                onDeletePost={onDeletePost}
-                onDuplicatePost={onDuplicatePost}
-                onSendToShoots={onSendToShoots}
-                onSendToSchedule={onSendToSchedule}
-                onCommitToDate={handleCommitToDate}
-                onClickEmpty={() => onCreateOnDate(date)}
-              />
-            ))}
+          <div className="relative">
+            <div className="grid grid-cols-7 border-t border-l border-gray-100">
+              {days.map(({ date, day, isCurrentMonth }) => (
+                <CalendarCell
+                  key={date}
+                  date={date}
+                  day={day}
+                  isCurrentMonth={isCurrentMonth}
+                  isToday={date === todayKey}
+                  posts={postsByDate[date] || []}
+                  onClickPost={onClickPost}
+                  onDeletePost={onDeletePost}
+                  onDuplicatePost={onDuplicatePost}
+                  onSendToShoots={onSendToShoots}
+                  onSendToSchedule={onSendToSchedule}
+                  onCommitToDate={handleCommitToDate}
+                  onClickEmpty={() => onCreateOnDate(date)}
+                />
+              ))}
+            </div>
+
           </div>
         </div>
+
+        {posts.length === 0 && !emptyOverlayDismissed && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none" style={{ backgroundColor: 'rgba(255,255,255,0.7)', paddingBottom: '12%' }}>
+            <div className="bg-white rounded-2xl px-10 py-8 shadow-md border border-gray-100 text-center pointer-events-auto">
+
+              {/* Mini calendar icon */}
+              <div className="relative flex justify-center mb-4">
+                <div className="flex gap-1.5">
+                  {['#60A5FA', '#4ADE80', '#F87171', '#FACC15', '#A78BFA'].map((color, i) => (
+                    <div key={i} className="w-7 h-7 rounded-md" style={{ backgroundColor: `${color}20`, border: `1.5px solid ${color}40` }}>
+                      <div className="w-1.5 h-1.5 rounded-full mt-1.5 mx-auto" style={{ backgroundColor: `${color}60` }} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <h3 className="text-base font-semibold text-gray-800 mb-1.5">Start with a date</h3>
+              <p className="text-sm text-gray-500 max-w-sm leading-relaxed mb-4">
+                This is not your final content calendar. Use this timeline to roughly plan out your posting order and place ideas on dates that make sense.
+              </p>
+              <button
+                onClick={() => setEmptyOverlayDismissed(true)}
+                className="text-white px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-300 shadow-[0_2px_8px_rgba(97,42,79,0.3)] hover:shadow-[0_4px_16px_rgba(97,42,79,0.4)] hover:scale-[1.03] mb-4"
+                style={{ background: 'linear-gradient(135deg, #612A4F 0%, #8B3A6B 100%)' }}
+              >
+                Start planning
+              </button>
+              <p className="text-xs text-gray-400">
+                You can also start with a{' '}
+                <button onClick={() => onSwitchView?.('List')} className="font-semibold text-gray-600 hover:text-[#612A4F] transition-colors">List</button>
+                {' '}or start with your{' '}
+                <button onClick={() => onSwitchView?.('Pillars')} className="font-semibold text-gray-600 hover:text-[#612A4F] transition-colors">Pillars</button>
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
       <DragOverlay dropAnimation={{ duration: 200, easing: 'ease-out' }}>

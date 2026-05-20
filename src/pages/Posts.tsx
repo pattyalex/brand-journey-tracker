@@ -611,7 +611,7 @@ const Posts: React.FC = () => {
             {activeView === 'List' && (
               <div className="bg-white rounded-lg border border-gray-100 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_2px_4px_rgba(0,0,0,0.03)] overflow-visible">
                 {filteredPosts.length === 0 ? (
-                  <ListEmptyState />
+                  <ListEmptyState onSwitchView={setActiveView} />
                 ) : (
                   <PostsTable
                     posts={filteredPosts}
@@ -633,7 +633,7 @@ const Posts: React.FC = () => {
                     onSelectToggle={handleSelectToggle}
                   />
                 )}
-                <PostQuickAdd onAdd={handleAddPost} />
+                <PostQuickAdd onAdd={handleAddPost} prominent={filteredPosts.length === 0} />
               </div>
             )}
 
@@ -649,6 +649,8 @@ const Posts: React.FC = () => {
                 onSendToSchedule={handleSendToSchedule}
                 onAddPost={handleAddPost}
                 onReorder={handleReorder}
+                onAddPillar={handleAddPillar}
+                onSwitchView={setActiveView}
               />
             )}
 
@@ -665,6 +667,7 @@ const Posts: React.FC = () => {
                 onSendToSchedule={handleSendToSchedule}
                 onCreateOnDate={handleCreateOnDate}
                 onSwitchToList={handleSwitchToListBank}
+                onSwitchView={setActiveView}
               />
             )}
           </motion.div>
@@ -709,15 +712,53 @@ const Posts: React.FC = () => {
 
 // ── List Empty State ─────────────────────────────────────────
 
-const ListEmptyState: React.FC = () => (
-  <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
-    <div className="w-12 h-12 rounded-full bg-[#612a4f]/6 flex items-center justify-center mb-4">
-      <svg className="w-6 h-6 text-[#612a4f]/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.994 15.994 0 011.622-3.395m3.42 3.42a15.995 15.995 0 004.764-4.648l3.876-5.814a1.151 1.151 0 00-1.597-1.597L14.146 6.32a15.996 15.996 0 00-4.649 4.763m3.42 3.42a6.776 6.776 0 00-3.42-3.42" />
-      </svg>
+const ListEmptyState: React.FC<{ onSwitchView: (view: ViewMode) => void }> = ({ onSwitchView }) => (
+  <div className="px-0">
+    {/* Ghost table header */}
+    <table className="w-full text-sm">
+      <thead>
+        <tr className="border-b border-gray-100">
+          <th className="w-8 px-2 py-3" />
+          <th className="text-left px-4 py-3 text-xs font-medium text-gray-300 uppercase tracking-wider">Title</th>
+          <th className="text-left px-4 py-3 text-xs font-medium text-gray-300 uppercase tracking-wider">Pillar</th>
+          <th className="text-left px-4 py-3 text-xs font-medium text-gray-300 uppercase tracking-wider">Format</th>
+          <th className="text-left px-4 py-3 text-xs font-medium text-gray-300 uppercase tracking-wider">Platforms</th>
+          <th className="text-right pl-16 pr-4 py-3 text-xs font-medium text-gray-300 uppercase tracking-wider">Status</th>
+          <th className="w-10 px-2 py-3" />
+        </tr>
+      </thead>
+      <tbody>
+        {[
+          { opacity: 0.65, title: 'bg-gray-200', pillar: 'bg-[#DBEAFE]', pillarBorder: 'border border-[#60A5FA]/40', format: 'bg-[#F3E8FF]', platform: 'bg-[#E879F9]/25', status: 'bg-[#FEF9C3]', statusBorder: 'border border-[#FACC15]/50' },
+          { opacity: 0.45, title: 'bg-gray-200', pillar: 'bg-[#D1FAE5]', pillarBorder: 'border border-[#4ADE80]/40', format: 'bg-[#FEF3C7]', platform: 'bg-[#60A5FA]/20', status: 'bg-[#DBEAFE]', statusBorder: 'border border-[#60A5FA]/40' },
+          { opacity: 0.25, title: 'bg-gray-200', pillar: 'bg-[#FEE2E2]', pillarBorder: 'border border-[#F87171]/35', format: 'bg-[#D1FAE5]', platform: 'bg-[#F87171]/15', status: 'bg-[#D1FAE5]', statusBorder: 'border border-[#059669]/35' },
+        ].map((row, i) => (
+          <tr key={i} className="border-b border-gray-50" style={{ opacity: row.opacity }}>
+            <td className="w-8 px-2 py-3.5" />
+            <td className="px-4 py-3.5"><div className={`h-3.5 w-32 ${row.title} rounded-md`} /></td>
+            <td className="px-4 py-3.5"><div className={`h-5 w-20 ${row.pillar} ${row.pillarBorder} rounded-full`} /></td>
+            <td className="px-4 py-3.5"><div className={`h-3.5 w-16 ${row.format} rounded-md`} /></td>
+            <td className="px-4 py-3.5"><div className={`h-4 w-4 ${row.platform} rounded-full`} /></td>
+            <td className="px-4 py-3.5 text-right"><div className={`h-5 w-16 ${row.status} ${row.statusBorder} rounded-full ml-auto`} /></td>
+            <td className="w-10 px-2 py-3.5" />
+          </tr>
+        ))}
+      </tbody>
+    </table>
+
+    {/* CTA */}
+    <div className="flex flex-col items-center py-5 text-center">
+      <h3 className="text-base font-semibold text-gray-800 mb-1.5">Start with a content idea</h3>
+      <p className="text-sm text-gray-500 max-w-sm leading-relaxed mb-3">
+        Write down ideas as they come. Track their progress from idea to posted.
+      </p>
+      <p className="text-xs text-gray-400">
+        You can also start with your{' '}
+        <button onClick={() => onSwitchView('Pillars')} className="font-semibold text-gray-600 hover:text-[#612A4F] transition-colors">Pillars</button>
+        {' '}or plan on a{' '}
+        <button onClick={() => onSwitchView('Timeline')} className="font-semibold text-gray-600 hover:text-[#612A4F] transition-colors">Timeline</button>
+      </p>
     </div>
-    <h3 className="text-sm font-semibold text-gray-700 mb-1">Start creating</h3>
-    <p className="text-xs text-gray-400 max-w-xs leading-relaxed">Add your first post idea to get started</p>
   </div>
 );
 
