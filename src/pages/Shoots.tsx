@@ -206,11 +206,12 @@ const Shoots: React.FC = () => {
                     <div className="absolute top-1/2 right-1/4 w-20 h-20 rounded-full bg-white/[0.03]" />
 
                     <div className="relative z-10 p-6 md:p-8 flex flex-col md:flex-row md:items-center gap-6">
-                      {/* Left: countdown */}
+                      {/* Left: date block */}
                       <div className="flex-shrink-0 text-center md:text-left">
                         <div className="inline-flex flex-col items-center justify-center w-20 h-20 rounded-2xl bg-white/15 backdrop-blur-sm">
-                          <span className="text-3xl font-bold text-white leading-none">{diffDays}</span>
-                          <span className="text-[10px] text-white/70 uppercase tracking-wider font-medium">{diffDays === 1 ? 'day' : 'days'}</span>
+                          <span className="text-[10px] text-white/70 uppercase tracking-wider font-medium">{format(nextDate, 'MMM')}</span>
+                          <span className="text-3xl font-bold text-white leading-none">{format(nextDate, 'd')}</span>
+                          <span className="text-[10px] text-white/70 uppercase tracking-wider font-medium">{format(nextDate, 'EEE')}</span>
                         </div>
                       </div>
 

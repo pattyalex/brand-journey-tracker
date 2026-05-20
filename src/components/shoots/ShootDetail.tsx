@@ -99,66 +99,35 @@ export default function ShootDetail({
           </Popover>
         </div>
 
-        {/* Shoot info card */}
-        <div className="relative rounded-2xl overflow-hidden p-5 md:p-6 mb-2" style={{ background: 'linear-gradient(135deg, #f8f0f6 0%, #f3eaf8 40%, #eee8f5 100%)' }}>
-          {/* Decorative */}
-          <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full" style={{ background: 'radial-gradient(circle, rgba(97,42,79,0.06) 0%, transparent 70%)' }} />
-          <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full" style={{ background: 'radial-gradient(circle, rgba(139,58,107,0.05) 0%, transparent 70%)' }} />
+        {/* Shoot info */}
+        <div className="flex items-start gap-5 mb-2 pb-6 border-b border-gray-100">
+          {/* Date block */}
+          <div className="flex-shrink-0 w-16 h-16 rounded-2xl flex flex-col items-center justify-center" style={{ background: 'linear-gradient(135deg, #612A4F, #8B3A6B)' }}>
+            <span className="text-[10px] text-white/70 uppercase tracking-wider font-medium leading-none">{format(shootDate, 'MMM')}</span>
+            <span className="text-2xl font-bold text-white leading-none mt-0.5">{format(shootDate, 'd')}</span>
+            <span className="text-[9px] text-white/60 uppercase tracking-wider font-medium leading-none mt-0.5">{format(shootDate, 'EEE')}</span>
+          </div>
 
-          <div className="relative z-10 flex flex-col md:flex-row md:items-center gap-5">
-            {/* Left: icon + info */}
-            <div className="flex items-start gap-4 flex-1 min-w-0">
-              <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg" style={{ background: 'linear-gradient(135deg, #612A4F, #8B3A6B)' }}>
-                <Camera size={22} className="text-white" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-1.5 truncate">{shoot.name}</h1>
-                <div className="flex items-center gap-3 flex-wrap text-[13px]">
-                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/60 text-gray-600">
-                    <Calendar size={13} className="text-[#612A4F]/60" />
-                    {format(shootDate, 'EEE, MMM d')}
-                  </div>
-                  {primaryLocation && (
-                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/60 text-gray-600">
-                      <MapPin size={13} className="text-[#612A4F]/60" />
-                      {primaryLocation}
-                    </div>
-                  )}
-                  {isFuture && (
-                    <span className="px-2.5 py-1 rounded-lg bg-[#612A4F]/10 text-[#612A4F] text-[11px] font-semibold">
-                      in {diffDays} {diffDays === 1 ? 'day' : 'days'}
-                    </span>
-                  )}
+          {/* Info */}
+          <div className="flex-1 min-w-0 pt-0.5">
+            <h1 className="text-2xl font-bold text-gray-900 mb-2 truncate">{shoot.name}</h1>
+            <div className="flex items-center gap-3 flex-wrap text-[13px] text-gray-500">
+              {primaryLocation && (
+                <div className="flex items-center gap-1.5">
+                  <MapPin size={13} className="text-gray-400" />
+                  {primaryLocation}
                 </div>
+              )}
+              <div className="flex items-center gap-1.5">
+                <Camera size={13} className="text-gray-400" />
+                {totalCount} {totalCount === 1 ? 'post' : 'posts'}
               </div>
+              {isFuture && (
+                <span className="px-2 py-0.5 rounded-full bg-[#612A4F]/8 text-[#612A4F] text-[11px] font-semibold">
+                  in {diffDays} {diffDays === 1 ? 'day' : 'days'}
+                </span>
+              )}
             </div>
-
-            {/* Right: progress ring */}
-            {totalCount > 0 && (
-              <div className="flex items-center gap-3 flex-shrink-0">
-                <div className="relative w-16 h-16 bg-white/50 rounded-2xl flex items-center justify-center p-1">
-                  <svg className="w-14 h-14 -rotate-90" viewBox="0 0 56 56">
-                    <circle cx="28" cy="28" r="23" fill="none" stroke="rgba(97,42,79,0.1)" strokeWidth="4.5" />
-                    <motion.circle cx="28" cy="28" r="23" fill="none" strokeWidth="4.5" strokeLinecap="round"
-                      stroke="url(#progressGrad)"
-                      initial={{ strokeDasharray: `0 144.5` }}
-                      animate={{ strokeDasharray: `${(progressPct / 100) * 144.5} 144.5` }}
-                      transition={{ duration: 0.8, ease: 'easeOut' }}
-                    />
-                    <defs>
-                      <linearGradient id="progressGrad" x1="0" y1="0" x2="1" y2="1">
-                        <stop offset="0%" stopColor="#612A4F" />
-                        <stop offset="100%" stopColor="#c97ba8" />
-                      </linearGradient>
-                    </defs>
-                  </svg>
-                  <span className="absolute inset-0 flex items-center justify-center text-[12px] font-bold text-[#612A4F]">
-                    {shotCount}/{totalCount}
-                  </span>
-                </div>
-                <span className="text-[11px] text-[#612A4F]/40 hidden md:block font-medium">captured</span>
-              </div>
-            )}
           </div>
         </div>
 
