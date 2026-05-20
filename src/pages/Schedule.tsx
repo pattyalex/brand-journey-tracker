@@ -435,7 +435,7 @@ const Schedule: React.FC = () => {
     <div className="h-full flex flex-col overflow-hidden">
       <div className="flex-1 overflow-hidden">
         <DndContext sensors={sensors} collisionDetection={customCollision} onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDragCancel={handleDragCancel}>
-          <div className="h-full grid gap-0" style={{ gridTemplateColumns: leftColumnCollapsed ? '0px 28px 1fr' : '430px 28px 1fr', transition: 'grid-template-columns 0.3s ease-out' }}>
+          <div className="h-full grid gap-0" style={{ gridTemplateColumns: leftColumnCollapsed ? '0px 28px 1fr' : '360px 24px 1fr', transition: 'grid-template-columns 0.3s ease-out' }}>
             {/* Left column: Ready (collapsible top) + Grid (always visible bottom) */}
             <div className="h-full flex flex-col bg-white overflow-hidden">
               {!readyCollapsed && !leftColumnCollapsed && (

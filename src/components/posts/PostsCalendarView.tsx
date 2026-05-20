@@ -260,9 +260,9 @@ const PostsCalendarView: React.FC<PostsCalendarViewProps> = ({
         </div>
 
         {/* Calendar */}
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 flex flex-col" style={{ maxHeight: 'calc(100vh - 130px)' }}>
           {/* Header */}
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-4 flex-shrink-0">
             <div>
               <h2 className="text-sm font-semibold text-gray-700">Rough Planning</h2>
               <p className="text-xs text-gray-400 mt-0.5">This is not your final content calendar. Use this timeline to roughly plan out your posting order.</p>
@@ -287,7 +287,7 @@ const PostsCalendarView: React.FC<PostsCalendarViewProps> = ({
           </div>
 
           {/* Weekday headers */}
-          <div className="grid grid-cols-7 mb-1">
+          <div className="grid grid-cols-7 mb-1 flex-shrink-0">
             {WEEKDAYS.map(d => (
               <div key={d} className="text-center text-[10px] font-medium text-gray-400 uppercase tracking-wider py-1">
                 {d}
@@ -295,8 +295,8 @@ const PostsCalendarView: React.FC<PostsCalendarViewProps> = ({
             ))}
           </div>
 
-          {/* Grid */}
-          <div className="relative">
+          {/* Grid — scrollable */}
+          <div className="relative flex-1 overflow-y-auto min-h-0" style={{ scrollbarWidth: 'thin', scrollbarColor: '#D1D5DB transparent' }}>
             <div className="grid grid-cols-7 border-t border-l border-gray-100">
               {days.map(({ date, day, isCurrentMonth }) => (
                 <CalendarCell
@@ -599,7 +599,7 @@ const CalendarCell: React.FC<CalendarCellProps> = ({
       onClick={() => { if (posts.length === 0) onClickEmpty(); }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="border-r border-b border-gray-100 min-h-[105px] p-1 cursor-pointer transition-colors duration-150"
+      className="border-r border-b border-gray-100 min-h-[130px] p-1 cursor-pointer transition-colors duration-150"
       style={{
         backgroundColor: bg,
         outline: isOver ? '1px solid rgba(0, 0, 0, 0.15)' : 'none',
