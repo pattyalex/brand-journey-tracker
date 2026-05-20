@@ -103,8 +103,6 @@ const Shoots: React.FC = () => {
       }
 
       setShowCreateModal(false);
-      setSelectedShootId(newShoot.id);
-      setScreen('detail');
     },
     [addShoot, assignPostsToShoot]
   );
@@ -221,57 +219,49 @@ const Shoots: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                       {unassignedPosts.map((post, i) => {
                         const isChecked = selectedPostIds.has(post.id);
-                        const pillarStyle = post.pillar ? getPillarStyle(post.pillar) : null;
+                        const statusColor = STATUS_COLORS[post.status] || { dot: '#9CA3AF' };
                         return (
                           <motion.div
                             key={post.id}
                             onClick={() => setDetailPost(post)}
                             initial={{ opacity: 0, y: 6 }}
                             animate={{ opacity: 1, y: 0 }}
+                            whileHover={{ y: -1 }}
                             transition={{ duration: 0.2, delay: i * 0.03 }}
-                            className={`group relative rounded-2xl border bg-white cursor-pointer transition-all duration-200 overflow-hidden ${
+                            className={`group/card rounded-lg bg-white border shadow-sm p-3 cursor-pointer transition-shadow duration-200 relative ${
                               isChecked
                                 ? 'border-[#612A4F]/30 shadow-[0_0_0_1px_rgba(97,42,79,0.15),0_4px_12px_rgba(97,42,79,0.08)]'
-                                : 'border-gray-100 hover:border-gray-200 hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)]'
+                                : 'border-gray-200 hover:shadow-[0_4px_12px_rgba(93,63,90,0.08)]'
                             }`}
                           >
-                            {/* Selection indicator */}
+                            {/* Selection checkbox */}
                             <div
                               onClick={(e) => { e.stopPropagation(); togglePostSelection(post.id); }}
-                              className={`absolute top-3 right-3 w-5 h-5 rounded-full border-[1.5px] flex items-center justify-center transition-all duration-200 z-10 cursor-pointer ${
-                              isChecked ? 'bg-[#612A4F] border-[#612A4F] scale-100' : 'border-gray-200 bg-white opacity-0 group-hover:opacity-100 hover:border-gray-400'
-                            }`}>
+                              className={`absolute top-2.5 right-2.5 w-5 h-5 rounded-full border-[1.5px] flex items-center justify-center transition-all duration-200 z-10 cursor-pointer ${
+                                isChecked ? 'bg-[#612A4F] border-[#612A4F]' : 'border-gray-200 bg-white opacity-0 group-hover/card:opacity-100 hover:border-gray-400'
+                              }`}
+                            >
                               {isChecked && <Check size={10} className="text-white" strokeWidth={3} />}
                             </div>
 
-                            <div className="p-4">
-                              {/* Title with thumbnail */}
-                              <div className="flex items-start gap-2.5 mb-2.5 pr-6">
-                                {post.thumbnail_url && (
-                                  <img src={post.thumbnail_url} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
-                                )}
-                                <p className="text-[13px] font-semibold text-gray-800 leading-snug">{post.title}</p>
-                              </div>
+                            {/* Top row: thumbnail + title */}
+                            <div className="flex items-start gap-1.5 mb-2">
+                              {post.thumbnail_url ? (
+                                <img src={post.thumbnail_url} alt="" className="w-8 h-8 rounded object-cover flex-shrink-0" />
+                              ) : (
+                                <div className="w-8 h-8 rounded bg-gray-50 flex items-center justify-center flex-shrink-0">
+                                  <ImageIcon className="w-3.5 h-3.5 text-gray-300" />
+                                </div>
+                              )}
+                              <p className="text-sm font-medium text-gray-900 line-clamp-2 flex-1 pr-5">{post.title}</p>
+                            </div>
 
-                              {/* Tags row */}
-                              <div className="flex items-center gap-1.5 flex-wrap">
-                                {pillarStyle && (
-                                  <span
-                                    className="text-[10px] px-2 py-0.5 rounded-full font-medium"
-                                    style={{
-                                      backgroundColor: pillarStyle.bg,
-                                      color: pillarStyle.text,
-                                      border: `1px solid ${pillarStyle.border}`,
-                                    }}
-                                  >
-                                    {post.pillar}
-                                  </span>
-                                )}
-                                {post.format && (
-                                  <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-gray-50 text-gray-500 border border-gray-100">
-                                    {post.format}
-                                  </span>
-                                )}
+                            {/* Bottom row: format + status */}
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] text-gray-500">{post.format || ''}</span>
+                              <div className="flex items-center gap-1">
+                                <StatusIcon status={post.status} className="w-2.5 h-2.5" style={{ color: statusColor.dot }} />
+                                <span className="text-[10px] text-gray-400">{post.status}</span>
                               </div>
                             </div>
 
@@ -283,7 +273,7 @@ const Shoots: React.FC = () => {
                                 const stored = getJSON<Post[]>('meg_shoots_posts', []);
                                 setJSON('meg_shoots_posts', stored.map(p => p.id === post.id ? { ...p, sentToShoots: false } : p));
                               }}
-                              className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 p-1.5 rounded-lg text-gray-300 hover:text-red-400 hover:bg-red-50/80 transition-all duration-150"
+                              className="absolute bottom-2.5 right-2.5 opacity-0 group-hover/card:opacity-100 p-1 rounded text-gray-300 hover:text-red-400 hover:bg-red-50/80 transition-all duration-150"
                             >
                               <X size={12} />
                             </button>
@@ -476,15 +466,7 @@ function ShootCard({ shoot, posts, onClick, index, isPast, onDelete, onDuplicate
       whileHover={{ opacity: 1, y: -2, boxShadow: '0 8px 30px rgba(97, 42, 79, 0.1)' }}
       transition={{ duration: 0.25, delay: index * 0.04 }}
     >
-      {/* Thumbnail mosaic */}
-      {thumbnails.length > 0 && (
-        <div className={`grid gap-[1px] bg-gray-100 ${thumbnails.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`} style={{ height: thumbnails.length > 2 ? 140 : 100 }}>
-          {thumbnails.map((post, i) => (
-            <img key={post.id} src={post.thumbnail_url} alt="" className="w-full h-full object-cover" />
-          ))}
-          {thumbnails.length === 3 && <div className="bg-gray-50" />}
-        </div>
-      )}
+      {/* Thumbnail mosaic - removed, keeping cards clean */}
 
       {/* Card body */}
       <div className="p-4">
@@ -515,15 +497,12 @@ function ShootCard({ shoot, posts, onClick, index, isPast, onDelete, onDuplicate
         {/* Posts list */}
         {posts.length > 0 ? (
           <div className="space-y-1">
-            {posts.slice(0, 3).map(post => {
-              const sc = STATUS_COLORS[post.status] || { dot: '#9CA3AF' };
-              return (
-                <div key={post.id} className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: sc.dot }} />
-                  <span className="text-[11px] text-gray-600 leading-tight">{post.title}</span>
-                </div>
-              );
-            })}
+            {posts.slice(0, 3).map((post, idx) => (
+              <div key={post.id} className="flex items-start gap-1.5">
+                <span className="text-[10px] font-medium text-gray-400 flex-shrink-0 w-[14px] text-right tabular-nums mt-px">{idx + 1}.</span>
+                <span className="text-[11px] text-gray-600 leading-tight">{post.title}</span>
+              </div>
+            ))}
             {posts.length > 3 && (
               <p className="text-[10px] text-gray-400 pl-3.5">+{posts.length - 3} more</p>
             )}

@@ -196,7 +196,7 @@ function App() {
           <AuthProvider>
             <BrandDealsProvider>
             <LoginModal />
-            <Toaster />
+            <Toaster toastOptions={{ duration: 3000 }} visibleToasts={1} />
             <Routes>
               {/* Public routes (no sidebar, own Suspense) */}
               <Route path="/" element={<Suspense fallback={<PageLoader />}><LandingRedirect /></Suspense>} />

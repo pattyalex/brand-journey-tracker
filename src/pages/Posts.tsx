@@ -148,7 +148,9 @@ const Posts: React.FC = () => {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const [activeView, setActiveView] = useState<ViewMode>(loadView);
-  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
+  const selectedPost = selectedPostId ? posts.find(p => p.id === selectedPostId) ?? null : null;
+  const setSelectedPost = useCallback((post: Post | null) => setSelectedPostId(post?.id ?? null), []);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const lastSelectedId = useRef<string | null>(null);
   const mainScrollRef = useRef<HTMLDivElement>(null);
@@ -266,8 +268,6 @@ const Posts: React.FC = () => {
 
   const handleUpdatePost = useCallback((id: string, updates: Partial<Post>) => {
     setPosts(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
-    setSelectedPost(prev => prev && prev.id === id ? { ...prev, ...updates } : prev);
-    // Sync to Supabase in background
     postsApi.updatePost(id, updates).catch(console.error);
   }, []);
 
@@ -280,7 +280,6 @@ const Posts: React.FC = () => {
       if (post) postsApi.updatePost(id, { attachedFiles: post.attachedFiles }).catch(console.error);
       return updated;
     });
-    setSelectedPost(prev => prev && prev.id === id ? { ...prev, attachedFiles: replace(prev.attachedFiles) } : prev);
   }, []);
 
   const handleReorder = useCallback((reordered: Post[]) => {
@@ -317,8 +316,7 @@ const Posts: React.FC = () => {
 
   const handleDeletePost = useCallback((id: string) => {
     setPosts(prev => prev.filter(p => p.id !== id));
-    setSelectedPost(prev => prev?.id === id ? null : prev);
-    // Sync to Supabase in background
+    setSelectedPostId(prev => prev === id ? null : prev);
     postsApi.deletePost(id).catch(console.error);
   }, []);
 
@@ -353,7 +351,6 @@ const Posts: React.FC = () => {
       }
       return prev.map(p => p.id === id ? { ...p, sentToShoots: true } : p);
     });
-    setSelectedPost(prev => prev && prev.id === id ? { ...prev, sentToShoots: true } : prev);
     postsApi.updatePost(id, { sentToShoots: true }).catch(console.error);
 
     toast.success('Added to Shoots', {
@@ -369,7 +366,6 @@ const Posts: React.FC = () => {
     const post = posts.find(p => p.id === id);
     if (!post || post.sent_to_schedule) return;
     setPosts(prev => prev.map(p => p.id === id ? { ...p, sent_to_schedule: true } : p));
-    setSelectedPost(prev => prev && prev.id === id ? { ...prev, sent_to_schedule: true } : prev);
     postsApi.updatePost(id, { sent_to_schedule: true }).catch(console.error);
     toast.success('Sent to Schedule', {
       action: {

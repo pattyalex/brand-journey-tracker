@@ -204,8 +204,14 @@ const Tasks: React.FC = () => {
   }, []);
 
   const handleDelete = useCallback((id: string) => {
-    setAllTasks(prev => prev.filter(t => t.id !== id && t.parent_task_id !== id));
-  }, []);
+    setAllTasks(prev => {
+      const toDelete = prev.filter(t => t.id === id || t.parent_task_id === id);
+      if (userId) {
+        toDelete.forEach(t => tasksApi.deleteTask(t.id).catch(console.error));
+      }
+      return prev.filter(t => t.id !== id && t.parent_task_id !== id);
+    });
+  }, [userId]);
 
   const handleAdd = useCallback((title: string, time: string | null, end_time: string | null, duration: string | null, tag: string | null) => {
     const maxOrder = dayTasks.reduce((max, t) => Math.max(max, t.order_index), -1);
@@ -359,8 +365,11 @@ const Tasks: React.FC = () => {
   }, []);
 
   const handleDeleteBacklog = useCallback((id: string) => {
+    if (userId) {
+      tasksApi.deleteTask(id).catch(console.error);
+    }
     setAllTasks(prev => prev.filter(t => t.id !== id));
-  }, []);
+  }, [userId]);
 
   const handleNotesChange = useCallback((content: string) => {
     setAllNotes(prev => {

@@ -1,5 +1,5 @@
 import React, { useState, KeyboardEvent } from "react";
-import { Check, MapPin, Calendar, FileText, Shirt, Package, StickyNote, Camera } from "lucide-react";
+import { Check, MapPin, Calendar as CalendarIcon, FileText, Shirt, Package, StickyNote, Camera } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -7,8 +7,11 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 import { Post, getPillarStyle, STATUS_COLORS } from "@/types/posts";
 import { StatusIcon } from "@/components/posts/StatusDropdown";
+import { format } from "date-fns";
 
 interface CreateShootModalProps {
   open: boolean;
@@ -106,7 +109,7 @@ export default function CreateShootModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[440px] max-h-[90vh] overflow-y-auto p-0 rounded-2xl border-0 shadow-[0_24px_48px_rgba(0,0,0,0.12)]">
+      <DialogContent className="!block max-w-[440px] max-h-[90vh] overflow-y-auto overflow-x-hidden !p-0 !gap-0 rounded-2xl border-0 shadow-[0_24px_48px_rgba(0,0,0,0.12)]">
         {/* Header */}
         <div className="px-6 pt-6 pb-4">
           <DialogHeader>
@@ -146,10 +149,33 @@ export default function CreateShootModal({
           {/* Date */}
           <div>
             <label className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-gray-400 font-semibold mb-2">
-              <Calendar className="w-3 h-3" />
+              <CalendarIcon className="w-3 h-3" />
               Date of shoot
             </label>
-            <input type="date" value={date} onChange={e => setDate(e.target.value)} className={inputClass} />
+            <Popover>
+              <PopoverTrigger asChild>
+                <button type="button" className={`${inputClass} text-left flex items-center justify-between`}>
+                  <span className={date ? 'text-gray-700' : 'text-gray-300'}>
+                    {date ? format(new Date(date + 'T00:00:00'), 'MMM d, yyyy') : 'Pick a date'}
+                  </span>
+                  <CalendarIcon className="w-4 h-4 text-gray-400" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0 rounded-xl border border-gray-200 shadow-xl z-[10200]" align="start" sideOffset={4} onOpenAutoFocus={(e) => e.preventDefault()}>
+                <Calendar
+                  mode="single"
+                  selected={date ? new Date(date + 'T00:00:00') : undefined}
+                  onSelect={(day) => {
+                    if (day) {
+                      const y = day.getFullYear();
+                      const m = String(day.getMonth() + 1).padStart(2, '0');
+                      const d = String(day.getDate()).padStart(2, '0');
+                      setDate(`${y}-${m}-${d}`);
+                    }
+                  }}
+                />
+              </PopoverContent>
+            </Popover>
           </div>
 
           {/* Content to shoot */}
