@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Check, Plus, X } from 'lucide-react';
+import { Check, Plus, X, ChevronLeft, MapPin, Calendar, Camera, MoreHorizontal, Copy, Trash2 } from 'lucide-react';
+import { format, formatDistanceToNow, isAfter } from 'date-fns';
 
-import ShootHeader from './ShootHeader';
 import OutfitsGearNotes from './OutfitsGearNotes';
 import LocationsBlock from './LocationsBlock';
 import PostDetailPanel from '@/components/posts/PostDetailPanel';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 
 import { Shoot, ShootLocation } from '@/types/shoots';
 import { Post, DEFAULT_PILLARS, DEFAULT_FORMATS, getPillarStyle, STATUS_COLORS } from '@/types/posts';
@@ -38,6 +39,7 @@ export default function ShootDetail({
   getUnassignedPosts,
 }: ShootDetailProps) {
   const [detailPost, setDetailPost] = useState<Post | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const handleAddLocation = (location: ShootLocation) => {
     onUpdate({ locations: [...(shoot.locations || []), location] });
@@ -58,6 +60,14 @@ export default function ShootDetail({
   const shotCount = posts.filter(p => p.status === 'Shot' || p.status === 'Edited' || p.status === 'Scheduled' || p.status === 'Posted').length;
   const totalCount = posts.length;
 
+  const shootDate = new Date(shoot.date + 'T00:00:00');
+  const now = new Date();
+  const isFuture = isAfter(shootDate, now);
+  const diffMs = shootDate.getTime() - now.getTime();
+  const diffDays = Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
+  const primaryLocation = shoot.locations?.[0]?.name;
+  const progressPct = totalCount > 0 ? (shotCount / totalCount) * 100 : 0;
+
   return (
     <motion.div
       className="h-full overflow-y-auto"
@@ -65,111 +75,156 @@ export default function ShootDetail({
       animate={{ opacity: 1 }}
       transition={{ duration: 0.2 }}
     >
-      <div className="max-w-3xl mx-auto px-6 md:px-8 py-6">
-        {/* Header */}
-        <ShootHeader
-          shoot={shoot}
-          onUpdate={onUpdate}
-          onDuplicate={onDuplicate}
-          onArchive={handleArchive}
-          onDelete={onDelete}
-          onBack={onBack}
-        />
+      <div className="max-w-3xl mx-auto px-6 md:px-8 pt-5">
+        {/* Back + menu */}
+        <div className="flex items-center justify-between mb-5">
+          <button onClick={onBack} className="flex items-center gap-1 text-gray-400 hover:text-gray-600 transition-colors">
+            <ChevronLeft size={16} />
+            <span className="text-sm">Shoots</span>
+          </button>
+          <Popover open={menuOpen} onOpenChange={setMenuOpen}>
+            <PopoverTrigger asChild>
+              <button className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
+                <MoreHorizontal size={18} className="text-gray-400" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-48 p-1 bg-white rounded-xl border border-gray-100 shadow-xl">
+              <div onClick={() => { setMenuOpen(false); onDuplicate(); }} className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-lg cursor-pointer">
+                <Copy size={14} /> Duplicate
+              </div>
+              <div onClick={() => { setMenuOpen(false); onDelete(); }} className="flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-50 rounded-lg cursor-pointer">
+                <Trash2 size={14} /> Delete
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        {/* Shoot info card */}
+        <div className="relative rounded-2xl overflow-hidden p-5 md:p-6 mb-2" style={{ background: 'linear-gradient(135deg, #f8f0f6 0%, #f3eaf8 40%, #eee8f5 100%)' }}>
+          {/* Decorative */}
+          <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full" style={{ background: 'radial-gradient(circle, rgba(97,42,79,0.06) 0%, transparent 70%)' }} />
+          <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full" style={{ background: 'radial-gradient(circle, rgba(139,58,107,0.05) 0%, transparent 70%)' }} />
+
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center gap-5">
+            {/* Left: icon + info */}
+            <div className="flex items-start gap-4 flex-1 min-w-0">
+              <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg" style={{ background: 'linear-gradient(135deg, #612A4F, #8B3A6B)' }}>
+                <Camera size={22} className="text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-1.5 truncate">{shoot.name}</h1>
+                <div className="flex items-center gap-3 flex-wrap text-[13px]">
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/60 text-gray-600">
+                    <Calendar size={13} className="text-[#612A4F]/60" />
+                    {format(shootDate, 'EEE, MMM d')}
+                  </div>
+                  {primaryLocation && (
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/60 text-gray-600">
+                      <MapPin size={13} className="text-[#612A4F]/60" />
+                      {primaryLocation}
+                    </div>
+                  )}
+                  {isFuture && (
+                    <span className="px-2.5 py-1 rounded-lg bg-[#612A4F]/10 text-[#612A4F] text-[11px] font-semibold">
+                      in {diffDays} {diffDays === 1 ? 'day' : 'days'}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Right: progress ring */}
+            {totalCount > 0 && (
+              <div className="flex items-center gap-3 flex-shrink-0">
+                <div className="relative w-16 h-16 bg-white/50 rounded-2xl flex items-center justify-center p-1">
+                  <svg className="w-14 h-14 -rotate-90" viewBox="0 0 56 56">
+                    <circle cx="28" cy="28" r="23" fill="none" stroke="rgba(97,42,79,0.1)" strokeWidth="4.5" />
+                    <motion.circle cx="28" cy="28" r="23" fill="none" strokeWidth="4.5" strokeLinecap="round"
+                      stroke="url(#progressGrad)"
+                      initial={{ strokeDasharray: `0 144.5` }}
+                      animate={{ strokeDasharray: `${(progressPct / 100) * 144.5} 144.5` }}
+                      transition={{ duration: 0.8, ease: 'easeOut' }}
+                    />
+                    <defs>
+                      <linearGradient id="progressGrad" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stopColor="#612A4F" />
+                        <stop offset="100%" stopColor="#c97ba8" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                  <span className="absolute inset-0 flex items-center justify-center text-[12px] font-bold text-[#612A4F]">
+                    {shotCount}/{totalCount}
+                  </span>
+                </div>
+                <span className="text-[11px] text-[#612A4F]/40 hidden md:block font-medium">captured</span>
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* Content to capture */}
-        <div className="mt-8">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <span className="text-xs uppercase tracking-wider text-gray-400 font-medium">
-                Content to capture
-              </span>
-              {totalCount > 0 && (
-                <span className="text-[11px] text-gray-400">
-                  {shotCount}/{totalCount} done
-                </span>
-              )}
+        <div className="mt-6">
+          <div className="flex items-center gap-2.5 mb-4">
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #612A4F, #8B3A6B)' }}>
+              <Camera size={13} className="text-white" />
             </div>
+            <span className="text-[13px] font-semibold text-gray-700">Content to Capture</span>
+            {totalCount > 0 && (
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#612A4F]/10 text-[#612A4F] font-semibold">
+                {shotCount}/{totalCount}
+              </span>
+            )}
           </div>
 
           {/* Progress bar */}
           {totalCount > 0 && (
-            <div className="h-1 rounded-full bg-gray-100 mb-4 overflow-hidden">
+            <div className="h-1.5 rounded-full bg-gray-100 mb-5 overflow-hidden">
               <motion.div
-                className="h-full rounded-full bg-[#612A4F]"
+                className="h-full rounded-full"
+                style={{ background: 'linear-gradient(90deg, #612A4F, #c97ba8)' }}
                 initial={{ width: 0 }}
-                animate={{ width: `${(shotCount / totalCount) * 100}%` }}
-                transition={{ duration: 0.5, ease: 'easeOut' }}
+                animate={{ width: `${progressPct}%` }}
+                transition={{ duration: 0.6, ease: 'easeOut' }}
               />
             </div>
           )}
 
-          {/* Post list with checkmarks */}
+          {/* Post list */}
           {posts.length > 0 ? (
-            <div className="rounded-xl border border-gray-100 bg-white overflow-hidden">
+            <div className="rounded-xl border border-gray-100 bg-white overflow-hidden shadow-sm">
               {posts.map((post, i) => {
                 const isDone = post.status === 'Shot' || post.status === 'Edited' || post.status === 'Scheduled' || post.status === 'Posted';
                 const pillar = post.pillar || '';
-                const format = post.format || '';
+                const fmt = post.format || '';
                 const pillarStyle = getPillarStyle(pillar);
                 return (
                   <div
                     key={post.id}
-                    className={`group flex items-center gap-3 px-4 py-3 transition-colors duration-150 ${
+                    className={`group flex items-center gap-3 px-4 py-3.5 transition-colors duration-150 ${
                       i > 0 ? 'border-t border-gray-50' : ''
-                    } ${isDone ? 'bg-gray-50/50' : ''}`}
+                    } ${isDone ? 'bg-emerald-50/30' : 'hover:bg-gray-50/50'}`}
                   >
-                    {/* Checkmark circle */}
                     <button
-                      onClick={() => {
-                        if (isDone) {
-                          onUpdatePost(post.id, { status: 'Ready to shoot' });
-                        } else {
-                          handleMarkAsShot(post.id);
-                        }
-                      }}
+                      onClick={() => isDone ? onUpdatePost(post.id, { status: 'Ready to shoot' }) : handleMarkAsShot(post.id)}
                       className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all duration-200 cursor-pointer ${
-                        isDone
-                          ? 'bg-[#059669] border-[#059669] hover:bg-[#059669]/80'
-                          : 'border-gray-300 hover:border-[#612A4F]'
+                        isDone ? 'bg-emerald-500 border-emerald-500 hover:bg-emerald-400' : 'border-gray-300 hover:border-[#612A4F]'
                       }`}
                     >
                       {isDone && <Check size={12} className="text-white" strokeWidth={3} />}
                     </button>
-
-                    {/* Title */}
                     <span
                       onClick={() => setDetailPost(post)}
-                      className={`text-sm flex-1 truncate transition-colors cursor-pointer hover:text-[#612A4F] ${
-                        isDone ? 'text-gray-400 line-through' : 'text-gray-800'
-                      }`}
+                      className={`text-sm flex-1 truncate transition-colors cursor-pointer hover:text-[#612A4F] ${isDone ? 'text-gray-400 line-through' : 'text-gray-800'}`}
                     >
                       {post.title}
                     </span>
-
-                    {/* Pillar */}
                     {pillar && (
-                      <span
-                        className="text-[10px] px-2 py-0.5 rounded-full flex-shrink-0 font-medium"
-                        style={{
-                          backgroundColor: pillarStyle.bg,
-                          color: pillarStyle.text,
-                          border: `1px solid ${pillarStyle.border}`,
-                        }}
-                      >
+                      <span className="text-[10px] px-2 py-0.5 rounded-full flex-shrink-0 font-medium" style={{ backgroundColor: pillarStyle.bg, color: pillarStyle.text, border: `1px solid ${pillarStyle.border}` }}>
                         {pillar}
                       </span>
                     )}
-
-                    {/* Format */}
-                    {format && (
-                      <span className="text-[10px] text-gray-400 flex-shrink-0">{format}</span>
-                    )}
-
-                    {/* Remove */}
-                    <button
-                      onClick={() => onRemovePost(post.id)}
-                      className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-400 transition-all duration-150 flex-shrink-0"
-                    >
+                    {fmt && <span className="text-[10px] text-gray-400 flex-shrink-0">{fmt}</span>}
+                    <button onClick={() => onRemovePost(post.id)} className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-400 transition-all duration-150 flex-shrink-0">
                       <X size={14} />
                     </button>
                   </div>
@@ -178,6 +233,9 @@ export default function ShootDetail({
             </div>
           ) : (
             <div className="rounded-xl border border-dashed border-gray-200 py-10 flex flex-col items-center gap-3 text-center px-6">
+              <div className="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center">
+                <Camera size={20} className="text-gray-300" />
+              </div>
               <p className="text-sm text-gray-400">No content linked yet</p>
               <p className="text-[12px] text-gray-300 max-w-[260px] leading-relaxed">
                 Go to the Posts page and set content to "Ready to shoot", then use the arrow to send it here.
@@ -186,7 +244,7 @@ export default function ShootDetail({
           )}
         </div>
 
-        {/* Location, Outfits, Props, Notes */}
+        {/* Location */}
         <div className="mt-8">
           <LocationsBlock
             locations={shoot.locations || []}
@@ -196,7 +254,8 @@ export default function ShootDetail({
           />
         </div>
 
-        <div className="mt-6">
+        {/* Outfits, Gear, Notes */}
+        <div className="mt-6 mb-8">
           <OutfitsGearNotes
             outfits={shoot.outfits || []}
             gear={shoot.gear || []}

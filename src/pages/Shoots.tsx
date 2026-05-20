@@ -151,11 +151,7 @@ const Shoots: React.FC = () => {
           >
             <div className="max-w-6xl mx-auto px-6 md:px-10 py-8">
               {/* Header */}
-              <div className="flex items-center justify-between mb-10">
-                <div>
-                  <h1 className="text-[22px] font-bold text-gray-900 tracking-tight">Shoots</h1>
-                  <p className="text-[13px] text-gray-400 mt-0.5">Plan, organize, and execute your content capture days</p>
-                </div>
+              <div className="flex items-center justify-end mb-10">
                 <button
                   onClick={() => setShowCreateModal(true)}
                   className="flex items-center gap-2 text-white px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 shadow-[0_2px_10px_rgba(97,42,79,0.3)] hover:shadow-[0_4px_20px_rgba(97,42,79,0.4)] hover:scale-[1.03] active:scale-[0.98]"
@@ -184,15 +180,101 @@ const Shoots: React.FC = () => {
                 </motion.div>
               )}
 
-              {/* Upcoming shoots — full width hero section */}
-              {upcomingShoots.length > 0 && (
+              {/* Next shoot hero */}
+              {upcomingShoots.length > 0 && (() => {
+                const nextShoot = upcomingShoots[0];
+                const nextPosts = getPostsForShoot(nextShoot.id);
+                const nextDate = new Date(nextShoot.date + 'T00:00:00');
+                const now = new Date();
+                const diffMs = nextDate.getTime() - now.getTime();
+                const diffDays = Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
+                const shotCount = nextPosts.filter(p => ['Shot', 'Edited', 'Scheduled', 'Posted'].includes(p.status)).length;
+                const nextLocation = nextShoot.locations?.[0]?.name;
+                return (
+                  <motion.div
+                    onClick={() => handleSelectShoot(nextShoot.id)}
+                    className="mb-8 rounded-2xl cursor-pointer overflow-hidden relative group/hero"
+                    style={{ background: 'linear-gradient(135deg, #612A4F 0%, #8B3A6B 50%, #a8558e 100%)' }}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    whileHover={{ y: -2, boxShadow: '0 16px 48px rgba(97, 42, 79, 0.25)' }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    {/* Decorative circles */}
+                    <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-white/5" />
+                    <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full bg-white/5" />
+                    <div className="absolute top-1/2 right-1/4 w-20 h-20 rounded-full bg-white/[0.03]" />
+
+                    <div className="relative z-10 p-6 md:p-8 flex flex-col md:flex-row md:items-center gap-6">
+                      {/* Left: countdown */}
+                      <div className="flex-shrink-0 text-center md:text-left">
+                        <div className="inline-flex flex-col items-center justify-center w-20 h-20 rounded-2xl bg-white/15 backdrop-blur-sm">
+                          <span className="text-3xl font-bold text-white leading-none">{diffDays}</span>
+                          <span className="text-[10px] text-white/70 uppercase tracking-wider font-medium">{diffDays === 1 ? 'day' : 'days'}</span>
+                        </div>
+                      </div>
+
+                      {/* Middle: info */}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[10px] text-white/50 uppercase tracking-widest font-semibold mb-1">Next Shoot</p>
+                        <h2 className="text-xl md:text-2xl font-bold text-white mb-2 truncate">{nextShoot.name}</h2>
+                        <div className="flex items-center gap-4 flex-wrap">
+                          <div className="flex items-center gap-1.5">
+                            <Calendar size={12} className="text-white/60" />
+                            <span className="text-[13px] text-white/80">{format(nextDate, 'EEEE, MMM d')}</span>
+                          </div>
+                          {nextLocation && (
+                            <div className="flex items-center gap-1.5">
+                              <MapPin size={12} className="text-white/60" />
+                              <span className="text-[13px] text-white/80">{nextLocation}</span>
+                            </div>
+                          )}
+                          <div className="flex items-center gap-1.5">
+                            <Camera size={12} className="text-white/60" />
+                            <span className="text-[13px] text-white/80">{nextPosts.length} {nextPosts.length === 1 ? 'post' : 'posts'}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Right: progress */}
+                      {nextPosts.length > 0 && (
+                        <div className="flex-shrink-0 flex items-center gap-3">
+                          <div className="relative w-14 h-14">
+                            <svg className="w-14 h-14 -rotate-90" viewBox="0 0 56 56">
+                              <circle cx="28" cy="28" r="24" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="4" />
+                              <circle cx="28" cy="28" r="24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round"
+                                strokeDasharray={`${(shotCount / nextPosts.length) * 150.8} 150.8`}
+                              />
+                            </svg>
+                            <span className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-white">
+                              {shotCount}/{nextPosts.length}
+                            </span>
+                          </div>
+                          <span className="text-[11px] text-white/60 hidden md:block">captured</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Hover arrow */}
+                    <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-0 group-hover/hero:opacity-100 transition-all duration-200 translate-x-1 group-hover/hero:translate-x-0">
+                      <ArrowRight size={20} className="text-white/40" />
+                    </div>
+                  </motion.div>
+                );
+              })()}
+
+              {/* Other upcoming shoots */}
+              {upcomingShoots.length > 1 && (
                 <div className="mb-10">
-                  <div className="flex items-center gap-2 mb-5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#612A4F]" />
-                    <p className="text-[11px] text-gray-400 font-semibold uppercase tracking-wider">Upcoming shoots</p>
+                  <div className="flex items-center gap-2.5 mb-5">
+                    <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #612A4F, #8B3A6B)' }}>
+                      <Camera size={13} className="text-white" />
+                    </div>
+                    <p className="text-[13px] text-gray-700 font-semibold">Upcoming</p>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#612A4F]/10 text-[#612A4F] font-semibold">{upcomingShoots.length - 1}</span>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                    {upcomingShoots.map((shoot, i) => (
+                    {upcomingShoots.slice(1).map((shoot, i) => (
                       <ShootCard
                         key={shoot.id}
                         shoot={shoot}
@@ -208,9 +290,11 @@ const Shoots: React.FC = () => {
               {/* Content to shoot */}
               {(unassignedPosts.length > 0 || nonArchivedShoots.length > 0) && (
                 <div className="mb-10">
-                  <div className="flex items-center gap-2 mb-5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                    <p className="text-[11px] text-gray-400 font-semibold uppercase tracking-wider">Content to shoot</p>
+                  <div className="flex items-center gap-2.5 mb-5">
+                    <div className="w-7 h-7 rounded-lg bg-amber-50 flex items-center justify-center">
+                      <Aperture size={13} className="text-amber-500" />
+                    </div>
+                    <p className="text-[13px] text-gray-700 font-semibold">Content to Shoot</p>
                     {unassignedPosts.length > 0 && (
                       <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 font-semibold">{unassignedPosts.length}</span>
                     )}
@@ -327,15 +411,17 @@ const Shoots: React.FC = () => {
                 <div className="pt-2">
                   <button
                     onClick={() => setPastExpanded(p => !p)}
-                    className="flex items-center gap-2 mb-4 group"
+                    className="flex items-center gap-2.5 mb-4 group"
                   >
-                    <div className="w-1.5 h-1.5 rounded-full bg-gray-300" />
-                    <p className="text-[11px] text-gray-400 font-semibold uppercase tracking-wider group-hover:text-gray-500 transition-colors">
-                      Past shoots
+                    <div className="w-7 h-7 rounded-lg bg-gray-100 flex items-center justify-center">
+                      <Check size={13} className="text-gray-400" />
+                    </div>
+                    <p className="text-[13px] text-gray-500 font-semibold group-hover:text-gray-600 transition-colors">
+                      Past Shoots
                     </p>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-400 font-medium">{pastShoots.length}</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-400 font-semibold">{pastShoots.length}</span>
                     <motion.span animate={{ rotate: pastExpanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
-                      <ChevronDown size={12} className="text-gray-300" />
+                      <ChevronDown size={14} className="text-gray-400" />
                     </motion.span>
                   </button>
                   <AnimatePresence initial={false}>
@@ -453,20 +539,23 @@ function ShootCard({ shoot, posts, onClick, index, isPast, onDelete, onDuplicate
     : isFuture
     ? formatDistanceToNow(shootDate, { addSuffix: true })
     : 'Today';
-  const thumbnails = posts.filter(p => p.thumbnail_url).slice(0, 4);
+  const shotCount = posts.filter(p => ['Shot', 'Edited', 'Scheduled', 'Posted'].includes(p.status)).length;
 
   return (
     <motion.div
       onClick={onClick}
-      className={`group/card relative rounded-2xl border bg-white cursor-pointer transition-all duration-200 overflow-hidden ${
-        isPast ? 'border-gray-100 opacity-70 hover:opacity-100' : 'border-gray-100 hover:border-gray-200'
+      className={`group/card relative rounded-2xl bg-white cursor-pointer transition-all duration-200 overflow-hidden shadow-sm ${
+        isPast ? 'opacity-70 hover:opacity-100 border border-gray-100' : 'border border-gray-100 hover:border-[#612A4F]/20'
       }`}
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: isPast ? 0.7 : 1, y: 0 }}
-      whileHover={{ opacity: 1, y: -2, boxShadow: '0 8px 30px rgba(97, 42, 79, 0.1)' }}
+      whileHover={{ opacity: 1, y: -3, boxShadow: '0 12px 36px rgba(97, 42, 79, 0.12)' }}
       transition={{ duration: 0.25, delay: index * 0.04 }}
     >
-      {/* Thumbnail mosaic - removed, keeping cards clean */}
+      {/* Accent top bar */}
+      {!isPast && (
+        <div className="h-1 w-full" style={{ background: 'linear-gradient(90deg, #612A4F, #c97ba8)' }} />
+      )}
 
       {/* Card body */}
       <div className="p-4">
@@ -516,6 +605,24 @@ function ShootCard({ shoot, posts, onClick, index, isPast, onDelete, onDuplicate
           </div>
         ) : null}
       </div>
+
+      {/* Progress bar */}
+      {posts.length > 0 && (
+        <div className="px-4 pb-3">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[9px] text-gray-400">{shotCount}/{posts.length} captured</span>
+          </div>
+          <div className="h-1 rounded-full bg-gray-100 overflow-hidden">
+            <motion.div
+              className="h-full rounded-full"
+              style={{ background: 'linear-gradient(90deg, #612A4F, #c97ba8)' }}
+              initial={{ width: 0 }}
+              animate={{ width: posts.length > 0 ? `${(shotCount / posts.length) * 100}%` : '0%' }}
+              transition={{ duration: 0.6, ease: 'easeOut', delay: 0.2 }}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Post count badge */}
       {posts.length > 0 && (
