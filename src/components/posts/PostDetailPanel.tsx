@@ -744,7 +744,7 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
                   <div>
                     <label className="text-[11px] font-medium text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
                       <Clapperboard className="w-3 h-3" />
-                      Video Storyboard
+                      Shot List
                     </label>
                     <div className="rounded-lg border border-gray-200 overflow-hidden">
                       {/* Header */}
@@ -811,7 +811,7 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
                           className="flex items-center gap-1 text-[12px] text-gray-400 hover:text-[#612A4F] transition-colors disabled:opacity-50"
                         >
                           {splittingScript ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
-                          {splittingScript ? 'Splitting...' : 'Split script with AI'}
+                          {splittingScript ? 'Breaking down...' : 'Break down script'}
                         </button>
                       )}
                     </div>
@@ -823,7 +823,7 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
                       className="flex items-center gap-1.5 text-[12px] text-gray-400 hover:text-[#612A4F] transition-colors"
                     >
                       <Clapperboard className="w-3.5 h-3.5" />
-                      Build video storyboard
+                      Build shot list
                     </button>
                     {post.script && (
                       <button
@@ -832,7 +832,7 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
                         className="flex items-center gap-1 text-[12px] text-gray-400 hover:text-[#612A4F] transition-colors disabled:opacity-50"
                       >
                         {splittingScript ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
-                        {splittingScript ? 'Splitting...' : 'Split script with AI'}
+                        {splittingScript ? 'Breaking down...' : 'Break down script'}
                       </button>
                     )}
                   </div>
