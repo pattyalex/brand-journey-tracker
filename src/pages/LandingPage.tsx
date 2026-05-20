@@ -43,7 +43,7 @@ const LandingPage = () => {
       <div className="max-w-6xl mx-auto px-6 py-16 space-y-16 fade-in">
         {/* Hero Section */}
         <section className="text-center space-y-6">
-          <h1 className="text-5xl md:text-6xl font-bold mb-4 leading-tight">
+          <h1 className="text-4xl md:text-5xl font-normal mb-4 leading-tight" style={{ fontFamily: "'DM Serif Display', serif" }}>
             Simplify Your Content <br />Creation Journey
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">

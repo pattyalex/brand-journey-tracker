@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, ImageIcon, AlertTriangle, Clock } from 'lucide-react';
 import { useDroppable, useDraggable } from '@dnd-kit/core';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 import { Post } from '@/types/posts';
 
 interface ScheduleCalendarProps {
@@ -325,7 +326,14 @@ const MonthCell: React.FC<{
                     )}
                     <span className="text-[11px] text-gray-700 truncate flex-1 pointer-events-none">{post.title}</span>
                     {missingAssets && (
-                      <AlertTriangle className="w-3 h-3 text-amber-400 flex-shrink-0 pointer-events-none" />
+                      <TooltipProvider delayDuration={200}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <AlertTriangle className="w-3 h-3 text-amber-400 flex-shrink-0" />
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="text-xs">Missing assets</TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     )}
                   </motion.div>
                 )}
@@ -418,10 +426,17 @@ const WeekCell: React.FC<{
                 </div>
               )}
               {missingAssets && (
-                <div className="flex items-center gap-1 mt-1 px-1">
-                  <AlertTriangle className="w-2.5 h-2.5 text-amber-400" />
-                  <span className="text-[9px] text-amber-400">Missing assets</span>
-                </div>
+                <TooltipProvider delayDuration={200}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center gap-1 mt-1 px-1">
+                        <AlertTriangle className="w-2.5 h-2.5 text-amber-400" />
+                        <span className="text-[9px] text-amber-400">Missing assets</span>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="text-xs">Missing assets</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               )}
             </div>
           );
