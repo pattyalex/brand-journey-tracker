@@ -85,7 +85,7 @@ const Posts: React.FC = () => {
           const localMap = new Map(prev.map(p => [p.id, p]));
           const merged = cleanedRemote.map(p => {
             const local = localMap.get(p.id);
-            if (local && local.status !== p.status) return { ...p, status: local.status };
+            if (local && local.status !== p.status) return local;
             return p;
           });
           // Include any local-only posts not yet in Supabase
@@ -268,6 +268,10 @@ const Posts: React.FC = () => {
   // ── Post handlers ──────────────────────────────────────────
 
   const handleUpdatePost = useCallback((id: string, updates: Partial<Post>) => {
+    // When setting to "Ready to Schedule", clear any previous scheduling data
+    if (updates.status === 'Ready to Schedule') {
+      updates = { ...updates, scheduledDate: undefined, scheduled_time: undefined };
+    }
     setPosts(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
     postsApi.updatePost(id, updates).catch(console.error);
     if (updates.status === 'Ready to Schedule') {

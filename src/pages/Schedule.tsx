@@ -25,6 +25,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import * as postsApi from '@/services/postsService';
 import * as scheduleApi from '@/services/scheduleService';
 import PostDetailPanel from '@/components/posts/PostDetailPanel';
+import { PlatformIconsDisplay } from '@/components/posts/PlatformSelector';
 import ReadySidebar from '@/components/schedule/ReadySidebar';
 import ScheduleGrid from '@/components/schedule/ScheduleGrid';
 import ScheduleCalendar from '@/components/schedule/ScheduleCalendar';
@@ -95,8 +96,8 @@ const Schedule: React.FC = () => {
           const localMap = new Map(prev.map(p => [p.id, p]));
           const merged = remote.map(p => {
             const local = localMap.get(p.id);
-            // If local has a more advanced status (e.g. "Ready to Schedule"), keep it
-            if (local && local.status !== p.status) return { ...p, status: local.status };
+            // If local has a different status, keep the full local version (more recent user action)
+            if (local && local.status !== p.status) return local;
             return p;
           });
           // Include any local-only posts not yet in Supabase
@@ -136,11 +137,7 @@ const Schedule: React.FC = () => {
   const gridPostIds = useMemo(() => new Set(gridOrder.filter(Boolean) as string[]), [gridOrder]);
 
   const readyPosts = useMemo(() => {
-    return posts.filter(p => {
-      if (p.status !== 'Ready to Schedule') return false;
-      if (p.scheduledDate) return false;
-      return true;
-    });
+    return posts.filter(p => p.status === 'Ready to Schedule');
   }, [posts]);
 
   const scheduledPosts = useMemo(() => {
@@ -586,20 +583,46 @@ const DraggableReadyList: React.FC<{
       }}
     >
       {props.posts.length === 0 ? (
-        <div className="flex flex-col items-center justify-center px-6 py-8">
+        <div className="flex flex-col items-center justify-center px-6 pt-10 pb-4">
           {isOver ? (
             <p className="text-[13px] text-[#612A4F] font-medium">Drop here to unschedule</p>
           ) : (
             <>
-              <p className="text-[14px] font-semibold text-gray-700 mb-2">No posts ready to schedule yet</p>
-              <p className="text-[12px] text-gray-400 text-center mb-4">
-                Posts marked "Ready to Post" from your{' '}
-                <a href="/posts" className="text-[#612A4F] hover:underline font-medium">Posts page →</a>
-                {' '}will appear here.
+              {/* Illustration — stacked cards with calendar badge */}
+              <div className="relative w-[80px] h-[68px] mb-2">
+                {/* Back card — image placeholder */}
+                <div className="absolute top-0 left-[7px] w-[48px] h-[36px] rounded-md bg-gray-100 border border-gray-200/60 rotate-[-8deg] shadow-sm overflow-hidden">
+                  <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200" />
+                </div>
+                {/* Middle card — image placeholder */}
+                <div className="absolute top-[6px] left-[19px] w-[48px] h-[36px] rounded-md bg-gray-50 border border-gray-200/60 rotate-[3deg] shadow-sm overflow-hidden">
+                  <div className="w-full h-full bg-gradient-to-br from-gray-50 to-gray-150" />
+                </div>
+                {/* Front card — image with mountain/sun icon */}
+                <div className="absolute top-[12px] left-[12px] w-[48px] h-[36px] rounded-md bg-white border border-gray-200 shadow-md flex items-center justify-center overflow-hidden">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" className="text-gray-300">
+                    <rect x="2" y="2" width="20" height="20" rx="3" fill="currentColor" opacity="0.15" />
+                    <circle cx="8.5" cy="8.5" r="2" fill="currentColor" opacity="0.4" />
+                    <path d="M2 17l5-5 3 3 4-4 8 8v1a2 2 0 01-2 2H4a2 2 0 01-2-2v-3z" fill="currentColor" opacity="0.3" />
+                  </svg>
+                </div>
+                {/* Calendar badge */}
+                <div className="absolute bottom-[4px] right-[5px] w-[23px] h-[23px] rounded-full bg-[#612A4F]/10 flex items-center justify-center">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#612A4F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-60">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                  </svg>
+                </div>
+              </div>
+              <p className="text-[15px] font-semibold text-gray-800 mb-1.5">No posts ready to schedule yet</p>
+              <p className="text-[12px] text-gray-400 text-center mb-5 leading-relaxed max-w-[260px]">
+                Add posts here by changing their status to "Ready to Schedule"
               </p>
               <a
                 href="/posts"
-                className="px-4 py-1.5 text-[12px] font-medium text-white bg-[#612A4F] rounded-full hover:bg-[#612A4F]/85 transition-colors"
+                className="px-5 py-2 text-[12px] font-medium text-white bg-[#612A4F] rounded-full hover:bg-[#612A4F]/85 transition-colors shadow-sm"
               >
                 Add Posts
               </a>
@@ -614,7 +637,7 @@ const DraggableReadyList: React.FC<{
             onMouseEnter={e => { e.currentTarget.style.scrollbarColor = 'rgba(0,0,0,0.2) transparent'; }}
             onMouseLeave={e => { e.currentTarget.style.scrollbarColor = 'transparent transparent'; }}
           >
-            <AnimatePresence initial={!!props.swooshPostId}>
+            <AnimatePresence>
               {props.posts.map(post => (
                 <DraggableReadyCard
                   key={post.id}
@@ -649,20 +672,23 @@ const DraggableReadyCard: React.FC<{
   isSwoosh?: boolean;
 }> = ({ post, gridPostIds, onClickPost, onRemove, onHover, isHovered, isDragging, isSwoosh }) => {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({ id: post.id });
-  const inGrid = gridPostIds.has(post.id);
-  const inCalendar = !!post.scheduledDate;
+  const swooshDone = useRef(false);
+  const shouldSwoosh = isSwoosh && !swooshDone.current;
+
+  useEffect(() => {
+    if (isSwoosh) {
+      swooshDone.current = true;
+    }
+  }, [isSwoosh]);
 
   return (
     <motion.div
       ref={setNodeRef}
-      layout={!isSwoosh}
-      initial={isSwoosh ? { x: -300, opacity: 0 } : { opacity: 0, y: 8 }}
-      animate={isSwoosh
-        ? { x: 0, opacity: 1 }
-        : { opacity: isDragging ? 0.3 : 1, y: 0 }
-      }
+      layout={!shouldSwoosh}
+      initial={shouldSwoosh ? { x: -300, opacity: 0 } : { opacity: 0, y: 8 }}
+      animate={{ opacity: isDragging ? 0.3 : 1, x: 0, y: 0 }}
       exit={{ opacity: 0, scale: 0.95, y: -4 }}
-      transition={isSwoosh
+      transition={shouldSwoosh
         ? { type: 'spring', stiffness: 200, damping: 20, mass: 0.6, delay: 0.1 }
         : { duration: 0.25, ease: 'easeOut' }
       }
@@ -687,14 +713,10 @@ const DraggableReadyCard: React.FC<{
       <div className="flex-1 min-w-0">
         <p className="text-[12px] font-medium text-gray-800 truncate">{post.title}</p>
         <div className="flex items-center gap-2 mt-0.5">
-          <div className="flex items-center gap-1">
-            <div className={`w-1.5 h-1.5 rounded-full transition-colors ${inGrid ? 'bg-[#612A4F]' : 'bg-gray-200'}`} />
-            <span className="text-[9px] text-gray-400">Grid</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className={`w-1.5 h-1.5 rounded-full transition-colors ${inCalendar ? 'bg-[#612A4F]' : 'bg-gray-200'}`} />
-            <span className="text-[9px] text-gray-400">Date</span>
-          </div>
+          {post.format && (
+            <span className="text-[9px] text-gray-400">{post.format}</span>
+          )}
+          <PlatformIconsDisplay platforms={post.platforms} size={9} />
         </div>
       </div>
       <button
