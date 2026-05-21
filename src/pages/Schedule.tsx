@@ -76,7 +76,22 @@ const Schedule: React.FC = () => {
   useEffect(() => {
     if (!userId) return;
     postsApi.fetchPosts(userId).then(remote => {
-      if (remote.length > 0) setPosts(remote);
+      if (remote.length > 0) {
+        // Merge: keep local status updates that may not have synced to Supabase yet
+        setPosts(prev => {
+          const localMap = new Map(prev.map(p => [p.id, p]));
+          const merged = remote.map(p => {
+            const local = localMap.get(p.id);
+            // If local has a more advanced status (e.g. "Ready to Schedule"), keep it
+            if (local && local.status !== p.status) return { ...p, status: local.status };
+            return p;
+          });
+          // Include any local-only posts not yet in Supabase
+          const remoteIds = new Set(remote.map(p => p.id));
+          const localOnly = prev.filter(p => !remoteIds.has(p.id));
+          return [...merged, ...localOnly];
+        });
+      }
     }).catch(console.error);
     scheduleApi.fetchScheduleGrid(userId).then(remote => {
       if (remote.some(s => s !== null)) setGridOrder(remote);
@@ -109,7 +124,7 @@ const Schedule: React.FC = () => {
 
   const readyPosts = useMemo(() => {
     return posts.filter(p => {
-      if (!p.sent_to_schedule || p.status === 'Posted') return false;
+      if (p.status !== 'Ready to Schedule') return false;
       // Hide from Ready if already on the calendar
       if (p.scheduledDate) return false;
       // Hide from Ready if already in the grid
@@ -119,7 +134,7 @@ const Schedule: React.FC = () => {
   }, [posts, gridPostIds]);
 
   const scheduledPosts = useMemo(() => {
-    return posts.filter(p => p.sent_to_schedule && p.scheduledDate);
+    return posts.filter(p => p.status === 'Scheduled' && p.scheduledDate);
   }, [posts]);
 
   // ── Handlers ───────────────────────────────────────────────
@@ -137,7 +152,7 @@ const Schedule: React.FC = () => {
   }, []);
 
   const handleRemoveFromSchedule = useCallback((id: string) => {
-    const updates = { sent_to_schedule: false, scheduledDate: undefined, scheduled_time: undefined, status: 'Edited' as PostStatus };
+    const updates = { scheduledDate: undefined, scheduled_time: undefined, status: 'Edited' as PostStatus };
     setPosts(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
     setGridOrder(prev => prev.map(pid => pid === id ? null : pid));
     setSelectedPost(null);
@@ -172,9 +187,8 @@ const Schedule: React.FC = () => {
       title: 'Untitled post',
       pillar: '',
       format: '',
-      status: 'Edited',
+      status: 'Ready to Schedule',
       thumbnail_url: url,
-      sent_to_schedule: true,
       order: posts.length,
       createdAt: new Date().toISOString(),
     };
@@ -207,7 +221,7 @@ const Schedule: React.FC = () => {
   }, [posts]);
 
   const handleUnschedule = useCallback((postId: string) => {
-    const updates = { scheduledDate: undefined, scheduled_time: undefined, status: 'Edited' as PostStatus };
+    const updates = { scheduledDate: undefined, scheduled_time: undefined, status: 'Ready to Schedule' as PostStatus };
     setPosts(prev => prev.map(p =>
       p.id === postId ? { ...p, ...updates } : p
     ));
@@ -321,7 +335,7 @@ const Schedule: React.FC = () => {
 
   const handleClickEmptyDate = useCallback((date: string) => {
     // If there are ready posts not yet on calendar, open picker
-    const unscheduled = posts.filter(p => p.sent_to_schedule && !p.scheduledDate && p.status !== 'Posted');
+    const unscheduled = posts.filter(p => p.status === 'Ready to Schedule' && !p.scheduledDate);
     if (unscheduled.length > 0) {
       setDatePickerState({ open: true, date });
     }
@@ -419,7 +433,7 @@ const Schedule: React.FC = () => {
         />
         <PostPickerDialog
           open={datePickerState.open}
-          posts={posts.filter(p => p.sent_to_schedule && !p.scheduledDate && p.status !== 'Posted')}
+          posts={posts.filter(p => p.status === 'Ready to Schedule' && !p.scheduledDate)}
           onSelect={(postId) => {
             setDatePickerState(prev => ({ ...prev, open: false }));
             setTimePicker({ open: true, postId, date: datePickerState.date });
@@ -463,7 +477,7 @@ const Schedule: React.FC = () => {
                   onExpand={() => setReadyCollapsed(false)}
                 />
               )}
-              <div className={`flex-shrink-0 border-t border-gray-100 pt-4 ${readyCollapsed ? 'mt-4' : 'mt-10'}`}>
+              <div className={`flex-shrink-0 border-t border-gray-100 pt-4 ${readyCollapsed ? 'mt-4' : 'mt-4'}`}>
                 <ScheduleGrid
                   gridOrder={gridOrder}
                   postsMap={postsMap}
@@ -527,7 +541,7 @@ const Schedule: React.FC = () => {
 
       <PostPickerDialog
         open={datePickerState.open}
-        posts={posts.filter(p => p.sent_to_schedule && !p.scheduledDate && p.status !== 'Posted')}
+        posts={posts.filter(p => p.status === 'Ready to Schedule' && !p.scheduledDate)}
         onSelect={(postId) => {
           setDatePickerState(prev => ({ ...prev, open: false }));
           setTimePicker({ open: true, postId, date: datePickerState.date });
@@ -563,37 +577,53 @@ const DraggableReadyList: React.FC<{
         minHeight: '80px',
       }}
     >
-      <div className="flex items-center gap-2 px-4 py-3">
-        <span className="text-lg font-semibold text-gray-900">Ready</span>
-        {props.onToggleCollapse && (
-          <button onClick={props.onToggleCollapse} className="ml-auto p-1 rounded-lg hover:bg-gray-100 transition-colors">
-            <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
-          </button>
-        )}
-      </div>
       {props.posts.length === 0 ? (
-        <div className="flex items-center justify-center px-4 py-8">
-          <p className="text-[12px] text-gray-400 text-center leading-relaxed">
-            {isOver ? 'Drop here to unschedule' : 'No posts ready yet. Mark posts as Edited in Posts and click the arrow to send them here.'}
-          </p>
+        <div className="flex flex-col items-center justify-center px-6 py-8">
+          {isOver ? (
+            <p className="text-[13px] text-[#612A4F] font-medium">Drop here to unschedule</p>
+          ) : (
+            <>
+              <p className="text-[14px] font-semibold text-gray-700 mb-2">No posts ready to schedule yet</p>
+              <p className="text-[12px] text-gray-400 text-center mb-4">
+                Posts marked "Ready to Post" from your{' '}
+                <a href="/posts" className="text-[#612A4F] hover:underline font-medium">Posts page →</a>
+                {' '}will appear here.
+              </p>
+              <a
+                href="/posts"
+                className="px-4 py-1.5 text-[12px] font-medium text-white bg-[#612A4F] rounded-full hover:bg-[#612A4F]/85 transition-colors"
+              >
+                Add Posts
+              </a>
+            </>
+          )}
         </div>
       ) : (
-        <div className="px-2 py-1 space-y-0.5">
-          <AnimatePresence initial={false}>
-            {props.posts.map(post => (
-              <DraggableReadyCard
-                key={post.id}
-                post={post}
-                gridPostIds={props.gridPostIds}
-                onClickPost={props.onClickPost}
-                onRemove={props.onRemove}
-                onHover={props.onHover}
-                isHovered={props.hoveredId === post.id}
-                isDragging={props.draggingId === post.id}
-              />
-            ))}
-          </AnimatePresence>
-        </div>
+        <>
+          {props.onToggleCollapse && (
+            <div className="flex justify-end px-4 pt-2">
+              <button onClick={props.onToggleCollapse} className="p-1 rounded-lg hover:bg-gray-100 transition-colors">
+                <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+              </button>
+            </div>
+          )}
+          <div className="px-2 py-1 space-y-0.5">
+            <AnimatePresence initial={false}>
+              {props.posts.map(post => (
+                <DraggableReadyCard
+                  key={post.id}
+                  post={post}
+                  gridPostIds={props.gridPostIds}
+                  onClickPost={props.onClickPost}
+                  onRemove={props.onRemove}
+                  onHover={props.onHover}
+                  isHovered={props.hoveredId === post.id}
+                  isDragging={props.draggingId === post.id}
+                />
+              ))}
+            </AnimatePresence>
+          </div>
+        </>
       )}
     </div>
   );

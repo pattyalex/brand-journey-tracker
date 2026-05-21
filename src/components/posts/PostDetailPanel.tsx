@@ -385,21 +385,6 @@ Return a JSON array of exactly 5 strings.`,
                             </Tooltip>
                           </TooltipProvider>
                         )}
-                        {post.status === 'Edited' && onSendToSchedule && !post.sent_to_schedule && (
-                          <TooltipProvider delayDuration={0}>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <button
-                                  onClick={() => onSendToSchedule(post.id)}
-                                  className="flex items-center justify-center w-5 h-5 rounded-full bg-[#5B8EC9] hover:bg-[#4A7DB8] transition-colors"
-                                >
-                                  <ArrowRight size={11} className="text-white" />
-                                </button>
-                              </TooltipTrigger>
-                              <TooltipContent side="top" className="bg-gray-700 text-white text-[10px] font-medium px-1.5 py-0.5">Schedule this post</TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        )}
                       </div>
                     </div>
                   </div>

@@ -120,7 +120,7 @@ const PostsCalendarView: React.FC<PostsCalendarViewProps> = ({
 
   const handleCommitConfirm = useCallback((time: string) => {
     if (commitPostId) {
-      onUpdatePost(commitPostId, { scheduled_time: time, sent_to_schedule: true, status: 'Scheduled' });
+      onUpdatePost(commitPostId, { scheduled_time: time, status: 'Scheduled' });
       toast.success('Post scheduled on content calendar', {
         action: {
           label: 'Go to Schedule Page',
@@ -515,7 +515,7 @@ const DraggableSidebarCard: React.FC<{
         </div>
         <span className="flex items-center gap-0.5 text-[9px] text-gray-400 flex-shrink-0 truncate max-w-[50%]">
           <StatusIcon status={post.status} className="w-2 h-2 flex-shrink-0" style={{ color: STATUS_COLORS[post.status]?.dot }} />
-          <span className="truncate">{post.status === 'Ready to shoot' && post.sentToShoots ? 'Shoot in progress' : post.status === 'Edited' && post.sent_to_schedule ? 'Sent to schedule' : post.status}</span>
+          <span className="truncate">{post.status === 'Ready to shoot' && post.sentToShoots ? 'Shoot in progress' : post.status}</span>
           {post.status === 'Ready to shoot' && onSendToShoots && !post.sentToShoots && (
             <TooltipProvider delayDuration={0}>
               <Tooltip>
@@ -530,29 +530,6 @@ const DraggableSidebarCard: React.FC<{
                 <TooltipContent side="top" className="bg-gray-700 text-white text-[10px] font-medium px-1.5 py-0.5">Plan the shoot</TooltipContent>
               </Tooltip>
             </TooltipProvider>
-          )}
-          {post.status === 'Edited' && onSendToSchedule && !post.sent_to_schedule && (
-            <span
-              onPointerDown={e => e.stopPropagation()}
-              onPointerMove={e => e.stopPropagation()}
-              onMouseDown={e => e.stopPropagation()}
-              onTouchStart={e => e.stopPropagation()}
-              style={{ touchAction: 'auto' }}
-            >
-              <TooltipProvider delayDuration={0}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={e => { e.stopPropagation(); onSendToSchedule(post.id); }}
-                      className="ml-0.5 flex items-center justify-center w-[18px] h-[18px] rounded-full bg-[#5B8EC9] hover:bg-[#4A7DB8] transition-colors"
-                    >
-                      <ArrowRight size={7} className="text-white" />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="top" className="bg-gray-700 text-white text-[10px] font-medium px-1.5 py-0.5">Schedule this post</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </span>
           )}
         </span>
       </div>

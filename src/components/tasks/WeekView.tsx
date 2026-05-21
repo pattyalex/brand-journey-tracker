@@ -93,7 +93,7 @@ const WeekView: React.FC<WeekViewProps> = ({
   const allShoots = useMemo(() => getJSON<Shoot[]>('meg_shoots', []), []);
   const allScheduledPosts = useMemo(() => {
     const posts = getJSON<Post[]>('meg_posts', []);
-    return posts.filter(p => p.scheduledDate && p.sent_to_schedule);
+    return posts.filter(p => p.scheduledDate && (p.status === 'Scheduled' || p.status === 'Posted'));
   }, []);
 
   const handleDragStart = (e: DragStartEvent) => setActiveId(e.active.id as string);

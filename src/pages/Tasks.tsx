@@ -108,7 +108,7 @@ const Tasks: React.FC = () => {
   // Load scheduled posts for the current day
   const dayScheduledPosts = useMemo(() => {
     const allPosts = getJSON<Post[]>('meg_posts', []);
-    return allPosts.filter(p => p.scheduledDate === currentDate && p.sent_to_schedule);
+    return allPosts.filter(p => p.scheduledDate === currentDate && (p.status === 'Scheduled' || p.status === 'Posted'));
   }, [currentDate]);
 
   // Load from Supabase on mount

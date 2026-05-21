@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Lightbulb, PenLine, PersonStanding, Camera, Laptop, CalendarDays, CheckCircle2 } from 'lucide-react';
+import { Lightbulb, PenLine, PersonStanding, Camera, Laptop, Send, CalendarDays, CheckCircle2 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { PostStatus, POST_STATUSES, STATUS_COLORS } from '@/types/posts';
 
@@ -10,6 +10,7 @@ const STATUS_ICON_MAP: Record<PostStatus, React.FC<{ className?: string }>> = {
   'Ready to shoot': PersonStanding,
   Shot: Camera,
   Edited: Laptop,
+  'Ready to Schedule': Send,
   Scheduled: CalendarDays,
   Posted: CheckCircle2,
 };

@@ -218,7 +218,7 @@ const Posts: React.FC = () => {
     if (filterStatuses.size > 0) result = result.filter(p => {
       if (filterStatuses.has(p.status as any)) return true;
       if (filterStatuses.has('Shoot in progress' as any) && p.status === 'Ready to shoot' && p.sentToShoots) return true;
-      if (filterStatuses.has('Sent to schedule' as any) && p.status === 'Edited' && p.sent_to_schedule) return true;
+      if (filterStatuses.has('Ready to Schedule' as any) && p.status === 'Ready to Schedule') return true;
       return false;
     });
     if (filterFormats.size > 0) result = result.filter(p => filterFormats.has(p.format));
@@ -269,7 +269,15 @@ const Posts: React.FC = () => {
   const handleUpdatePost = useCallback((id: string, updates: Partial<Post>) => {
     setPosts(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
     postsApi.updatePost(id, updates).catch(console.error);
-  }, []);
+    if (updates.status === 'Ready to Schedule') {
+      toast.success('Ready to schedule', {
+        action: {
+          label: 'Go to Schedule',
+          onClick: () => navigate('/schedule'),
+        },
+      });
+    }
+  }, [navigate]);
 
   const handleReplaceAttachment = useCallback((id: string, blobUrl: string, newEntry: string) => {
     const replace = (files: string[] | undefined) =>

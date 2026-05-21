@@ -1,4 +1,4 @@
-export type PostStatus = 'Idea' | 'Scripted' | 'Ready to shoot' | 'Shot' | 'Edited' | 'Scheduled' | 'Posted';
+export type PostStatus = 'Idea' | 'Scripted' | 'Ready to shoot' | 'Shot' | 'Edited' | 'Ready to Schedule' | 'Scheduled' | 'Posted';
 
 export const DEFAULT_FORMATS: string[] = ['Carousel', 'Reel', 'Photo', 'Story'];
 
@@ -32,7 +32,7 @@ export interface Post {
   createdAt: string;
 }
 
-export const POST_STATUSES: PostStatus[] = ['Idea', 'Scripted', 'Ready to shoot', 'Shot', 'Edited', 'Scheduled', 'Posted'];
+export const POST_STATUSES: PostStatus[] = ['Idea', 'Scripted', 'Ready to shoot', 'Shot', 'Edited', 'Ready to Schedule', 'Scheduled', 'Posted'];
 
 export const DEFAULT_PILLARS: string[] = [];
 
@@ -42,6 +42,7 @@ export const STATUS_COLORS: Record<PostStatus, { dot: string; bg: string; text: 
   'Ready to shoot': { dot: '#7C3AED', bg: '#EDE9FE', text: '#5B21B6' },
   Shot:             { dot: '#FF6B00', bg: '#FFF2E0', text: '#B94500' },
   Edited:           { dot: '#2563EB', bg: '#DBEAFE', text: '#1E40AF' },
+  'Ready to Schedule': { dot: '#8B5CF6', bg: '#EDE9FE', text: '#6D28D9' },
   Scheduled:        { dot: '#F59E0B', bg: '#FEF3C7', text: '#78350F' },
   Posted:           { dot: '#059669', bg: '#D1FAE5', text: '#065F46' },
 };

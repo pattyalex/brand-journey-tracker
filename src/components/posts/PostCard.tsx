@@ -67,7 +67,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, variant, onClick, allPosts = 
         <div className="flex items-center justify-end mt-0.5">
           <span className="flex items-center gap-0.5 text-[9px] text-gray-400">
             <StatusIcon status={post.status} className="w-2 h-2" style={{ color: statusColor.dot }} />
-            {post.status === 'Ready to shoot' && post.sentToShoots ? 'Shoot in progress' : post.status === 'Edited' && post.sent_to_schedule ? 'Sent to schedule' : post.status}
+            {post.status === 'Ready to shoot' && post.sentToShoots ? 'Shoot in progress' : post.status}
             {post.status === 'Ready to shoot' && onSendToShoots && !post.sentToShoots && (
               <TooltipProvider delayDuration={0}>
                 <Tooltip>
@@ -80,23 +80,6 @@ const PostCard: React.FC<PostCardProps> = ({ post, variant, onClick, allPosts = 
                     </button>
                   </TooltipTrigger>
                   <TooltipContent side="top" className="bg-gray-700 text-white text-[10px] font-medium px-1.5 py-0.5 z-[9999]">Plan the shoot</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
-            {post.status === 'Edited' && onSendToSchedule && !post.sent_to_schedule && (
-              <TooltipProvider delayDuration={0}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={e => { e.stopPropagation(); onSendToSchedule(post.id); }}
-                      onPointerDown={e => e.stopPropagation()}
-                      onMouseDown={e => e.stopPropagation()}
-                      className="ml-0.5 flex items-center justify-center w-3.5 h-3.5 rounded-full bg-[#5B8EC9] hover:bg-[#4A7DB8] transition-colors"
-                    >
-                      <ArrowRight size={7} className="text-white" />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="top" className="bg-gray-700 text-white text-[10px] font-medium px-1.5 py-0.5 z-[9999]">Schedule this post</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             )}
@@ -151,7 +134,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, variant, onClick, allPosts = 
         </div>
         <div className="flex items-center gap-1">
           <StatusIcon status={post.status} className="w-2.5 h-2.5" style={{ color: statusColor.dot }} />
-          <span className="text-[10px] text-gray-400">{post.status === 'Ready to shoot' && post.sentToShoots ? 'Shoot in progress' : post.status === 'Edited' && post.sent_to_schedule ? 'Sent to schedule' : post.status}</span>
+          <span className="text-[10px] text-gray-400">{post.status === 'Ready to shoot' && post.sentToShoots ? 'Shoot in progress' : post.status}</span>
           {post.status === 'Ready to shoot' && onSendToShoots && !post.sentToShoots && (
             <TooltipProvider delayDuration={0}>
               <Tooltip>
@@ -164,21 +147,6 @@ const PostCard: React.FC<PostCardProps> = ({ post, variant, onClick, allPosts = 
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="top" className="bg-gray-700 text-white text-[10px] font-medium px-1.5 py-0.5 z-[9999]">Plan the shoot</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
-          {post.status === 'Edited' && onSendToSchedule && !post.sent_to_schedule && (
-            <TooltipProvider delayDuration={0}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={e => { e.stopPropagation(); onSendToSchedule(post.id); }}
-                    className="flex items-center justify-center w-4 h-4 rounded-full bg-[#5B8EC9] hover:bg-[#4A7DB8] transition-colors"
-                  >
-                    <ArrowRight size={8} className="text-white" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="top" className="bg-gray-700 text-white text-[10px] font-medium px-1.5 py-0.5 z-[9999]">Schedule this post</TooltipContent>
               </Tooltip>
             </TooltipProvider>
           )}
