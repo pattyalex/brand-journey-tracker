@@ -42,8 +42,8 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({
   onCollapse,
 }) => {
   const filledCount = gridOrder.filter(Boolean).length;
-  const cellW = expanded ? 127 : 108;
-  const cellH = expanded ? 163 : 138;
+  const cellW = expanded ? 127 : 103;
+  const cellH = expanded ? 163 : 131;
 
   // Stable IDs for SortableContext
   const cellIds = useMemo(() =>
@@ -76,7 +76,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({
             </p>
           </div>
         ) : (
-          <div className={`flex items-start gap-2 ${expanded ? 'mr-[-12px] mt-[13px]' : 'mr-1 mt-2'}`}>
+          <div className={`flex items-start gap-2 ${expanded ? 'mr-[-12px] mt-[13px]' : 'mr-6 mt-2'}`}>
             <div className="relative">
               {/* External drop zones — for Ready → Grid drops */}
               {externalDraggingId && (

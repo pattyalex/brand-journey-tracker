@@ -60,7 +60,7 @@ const SidebarMenuItemComponent = ({ item, onDelete }: SidebarMenuItemProps) => {
 
   return (
     <SidebarMenuItem key={item.title}>
-      <SidebarMenuButton asChild isActive={isActive || isSubItemActive} tooltip={item.title}>
+      <SidebarMenuButton asChild isActive={isActive || isSubItemActive}>
         <a
           href={item.url}
           className={cn(

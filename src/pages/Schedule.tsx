@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ImageIcon, GripVertical, ChevronRight, ChevronLeft, ChevronDown, X, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { ImageIcon, GripVertical, ChevronRight, ChevronLeft, X, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import {
   DndContext,
   DragOverlay,
@@ -138,13 +138,10 @@ const Schedule: React.FC = () => {
   const readyPosts = useMemo(() => {
     return posts.filter(p => {
       if (p.status !== 'Ready to Schedule') return false;
-      // Hide from Ready if already on the calendar
       if (p.scheduledDate) return false;
-      // Hide from Ready if already in the grid
-      if (gridPostIds.has(p.id)) return false;
       return true;
     });
-  }, [posts, gridPostIds]);
+  }, [posts]);
 
   const scheduledPosts = useMemo(() => {
     return posts.filter(p => p.status === 'Scheduled' && p.scheduledDate);
@@ -464,26 +461,23 @@ const Schedule: React.FC = () => {
         <DndContext sensors={sensors} collisionDetection={customCollision} onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDragCancel={handleDragCancel}>
           <div className="h-full grid gap-0" style={{ gridTemplateColumns: leftColumnCollapsed ? '0px 28px 1fr' : '450px 8px 1fr', transition: 'grid-template-columns 0.3s ease-out' }}>
             {/* Left column: Ready (collapsible top) + Grid (always visible bottom) */}
-            <div className="h-full flex flex-col bg-white overflow-hidden">
+            <div
+              className="h-full bg-white overflow-y-auto"
+              style={{ scrollbarWidth: 'thin', scrollbarColor: 'transparent transparent' }}
+              onMouseEnter={e => { e.currentTarget.style.scrollbarColor = 'rgba(0,0,0,0.2) transparent'; }}
+              onMouseLeave={e => { e.currentTarget.style.scrollbarColor = 'transparent transparent'; }}
+            >
               {!readyCollapsed && !leftColumnCollapsed && (
-                <div
-                  className="min-h-0 overflow-y-auto"
-                  style={{ scrollbarWidth: 'thin', scrollbarColor: 'transparent transparent' }}
-                  onMouseEnter={e => { e.currentTarget.style.scrollbarColor = 'rgba(0,0,0,0.2) transparent'; }}
-                  onMouseLeave={e => { e.currentTarget.style.scrollbarColor = 'transparent transparent'; }}
-                >
-                  <DraggableReadyList
-                    posts={readyPosts}
-                    gridPostIds={gridPostIds}
-                    onClickPost={setSelectedPost}
-                    onRemove={handleRemoveFromSchedule}
-                    onHover={setHoveredPostId}
-                    hoveredId={hoveredPostId}
-                    draggingId={activeId}
-                    swooshPostId={swooshPostId}
-                    onToggleCollapse={() => setReadyCollapsed(true)}
-                  />
-                </div>
+                <DraggableReadyList
+                  posts={readyPosts}
+                  gridPostIds={gridPostIds}
+                  onClickPost={setSelectedPost}
+                  onRemove={handleRemoveFromSchedule}
+                  onHover={setHoveredPostId}
+                  hoveredId={hoveredPostId}
+                  draggingId={activeId}
+                  swooshPostId={swooshPostId}
+                />
               )}
               {readyCollapsed && (
                 <CollapsedReadyDropZone
@@ -491,7 +485,7 @@ const Schedule: React.FC = () => {
                   onExpand={() => setReadyCollapsed(false)}
                 />
               )}
-              <div className={`flex-shrink-0 border-t border-gray-100 pt-4 ${readyCollapsed ? 'mt-4' : 'mt-4'}`}>
+              <div className={`border-t border-gray-100 pt-4 ${readyCollapsed ? 'mt-2' : 'mt-4'}`}>
                 <ScheduleGrid
                   gridOrder={gridOrder}
                   postsMap={postsMap}
@@ -577,7 +571,6 @@ const DraggableReadyList: React.FC<{
   hoveredId: string | null;
   draggingId: string | null;
   swooshPostId?: string | null;
-  onToggleCollapse?: () => void;
 }> = (props) => {
   const { setNodeRef, isOver } = useDroppable({ id: 'ready-drop-zone' });
 
@@ -615,14 +608,12 @@ const DraggableReadyList: React.FC<{
         </div>
       ) : (
         <>
-          {props.onToggleCollapse && (
-            <div className="flex justify-end px-4 pt-2">
-              <button onClick={props.onToggleCollapse} className="p-1 rounded-lg hover:bg-gray-100 transition-colors">
-                <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
-              </button>
-            </div>
-          )}
-          <div className="px-2 py-1 space-y-0.5">
+          <div
+            className="px-2 pt-4 pb-0 space-y-0.5 overflow-y-auto"
+            style={{ maxHeight: 240, scrollbarWidth: 'thin', scrollbarColor: 'transparent transparent' }}
+            onMouseEnter={e => { e.currentTarget.style.scrollbarColor = 'rgba(0,0,0,0.2) transparent'; }}
+            onMouseLeave={e => { e.currentTarget.style.scrollbarColor = 'transparent transparent'; }}
+          >
             <AnimatePresence initial={!!props.swooshPostId}>
               {props.posts.map(post => (
                 <DraggableReadyCard
@@ -725,7 +716,7 @@ const CollapsedReadyDropZone: React.FC<{ count: number; onExpand: () => void }> 
     <button
       ref={setNodeRef}
       onClick={onExpand}
-      className={`w-full flex items-center gap-2 px-4 py-2.5 transition-colors ${
+      className={`w-full flex items-center gap-2 px-5 py-4 transition-colors ${
         isOver ? 'bg-[#612A4F]/[0.06]' : 'hover:bg-gray-50'
       }`}
       style={{
@@ -734,9 +725,8 @@ const CollapsedReadyDropZone: React.FC<{ count: number; onExpand: () => void }> 
         borderRadius: isOver ? '12px' : '0',
       }}
     >
-      <span className="text-lg font-semibold text-gray-900">Ready</span>
+      <span className="text-[15px] font-semibold text-gray-900" style={{ fontFamily: "'Playfair Display', serif" }}>Ready to Schedule</span>
       <span className="text-[11px] text-gray-400 bg-gray-100 rounded-full px-1.5 py-0.5">{count}</span>
-      <ChevronRight className="w-3.5 h-3.5 text-gray-400 ml-auto" />
     </button>
   );
 };

@@ -273,7 +273,7 @@ const MonthCell: React.FC<{
     <div
       ref={setNodeRef}
       onClick={() => { if (posts.length === 0) onClickEmpty(); }}
-      className={`p-1.5 cursor-pointer transition-all duration-150 min-h-[105px] ${
+      className={`p-1.5 cursor-pointer transition-all duration-150 min-h-[115px] ${
         isCurrentMonth ? 'bg-white' : 'bg-gray-50/80'
       } ${isOver ? 'bg-[#612A4F]/[0.04]' : ''}`}
       style={{
