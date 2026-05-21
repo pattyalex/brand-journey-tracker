@@ -144,24 +144,6 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ value, onChange, onBlur, on
         <div className="flex-1" />
 
         <TooltipProvider delayDuration={400}>
-          {onPolish && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  onMouseDown={e => { e.preventDefault(); if (!editor.isEmpty) onPolish(); }}
-                  disabled={isPolishing || editor.isEmpty}
-                  className="flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium transition-colors disabled:opacity-30 disabled:cursor-not-allowed text-gray-400 hover:text-[#612A4F] hover:bg-gray-100 disabled:hover:text-gray-400 disabled:hover:bg-transparent"
-                >
-                  {isPolishing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
-                  Polish
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" className="text-xs bg-gray-500 text-white border-gray-500">
-                {editor.isEmpty ? 'Write your script first, then polish.' : 'Polish script in your voice with MegAI'}
-              </TooltipContent>
-            </Tooltip>
-          )}
           {onHooks && (
             <Tooltip>
               <TooltipTrigger asChild>

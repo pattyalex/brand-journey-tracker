@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trash2, Camera, Bookmark, TrendingUp, Sparkles } from 'lucide-react';
+import { Trash2, Camera, Bookmark, Sparkles, Lightbulb, TrendingUp } from 'lucide-react';
 import InspirationPanel from '@/components/posts/InspirationPanel';
 import TitleHookSuggestions from '@/components/content/TitleHookSuggestions';
 import ThemeBrainstormDialog from '@/components/content/ThemeBrainstormDialog';
@@ -570,13 +570,13 @@ const Posts: React.FC = () => {
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] text-gray-500 hover:text-[#612A4F] hover:bg-[#612A4F]/5 transition-colors"
             >
               <Bookmark size={14} />
-              Inspiration
+              Inspiration album
             </button>
             <button
               onClick={() => setShowBrainstormDialog(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] text-gray-500 hover:text-[#2D9D70] hover:bg-[#2D9D70]/5 transition-colors"
             >
-              <Sparkles size={14} />
+              <Lightbulb size={14} />
               Brainstorm with MegAI
             </button>
           </div>
