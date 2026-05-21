@@ -300,7 +300,7 @@ export default function ThemeBrainstormDialog({ open, onOpenChange }: ThemeBrain
                       }}
                       autoFocus={newPillarIndex === index}
                       className={cn(
-                        "bg-transparent border-none outline-none text-center min-w-[80px] max-w-[200px] cursor-pointer uppercase",
+                        "bg-transparent border-none outline-none text-center min-w-[80px] cursor-pointer uppercase",
                         selectedUserPillar === pillar ? "text-white placeholder:text-white/70" : "text-gray-800 placeholder:text-gray-400"
                       )}
                       placeholder=""

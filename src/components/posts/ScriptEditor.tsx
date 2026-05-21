@@ -1,4 +1,5 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
@@ -10,12 +11,19 @@ import {
   ListOrdered,
   Heading1,
   Heading2,
+  Sparkles,
+  Anchor,
+  Loader2,
 } from 'lucide-react';
 
 interface ScriptEditorProps {
   value: string;
   onChange: (html: string) => void;
   onBlur?: () => void;
+  onPolish?: () => void;
+  onHooks?: () => void;
+  isPolishing?: boolean;
+  isGeneratingHooks?: boolean;
 }
 
 const ToolbarButton: React.FC<{
@@ -36,7 +44,7 @@ const ToolbarButton: React.FC<{
   </button>
 );
 
-const ScriptEditor: React.FC<ScriptEditorProps> = ({ value, onChange, onBlur }) => {
+const ScriptEditor: React.FC<ScriptEditorProps> = ({ value, onChange, onBlur, onPolish, onHooks, isPolishing, isGeneratingHooks }) => {
   const isInternalUpdate = useRef(false);
 
   const editor = useEditor({
@@ -132,6 +140,47 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ value, onChange, onBlur }) 
         >
           <ListOrdered className="w-3.5 h-3.5" />
         </ToolbarButton>
+
+        <div className="flex-1" />
+
+        <TooltipProvider delayDuration={400}>
+          {onPolish && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onMouseDown={e => { e.preventDefault(); if (!editor.isEmpty) onPolish(); }}
+                  disabled={isPolishing || editor.isEmpty}
+                  className="flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium transition-colors disabled:opacity-30 disabled:cursor-not-allowed text-gray-400 hover:text-[#612A4F] hover:bg-gray-100 disabled:hover:text-gray-400 disabled:hover:bg-transparent"
+                >
+                  {isPolishing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+                  Polish
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="text-xs bg-gray-500 text-white border-gray-500">
+                {editor.isEmpty ? 'Write your script first, then polish.' : 'Polish script in your voice with MegAI'}
+              </TooltipContent>
+            </Tooltip>
+          )}
+          {onHooks && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onMouseDown={e => { e.preventDefault(); if (!editor.isEmpty) onHooks(); }}
+                  disabled={isGeneratingHooks || editor.isEmpty}
+                  className="flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium transition-colors disabled:opacity-30 disabled:cursor-not-allowed text-gray-400 hover:text-[#612A4F] hover:bg-gray-100 disabled:hover:text-gray-400 disabled:hover:bg-transparent"
+                >
+                  {isGeneratingHooks ? <Loader2 className="w-3 h-3 animate-spin" /> : <Anchor className="w-3 h-3" />}
+                  Hooks
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="text-xs bg-gray-500 text-white border-gray-500">
+                {editor.isEmpty ? 'Write your script, then generate hooks based on it.' : 'Generate hooks based on your script with MegAI'}
+              </TooltipContent>
+            </Tooltip>
+          )}
+        </TooltipProvider>
       </div>
 
       <EditorContent editor={editor} />

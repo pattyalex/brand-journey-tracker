@@ -11,6 +11,7 @@ import PlatformSelector from './PlatformSelector';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 import ScriptEditor from './ScriptEditor';
 import { callClaudeForJSON } from '@/services/claudeService';
+import { buildHookLibraryPromptText } from '@/data/hookLibrary';
 
 interface PostDetailPanelProps {
   post: Post | null;
@@ -45,6 +46,11 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
   const [addingLink, setAddingLink] = useState(false);
   const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
   const [splittingScript, setSplittingScript] = useState(false);
+  const [isPolishing, setIsPolishing] = useState(false);
+  const [isGeneratingHooks, setIsGeneratingHooks] = useState(false);
+  const [hookOptions, setHookOptions] = useState<string[]>([]);
+  const [showHooksPanel, setShowHooksPanel] = useState(false);
+  const [hooksRegenerateCount, setHooksRegenerateCount] = useState(0);
   const thumbnailInputRef = useRef<HTMLInputElement>(null);
 
   const isVideoUrl = (url: string) =>
@@ -133,6 +139,118 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
     }
   }, [post, scriptDraft, splittingScript, onUpdate]);
 
+  const handlePolish = useCallback(async () => {
+    // Will be implemented — placeholder for now
+    setIsPolishing(true);
+    setTimeout(() => setIsPolishing(false), 1000);
+  }, []);
+
+  const generateHooks = useCallback(async () => {
+    if (!post || isGeneratingHooks) return;
+    const rawHtml = scriptDraft || post.script || '';
+    const tmp = document.createElement('div');
+    tmp.innerHTML = rawHtml;
+    const plainText = (tmp.textContent || tmp.innerText || '').trim();
+    if (!plainText) return;
+
+    setIsGeneratingHooks(true);
+    try {
+      const hookLibrary = buildHookLibraryPromptText();
+      const result = await callClaudeForJSON<string[]>({
+        model: 'claude-sonnet-4-6',
+        system: `You are a creative content strategist for social media creators. Generate compelling hooks — short, attention-grabbing opening lines that make viewers stop scrolling.
+
+REFERENCE HOOK LIBRARY:
+
+Here are proven hook patterns organized by emotional/structural category. Use these as STYLE inspiration for the kinds of hook structures that resonate with this creator's audience. Do NOT copy these hooks verbatim — generate new hooks tailored to the specific script, but use these as reference for tone, structure, and emotional register.
+
+${hookLibrary}
+
+IMPORTANT: The library examples demonstrate STRUCTURE and EMOTIONAL CATEGORY, not language to copy. Do NOT reuse clichéd opener phrases found in the examples, including but not limited to: "POV:", "Unpopular opinion:", "The truth about X nobody talks about," "I know I'll get hate but," "Stop doing X," "You've been doing X wrong," "Tell me you're X without telling me." Generate fresh, specific language inspired only by the structural pattern and emotional register of the category.
+
+STRUCTURAL ANALYSIS (do this first, before generating any hooks):
+
+Analyze the script's structure and identify which type it is:
+- SINGLE INSIGHT: one core argument or idea developed throughout
+- NUMBERED LIST: multiple equal-weight points (3 reasons, 5 mistakes, 7 tips, etc.)
+- STORY/ANECDOTE: personal narrative with a beginning, middle, end
+- TUTORIAL/HOW-TO: step-by-step instructions toward an outcome
+- CONTRARIAN TAKE: challenges a common belief
+
+Match the hook format to the structure:
+- SINGLE INSIGHT → hook teases that one insight
+- NUMBERED LIST → hook MUST reference the list structure AND the count (e.g., "4 reasons creators quit")
+- STORY → hook teases the outcome, stakes, or transformation
+- TUTORIAL → hook promises the end result
+- CONTRARIAN → hook sets up the contrarian frame
+
+A hook that promises ONE insight when the script delivers a LIST is bait-and-switch. A hook that promises a LIST when the script delivers a single story is equally broken. The viewer's expectation set by the hook must match what the script actually delivers.
+
+CATEGORY MATCHING (do this after structural analysis):
+
+From the Hook Library categories above, identify the 2-3 categories whose emotional register and structural patterns are most relevant to this script's content and tone. Weight your hook generation toward those categories' patterns. Note internally which categories you're pulling from, but do NOT include category names or meta-commentary in your output.
+
+HOOK GENERATION RULES:
+- Each hook should be a different angle or approach to the same script topic
+- Keep the creator's voice authentic and conversational
+- Each hook must be under 12 words
+
+QUALITY FILTER (do this after generating hooks):
+
+Generate 10 candidate hooks internally. Score each against these criteria:
+1. Does it match the script's structure?
+2. Does it reference something specific from the script (not generic)?
+3. Could a viewer accurately guess what the video delivers from the hook?
+4. Does it create curiosity, surprise, or emotional stake?
+5. Is it under 12 words?
+6. Does it avoid clichés ("cup of tea," "game-changer," "you don't even know it," etc.)?
+
+Return ONLY the top 5 hooks that score highest. Do not include weak hooks.
+
+Return a JSON array of exactly 5 strings.`,
+        messages: [
+          { role: 'user', content: `Generate hooks for this script. Analyze the structure first, match to hook library categories, generate 10 candidates, then return ONLY the best 5 as a JSON array of strings.\n\nScript:\n${plainText}` },
+        ],
+        maxTokens: 1024,
+      }, 'array');
+
+      if (result.ok && result.data && result.data.length > 0) {
+        setHookOptions(result.data);
+        setShowHooksPanel(true);
+      }
+    } finally {
+      setIsGeneratingHooks(false);
+    }
+  }, [post, scriptDraft, isGeneratingHooks]);
+
+  const handleHooks = useCallback(async () => {
+    if (showHooksPanel && hookOptions.length > 0) {
+      setShowHooksPanel(true);
+      return;
+    }
+    setHooksRegenerateCount(0);
+    await generateHooks();
+  }, [showHooksPanel, hookOptions, generateHooks]);
+
+  const handleRegenerateHooks = useCallback(async () => {
+    if (hooksRegenerateCount >= 3) return;
+    setHooksRegenerateCount(prev => prev + 1);
+    await generateHooks();
+  }, [hooksRegenerateCount, generateHooks]);
+
+  const handleSelectHook = useCallback((hook: string) => {
+    if (!post) return;
+    // Set as title
+    onUpdate(post.id, { title: hook });
+    // Prepend to script
+    const hookHtml = `<p><strong>${hook}</strong></p>`;
+    const currentScript = scriptDraft || post.script || '';
+    const newScript = hookHtml + currentScript;
+    setScriptDraft(newScript);
+    onUpdate(post.id, { script: newScript, title: hook });
+    setShowHooksPanel(false);
+  }, [post, scriptDraft, onUpdate]);
+
   useEffect(() => {
     if (post) {
       setScriptDraft(post.script || '');
@@ -142,6 +260,9 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
       setEditingCaption(false);
       setEditingNotes(false);
       setFailedImages(new Set());
+      setShowHooksPanel(false);
+      setHookOptions([]);
+      setHooksRegenerateCount(0);
     }
   }, [post?.id]);
 
@@ -655,7 +776,61 @@ const PostDetailPanel: React.FC<PostDetailPanelProps> = ({ post, pillars, format
                   value={post.script || ''}
                   onChange={val => setScriptDraft(val)}
                   onBlur={() => onUpdate(post.id, { script: scriptDraft })}
+                  onPolish={handlePolish}
+                  onHooks={handleHooks}
+                  isPolishing={isPolishing}
+                  isGeneratingHooks={isGeneratingHooks}
                 />
+
+                {/* Hooks Panel */}
+                <AnimatePresence>
+                  {showHooksPanel && hookOptions.length > 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="mt-3 rounded-lg border border-gray-200 bg-white">
+                        <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100 bg-gray-50/80">
+                          <span className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">Pick a hook</span>
+                          <div className="flex items-center gap-2">
+                            {hooksRegenerateCount < 3 ? (
+                              <button
+                                onClick={handleRegenerateHooks}
+                                disabled={isGeneratingHooks}
+                                className="text-[11px] font-medium text-gray-400 hover:text-[#612A4F] transition-colors disabled:opacity-50 flex items-center gap-1"
+                              >
+                                {isGeneratingHooks ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+                                Regenerate
+                              </button>
+                            ) : (
+                              <span className="text-[11px] text-gray-300">No more regenerations</span>
+                            )}
+                            <button
+                              onClick={() => setShowHooksPanel(false)}
+                              className="text-gray-300 hover:text-gray-500 transition-colors"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                        <div className="divide-y divide-gray-100">
+                          {hookOptions.map((hook, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => handleSelectHook(hook)}
+                              className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-[#F9F5F7] hover:text-[#612A4F] transition-colors cursor-pointer"
+                            >
+                              {hook}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
               {/* Caption */}
