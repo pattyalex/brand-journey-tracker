@@ -80,21 +80,22 @@ const Posts: React.FC = () => {
     postsApi.fetchPosts(userId).then(remote => {
       if (remote.length > 0) {
         const cleanedRemote = cleanBlobUrls(remote);
-        // Merge: keep any local posts not yet in Supabase (unsynced optimistic adds)
-        const cached = getJSON<Post[] | null>('meg_posts', null);
-        if (cached && cached.length > 0) {
+        // Merge: keep local status updates that may not have synced to Supabase yet
+        setPosts(prev => {
+          const localMap = new Map(prev.map(p => [p.id, p]));
+          const merged = cleanedRemote.map(p => {
+            const local = localMap.get(p.id);
+            if (local && local.status !== p.status) return { ...p, status: local.status };
+            return p;
+          });
+          // Include any local-only posts not yet in Supabase
           const remoteIds = new Set(cleanedRemote.map(p => p.id));
-          const unsyncedLocal = cleanBlobUrls(cached).filter(p => !remoteIds.has(p.id));
-          if (unsyncedLocal.length > 0) {
-            // Re-sync unsynced posts to Supabase
-            unsyncedLocal.forEach(p => postsApi.createPost(p, userId).catch(console.error));
-            setPosts([...cleanedRemote, ...unsyncedLocal]);
-          } else {
-            setPosts(cleanedRemote);
+          const localOnly = prev.filter(p => !remoteIds.has(p.id));
+          if (localOnly.length > 0) {
+            localOnly.forEach(p => postsApi.createPost(p, userId!).catch(console.error));
           }
-        } else {
-          setPosts(cleanedRemote);
-        }
+          return cleanBlobUrls([...merged, ...localOnly]);
+        });
       } else {
         // First time: migrate localStorage posts to Supabase
         const local = getJSON<Post[] | null>('meg_posts', null);
@@ -270,7 +271,10 @@ const Posts: React.FC = () => {
     setPosts(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
     postsApi.updatePost(id, updates).catch(console.error);
     if (updates.status === 'Ready to Schedule') {
-      toast.success('Ready to schedule', {
+      // Store for swoosh animation on Schedule page
+      sessionStorage.setItem('schedule_swoosh_post_id', id);
+      toast.success('Post sent to "Schedule" page', {
+        duration: 6000,
         action: {
           label: 'Go to Schedule',
           onClick: () => navigate('/schedule'),

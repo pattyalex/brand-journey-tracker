@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ImageIcon, GripVertical, ChevronRight, ChevronLeft, ChevronDown, X, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import {
@@ -45,6 +45,19 @@ function getInitialGrid(): (string | null)[] {
 const Schedule: React.FC = () => {
   const { user } = useAuth();
   const userId = user?.id;
+  const [swooshPostId, setSwooshPostId] = useState<string | null>(() => {
+    const id = sessionStorage.getItem('schedule_swoosh_post_id');
+    if (id) sessionStorage.removeItem('schedule_swoosh_post_id');
+    return id;
+  });
+
+  // Auto-clear swoosh state after animation completes
+  useEffect(() => {
+    if (swooshPostId) {
+      const timer = setTimeout(() => setSwooshPostId(null), 2500);
+      return () => clearTimeout(timer);
+    }
+  }, [swooshPostId]);
 
   // ── State ──────────────────────────────────────────────────
   const [posts, setPosts] = useState<Post[]>(() => {
@@ -467,6 +480,7 @@ const Schedule: React.FC = () => {
                     onHover={setHoveredPostId}
                     hoveredId={hoveredPostId}
                     draggingId={activeId}
+                    swooshPostId={swooshPostId}
                     onToggleCollapse={() => setReadyCollapsed(true)}
                   />
                 </div>
@@ -562,6 +576,7 @@ const DraggableReadyList: React.FC<{
   onHover: (id: string | null) => void;
   hoveredId: string | null;
   draggingId: string | null;
+  swooshPostId?: string | null;
   onToggleCollapse?: () => void;
 }> = (props) => {
   const { setNodeRef, isOver } = useDroppable({ id: 'ready-drop-zone' });
@@ -608,7 +623,7 @@ const DraggableReadyList: React.FC<{
             </div>
           )}
           <div className="px-2 py-1 space-y-0.5">
-            <AnimatePresence initial={false}>
+            <AnimatePresence initial={!!props.swooshPostId}>
               {props.posts.map(post => (
                 <DraggableReadyCard
                   key={post.id}
@@ -619,6 +634,7 @@ const DraggableReadyList: React.FC<{
                   onHover={props.onHover}
                   isHovered={props.hoveredId === post.id}
                   isDragging={props.draggingId === post.id}
+                  isSwoosh={props.swooshPostId === post.id}
                 />
               ))}
             </AnimatePresence>
@@ -639,7 +655,8 @@ const DraggableReadyCard: React.FC<{
   onHover: (id: string | null) => void;
   isHovered: boolean;
   isDragging: boolean;
-}> = ({ post, gridPostIds, onClickPost, onRemove, onHover, isHovered, isDragging }) => {
+  isSwoosh?: boolean;
+}> = ({ post, gridPostIds, onClickPost, onRemove, onHover, isHovered, isDragging, isSwoosh }) => {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({ id: post.id });
   const inGrid = gridPostIds.has(post.id);
   const inCalendar = !!post.scheduledDate;
@@ -647,12 +664,18 @@ const DraggableReadyCard: React.FC<{
   return (
     <motion.div
       ref={setNodeRef}
-      layout
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: isDragging ? 0.3 : 1, y: 0 }}
+      layout={!isSwoosh}
+      initial={isSwoosh ? { x: -300, opacity: 0 } : { opacity: 0, y: 8 }}
+      animate={isSwoosh
+        ? { x: 0, opacity: 1 }
+        : { opacity: isDragging ? 0.3 : 1, y: 0 }
+      }
       exit={{ opacity: 0, scale: 0.95, y: -4 }}
-      transition={{ duration: 0.25, ease: 'easeOut' }}
-      style={{ transform: transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined }}
+      transition={isSwoosh
+        ? { type: 'spring', stiffness: 200, damping: 20, mass: 0.6, delay: 0.1 }
+        : { duration: 0.25, ease: 'easeOut' }
+      }
+      style={{ transform: !isSwoosh && transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined }}
       {...attributes}
       {...listeners}
       onClick={() => onClickPost(post)}
