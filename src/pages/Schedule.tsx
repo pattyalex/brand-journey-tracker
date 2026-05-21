@@ -435,7 +435,7 @@ const Schedule: React.FC = () => {
     <div className="h-full flex flex-col overflow-hidden">
       <div className="flex-1 overflow-hidden">
         <DndContext sensors={sensors} collisionDetection={customCollision} onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDragCancel={handleDragCancel}>
-          <div className="h-full grid gap-0" style={{ gridTemplateColumns: leftColumnCollapsed ? '0px 28px 1fr' : '360px 24px 1fr', transition: 'grid-template-columns 0.3s ease-out' }}>
+          <div className="h-full grid gap-0" style={{ gridTemplateColumns: leftColumnCollapsed ? '0px 28px 1fr' : '450px 8px 1fr', transition: 'grid-template-columns 0.3s ease-out' }}>
             {/* Left column: Ready (collapsible top) + Grid (always visible bottom) */}
             <div className="h-full flex flex-col bg-white overflow-hidden">
               {!readyCollapsed && !leftColumnCollapsed && (
@@ -463,7 +463,7 @@ const Schedule: React.FC = () => {
                   onExpand={() => setReadyCollapsed(false)}
                 />
               )}
-              <div className="flex-shrink-0">
+              <div className={`flex-shrink-0 border-t border-gray-100 pt-4 ${readyCollapsed ? 'mt-4' : 'mt-10'}`}>
                 <ScheduleGrid
                   gridOrder={gridOrder}
                   postsMap={postsMap}
@@ -483,10 +483,10 @@ const Schedule: React.FC = () => {
             </div>
 
             {/* Toggle button — centered vertically on the divider */}
-            <div className="flex items-center justify-center">
+            <div className="relative z-10 flex items-center justify-center">
               <button
                 onClick={() => setLeftColumnCollapsed(prev => !prev)}
-                className="w-[24px] h-[24px] flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-400 hover:text-gray-600 hover:border-gray-300 shadow-sm transition-colors"
+                className="w-6 h-6 min-w-6 min-h-6 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-400 hover:bg-gray-100 hover:text-gray-600 hover:border-gray-300 shadow-sm transition-colors"
                 title={leftColumnCollapsed ? 'Show sidebar' : 'Hide sidebar'}
               >
                 {leftColumnCollapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
@@ -565,7 +565,6 @@ const DraggableReadyList: React.FC<{
     >
       <div className="flex items-center gap-2 px-4 py-3">
         <span className="text-lg font-semibold text-gray-900">Ready</span>
-        <span className="text-[11px] text-gray-400 bg-gray-100 rounded-full px-1.5 py-0.5">{props.posts.length}</span>
         {props.onToggleCollapse && (
           <button onClick={props.onToggleCollapse} className="ml-auto p-1 rounded-lg hover:bg-gray-100 transition-colors">
             <ChevronDown className="w-3.5 h-3.5 text-gray-400" />

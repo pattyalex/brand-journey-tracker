@@ -1,11 +1,35 @@
 import React, { useEffect, useState } from "react";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarProvider, useSidebar } from "@/components/ui/sidebar";
 import Sidebar from "./Sidebar";
-import ToggleSidebarButton from "./sidebar/ToggleSidebarButton";
 import MobileBottomNav from "./MobileBottomNav";
 import { Toaster } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLocation, useNavigate } from "react-router-dom";
+
+const SidebarHoverWrapper = ({ children }: { children: React.ReactNode }) => {
+  const { setOpen } = useSidebar();
+  const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  const handleMouseEnter = () => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    setOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    setOpen(false);
+  };
+
+  return (
+    <div
+      className="flex-shrink-0 h-full hidden md:block"
+      style={{ position: 'relative', zIndex: 10002 }}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      {children}
+    </div>
+  );
+};
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -48,14 +72,13 @@ const Layout = ({ children, hideSidebar = false }: LayoutProps) => {
   // }, [isSignedIn, location.pathname, navigate, hasCompletedOnboarding]);
 
   return (
-    <SidebarProvider key={sidebarKey}>
-      {shouldShowSidebar && <div className="hidden md:block"><ToggleSidebarButton /></div>}
+    <SidebarProvider key={sidebarKey} defaultOpen={false}>
       <div className="h-screen flex w-full bg-white overflow-hidden">
-        {/* Sidebar - hidden on mobile */}
+        {/* Sidebar - hidden on mobile, expand on hover */}
         {shouldShowSidebar && (
-          <div className="flex-shrink-0 h-full hidden md:block" style={{ position: 'relative', zIndex: 10002 }}>
+          <SidebarHoverWrapper>
             <Sidebar />
-          </div>
+          </SidebarHoverWrapper>
         )}
         <main className={`flex-1 min-w-0 overflow-x-clip overflow-y-auto relative h-full bg-white scroll-smooth ${!shouldShowSidebar ? 'w-full' : ''} pb-20 md:pb-0`}>
           {children}

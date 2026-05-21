@@ -1,5 +1,5 @@
 import React, { useRef, useMemo, useState } from 'react';
-import { Plus, ImagePlus, Trash2, PanelRight, Maximize2, Minimize2 } from 'lucide-react';
+import { Plus, ImagePlus, Trash2, PanelRight, Maximize2, Minimize2, LayoutGrid } from 'lucide-react';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { Post } from '@/types/posts';
 import {
@@ -42,8 +42,8 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({
   onCollapse,
 }) => {
   const filledCount = gridOrder.filter(Boolean).length;
-  const cellW = expanded ? 104 : 84;
-  const cellH = expanded ? 130 : 105;
+  const cellW = expanded ? 127 : 108;
+  const cellH = expanded ? 163 : 138;
 
   // Stable IDs for SortableContext
   const cellIds = useMemo(() =>
@@ -53,80 +53,94 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({
 
   return (
     <div className="h-full flex flex-col">
-      <div className="flex items-center gap-2 px-4 py-3">
-        <span className="text-lg font-semibold text-gray-900">Grid</span>
-        {filledCount === 0 && (
-          <span className="text-[11px] text-gray-400">Preview how your content looks before you schedule it</span>
-        )}
-        {!expanded && onExpand && (
-          <button
-            onClick={onExpand}
-            className="ml-auto p-1 rounded-lg hover:bg-gray-100 transition-colors"
-            title="Expand grid"
-          >
-            <Maximize2 className="w-3.5 h-3.5 text-gray-400" />
-          </button>
-        )}
-        {expanded && onCollapse && (
-          <button
-            onClick={onCollapse}
-            className="ml-auto p-1 rounded-lg hover:bg-gray-100 transition-colors"
-            title="Collapse grid"
-          >
-            <Minimize2 className="w-3.5 h-3.5 text-gray-400" />
-          </button>
-        )}
-      </div>
-      <div className="flex-1 overflow-y-auto p-3 flex justify-center">
-        <div className="relative">
-          {/* External drop zones — for Ready → Grid drops */}
-          {externalDraggingId && (
-            <div style={{
-              position: 'absolute',
-              inset: 0,
-              zIndex: 15,
-              display: 'grid',
-              gridTemplateColumns: `repeat(3, ${cellW}px)`,
-              gridAutoRows: `${cellH}px`,
-              gap: '2px',
-              pointerEvents: 'auto',
-            }}>
-              {gridOrder.map((_, idx) => (
-                <ExternalDropZone key={`ext-${idx}`} index={idx} />
-              ))}
-            </div>
-          )}
-
-          <SortableContext items={cellIds} strategy={rectSortingStrategy}>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: `repeat(3, ${cellW}px)`,
-              gridAutoRows: `${cellH}px`,
-              gap: '2px',
-              transition: 'all 0.25s ease-out',
-            }}>
-              {gridOrder.map((postId, idx) => {
-                const post = postId ? postsMap.get(postId) || null : null;
-                return (
-                  <SortableGridCell
-                    key={cellIds[idx]}
-                    id={cellIds[idx]}
-                    index={idx}
-                    postId={postId}
-                    post={post}
-                    onClickPost={onClickPost}
-                    onRemoveFromGrid={onRemoveFromGrid}
-                    onUploadThumbnail={onUploadThumbnail}
-                    onUploadToEmptyCell={onUploadToEmptyCell}
-                    onHover={onHover}
-                    isHovered={postId ? hoveredId === postId : false}
-                    isExternallyDragged={postId ? externalDraggingId === postId : false}
-                  />
-                );
-              })}
-            </div>
-          </SortableContext>
+      {filledCount === 0 && (
+        <div className="px-5 pt-4 pb-2">
+          <h2 className="text-[15px] font-semibold text-gray-900" style={{ fontFamily: "'Playfair Display', serif" }}>Visual Plan</h2>
+          <p className="text-[12px] text-gray-400 mt-1 leading-relaxed">
+            Arrange your content visually before scheduling it to the calendar.
+          </p>
         </div>
+      )}
+
+      {/* Grid */}
+      <div className="flex-1 overflow-y-auto px-4 pb-4 flex justify-end items-start">
+        {filledCount === 0 && !externalDraggingId ? (
+          /* Empty state */
+          <div className="flex flex-col items-center justify-center py-10 px-6">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center mb-4 shadow-sm">
+              <LayoutGrid className="w-5 h-5 text-gray-300" />
+            </div>
+            <p className="text-[13px] font-medium text-gray-500 text-center mb-1">Plan your feed</p>
+            <p className="text-[12px] text-gray-400 text-center leading-relaxed max-w-[240px]">
+              Drag posts from above or click the + cells to upload images and preview how your feed will look.
+            </p>
+          </div>
+        ) : (
+          <div className={`flex items-start gap-2 ${expanded ? 'mr-[-12px] mt-[13px]' : 'mr-1 mt-2'}`}>
+            <div className="relative">
+              {/* External drop zones — for Ready → Grid drops */}
+              {externalDraggingId && (
+                <div style={{
+                  position: 'absolute',
+                  inset: 0,
+                  zIndex: 15,
+                  display: 'grid',
+                  gridTemplateColumns: `repeat(3, ${cellW}px)`,
+                  gridAutoRows: `${cellH}px`,
+                  gap: '2px',
+                  pointerEvents: 'auto',
+                }}>
+                  {gridOrder.map((_, idx) => (
+                    <ExternalDropZone key={`ext-${idx}`} index={idx} />
+                  ))}
+                </div>
+              )}
+
+              <SortableContext items={cellIds} strategy={rectSortingStrategy}>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: `repeat(3, ${cellW}px)`,
+                  gridAutoRows: `${cellH}px`,
+                  gap: '2px',
+                  transition: 'all 0.25s ease-out',
+                }}>
+                  {gridOrder.map((postId, idx) => {
+                    const post = postId ? postsMap.get(postId) || null : null;
+                    return (
+                      <SortableGridCell
+                        key={cellIds[idx]}
+                        id={cellIds[idx]}
+                        index={idx}
+                        postId={postId}
+                        post={post}
+                        onClickPost={onClickPost}
+                        onRemoveFromGrid={onRemoveFromGrid}
+                        onUploadThumbnail={onUploadThumbnail}
+                        onUploadToEmptyCell={onUploadToEmptyCell}
+                        onHover={onHover}
+                        isHovered={postId ? hoveredId === postId : false}
+                        isExternallyDragged={postId ? externalDraggingId === postId : false}
+                      />
+                    );
+                  })}
+                </div>
+              </SortableContext>
+            </div>
+            {/* Expand/Collapse button beside grid */}
+            <div className="flex-shrink-0 pt-1">
+              {!expanded && onExpand && (
+                <button onClick={onExpand} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors" title="Expand">
+                  <Maximize2 className="w-3.5 h-3.5 text-gray-400" />
+                </button>
+              )}
+              {expanded && onCollapse && (
+                <button onClick={onCollapse} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors" title="Collapse">
+                  <Minimize2 className="w-3.5 h-3.5 text-gray-400" />
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -140,7 +154,7 @@ const ExternalDropZone: React.FC<{ index: number }> = ({ index }) => {
   return (
     <div
       ref={setNodeRef}
-      className="w-full h-full rounded-xl transition-all duration-150"
+      className="w-full h-full rounded-lg transition-all duration-150"
       style={{
         outline: isOver ? '2px dashed rgba(97,42,79,0.4)' : 'none',
         outlineOffset: '-2px',
@@ -217,18 +231,9 @@ const SortableGridCell: React.FC<{
         style={style}
         {...attributes}
         onClick={() => fileInputRef.current?.click()}
-        className="w-full h-full rounded-xl flex items-center justify-center cursor-pointer transition-all duration-200 group/empty"
+        className="w-full h-full rounded-lg flex items-center justify-center cursor-pointer transition-all duration-200 group/empty bg-gray-50/60 hover:bg-gray-100/80 border border-dashed border-gray-200 hover:border-gray-300"
       >
-        <div
-          className="w-full h-full rounded-xl flex items-center justify-center"
-          style={{
-            outline: '1px dashed #e5e7eb',
-            outlineOffset: '-2px',
-            background: 'rgba(249,250,251,0.8)',
-          }}
-        >
-          <Plus className="w-4 h-4 text-gray-300 group-hover/empty:text-[#612A4F] group-hover/empty:scale-110 transition-all duration-200" />
-        </div>
+        <Plus className="w-4 h-4 text-gray-300 group-hover/empty:text-[#612A4F] group-hover/empty:scale-110 transition-all duration-200" />
         <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
       </div>
     );
@@ -244,17 +249,14 @@ const SortableGridCell: React.FC<{
         {...listeners}
         onMouseEnter={() => onHover(post.id)}
         onMouseLeave={() => onHover(null)}
-        className="w-full h-full rounded-xl cursor-grab active:cursor-grabbing"
+        className="w-full h-full rounded-lg cursor-grab active:cursor-grabbing"
         onClick={() => onClickPost(post)}
       >
         <Popover>
           <div
-            className="w-full h-full rounded-xl flex flex-col items-center justify-center transition-all duration-200 relative group/cell"
-            style={{
-              outline: isHovered ? '1px dashed rgba(97,42,79,0.3)' : '1px dashed #d1d5db',
-              outlineOffset: '-1px',
-              background: isHovered ? 'rgba(97,42,79,0.05)' : 'rgba(249,250,251,0.5)',
-            }}
+            className={`w-full h-full rounded-lg flex flex-col items-center justify-center transition-all duration-200 relative group/cell border border-dashed ${
+              isHovered ? 'border-[#612A4F]/30 bg-[#612A4F]/[0.03]' : 'border-gray-200 bg-gray-50/40'
+            }`}
           >
             <ImagePlus
               className="w-4 h-4 text-gray-300 mb-1 cursor-pointer hover:text-[#612A4F] transition-colors"
@@ -311,8 +313,8 @@ const SortableGridCell: React.FC<{
     >
       <Popover>
         <div
-          className={`w-full h-full rounded-xl overflow-hidden cursor-grab active:cursor-grabbing relative group/cell transition-all duration-200 ${
-            isHovered ? 'ring-2 ring-[#612A4F]/20' : ''
+          className={`w-full h-full rounded-lg overflow-hidden cursor-grab active:cursor-grabbing relative group/cell transition-all duration-200 ${
+            isHovered ? 'ring-2 ring-[#612A4F]/20 shadow-md' : ''
           } ${isDragging ? 'shadow-lg' : ''}`}
           onClick={() => onClickPost(post)}
         >
@@ -325,7 +327,7 @@ const SortableGridCell: React.FC<{
           <PopoverTrigger asChild>
             <button
               onClick={e => e.stopPropagation()}
-              className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/40 text-white flex items-center justify-center opacity-0 group-hover/cell:opacity-100 transition-opacity duration-150"
+              className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-black/40 backdrop-blur-sm text-white flex items-center justify-center opacity-0 group-hover/cell:opacity-100 transition-opacity duration-150"
             >
               <span className="text-[10px] leading-none">···</span>
             </button>

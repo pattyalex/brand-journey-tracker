@@ -67,7 +67,7 @@ const SidebarMenuItemComponent = ({ item, onDelete }: SidebarMenuItemProps) => {
             "flex items-center gap-2 rounded-xl transition-all duration-200",
             (isActive || isSubItemActive)
               ? "bg-[#EBE1E7] text-[#612A4F] font-medium"
-              : "hover:bg-[#F9F7F8] text-[#5A4A52]"
+              : "hover:bg-[#EDE8EB] text-[#5A4A52]"
           )}
           onClick={handleMenuItemClick}
           onMouseEnter={() => preloadRoute(item.url)}
@@ -120,7 +120,7 @@ const SidebarMenuItemComponent = ({ item, onDelete }: SidebarMenuItemProps) => {
                       "flex items-center gap-2 rounded-lg transition-all duration-200",
                       isSubActive
                         ? "bg-[#F5F0F3] text-[#612A4F] font-medium"
-                        : "hover:bg-[#F9F7F8] text-[#5A4A52]"
+                        : "hover:bg-[#EDE8EB] text-[#5A4A52]"
                     )}
                   >
                     <subItem.icon size={16} className={cn(
