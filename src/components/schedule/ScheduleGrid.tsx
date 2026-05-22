@@ -45,9 +45,9 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({
   const cellW = expanded ? 127 : 103;
   const cellH = expanded ? 163 : 131;
 
-  // Stable IDs for SortableContext
+  // Stable IDs for SortableContext — prefixed to avoid conflict with ready list draggable IDs
   const cellIds = useMemo(() =>
-    gridOrder.map((postId, i) => postId || `empty-${i}`),
+    gridOrder.map((postId, i) => postId ? `grid-${postId}` : `empty-${i}`),
     [gridOrder]
   );
 

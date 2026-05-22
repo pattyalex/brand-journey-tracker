@@ -273,9 +273,9 @@ const Schedule: React.FC = () => {
       return;
     }
 
-    // Drop on grid cell from Ready sidebar (external drop)
-    if (overId.startsWith('grid-ext-')) {
-      const cellIndex = parseInt(overId.replace('grid-ext-', ''), 10);
+    // Drop on grid cell from Ready sidebar (external drop) or empty sortable cell
+    if (overId.startsWith('grid-ext-') || overId.startsWith('empty-')) {
+      const cellIndex = parseInt(overId.replace('grid-ext-', '').replace('empty-', ''), 10);
       if (!isNaN(cellIndex)) {
         setGridOrder(prev => {
           const next = [...prev];
@@ -301,19 +301,39 @@ const Schedule: React.FC = () => {
       }
     }
 
+    // Resolve grid cell index from overId (handles grid-{postId}, empty-{idx})
+    const resolveGridIndex = (id: string): number => {
+      if (id.startsWith('empty-')) return parseInt(id.replace('empty-', ''), 10);
+      if (id.startsWith('grid-')) return gridOrder.indexOf(id.replace('grid-', ''));
+      return -1;
+    };
+
     // Grid internal reorder — insert+shift (Planoly-style)
     const fromIndex = gridOrder.indexOf(draggedId);
     if (fromIndex !== -1) {
-      // Determine target index from the sortable cell ID
-      let toIndex = -1;
-      const overPostIndex = gridOrder.indexOf(overId);
-      if (overPostIndex !== -1) {
-        toIndex = overPostIndex;
-      } else if (overId.startsWith('empty-')) {
-        toIndex = parseInt(overId.replace('empty-', ''), 10);
-      }
+      const toIndex = resolveGridIndex(overId);
       if (toIndex !== -1 && toIndex !== fromIndex) {
         setGridOrder(prev => arrayMove(prev, fromIndex, toIndex));
+        return;
+      }
+    } else {
+      // Post not in grid yet — dropping onto a grid cell
+      const toIndex = resolveGridIndex(overId);
+      if (toIndex !== -1) {
+        setGridOrder(prev => {
+          const next = [...prev];
+          if (next[toIndex] === null) {
+            next[toIndex] = draggedId;
+          } else {
+            next.splice(toIndex, 0, draggedId);
+            while (next.length > GRID_SLOTS) {
+              const lastNull = next.lastIndexOf(null);
+              if (lastNull !== -1) next.splice(lastNull, 1);
+              else { next.pop(); break; }
+            }
+          }
+          return next;
+        });
         return;
       }
     }
@@ -406,7 +426,7 @@ const Schedule: React.FC = () => {
                 onUploadToEmptyCell={handleUploadToEmptyCell}
                 onHover={setHoveredPostId}
                 hoveredId={hoveredPostId}
-                externalDraggingId={activeId && !gridPostIds.has(activeId) ? activeId : null}
+                externalDraggingId={activeId || null}
               />
             )}
             {mobileTab === 'Calendar' && (
@@ -458,12 +478,7 @@ const Schedule: React.FC = () => {
         <DndContext sensors={sensors} collisionDetection={customCollision} onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDragCancel={handleDragCancel}>
           <div className="h-full grid gap-0" style={{ gridTemplateColumns: leftColumnCollapsed ? '0px 28px 1fr' : '450px 8px 1fr', transition: 'grid-template-columns 0.3s ease-out' }}>
             {/* Left column: Ready (collapsible top) + Grid (always visible bottom) */}
-            <div
-              className="h-full bg-white overflow-y-auto"
-              style={{ scrollbarWidth: 'thin', scrollbarColor: 'transparent transparent' }}
-              onMouseEnter={e => { e.currentTarget.style.scrollbarColor = 'rgba(0,0,0,0.2) transparent'; }}
-              onMouseLeave={e => { e.currentTarget.style.scrollbarColor = 'transparent transparent'; }}
-            >
+            <div className="h-full bg-white flex flex-col overflow-hidden">
               {!readyCollapsed && !leftColumnCollapsed && (
                 <DraggableReadyList
                   posts={readyPosts}
@@ -482,7 +497,7 @@ const Schedule: React.FC = () => {
                   onExpand={() => setReadyCollapsed(false)}
                 />
               )}
-              <div className={`border-t border-gray-100 pt-4 ${readyCollapsed ? 'mt-2' : 'mt-4'}`}>
+              <div className={`flex-1 min-h-0 border-t border-gray-100 pt-4 ${readyCollapsed ? 'mt-2' : 'mt-4'}`}>
                 <ScheduleGrid
                   gridOrder={gridOrder}
                   postsMap={postsMap}
@@ -494,7 +509,7 @@ const Schedule: React.FC = () => {
                   onUploadToEmptyCell={handleUploadToEmptyCell}
                   onHover={setHoveredPostId}
                   hoveredId={hoveredPostId}
-                  externalDraggingId={activeId && !gridPostIds.has(activeId) ? activeId : null}
+                  externalDraggingId={activeId || null}
                   onExpand={() => setReadyCollapsed(true)}
                   onCollapse={() => setReadyCollapsed(false)}
                 />
@@ -684,7 +699,6 @@ const DraggableReadyCard: React.FC<{
   return (
     <motion.div
       ref={setNodeRef}
-      layout={!shouldSwoosh}
       initial={shouldSwoosh ? { x: -300, opacity: 0 } : { opacity: 0, y: 8 }}
       animate={{ opacity: isDragging ? 0.3 : 1, x: 0, y: 0 }}
       exit={{ opacity: 0, scale: 0.95, y: -4 }}
@@ -692,7 +706,7 @@ const DraggableReadyCard: React.FC<{
         ? { type: 'spring', stiffness: 200, damping: 20, mass: 0.6, delay: 0.1 }
         : { duration: 0.25, ease: 'easeOut' }
       }
-      style={{ transform: !isSwoosh && transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined }}
+      style={{ transform: transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined }}
       {...attributes}
       {...listeners}
       onClick={() => onClickPost(post)}
@@ -747,7 +761,7 @@ const CollapsedReadyDropZone: React.FC<{ count: number; onExpand: () => void }> 
         borderRadius: isOver ? '12px' : '0',
       }}
     >
-      <span className="text-[15px] font-semibold text-gray-900" style={{ fontFamily: "'Playfair Display', serif" }}>Ready to Schedule</span>
+      <span className="text-[13px] font-semibold text-gray-900">Ready to Schedule</span>
       <span className="text-[11px] text-gray-400 bg-gray-100 rounded-full px-1.5 py-0.5">{count}</span>
     </button>
   );
