@@ -1,5 +1,5 @@
 import React, { useState, KeyboardEvent } from "react";
-import { Check, MapPin, Calendar as CalendarIcon, FileText, Shirt, Package, StickyNote, Camera } from "lucide-react";
+import { Check, MapPin, Calendar as CalendarIcon, FileText, Shirt, Package, StickyNote, Camera, Clapperboard, ArrowRight } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -179,12 +179,12 @@ export default function CreateShootModal({
           </div>
 
           {/* Content to shoot */}
-          {availablePosts.length > 0 && (
-            <div>
-              <label className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-gray-400 font-semibold mb-2">
-                <FileText className="w-3 h-3" />
-                Content to shoot
-              </label>
+          <div>
+            <label className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-gray-400 font-semibold mb-2">
+              <Clapperboard className="w-3 h-3" />
+              Content to shoot
+            </label>
+            {availablePosts.length > 0 ? (
               <div className="space-y-1 max-h-[200px] overflow-y-auto rounded-xl border border-gray-200/80 bg-gray-50/50 p-2">
                 {availablePosts.map(post => {
                   const isChecked = selectedPostIds.has(post.id);
@@ -208,8 +208,24 @@ export default function CreateShootModal({
                   );
                 })}
               </div>
-            </div>
-          )}
+            ) : (
+              <div className="rounded-xl border border-gray-200/80 bg-gray-50/50 px-4 py-4">
+                <p className="text-[12px] text-gray-400 mb-3">
+                  No content ready to shoot yet. Add content to your shoot plan by changing their status to <span className="font-semibold text-gray-500">"Ready to Shoot"</span>.
+                </p>
+                <a
+                  href="/posts"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-[12px] font-medium text-[#612A4F] bg-[#612A4F]/[0.06] hover:bg-[#612A4F]/[0.12] rounded-lg transition-colors"
+                >
+                  Add Content
+                  <ArrowRight size={12} />
+                </a>
+                <p className="text-[11px] text-gray-400 mt-3 italic">
+                  You can also add content to this shoot later.
+                </p>
+              </div>
+            )}
+          </div>
 
           {/* Outfits */}
           <div>
