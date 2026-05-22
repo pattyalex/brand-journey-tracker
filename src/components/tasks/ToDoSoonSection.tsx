@@ -46,7 +46,7 @@ const ToDoSoonSection: React.FC<ToDoSoonSectionProps> = ({ tasks, onMoveToToday,
         </h1>
       </div>
       {visible.length === 0 && !adding && (
-        <p className="text-[13px] text-gray-300 italic py-4">
+        <p className="text-[13px] text-gray-400 italic py-4">
           Write down things you need to do but haven't scheduled yet.
         </p>
       )}

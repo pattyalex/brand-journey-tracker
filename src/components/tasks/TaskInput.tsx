@@ -65,7 +65,7 @@ const TaskInput: React.FC<TaskInputProps> = ({ onAdd, autoFocus = false, placeho
           onChange={e => setValue(e.target.value)}
           onKeyDown={handleKeyDown}
           onBlur={() => { if (!value.trim()) setActive(false); }}
-          placeholder=""
+          placeholder={placeholder || "Add a task, e.g. 9am Film intro #content"}
           className="flex-1 bg-transparent border-none outline-none text-[14px] text-gray-800 placeholder:text-gray-300"
         />
       </div>

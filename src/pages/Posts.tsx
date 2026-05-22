@@ -166,6 +166,7 @@ const Posts: React.FC = () => {
     el.addEventListener('scroll', handler, { passive: true });
     return () => el.removeEventListener('scroll', handler);
   }, []);
+  const [viewArrowHidden, setViewArrowHidden] = useState(false);
   const [showInspiration, setShowInspiration] = useState(false);
   const [showHooksDialog, setShowHooksDialog] = useState(false);
   const [showBrainstormDialog, setShowBrainstormDialog] = useState(false);
@@ -596,7 +597,40 @@ const Posts: React.FC = () => {
               Brainstorm with MegAI
             </button>
           </div>
-          <ViewSwitcher active={activeView} onChange={setActiveView} />
+          <div className="relative">
+            <ViewSwitcher active={activeView} onChange={setActiveView} />
+            {/* Bouncing arrow pointing up at view switcher */}
+            <AnimatePresence>
+              {!viewArrowHidden && pillars.length === 0 && (
+                <motion.div
+                  initial={{ opacity: 0.7 }}
+                  exit={{ opacity: 0, transition: { duration: 0.2 } }}
+                  className="absolute left-1/2 -translate-x-1/3 z-30"
+                  style={{ top: '100%', marginTop: '18px', opacity: 0.7 }}
+                >
+                  <motion.div
+                    animate={{ y: [0, -8, 0] }}
+                    transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+                    className="flex flex-col items-center"
+                  >
+                    <svg width="20" height="130" viewBox="0 0 20 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M10 130 L10 6" stroke="#612A4F" strokeWidth="1.5" strokeLinecap="round" />
+                      <path d="M4 12 L10 4 L16 12" stroke="#612A4F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                    </svg>
+                    <div className="flex items-center gap-1 mt-1.5">
+                      <span className="text-[11px] text-[#612A4F] italic whitespace-nowrap">switch views</span>
+                      <button
+                        onClick={() => setViewArrowHidden(true)}
+                        className="w-3.5 h-3.5 flex items-center justify-center rounded-full text-[#612A4F]/50 hover:text-[#612A4F] transition-colors"
+                      >
+                        <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                      </button>
+                    </div>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
 
         {/* Filter Bar */}
