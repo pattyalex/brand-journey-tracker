@@ -252,8 +252,8 @@ const Schedule: React.FC = () => {
 
   const handleDragStart = (event: DragStartEvent) => {
     const rawId = event.active.id as string;
-    // Extract post ID from cal-post-{postId} format
-    const postId = rawId.startsWith('cal-post-') ? rawId.replace('cal-post-', '') : rawId;
+    // Extract post ID from prefixed formats
+    const postId = rawId.startsWith('cal-post-') ? rawId.replace('cal-post-', '') : rawId.startsWith('grid-') ? rawId.replace('grid-', '') : rawId;
     setActiveId(postId);
   };
 
