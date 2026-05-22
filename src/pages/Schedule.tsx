@@ -16,6 +16,7 @@ import {
   CollisionDetection,
 } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
+import { snapCenterToCursor } from '@dnd-kit/modifiers';
 import { toast } from 'sonner';
 import { Post, PostStatus, DEFAULT_PILLARS, DEFAULT_FORMATS } from '@/types/posts';
 import { getJSON, setJSON } from '@/lib/storage';
@@ -443,7 +444,7 @@ const Schedule: React.FC = () => {
               </div>
             )}
           </div>
-          <DragOverlay dropAnimation={null}>
+          <DragOverlay dropAnimation={null} modifiers={[snapCenterToCursor]}>
             {activePost && <DragPreview post={activePost} />}
           </DragOverlay>
         </DndContext>
@@ -541,7 +542,7 @@ const Schedule: React.FC = () => {
             </div>
           </div>
 
-          <DragOverlay dropAnimation={null}>
+          <DragOverlay dropAnimation={null} modifiers={[snapCenterToCursor]}>
             {activePost && <DragPreview post={activePost} />}
           </DragOverlay>
         </DndContext>
