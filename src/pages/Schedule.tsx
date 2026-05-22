@@ -616,13 +616,13 @@ const DraggableReadyList: React.FC<{
                   </svg>
                 </div>
               </div>
-              <p className="text-[15px] font-semibold text-gray-800 mb-1.5">No posts ready to schedule yet</p>
+              <p className="text-[13px] font-semibold text-gray-800 mb-1.5">No posts ready to schedule yet</p>
               <p className="text-[12px] text-gray-400 text-center mb-5 leading-relaxed max-w-[260px]">
                 Add posts here by changing their status to "Ready to Schedule"
               </p>
               <a
                 href="/posts"
-                className="px-5 py-2 text-[12px] font-medium text-white bg-[#612A4F] rounded-full hover:bg-[#612A4F]/85 transition-colors shadow-sm"
+                className="px-5 py-1.5 text-[12px] font-medium text-white bg-[#612A4F] rounded-full hover:bg-[#612A4F]/85 transition-colors shadow-sm"
               >
                 Add Posts
               </a>
