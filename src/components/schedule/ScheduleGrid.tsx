@@ -53,30 +53,10 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({
 
   return (
     <div className="h-full flex flex-col">
-      {filledCount === 0 && (
-        <div className="px-5 pt-4 pb-2">
-          <h2 className="text-[15px] font-semibold text-gray-900" style={{ fontFamily: "'Playfair Display', serif" }}>Visual Plan</h2>
-          <p className="text-[12px] text-gray-400 mt-1 leading-relaxed">
-            Arrange your content visually before scheduling it to the calendar.
-          </p>
-        </div>
-      )}
 
       {/* Grid */}
       <div className="flex-1 overflow-y-auto px-4 pb-4 flex justify-end items-start">
-        {filledCount === 0 && !externalDraggingId ? (
-          /* Empty state */
-          <div className="flex flex-col items-center justify-center py-10 px-6">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center mb-4 shadow-sm">
-              <LayoutGrid className="w-5 h-5 text-gray-300" />
-            </div>
-            <p className="text-[13px] font-medium text-gray-500 text-center mb-1">Plan your feed</p>
-            <p className="text-[12px] text-gray-400 text-center leading-relaxed max-w-[240px]">
-              Drag posts from above or click the + cells to upload images and preview how your feed will look.
-            </p>
-          </div>
-        ) : (
-          <div className={`flex items-start gap-2 ${expanded ? 'mr-[-12px] mt-[13px]' : 'mr-6 mt-2'}`}>
+        <div className={`flex items-start gap-2 ${expanded ? 'mr-[-12px] mt-[13px]' : 'mr-6 mt-2'}`}>
             <div className="relative">
               {/* External drop zones — for Ready → Grid drops */}
               {externalDraggingId && (
@@ -120,6 +100,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({
                         onHover={onHover}
                         isHovered={postId ? hoveredId === postId : false}
                         isExternallyDragged={postId ? externalDraggingId === postId : false}
+                        hintText={filledCount === 0 && idx === 4 ? 'Drag posts from above or click + to plan your feed' : undefined}
                       />
                     );
                   })}
@@ -140,7 +121,6 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({
               )}
             </div>
           </div>
-        )}
       </div>
     </div>
   );
@@ -178,6 +158,7 @@ const SortableGridCell: React.FC<{
   onHover: (id: string | null) => void;
   isHovered: boolean;
   isExternallyDragged: boolean;
+  hintText?: string;
 }> = ({
   id,
   index,
@@ -190,6 +171,7 @@ const SortableGridCell: React.FC<{
   onHover,
   isHovered,
   isExternallyDragged,
+  hintText,
 }) => {
   const {
     setNodeRef,
@@ -231,9 +213,13 @@ const SortableGridCell: React.FC<{
         style={style}
         {...attributes}
         onClick={() => fileInputRef.current?.click()}
-        className="w-full h-full rounded-lg flex items-center justify-center cursor-pointer transition-all duration-200 group/empty bg-gray-50/60 hover:bg-gray-100/80 border border-dashed border-gray-200 hover:border-gray-300"
+        className="w-full h-full rounded-lg flex flex-col items-center justify-center cursor-pointer transition-all duration-200 group/empty bg-gray-50/60 hover:bg-gray-100/80 border border-dashed border-gray-200 hover:border-gray-300"
       >
-        <Plus className="w-4 h-4 text-gray-300 group-hover/empty:text-[#612A4F] group-hover/empty:scale-110 transition-all duration-200" />
+        {hintText ? (
+          <p className="text-[10px] text-gray-400 text-center leading-relaxed px-2">{hintText}</p>
+        ) : (
+          <Plus className="w-4 h-4 text-gray-300 group-hover/empty:text-[#612A4F] group-hover/empty:scale-110 transition-all duration-200" />
+        )}
         <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
       </div>
     );
