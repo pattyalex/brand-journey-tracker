@@ -222,12 +222,10 @@ export function useBrandsPage() {
         const campaignInYear = (deal.campaignStart && parseISO(deal.campaignStart).getFullYear() === selectedYear) ||
                                (deal.campaignEnd && parseISO(deal.campaignEnd).getFullYear() === selectedYear);
 
-        const hasNoScheduledDates = !deal.deliverables?.some(del => del.submissionDeadline || del.publishDeadline) &&
+        const hasNoScheduledDates = !(deal.deliverables || []).some(del => del.submissionDeadline || del.publishDeadline) &&
                                      !deal.campaignStart && !deal.campaignEnd;
-        const isCurrentYear = isSameYear(selectedMonth, new Date());
-        const showUnscheduledInCurrentYear = hasNoScheduledDates && isCurrentYear;
 
-        const matchesYear = hasDeliverableInYear || campaignInYear || showUnscheduledInCurrentYear;
+        const matchesYear = hasDeliverableInYear || campaignInYear || hasNoScheduledDates;
 
         return matchesSearch && matchesStatus && matchesPayment && matchesYear;
       } else {
@@ -241,12 +239,10 @@ export function useBrandsPage() {
         const campaignInMonth = (deal.campaignStart && isWithinInterval(parseISO(deal.campaignStart), { start: monthStart, end: monthEnd })) ||
                                 (deal.campaignEnd && isWithinInterval(parseISO(deal.campaignEnd), { start: monthStart, end: monthEnd }));
 
-        const hasNoScheduledDates = !deal.deliverables?.some(del => del.submissionDeadline || del.publishDeadline) &&
+        const hasNoScheduledDates = !(deal.deliverables || []).some(del => del.submissionDeadline || del.publishDeadline) &&
                                      !deal.campaignStart && !deal.campaignEnd;
-        const isCurrentMonth = isSameMonth(selectedMonth, new Date());
-        const showUnscheduledInCurrentMonth = hasNoScheduledDates && isCurrentMonth;
 
-        const matchesMonth = hasDeliverableInMonth || campaignInMonth || showUnscheduledInCurrentMonth;
+        const matchesMonth = hasDeliverableInMonth || campaignInMonth || hasNoScheduledDates;
 
         return matchesSearch && matchesStatus && matchesPayment && matchesMonth;
       }
@@ -256,7 +252,7 @@ export function useBrandsPage() {
   // Grouped by status for Kanban
   const dealsByStatus = useMemo(() => {
     const getEarliestDate = (deal: BrandDeal) => {
-      const dates = deal.deliverables
+      const dates = (deal.deliverables || [])
         .map(d => d.submissionDeadline || d.publishDeadline)
         .filter(Boolean)
         .sort();
