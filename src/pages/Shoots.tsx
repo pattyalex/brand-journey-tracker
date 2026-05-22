@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Plus, MapPin, Camera, ChevronDown, ArrowRight, Check, X, MoreHorizontal, Copy, Trash2, ImageIcon, Calendar, Aperture } from 'lucide-react';
+import { Plus, MapPin, Camera, ChevronDown, ArrowRight, Check, X, MoreHorizontal, Copy, Trash2, ImageIcon, Calendar, Clapperboard } from 'lucide-react';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 import { useShootsStore } from '@/hooks/useShootsStore';
@@ -150,17 +150,19 @@ const Shoots: React.FC = () => {
             transition={{ duration: 0.2 }}
           >
             <div className="max-w-6xl mx-auto px-6 md:px-10 py-8">
-              {/* Header */}
-              <div className="flex items-center justify-end mb-10">
-                <button
-                  onClick={() => setShowCreateModal(true)}
-                  className="flex items-center gap-2 text-white px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 shadow-[0_2px_10px_rgba(97,42,79,0.3)] hover:shadow-[0_4px_20px_rgba(97,42,79,0.4)] hover:scale-[1.03] active:scale-[0.98]"
-                  style={{ background: 'linear-gradient(135deg, #612A4F 0%, #8B3A6B 100%)' }}
-                >
-                  <Plus size={16} strokeWidth={2.5} />
-                  Plan a shoot
-                </button>
-              </div>
+              {/* Header — hide button when empty */}
+              {!(nonArchivedShoots.length === 0 && unassignedPosts.length === 0) && (
+                <div className="flex items-center justify-end mb-10">
+                  <button
+                    onClick={() => setShowCreateModal(true)}
+                    className="flex items-center gap-2 text-white px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 shadow-[0_2px_10px_rgba(97,42,79,0.3)] hover:shadow-[0_4px_20px_rgba(97,42,79,0.4)] hover:scale-[1.03] active:scale-[0.98]"
+                    style={{ background: 'linear-gradient(135deg, #612A4F 0%, #8B3A6B 100%)' }}
+                  >
+                    <Plus size={16} strokeWidth={2.5} />
+                    Plan a shoot
+                  </button>
+                </div>
+              )}
 
               {/* Empty state */}
               {nonArchivedShoots.length === 0 && unassignedPosts.length === 0 && (
@@ -170,13 +172,46 @@ const Shoots: React.FC = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5 }}
                 >
-                  <div className="w-20 h-20 rounded-3xl flex items-center justify-center mb-6" style={{ background: 'linear-gradient(135deg, rgba(97,42,79,0.06) 0%, rgba(139,58,107,0.08) 100%)' }}>
-                    <Aperture size={28} className="text-[#612a4f]/25" />
+                  <div className="relative w-[120px] h-[100px] mb-6">
+                    {/* Back card */}
+                    <div className="absolute top-0 left-[10px] w-[72px] h-[54px] rounded-lg bg-gray-100 border border-gray-200/60 rotate-[-8deg] shadow-sm overflow-hidden">
+                      <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200" />
+                    </div>
+                    {/* Middle card */}
+                    <div className="absolute top-[8px] left-[28px] w-[72px] h-[54px] rounded-lg bg-gray-50 border border-gray-200/60 rotate-[3deg] shadow-sm overflow-hidden">
+                      <div className="w-full h-full bg-gradient-to-br from-gray-50 to-gray-150" />
+                    </div>
+                    {/* Front card */}
+                    <div className="absolute top-[18px] left-[18px] w-[72px] h-[54px] rounded-lg bg-white border border-gray-200 shadow-md flex items-center justify-center overflow-hidden">
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="text-gray-300">
+                        <rect x="2" y="2" width="20" height="20" rx="3" fill="currentColor" opacity="0.15" />
+                        <circle cx="8.5" cy="8.5" r="2" fill="currentColor" opacity="0.4" />
+                        <path d="M2 17l5-5 3 3 4-4 8 8v1a2 2 0 01-2 2H4a2 2 0 01-2-2v-3z" fill="currentColor" opacity="0.3" />
+                      </svg>
+                    </div>
+                    {/* Clapperboard badge */}
+                    <div className="absolute bottom-[6px] right-[8px] w-[34px] h-[34px] rounded-full bg-[#612A4F]/10 flex items-center justify-center">
+                      <Clapperboard size={15} className="text-[#612a4f]/60" />
+                    </div>
                   </div>
-                  <p className="text-[16px] font-semibold text-gray-700 mb-2">Plan your first shoot</p>
-                  <p className="text-[13px] text-gray-400 max-w-sm leading-relaxed">
-                    Group your content ideas into a shoot day — pick a location, set a date, and see everything you need to capture.
+                  <p className="text-[16px] font-semibold text-gray-700 mb-2">No content ready to shoot yet</p>
+                  <p className="text-[13px] text-gray-400 max-w-sm leading-relaxed mb-3">
+                    Once you have content ideas ready to shoot, group them into <span className="font-semibold text-gray-500">a shoot day</span>:
                   </p>
+                  <ul className="text-[13px] text-gray-400 space-y-1.5 ml-auto mr-auto w-fit pl-[140px]">
+                    <li className="flex items-center gap-2"><Check size={14} className="text-[#612a4f]/40 flex-shrink-0" /> Pick a location</li>
+                    <li className="flex items-center gap-2"><Check size={14} className="text-[#612a4f]/40 flex-shrink-0" /> Plan the looks</li>
+                    <li className="flex items-center gap-2"><Check size={14} className="text-[#612a4f]/40 flex-shrink-0" /> Create the shot list</li>
+                    <li className="flex items-center gap-2"><Check size={14} className="text-[#612a4f]/40 flex-shrink-0" /> Note any details you don't want to forget</li>
+                  </ul>
+                  <button
+                    onClick={() => setShowCreateModal(true)}
+                    className="mt-8 flex items-center gap-2 text-white px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 shadow-[0_2px_10px_rgba(97,42,79,0.3)] hover:shadow-[0_4px_20px_rgba(97,42,79,0.4)] hover:scale-[1.03] active:scale-[0.98]"
+                    style={{ background: 'linear-gradient(135deg, #612A4F 0%, #8B3A6B 100%)' }}
+                  >
+                    <Plus size={16} strokeWidth={2.5} />
+                    Plan a shoot
+                  </button>
                 </motion.div>
               )}
 

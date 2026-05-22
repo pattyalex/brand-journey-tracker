@@ -17,7 +17,7 @@ export const defaultMenuItems: MenuItem[] = [
   },
   {
     title: 'Shoots',
-    icon: Camera,
+    icon: Clapperboard,
     url: '/shoots',
     isDeletable: false
   },

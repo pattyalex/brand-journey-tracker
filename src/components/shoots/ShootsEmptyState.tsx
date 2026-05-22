@@ -1,4 +1,4 @@
-import { Camera } from 'lucide-react';
+import { Video } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface ShootsEmptyStateProps {
@@ -14,7 +14,7 @@ export default function ShootsEmptyState({ onPlanShoot }: ShootsEmptyStateProps)
       transition={{ duration: 0.5, ease: 'easeOut' }}
     >
       <div className="w-20 h-20 bg-[#612a4f]/6 rounded-full flex items-center justify-center mb-6">
-        <Camera size={32} className="text-[#612a4f]/30" />
+        <Video size={32} className="text-[#612a4f]/30" />
       </div>
 
       <h2 className="text-xl font-semibold text-gray-800 tracking-[-0.02em] mb-2">

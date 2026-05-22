@@ -166,7 +166,7 @@ const Posts: React.FC = () => {
     el.addEventListener('scroll', handler, { passive: true });
     return () => el.removeEventListener('scroll', handler);
   }, []);
-  const [viewArrowHidden, setViewArrowHidden] = useState(false);
+  const [viewArrowHidden, setViewArrowHidden] = useState(() => localStorage.getItem('meg_hide_view_arrow') === 'true');
   const [showInspiration, setShowInspiration] = useState(false);
   const [showHooksDialog, setShowHooksDialog] = useState(false);
   const [showBrainstormDialog, setShowBrainstormDialog] = useState(false);
@@ -620,7 +620,7 @@ const Posts: React.FC = () => {
                     <div className="flex items-center gap-1 mt-1.5">
                       <span className="text-[11px] text-[#612A4F] italic whitespace-nowrap">switch views</span>
                       <button
-                        onClick={() => setViewArrowHidden(true)}
+                        onClick={() => { setViewArrowHidden(true); localStorage.setItem('meg_hide_view_arrow', 'true'); }}
                         className="w-3.5 h-3.5 flex items-center justify-center rounded-full text-[#612A4F]/50 hover:text-[#612A4F] transition-colors"
                       >
                         <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>

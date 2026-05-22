@@ -158,7 +158,7 @@ const PostsPillarsView: React.FC<PostsPillarsViewProps> = ({
       { name: 'Products', color: '#F87171' },
     ];
     return (
-      <div className="relative flex flex-col items-center justify-center px-6 text-center" style={{ height: 'calc(100vh - 200px)' }}>
+      <div className="relative flex flex-col items-center justify-center px-6 text-center" style={{ height: 'calc(100vh - 200px)', marginTop: '-40px' }}>
         {/* Mini column preview */}
         <div className="flex gap-3 mb-6">
           {examples.map((ex) => (
