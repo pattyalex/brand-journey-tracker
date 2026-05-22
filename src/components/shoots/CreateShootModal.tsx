@@ -215,7 +215,7 @@ export default function CreateShootModal({
                 </p>
                 <a
                   href="/posts"
-                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-[12px] font-medium text-[#612A4F] bg-[#612A4F]/[0.06] hover:bg-[#612A4F]/[0.12] rounded-lg transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-[12px] font-medium text-[#612A4F] bg-[#612A4F]/[0.06] hover:bg-[#612A4F]/[0.12] rounded-full transition-colors"
                 >
                   Add Content
                   <ArrowRight size={12} />
