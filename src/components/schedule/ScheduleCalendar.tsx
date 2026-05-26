@@ -134,7 +134,7 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-4">
         <div className="flex items-center gap-4">
-          <h2 className="text-[13px] font-semibold text-gray-900">{dateLabel}</h2>
+          <h2 className="text-[15px] font-semibold text-gray-900">{dateLabel}</h2>
           <div className="flex items-center bg-gray-100 rounded-lg p-0.5">
             <button
               onClick={() => setCalView('month')}

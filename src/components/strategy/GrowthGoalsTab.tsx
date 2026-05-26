@@ -128,10 +128,7 @@ const GrowthGoalsTab: React.FC<GrowthGoalsTabProps> = (props) => {
       >
         {/* Section header */}
         <div className="flex items-center justify-between mb-7">
-          <h3
-            className="text-base font-semibold"
-            style={{ color: '#5F2B4F' }}
-          >
+          <h3 className="text-base font-semibold text-[#612A4F]">
             Monthly goals
           </h3>
           <div className="relative">
@@ -340,7 +337,7 @@ const GrowthGoalsTab: React.FC<GrowthGoalsTabProps> = (props) => {
       >
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h3 className="text-base font-semibold text-[#612A4F]">1-Year goals</h3>
+            <h3 className="text-base font-semibold text-[#612A4F]">1-Year Goals</h3>
           </div>
           <div className="flex items-center gap-3">
           <div className="relative">

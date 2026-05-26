@@ -19,7 +19,7 @@ const StrategyTabsList: React.FC<StrategyTabsListProps> = ({ activeTab, handleTa
         className="relative px-6 py-2 rounded-md text-sm font-medium transition-all data-[state=active]:bg-[#612A4F] data-[state=active]:text-white data-[state=active]:shadow-sm data-[state=inactive]:text-[#8B7082] data-[state=inactive]:hover:text-[#612A4F] data-[state=inactive]:hover:bg-[#F5F0F3]"
       >
         <TrendingUp className="w-4 h-4 mr-2 inline-block" />
-        Growth Goals
+        Goals
       </TabsTrigger>
       <TabsTrigger
         value="brand-identity"

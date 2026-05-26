@@ -93,9 +93,6 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
           <div className="flex-1">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-3 text-base">
-                <div className="p-2 rounded-lg bg-[#612A4F] text-white shadow-sm">
-                  <Target className="w-4 h-4" />
-                </div>
                 <span className="font-semibold text-[#612A4F]">Mission Statement</span>
                 {showMissionSaved && (
                   <div className="flex items-center gap-1 px-2 py-0.5 text-[#8B7082] text-xs font-medium animate-in fade-in duration-200">
@@ -144,9 +141,6 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
           <div className="flex-1">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-3 text-base">
-                <div className="p-2 rounded-lg bg-[#612A4F] text-white shadow-sm">
-                  <Sparkles className="w-4 h-4" />
-                </div>
                 <span className="font-semibold text-[#612A4F]">Brand Values</span>
               </CardTitle>
             </CardHeader>
@@ -176,7 +170,7 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
                       key={index}
                       className="relative bg-white rounded-xl pl-5 pr-5 py-4 border border-gray-100 shadow-sm hover:shadow-md transition-shadow group"
                     >
-                      <span className="absolute top-[50%] -translate-y-[50%] left-4 w-1.5 h-1.5 rounded-full bg-[#612A4F]/40"></span>
+                      <span className="absolute top-[50%] -translate-y-[50%] left-4 text-sm font-semibold text-[#612A4F]/40">{index + 1}</span>
                       {editingValueIndex === index ? (
                         <input
                           type="text"
@@ -218,7 +212,7 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
                       )}
                       <button
                         onClick={() => setBrandValues(brandValues.filter((_, i) => i !== index))}
-                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-gray-300 hover:text-gray-500 transition-all"
+                        className="absolute top-[50%] -translate-y-[50%] right-3 opacity-0 group-hover:opacity-100 text-gray-300 hover:text-gray-500 transition-all"
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -254,7 +248,7 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
                     ) : (
                       <button
                         onClick={() => setEditingValueIndex(-1)}
-                        className="flex items-center justify-center w-8 h-8 rounded-full text-gray-300 hover:text-[#612A4F] hover:bg-[#F3EDF1] transition-colors"
+                        className="flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:text-[#612A4F] hover:bg-[#F3EDF1] transition-colors"
                       >
                         <Plus className="w-4 h-4" />
                       </button>
@@ -365,9 +359,6 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
       <Card className="rounded-xl bg-white border-0 shadow-none">
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-3 text-base">
-            <div className="p-2 rounded-lg bg-[#612A4F] text-white shadow-sm">
-              <MessageSquare className="w-4 h-4" />
-            </div>
             <span className="font-semibold text-[#612A4F]">Content Style</span>
           </CardTitle>
         </CardHeader>
@@ -405,9 +396,6 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
       <Card className="rounded-xl bg-white border-0 shadow-none">
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-3 text-base">
-            <div className="p-2 rounded-lg bg-[#612A4F] text-white shadow-sm">
-              <Users className="w-4 h-4" />
-            </div>
             <span className="font-semibold text-[#612A4F]">Target Audience</span>
           </CardTitle>
         </CardHeader>
@@ -481,9 +469,6 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
       <Card id="vision-board" className="rounded-xl bg-white border-0 shadow-none scroll-mt-6">
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-3 text-base">
-            <div className="p-2 rounded-lg bg-[#612A4F] text-white shadow-sm">
-              <ImageIcon className="w-4 h-4" />
-            </div>
             <span className="font-semibold text-[#612A4F]">Vision Board</span>
           </CardTitle>
         </CardHeader>
@@ -601,9 +586,6 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
       <Card className="rounded-xl bg-white border-0 shadow-none">
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-3 text-base">
-            <div className="p-2 rounded-lg bg-[#612A4F] text-white shadow-sm">
-              <StickyNote className="w-4 h-4" />
-            </div>
             <span className="font-semibold text-[#612A4F]">Notes</span>
           </CardTitle>
         </CardHeader>
