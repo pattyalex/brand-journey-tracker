@@ -519,52 +519,40 @@ const GrowthGoalsTab: React.FC<GrowthGoalsTabProps> = (props) => {
           {/* Empty State / Placeholders */}
           {filteredShortTermGoals.length === 0 && (
             <div className="col-span-full">
-              {!dismissedGoalPlaceholders['stg-0'] ? (
-                <div className="flex flex-col lg:flex-row items-center gap-10 py-4 px-2">
-                  <div className="group relative w-full lg:w-72 flex-shrink-0 rounded-2xl p-5 border-2 border-dashed border-[#D8C8D3] opacity-50 hover:opacity-70 transition-opacity" style={{ background: 'rgba(180,140,165,0.08)' }}>
-                    <button
-                      onClick={(e) => dismissGoalPlaceholder('stg-0', e)}
-                      className="absolute top-3 right-3 w-5 h-5 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-white/80 transition-all opacity-50 hover:opacity-100"
-                      title="Dismiss"
+              {!dismissedGoalPlaceholders['stg-0'] && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {[
+                    "Gain 50k followers",
+                    "Launch a digital product",
+                    "Earn $70,000 from brand deals"
+                  ].map((example, idx) => (
+                    <div
+                      key={idx}
+                      className="relative rounded-2xl p-5 border border-gray-200 opacity-50"
+                      style={{ background: 'rgba(180,140,165,0.05)' }}
                     >
-                      <X className="w-3 h-3" />
-                    </button>
-                    <div className="text-[10px] font-semibold uppercase tracking-widest mb-3 px-2 py-0.5 rounded w-fit" style={{ color: '#a07090', background: 'rgba(160,112,144,0.12)' }}>Example</div>
-                    <p className="text-base font-semibold mb-5 pr-4" style={{ color: '#3d3a38' }}>Grow to 50k followers across all platforms</p>
-                    <div className="space-y-2">
-                      <div className="overflow-hidden h-2 rounded-full" style={{ background: 'rgba(139,115,130,0.1)' }}>
-                        <div className="h-full rounded-full" style={{ width: '0%', background: '#a07090' }} />
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: '#a07090' }}>Example</span>
+                        {idx === 0 && (
+                          <button
+                            onClick={(e) => dismissGoalPlaceholder('stg-0', e)}
+                            className="text-gray-300 hover:text-gray-500 transition-colors"
+                            title="Dismiss"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        )}
                       </div>
-                      <span className="text-[13px] font-bold" style={{ color: '#9ca3af' }}>Not Started</span>
+                      <p className="text-base font-semibold mb-5 text-gray-400">{example}</p>
+                      <div className="space-y-2">
+                        <div className="overflow-hidden h-2 rounded-full" style={{ background: 'rgba(139,115,130,0.1)' }}>
+                          <div className="h-full rounded-full" style={{ width: '0%' }} />
+                        </div>
+                        <span className="text-[13px] font-bold text-gray-300">Not Started</span>
+                      </div>
                     </div>
-                  </div>
-
-                  <div className="hidden lg:block w-px self-stretch bg-gradient-to-b from-transparent via-[#D8C8D3] to-transparent" />
-
-                  <div className="flex flex-col gap-4 max-w-sm">
-                    <div>
-                      <h2 className="text-2xl font-bold text-[#2d2a26] leading-tight mb-3">No goals set yet</h2>
-                      <p className="text-sm text-[#8B7082] leading-relaxed">
-                        Set ambitious goals for the year ahead. Track your progress and stay focused on what matters most for your growth.
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => setIsAddingShortTermGoal(true)}
-                      className="w-fit h-10 px-5 rounded-xl bg-gradient-to-r from-[#612a4f] to-[#4d2140] hover:from-[#4d2140] hover:to-[#3a1830] text-white text-sm font-semibold shadow-[0_4px_16px_rgba(97,42,79,0.3)] hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2"
-                    >
-                      <Plus className="w-4 h-4" />
-                      Add your first goal
-                    </button>
-                  </div>
+                  ))}
                 </div>
-              ) : (
-                <EmptyState
-                  icon={Target}
-                  title="No goals set yet"
-                  description="Define your yearly goals to stay focused on what matters most for your growth."
-                  actionLabel="Add Goal"
-                  onAction={() => setIsAddingShortTermGoal(true)}
-                />
               )}
             </div>
           )}
