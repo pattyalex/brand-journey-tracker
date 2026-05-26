@@ -519,41 +519,30 @@ const GrowthGoalsTab: React.FC<GrowthGoalsTabProps> = (props) => {
           {/* Empty State / Placeholders */}
           {filteredShortTermGoals.length === 0 && (
             <div className="col-span-full">
-              {!dismissedGoalPlaceholders['stg-0'] && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {[
-                    "Gain 50k followers",
-                    "Launch a digital product",
-                    "Earn $70,000 from brand deals"
-                  ].map((example, idx) => (
-                    <div
-                      key={idx}
-                      className="relative rounded-2xl p-5 border border-gray-200 opacity-50"
-                      style={{ background: 'rgba(180,140,165,0.05)' }}
-                    >
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: '#a07090' }}>Example</span>
-                        {idx === 0 && (
-                          <button
-                            onClick={(e) => dismissGoalPlaceholder('stg-0', e)}
-                            className="text-gray-300 hover:text-gray-500 transition-colors"
-                            title="Dismiss"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        )}
-                      </div>
-                      <p className="text-base font-semibold mb-5 text-gray-400">{example}</p>
-                      <div className="space-y-2">
-                        <div className="overflow-hidden h-2 rounded-full" style={{ background: 'rgba(139,115,130,0.1)' }}>
-                          <div className="h-full rounded-full" style={{ width: '0%' }} />
-                        </div>
-                        <span className="text-[13px] font-bold text-gray-300">Not Started</span>
-                      </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[
+                  "Gain 50k followers",
+                  "Launch a digital product",
+                  "Earn $70,000 from brand deals"
+                ].map((text, idx) => (
+                  <div
+                    key={idx}
+                    className="rounded-2xl p-5 border border-gray-200 opacity-50"
+                    style={{ background: 'rgba(180,140,165,0.05)' }}
+                  >
+                    <div className="mb-3">
+                      <span className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: '#a07090' }}>Example</span>
                     </div>
-                  ))}
-                </div>
-              )}
+                    <p className="text-base font-semibold mb-5 text-gray-400">{text}</p>
+                    <div className="space-y-2">
+                      <div className="overflow-hidden h-2 rounded-full" style={{ background: 'rgba(139,115,130,0.1)' }}>
+                        <div className="h-full rounded-full" style={{ width: '0%' }} />
+                      </div>
+                      <span className="text-[13px] font-bold text-gray-300">Not Started</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>
