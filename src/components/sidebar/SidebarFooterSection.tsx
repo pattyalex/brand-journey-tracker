@@ -67,7 +67,7 @@ const SidebarFooterSection = ({ settingsItem, helpItem }: SidebarFooterSectionPr
                 type="button"
                 onClick={() => navigate('/my-account')}
                 onMouseEnter={() => preloadRoute('/my-account')}
-                className={cn("flex items-center gap-2 hover:bg-[#F9F7F8] p-2 rounded-xl transition-colors", isCollapsed ? "w-auto ml-1" : "w-full")}
+                className={cn("flex items-center gap-2 hover:bg-[#F9F7F8] p-2 rounded-xl transition-colors", isCollapsed ? "w-auto ml-0.5" : "w-full")}
               >
                 <Avatar className="h-7 w-7 flex-shrink-0">
                   {avatarUrl && <AvatarImage src={avatarUrl} alt={firstName} />}
