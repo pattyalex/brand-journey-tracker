@@ -88,98 +88,71 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
   return (
     <TabsContent value="brand-identity" className="space-y-4 mt-0">
       {/* Mission Statement */}
-      <Card id="mission" className="rounded-xl bg-white border border-gray-100 shadow-sm scroll-mt-24">
-        <CardHeader className="pb-2">
-          <CardTitle className="flex items-center gap-3 text-base">
-            <div className="p-2 rounded-lg bg-[#612A4F] text-white shadow-sm">
-              <Target className="w-4 h-4" />
-            </div>
-            <span className="font-semibold text-[#612A4F]">Mission Statement</span>
-            {missionStatement.trim() && (
-              <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#EDF3ED] text-[#7a9a7a] rounded-full text-xs font-medium">
-                <Check className="w-3 h-3" />
-                Complete
-              </div>
-            )}
-            {showMissionSaved && (
-              <div className="flex items-center gap-1 px-2 py-0.5 text-[#8B7082] text-xs font-medium animate-in fade-in duration-200">
-                <Check className="w-3 h-3" />
-                Saved
-              </div>
-            )}
-          </CardTitle>
-          <CardDescription className="ml-11 text-sm text-gray-500">
-            Why you create content and who you help
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="pt-4">
-          <div className="space-y-2">
-            <div className="w-full">
+      <Card id="mission" className="rounded-xl bg-white border-0 shadow-none scroll-mt-24">
+        <div className="flex gap-6">
+          <div className="flex-1">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-3 text-base">
+                <div className="p-2 rounded-lg bg-[#612A4F] text-white shadow-sm">
+                  <Target className="w-4 h-4" />
+                </div>
+                <span className="font-semibold text-[#612A4F]">Mission Statement</span>
+                {showMissionSaved && (
+                  <div className="flex items-center gap-1 px-2 py-0.5 text-[#8B7082] text-xs font-medium animate-in fade-in duration-200">
+                    <Check className="w-3 h-3" />
+                    Saved
+                  </div>
+                )}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4">
               <Textarea
                 value={missionStatement}
-                onChange={(e) => {
-                  const words = e.target.value.trim().split(/\s+/).filter(w => w.length > 0);
-                  if (words.length <= 25 || e.target.value.length < missionStatement.length) {
-                    setMissionStatement(e.target.value);
-                  }
-                }}
-                className="min-h-[80px] w-full resize-none border border-gray-100 rounded-xl focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] transition-shadow duration-200 p-4 text-sm leading-relaxed bg-white"
+                onChange={(e) => setMissionStatement(e.target.value)}
+                className="min-h-[120px] w-full resize-none border border-gray-100 rounded-xl p-4 text-sm text-gray-800 leading-relaxed bg-transparent placeholder:text-gray-400 placeholder:italic focus-visible:border-gray-300"
                 placeholder={missionStatementFocused ? "" : "Write a short sentence that explains who your content is for and what you want it to do for them..."}
                 onFocus={() => setMissionStatementFocused(true)}
                 onBlur={() => setMissionStatementFocused(false)}
               />
-              <p className="text-[11px] text-[#8B7082] mt-1.5 text-right">
-                {missionStatement.trim().split(/\s+/).filter(w => w.length > 0).length}/25 words
-              </p>
-            </div>
+            </CardContent>
+          </div>
 
-            <div>
-              <p className="text-[11px] font-medium text-[#8B7082] mb-2">Examples</p>
-              <div className="bg-gray-50 rounded-xl px-3 py-2 border border-gray-100">
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    "I create content to help busy people build healthy routines they can actually stick to.",
-                    "I create content to inspire women to dress well without overthinking or overspending.",
-                    "I create content to help small business founders scale their businesses without burning out."
-                  ].map((example, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setMissionStatement(example)}
-                      className="text-left text-[12px] text-gray-600 hover:text-gray-900 hover:bg-white/80 rounded-lg px-2 py-2 transition-all"
-                    >
-                      <span className="leading-snug">"{example}"</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
+          <div className="w-[420px] flex-shrink-0 pt-6 pr-6 pb-6">
+            <p className="text-[11px] font-medium text-[#8B7082] px-1 mb-1.5">Examples</p>
+            <div className="space-y-2">
+              {[
+                "I create content to help busy people build healthy routines they can actually stick to.",
+                "I create content to inspire women to dress well without overthinking or overspending.",
+                "I create content to help small business founders scale their businesses without burning out."
+              ].map((example, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setMissionStatement(example)}
+                  className="block w-full text-left text-[11px] text-gray-500 hover:text-[#612A4F] hover:bg-[#E8DDE5] bg-gray-50 rounded-xl px-3 py-2.5 border border-gray-100 transition-colors"
+                >
+                  "{example}"
+                </button>
+              ))}
             </div>
           </div>
-        </CardContent>
+        </div>
       </Card>
 
       {/* Brand Values */}
-      <Card className="rounded-xl bg-white border border-gray-100 shadow-sm">
-        <CardHeader className="pb-2">
-          <CardTitle className="flex items-center gap-3 text-base">
-            <div className="p-2 rounded-lg bg-[#612A4F] text-white shadow-sm">
-              <Sparkles className="w-4 h-4" />
-            </div>
-            <span className="font-semibold text-[#612A4F]">Brand Values</span>
-            {brandValues.length >= 3 && (
-              <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#EDF3ED] text-[#7a9a7a] rounded-full text-xs font-medium">
-                <Check className="w-3 h-3" />
-                Complete
-              </div>
-            )}
-          </CardTitle>
-          <CardDescription className="ml-11 text-sm text-gray-500">
-            Define 3–5 values that guide your content creation and personal brand
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="pt-4">
-          <div className="flex gap-6">
-            <div className="flex-1 space-y-4">
-              <div className="flex gap-2 items-center">
+      <Card className="rounded-xl bg-white border-0 shadow-none">
+        <div className="flex gap-6">
+          <div className="flex-1">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-3 text-base">
+                <div className="p-2 rounded-lg bg-[#612A4F] text-white shadow-sm">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <span className="font-semibold text-[#612A4F]">Brand Values</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <div className="space-y-4">
+              {brandValues.length === 0 ? (
                 <input
                   type="text"
                   value={customValueInput}
@@ -193,92 +166,111 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
                       }
                     }
                   }}
-                  placeholder="Add a value (e.g., 'I don't take myself too seriously online')..."
-                  disabled={brandValues.length >= 5}
-                  className="flex-1 px-4 py-3 text-sm border border-gray-100 rounded-xl focus:outline-none focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] transition-shadow duration-200 disabled:bg-gray-50 disabled:text-gray-400"
+                  placeholder="Write 3–5 values that guide your content creation and personal brand..."
+                  className="w-full px-4 py-3 text-sm border-0 bg-transparent focus:outline-none focus:ring-0 placeholder:text-gray-400 placeholder:italic"
                 />
-                <button
-                  onClick={() => {
-                    if (customValueInput.trim() && brandValues.length < 5 && !brandValues.includes(customValueInput.trim())) {
-                      setBrandValues([...brandValues, customValueInput.trim()]);
-                      setCustomValueInput("");
-                    }
-                  }}
-                  disabled={!customValueInput.trim() || brandValues.length >= 5}
-                  className="px-5 py-3 text-sm font-medium bg-[#612A4F] text-white rounded-xl hover:bg-[#4e2140] disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors"
-                >
-                  Add
-                </button>
-              </div>
-
-              {brandValues.length > 0 && (
-                <div>
-                  <p className="text-[11px] text-gray-500 mb-3">Your values ({brandValues.length}/5)</p>
-                  <div className="space-y-3">
-                    {brandValues.map((value, index) => (
-                      <div
-                        key={index}
-                        className="relative bg-white rounded-xl pl-5 pr-5 py-4 shadow-sm hover:shadow-md transition-shadow group"
-                      >
-                        <span className="absolute top-3 left-4 text-[#612A4F] text-4xl font-serif leading-none">{index + 1}</span>
-                        {editingValueIndex === index ? (
-                          <input
-                            type="text"
-                            value={editingValueText}
-                            onChange={(e) => setEditingValueText(e.target.value)}
-                            onBlur={() => {
+              ) : (
+                <div className="space-y-3">
+                  {brandValues.map((value, index) => (
+                    <div
+                      key={index}
+                      className="relative bg-white rounded-xl pl-5 pr-5 py-4 border border-gray-100 shadow-sm hover:shadow-md transition-shadow group"
+                    >
+                      <span className="absolute top-[50%] -translate-y-[50%] left-4 w-1.5 h-1.5 rounded-full bg-[#612A4F]/40"></span>
+                      {editingValueIndex === index ? (
+                        <input
+                          type="text"
+                          value={editingValueText}
+                          onChange={(e) => setEditingValueText(e.target.value)}
+                          onBlur={() => {
+                            if (editingValueText.trim()) {
+                              const newValues = [...brandValues];
+                              newValues[index] = editingValueText.trim();
+                              setBrandValues(newValues);
+                            }
+                            setEditingValueIndex(null);
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
                               if (editingValueText.trim()) {
                                 const newValues = [...brandValues];
                                 newValues[index] = editingValueText.trim();
                                 setBrandValues(newValues);
                               }
                               setEditingValueIndex(null);
-                            }}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                if (editingValueText.trim()) {
-                                  const newValues = [...brandValues];
-                                  newValues[index] = editingValueText.trim();
-                                  setBrandValues(newValues);
-                                }
-                                setEditingValueIndex(null);
-                              } else if (e.key === 'Escape') {
-                                setEditingValueIndex(null);
-                              }
-                            }}
-                            autoFocus
-                            className="w-full text-sm text-gray-700 pl-8 pr-6 leading-relaxed bg-transparent border-none outline-none focus:ring-0"
-                          />
-                        ) : (
-                          <p
-                            onClick={() => {
-                              setEditingValueIndex(index);
-                              setEditingValueText(value);
-                            }}
-                            className="text-sm text-gray-700 pl-8 pr-6 leading-relaxed cursor-text hover:text-gray-900"
-                          >
-                            "{value}"
-                          </p>
-                        )}
-                        <button
-                          onClick={() => setBrandValues(brandValues.filter((_, i) => i !== index))}
-                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-gray-300 hover:text-gray-500 transition-all"
+                            } else if (e.key === 'Escape') {
+                              setEditingValueIndex(null);
+                            }
+                          }}
+                          autoFocus
+                          className="w-full text-sm text-gray-700 pl-4 pr-6 leading-relaxed bg-transparent border-none outline-none focus:ring-0"
+                        />
+                      ) : (
+                        <p
+                          onClick={() => {
+                            setEditingValueIndex(index);
+                            setEditingValueText(value);
+                          }}
+                          className="text-sm text-gray-700 pl-4 pr-6 leading-relaxed cursor-text hover:text-gray-900"
                         >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
+                          "{value}"
+                        </p>
+                      )}
+                      <button
+                        onClick={() => setBrandValues(brandValues.filter((_, i) => i !== index))}
+                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-gray-300 hover:text-gray-500 transition-all"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                  {brandValues.length < 5 && (
+                    editingValueIndex === -1 ? (
+                      <input
+                        type="text"
+                        value={customValueInput}
+                        onChange={(e) => setCustomValueInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && customValueInput.trim()) {
+                            e.preventDefault();
+                            if (!brandValues.includes(customValueInput.trim())) {
+                              setBrandValues([...brandValues, customValueInput.trim()]);
+                              setCustomValueInput("");
+                            }
+                          }
+                          if (e.key === 'Escape') {
+                            setEditingValueIndex(null);
+                            setCustomValueInput("");
+                          }
+                        }}
+                        onBlur={() => {
+                          setEditingValueIndex(null);
+                          setCustomValueInput("");
+                        }}
+                        autoFocus
+                        placeholder="Add brand value..."
+                        className="w-full px-4 py-3 text-sm border-0 bg-transparent focus:outline-none focus:ring-0 placeholder:text-gray-400 placeholder:italic"
+                      />
+                    ) : (
+                      <button
+                        onClick={() => setEditingValueIndex(-1)}
+                        className="flex items-center justify-center w-8 h-8 rounded-full text-gray-300 hover:text-[#612A4F] hover:bg-[#F3EDF1] transition-colors"
+                      >
+                        <Plus className="w-4 h-4" />
+                      </button>
+                    )
+                  )}
                 </div>
               )}
+              </div>
+            </CardContent>
+          </div>
 
-            </div>
-
-            {/* Guidelines panel */}
-            <div className="w-[420px] flex-shrink-0">
-              <p className="text-[11px] text-[#8B7082] font-medium px-1 mb-3">Examples</p>
+          {/* Guidelines panel */}
+          <div className="w-[420px] flex-shrink-0 pt-6 pr-6 pb-6">
+            <p className="text-[11px] text-[#8B7082] font-medium px-1 mb-3">Examples</p>
               <div className="grid grid-cols-2 gap-2">
-                <div className="bg-gray-50 rounded-xl p-3 border-l-2 border-[#612A4F]/15">
+                <div className="bg-gray-50 rounded-xl p-3">
                   <p className="text-[11px] font-medium text-gray-700 mb-1">Alignment</p>
                   <p className="text-[10px] text-gray-400 mb-2">Being true to yourself</p>
                   <div className="space-y-1">
@@ -301,7 +293,7 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
                   </div>
                 </div>
 
-                <div className="bg-gray-50 rounded-xl p-3 border-l-2 border-[#612A4F]/15">
+                <div className="bg-gray-50 rounded-xl p-3">
                   <p className="text-[11px] font-medium text-gray-700 mb-1">Boundaries</p>
                   <p className="text-[10px] text-gray-400 mb-2">Your non-negotiables</p>
                   <div className="space-y-1">
@@ -325,7 +317,7 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
                   </div>
                 </div>
 
-                <div className="bg-gray-50 rounded-xl p-3 border-l-2 border-[#612A4F]/15">
+                <div className="bg-gray-50 rounded-xl p-3">
                   <p className="text-[11px] font-medium text-gray-700 mb-1">Craft Values</p>
                   <p className="text-[10px] text-gray-400 mb-2">How you create</p>
                   <div className="flex flex-wrap gap-1">
@@ -345,7 +337,7 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
                   </div>
                 </div>
 
-                <div className="bg-gray-50 rounded-xl p-3 border-l-2 border-[#612A4F]/15">
+                <div className="bg-gray-50 rounded-xl p-3">
                   <p className="text-[11px] font-medium text-gray-700 mb-1">Presence</p>
                   <p className="text-[10px] text-gray-400 mb-2">The energy people feel from you</p>
                   <div className="flex flex-wrap gap-1">
@@ -367,29 +359,20 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
               </div>
             </div>
           </div>
-        </CardContent>
       </Card>
 
       {/* Content Style */}
-      <Card className="rounded-xl bg-white border border-gray-100 shadow-sm">
+      <Card className="rounded-xl bg-white border-0 shadow-none">
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-3 text-base">
             <div className="p-2 rounded-lg bg-[#612A4F] text-white shadow-sm">
               <MessageSquare className="w-4 h-4" />
             </div>
             <span className="font-semibold text-[#612A4F]">Content Style</span>
-            {selectedTones.length > 0 && (
-              <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#EDF3ED] text-[#7a9a7a] rounded-full text-xs font-medium">
-                <Check className="w-3 h-3" />
-                Complete
-              </div>
-            )}
           </CardTitle>
-          <CardDescription className="ml-11 text-sm text-gray-500">
-            How you choose to deliver your message — select one or more
-          </CardDescription>
         </CardHeader>
         <CardContent className="pt-4">
+          <p className="text-sm text-gray-400 italic mb-4">Select how you choose to deliver your message</p>
           <div className="grid grid-cols-5 gap-3">
             {["Humorous", "Aspirational", "Warm", "Educational", "Relatable", "Motivational", "Bold", "Cinematic", "Calming", "Inspirational"].map((tone) => {
               const toneKey = tone.toLowerCase();
@@ -406,8 +389,8 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
                   }}
                   className={`py-2.5 rounded-xl text-[13px] font-medium transition-all ${
                     isSelected
-                      ? "bg-[#612A4F] text-white shadow-sm"
-                      : "bg-white text-gray-500 hover:text-[#612A4F] hover:bg-gray-50 border border-gray-100"
+                      ? "bg-[#987089] text-white border border-[#987089] shadow-sm"
+                      : "bg-white text-gray-500 hover:text-[#612A4F] hover:bg-[#F3EDF1] border border-gray-100"
                   }`}
                 >
                   {tone}
@@ -419,23 +402,14 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
       </Card>
 
       {/* Target Audience */}
-      <Card className="rounded-xl bg-white border border-gray-100 shadow-sm">
+      <Card className="rounded-xl bg-white border-0 shadow-none">
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-3 text-base">
             <div className="p-2 rounded-lg bg-[#612A4F] text-white shadow-sm">
               <Users className="w-4 h-4" />
             </div>
             <span className="font-semibold text-[#612A4F]">Target Audience</span>
-            {(audienceAgeRanges.length > 0 || audienceDesires.trim()) && (
-              <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#EDF3ED] text-[#7a9a7a] rounded-full text-xs font-medium">
-                <Check className="w-3 h-3" />
-                Complete
-              </div>
-            )}
           </CardTitle>
-          <CardDescription className="ml-11 text-sm text-gray-500">
-            Define who your ideal audience is
-          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6 pt-4 pb-6">
           <div className="space-y-3">
@@ -462,8 +436,8 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
                       index > 0 ? "border-l border-gray-100" : ""
                     } ${
                       isSelected
-                        ? "bg-[#612A4F] text-white rounded-lg"
-                        : "bg-white text-gray-500 hover:text-[#612A4F] hover:bg-gray-50"
+                        ? "bg-[#987089] text-white rounded-lg"
+                        : "bg-white text-gray-500 hover:text-[#612A4F] hover:bg-[#F3EDF1]"
                     }`}
                   >
                     {range}
@@ -483,7 +457,7 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
                 placeholder={strugglesFocused ? "" : "What pain points or challenges does your audience face? What problems are they trying to solve?"}
                 onFocus={() => setStrugglesFocused(true)}
                 onBlur={() => setStrugglesFocused(false)}
-                className="h-[240px] resize-none border border-gray-100 rounded-xl focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] transition-shadow duration-200 p-4 text-sm leading-relaxed"
+                className="h-[240px] resize-none border border-gray-100 rounded-xl focus:border-gray-300 focus:ring-0 focus:shadow-none transition-shadow duration-200 p-4 text-sm leading-relaxed placeholder:text-gray-400 placeholder:italic"
               />
             </div>
 
@@ -496,7 +470,7 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
                 placeholder={desiresFocused ? "" : "What are your audience's goals and aspirations? What transformation are they seeking?"}
                 onFocus={() => setDesiresFocused(true)}
                 onBlur={() => setDesiresFocused(false)}
-                className="h-[240px] resize-none border border-gray-100 rounded-xl focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] transition-shadow duration-200 p-4 text-sm leading-relaxed"
+                className="h-[240px] resize-none border border-gray-100 rounded-xl focus:border-gray-300 focus:ring-0 focus:shadow-none transition-shadow duration-200 p-4 text-sm leading-relaxed placeholder:text-gray-400 placeholder:italic"
               />
             </div>
           </div>
@@ -511,16 +485,7 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
               <ImageIcon className="w-4 h-4" />
             </div>
             <span className="font-semibold text-[#612A4F]">Vision Board</span>
-            {(visionBoardImages.length > 0 || pinterestUrl) && (
-              <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#EDF3ED] text-[#7a9a7a] rounded-full text-xs font-medium">
-                <Check className="w-3 h-3" />
-                Complete
-              </div>
-            )}
           </CardTitle>
-          <CardDescription className="ml-11 text-sm text-gray-500">
-            Keep your visual inspiration close — revisit it whenever you need creative direction
-          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6 pt-4">
           {visionBoardImages.length > 0 && (
@@ -552,7 +517,7 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
                       type="text"
                       placeholder="Paste Pinterest board URL..."
                       autoFocus
-                      className="px-4 py-2.5 text-sm border border-gray-100 rounded-xl focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] transition-shadow duration-200 w-64"
+                      className="px-4 py-2.5 text-sm border border-gray-100 rounded-xl focus:border-gray-300 focus:ring-0 focus:shadow-none transition-shadow duration-200 w-64"
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' && (e.target as HTMLInputElement).value) {
                           updatePinterestUrl((e.target as HTMLInputElement).value);
@@ -633,23 +598,14 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
       </Card>
 
       {/* Additional Notes */}
-      <Card className="rounded-xl bg-white border border-gray-100 shadow-sm">
+      <Card className="rounded-xl bg-white border-0 shadow-none">
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-3 text-base">
             <div className="p-2 rounded-lg bg-[#612A4F] text-white shadow-sm">
               <StickyNote className="w-4 h-4" />
             </div>
             <span className="font-semibold text-[#612A4F]">Notes</span>
-            {(additionalNotes.trim() || noteLinks.length > 0 || noteFiles.length > 0) && (
-              <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#EDF3ED] text-[#7a9a7a] rounded-full text-xs font-medium">
-                <Check className="w-3 h-3" />
-                Complete
-              </div>
-            )}
           </CardTitle>
-          <CardDescription className="ml-11 text-sm text-gray-500">
-            Capture any additional thoughts, resources, or references
-          </CardDescription>
         </CardHeader>
         <CardContent className="pt-4">
           <div className="flex gap-6">
@@ -657,8 +613,8 @@ const BrandIdentityTab: React.FC<BrandIdentityTabProps> = (props) => {
               <Textarea
                 value={additionalNotes}
                 onChange={(e) => setAdditionalNotes(e.target.value)}
-                placeholder="Write any additional notes about your brand strategy..."
-                className="min-h-[180px] h-full resize-none border border-gray-100 rounded-xl focus:border-[#612a4f] focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,42,79,0.1)] transition-shadow duration-200 p-4 text-sm leading-relaxed"
+                placeholder="Write any additional thoughts, resources, or references..."
+                className="min-h-[180px] h-full resize-none border border-gray-100 rounded-xl focus:border-gray-300 focus:ring-0 focus:shadow-none transition-shadow duration-200 p-4 text-sm leading-relaxed placeholder:text-gray-400 placeholder:italic"
               />
             </div>
 
