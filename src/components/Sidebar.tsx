@@ -73,16 +73,16 @@ const Sidebar = () => {
 
       {/* Premium Header with Logo */}
       <SidebarHeader className="relative z-10 px-2 pt-4 pb-3">
-        <div className={`flex items-center h-[42px] ${state === 'collapsed' ? 'justify-center' : 'gap-3 pl-2'}`}>
+        <div className={`flex items-center h-[36px] ${state === 'collapsed' ? 'justify-center' : 'gap-3 pl-2'}`}>
           {/* Logo Mark */}
           <div
-            className="w-[42px] h-[42px] rounded-xl flex items-center justify-center shadow-sm flex-shrink-0"
+            className="w-[36px] h-[36px] rounded-xl flex items-center justify-center shadow-sm flex-shrink-0"
             style={{
               background: 'linear-gradient(145deg, #612A4F 0%, #4A1F3D 100%)',
             }}
           >
             <span
-              className="text-white text-xl font-medium"
+              className="text-white text-lg font-medium"
               style={{ fontFamily: "'Playfair Display', serif" }}
             >
               M
