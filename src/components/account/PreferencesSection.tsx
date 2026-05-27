@@ -287,20 +287,11 @@ const PreferencesSection = ({ selectedTimezone, handleTimezoneChange, firstDayOf
       }}
     >
       <div className="flex items-center gap-3 mb-6">
-        <div
-          className="w-10 h-10 rounded-xl flex items-center justify-center"
-          style={{
-            background: 'linear-gradient(145deg, #8b6a7e 0%, #4a3442 100%)',
-            boxShadow: '0 4px 12px rgba(107, 74, 94, 0.2)',
-          }}
-        >
-          <Calendar className="w-5 h-5 text-white" />
-        </div>
         <div>
-          <h2 className="text-lg text-[#2d2a26]" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>
+          <h2 className="text-base font-semibold text-[#2d2a26]">
             Calendar
           </h2>
-          <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+          <p className="text-xs text-[#8B7082]">
             Customize your calendar settings
           </p>
         </div>
@@ -309,7 +300,7 @@ const PreferencesSection = ({ selectedTimezone, handleTimezoneChange, firstDayOf
       <div className="space-y-6">
         {/* Timezone */}
         <div>
-          <label className="text-sm font-medium text-[#2d2a26] mb-3 block" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+          <label className="text-sm font-medium text-[#2d2a26] mb-3 block">
             Timezone
           </label>
           {/* Option 1: Auto */}
@@ -349,10 +340,10 @@ const PreferencesSection = ({ selectedTimezone, handleTimezoneChange, firstDayOf
               <Globe className={cn("w-4 h-4", selectedTimezone === 'auto' ? "text-white" : "text-[#612a4f]")} />
             </div>
             <div>
-              <p className="font-medium text-[#2d2a26] text-sm" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+              <p className="font-medium text-[#2d2a26] text-sm">
                 Auto: Use device timezone
               </p>
-              <p className="text-[11px] text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+              <p className="text-[11px] text-[#8B7082]">
                 The calendar always shows times in whatever timezone your phone/laptop is in.
               </p>
             </div>
@@ -398,10 +389,10 @@ const PreferencesSection = ({ selectedTimezone, handleTimezoneChange, firstDayOf
               <MapPin className={cn("w-4 h-4", isSpecificSelected ? "text-white" : "text-[#612a4f]")} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-medium text-[#2d2a26] text-sm" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+              <p className="font-medium text-[#2d2a26] text-sm">
                 Pick a specific timezone
               </p>
-              <p className="text-[11px] text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+              <p className="text-[11px] text-[#8B7082]">
                 Locks the calendar to that timezone no matter where you are.
               </p>
 
@@ -411,7 +402,6 @@ const PreferencesSection = ({ selectedTimezone, handleTimezoneChange, firstDayOf
                   <Select value={isSpecificSelected ? selectedTimezone : undefined} onValueChange={handleTimezoneChange}>
                     <SelectTrigger
                       className="w-full h-auto pl-3 pr-4 py-2.5 rounded-lg border-[#8B7082]/20 bg-white hover:bg-[#8B7082]/5 transition-all focus:ring-2 focus:ring-[#612a4f]/20 focus:border-[#612a4f]/30"
-                      style={{ fontFamily: "'DM Sans', sans-serif" }}
                     >
                       {isSpecificSelected ? (
                         <div className="flex items-center gap-2.5">
@@ -433,7 +423,6 @@ const PreferencesSection = ({ selectedTimezone, handleTimezoneChange, firstDayOf
                     </SelectTrigger>
                     <SelectContent
                       className="rounded-xl border-[#8B7082]/20 shadow-xl bg-white/95 backdrop-blur-sm overflow-hidden"
-                      style={{ fontFamily: "'DM Sans', sans-serif" }}
                     >
                       {TIMEZONES.map((tz) => (
                         <SelectItem
@@ -464,7 +453,7 @@ const PreferencesSection = ({ selectedTimezone, handleTimezoneChange, firstDayOf
 
         {/* First Day of Week in Calendar */}
         <div>
-          <label className="text-sm font-medium text-[#2d2a26] mb-3 block" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+          <label className="text-sm font-medium text-[#2d2a26] mb-3 block">
             First Day of Week
           </label>
           <div className="grid grid-cols-2 gap-2 mb-4">
@@ -481,7 +470,6 @@ const PreferencesSection = ({ selectedTimezone, handleTimezoneChange, firstDayOf
                     ? "bg-[#612a4f]/10 text-[#612a4f] font-medium"
                     : "text-[#2d2a26] hover:bg-[#8B7082]/5 border border-[#E8E4E6]"
                 )}
-                style={{ fontFamily: "'DM Sans', sans-serif" }}
               >
                 {day.label}
               </button>
@@ -560,7 +548,6 @@ const PreferencesSection = ({ selectedTimezone, handleTimezoneChange, firstDayOf
                       >
                         <span
                           className="uppercase tracking-wider text-[11px] font-medium text-[#8B7082]"
-                          style={{ fontFamily: "'DM Sans', sans-serif" }}
                         >
                           {day}
                         </span>
@@ -592,7 +579,6 @@ const PreferencesSection = ({ selectedTimezone, handleTimezoneChange, firstDayOf
                               ? "bg-[#8B7082] text-white"
                               : "text-[#2d2a26]"
                           )}
-                          style={{ fontFamily: "'DM Sans', sans-serif" }}
                         >
                           {date}
                         </span>
@@ -618,7 +604,6 @@ const PreferencesSection = ({ selectedTimezone, handleTimezoneChange, firstDayOf
                       >
                         <span
                           className="text-sm font-medium inline-flex items-center justify-center w-7 h-7 rounded-full text-[#2d2a26]"
-                          style={{ fontFamily: "'DM Sans', sans-serif" }}
                         >
                           {date}
                         </span>

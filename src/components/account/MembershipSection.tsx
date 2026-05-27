@@ -155,20 +155,11 @@ const MembershipSection = () => {
         }}
       >
         <div className="flex items-center gap-3 mb-6">
-          <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center"
-            style={{
-              background: 'linear-gradient(145deg, #8b6a7e 0%, #4a3442 100%)',
-              boxShadow: '0 4px 12px rgba(107, 74, 94, 0.2)',
-            }}
-          >
-            <Crown className="w-5 h-5 text-white" />
-          </div>
           <div>
-            <h2 className="text-lg text-[#2d2a26]" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>
+            <h2 className="text-base font-semibold text-[#2d2a26]">
               Subscription
             </h2>
-            <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+            <p className="text-xs text-[#8B7082]">
               Manage your plan and billing
             </p>
           </div>
@@ -186,10 +177,10 @@ const MembershipSection = () => {
             <div className="flex items-center gap-3">
               <div className="w-2 h-2 rounded-full bg-[#612a4f] animate-pulse"></div>
               <div>
-                <p className="text-sm font-medium text-[#612a4f]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                <p className="text-sm font-medium text-[#612a4f]">
                   Free Trial Active
                 </p>
-                <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                <p className="text-xs text-[#8B7082]">
                   {daysRemaining()} days left — ends on {formatDate(trialEndsAt)}
                 </p>
               </div>
@@ -198,7 +189,6 @@ const MembershipSection = () => {
               variant="outline"
               size="sm"
               className="h-8 px-3 rounded-lg text-xs border-red-200 text-red-500 hover:bg-red-50"
-              style={{ fontFamily: "'DM Sans', sans-serif" }}
               onClick={() => setShowCancelConfirm(true)}
               disabled={canceling}
             >
@@ -219,10 +209,10 @@ const MembershipSection = () => {
             <div className="flex items-center gap-3">
               <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0" />
               <div>
-                <p className="text-sm font-medium text-red-600" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                <p className="text-sm font-medium text-red-600">
                   {isOnTrial ? 'Trial Canceled' : 'Subscription Canceled'}
                 </p>
-                <p className="text-xs text-red-400" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                <p className="text-xs text-red-400">
                   {trialEndsAt && new Date(trialEndsAt) > new Date()
                     ? `You can keep using HeyMeg until ${formatDate(trialEndsAt)}`
                     : 'Your access has ended'}
@@ -232,7 +222,6 @@ const MembershipSection = () => {
             <Button
               size="sm"
               className="h-8 px-4 rounded-lg text-xs bg-[#612a4f] hover:bg-[#4d2140] text-white"
-              style={{ fontFamily: "'DM Sans', sans-serif" }}
               onClick={() => window.location.href = '/onboarding?step=plan-selection'}
             >
               {isOnTrial ? 'Subscribe' : 'Resubscribe'}
@@ -252,10 +241,10 @@ const MembershipSection = () => {
             <div className="flex items-center gap-3">
               <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0" />
               <div>
-                <p className="text-sm font-medium text-amber-700" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                <p className="text-sm font-medium text-amber-700">
                   Payment Failed
                 </p>
-                <p className="text-xs text-amber-500" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                <p className="text-xs text-amber-500">
                   Please update your payment method to keep your subscription active.
                 </p>
               </div>
@@ -268,14 +257,14 @@ const MembershipSection = () => {
           <div className="p-5 rounded-xl bg-[#8B7082]/5 mb-6">
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-sm font-medium text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                <p className="text-sm font-medium text-[#2d2a26]">
                   {planLabel}
                 </p>
-                <p className="text-2xl font-semibold text-[#612a4f] mt-1" style={{ fontFamily: "'Playfair Display', serif" }}>
+                <p className="text-2xl font-semibold text-[#612a4f] mt-1">
                   {priceAmount}<span className="text-sm font-normal text-[#8B7082]">{priceInterval}</span>
                 </p>
                 {trialEndsAt && !isOnTrial && (
-                  <p className="text-xs text-[#8B7082] mt-2" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                  <p className="text-xs text-[#8B7082] mt-2">
                     Next billing: {formatDate(trialEndsAt)}
                   </p>
                 )}
@@ -285,7 +274,6 @@ const MembershipSection = () => {
                 style={{
                   background: 'linear-gradient(145deg, #612a4f 0%, #4a3442 100%)',
                   color: 'white',
-                  fontFamily: "'DM Sans', sans-serif",
                 }}
               >
                 Current Plan
@@ -298,16 +286,16 @@ const MembershipSection = () => {
         {subscriptionStatus !== 'canceled' && (
           <div className="grid grid-cols-2 gap-4">
             <div className={`p-5 rounded-xl ${planType === 'monthly' || !planType ? 'border-2 border-[#612a4f]/20 bg-[#612a4f]/5' : 'border border-[#E8E4E6]'}`}>
-              <p className="text-sm font-medium text-[#2d2a26] mb-1" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+              <p className="text-sm font-medium text-[#2d2a26] mb-1">
                 Monthly
               </p>
-              <p className="text-xl font-semibold text-[#612a4f]" style={{ fontFamily: "'Playfair Display', serif" }}>
+              <p className="text-xl font-semibold text-[#612a4f]">
                 $29<span className="text-xs font-normal text-[#8B7082]">/mo</span>
               </p>
               <p className="text-[10px] text-[#8B7082] mb-3">&nbsp;</p>
               <ul className="space-y-2">
                 {['Unlimited projects', 'Advanced features', 'Priority support'].map((feature) => (
-                  <li key={feature} className="flex items-center gap-2 text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                  <li key={feature} className="flex items-center gap-2 text-xs text-[#8B7082]">
                     <Check className="w-3 h-3 text-[#612a4f]" />
                     {feature}
                   </li>
@@ -318,7 +306,6 @@ const MembershipSection = () => {
                   variant="outline"
                   size="sm"
                   className="w-full h-8 rounded-lg text-xs border-[#8B7082]/30 text-[#612a4f] hover:bg-[#612a4f]/5 mt-3"
-                  style={{ fontFamily: "'DM Sans', sans-serif" }}
                   onClick={() => setShowSwitchConfirm('monthly')}
                   disabled={switching}
                 >
@@ -330,22 +317,22 @@ const MembershipSection = () => {
 
             <div className={`p-5 rounded-xl ${planType === 'annual' ? 'border-2 border-[#612a4f]/20 bg-[#612a4f]/5' : 'border border-[#E8E4E6] hover:border-[#8B7082]/30 transition-colors'}`}>
               <div className="flex items-center justify-between mb-1">
-                <p className="text-sm font-medium text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                <p className="text-sm font-medium text-[#2d2a26]">
                   Annual
                 </p>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-green-100 text-green-700">
                   Save 25%
                 </span>
               </div>
-              <p className="text-xl font-semibold text-[#2d2a26]" style={{ fontFamily: "'Playfair Display', serif" }}>
+              <p className="text-xl font-semibold text-[#2d2a26]">
                 $21<span className="text-xs font-normal text-[#8B7082]">/mo</span>
               </p>
-              <p className="text-[10px] text-[#8B7082] mb-3" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+              <p className="text-[10px] text-[#8B7082] mb-3">
                 Billed annually ($252)
               </p>
               <ul className="space-y-2 mb-3">
                 {['Everything in Monthly', 'Save 25% on your subscription', 'Lock in your price for 12 months'].map((feature) => (
-                  <li key={feature} className="flex items-center gap-2 text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                  <li key={feature} className="flex items-center gap-2 text-xs text-[#8B7082]">
                     <Check className="w-3 h-3 text-[#612a4f]" />
                     {feature}
                   </li>
@@ -356,7 +343,6 @@ const MembershipSection = () => {
                   variant="outline"
                   size="sm"
                   className="w-full h-8 rounded-lg text-xs border-[#8B7082]/30 text-[#612a4f] hover:bg-[#612a4f]/5"
-                  style={{ fontFamily: "'DM Sans', sans-serif" }}
                   onClick={() => setShowSwitchConfirm('annual')}
                   disabled={switching}
                 >
@@ -375,7 +361,6 @@ const MembershipSection = () => {
               variant="ghost"
               size="sm"
               className="text-xs text-red-400 hover:text-red-500 hover:bg-red-50"
-              style={{ fontFamily: "'DM Sans', sans-serif" }}
               onClick={() => setShowCancelConfirm(true)}
               disabled={canceling}
             >
@@ -396,20 +381,11 @@ const MembershipSection = () => {
           }}
         >
           <div className="flex items-center gap-3 mb-4">
-            <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center"
-              style={{
-                background: 'linear-gradient(145deg, #8b6a7e 0%, #4a3442 100%)',
-                boxShadow: '0 4px 12px rgba(107, 74, 94, 0.2)',
-              }}
-            >
-              <CreditCard className="w-5 h-5 text-white" />
-            </div>
             <div>
-              <h2 className="text-lg text-[#2d2a26]" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>
+              <h2 className="text-base font-semibold text-[#2d2a26]">
                 Payment Method
               </h2>
-              <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+              <p className="text-xs text-[#8B7082]">
                 Your card on file
               </p>
             </div>
@@ -425,17 +401,17 @@ const MembershipSection = () => {
               <div className="flex items-center gap-3">
                 <CreditCard className="w-5 h-5 text-[#612a4f]" />
                 <div>
-                  <p className="text-sm font-medium text-[#2d2a26] capitalize" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                  <p className="text-sm font-medium text-[#2d2a26] capitalize">
                     {paymentMethod.brand} ending in {paymentMethod.last4}
                   </p>
-                  <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                  <p className="text-xs text-[#8B7082]">
                     Expires {String(paymentMethod.expMonth).padStart(2, '0')}/{paymentMethod.expYear}
                   </p>
                 </div>
               </div>
             </div>
           ) : (
-            <p className="text-sm text-[#8B7082] py-3" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+            <p className="text-sm text-[#8B7082] py-3">
               {isOnTrial ? 'Your card will be charged when your trial ends.' : 'No payment method on file.'}
             </p>
           )}
@@ -452,20 +428,11 @@ const MembershipSection = () => {
           }}
         >
           <div className="flex items-center gap-3 mb-4">
-            <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center"
-              style={{
-                background: 'linear-gradient(145deg, #8b6a7e 0%, #4a3442 100%)',
-                boxShadow: '0 4px 12px rgba(107, 74, 94, 0.2)',
-              }}
-            >
-              <FileText className="w-5 h-5 text-white" />
-            </div>
             <div>
-              <h2 className="text-lg text-[#2d2a26]" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>
+              <h2 className="text-base font-semibold text-[#2d2a26]">
                 Billing History
               </h2>
-              <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+              <p className="text-xs text-[#8B7082]">
                 Past invoices and receipts
               </p>
             </div>
@@ -484,10 +451,10 @@ const MembershipSection = () => {
                   className="flex items-center justify-between p-3 rounded-xl hover:bg-[#8B7082]/5 transition-colors"
                 >
                   <div>
-                    <p className="text-sm text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                    <p className="text-sm text-[#2d2a26]">
                       {new Date(invoice.date * 1000).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                     </p>
-                    <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                    <p className="text-xs text-[#8B7082]">
                       ${(invoice.amount / 100).toFixed(2)} — <span className="capitalize">{invoice.status}</span>
                     </p>
                   </div>
@@ -519,7 +486,7 @@ const MembershipSection = () => {
               ))}
             </div>
           ) : (
-            <p className="text-sm text-[#8B7082] py-3" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+            <p className="text-sm text-[#8B7082] py-3">
               {isOnTrial ? 'No invoices yet — your first invoice will be generated after your trial ends.' : 'No invoices found.'}
             </p>
           )}
@@ -535,12 +502,11 @@ const MembershipSection = () => {
             border: '1px solid rgba(139, 115, 130, 0.06)',
           }}
         >
-          <p className="text-sm text-[#8B7082] mb-4" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+          <p className="text-sm text-[#8B7082] mb-4">
             No active subscription
           </p>
           <Button
             className="bg-[#612a4f] hover:bg-[#4d2140] text-white rounded-xl"
-            style={{ fontFamily: "'DM Sans', sans-serif" }}
             onClick={() => window.location.href = '/onboarding?step=plan-selection'}
           >
             Subscribe
@@ -552,10 +518,10 @@ const MembershipSection = () => {
       <AlertDialog open={showCancelConfirm} onOpenChange={setShowCancelConfirm}>
         <AlertDialogContent className="rounded-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle style={{ fontFamily: "'Playfair Display', serif" }}>
+            <AlertDialogTitle>
               {isOnTrial ? 'Cancel Free Trial?' : 'Cancel Subscription?'}
             </AlertDialogTitle>
-            <AlertDialogDescription style={{ fontFamily: "'DM Sans', sans-serif" }}>
+            <AlertDialogDescription>
               {isOnTrial
                 ? `You still have ${daysRemaining()} days left to explore HeyMeg. After your trial ends, you'll lose access to your account.`
                 : 'You will retain access until the end of your current billing period. After that, you won\'t be able to access your account or data until you resubscribe.'}
@@ -564,7 +530,6 @@ const MembershipSection = () => {
           <AlertDialogFooter>
             <AlertDialogCancel
               className="rounded-xl"
-              style={{ fontFamily: "'DM Sans', sans-serif" }}
             >
               {isOnTrial ? 'Keep Trial' : 'Keep Subscription'}
             </AlertDialogCancel>
@@ -572,7 +537,6 @@ const MembershipSection = () => {
               onClick={handleCancel}
               disabled={canceling}
               className="rounded-xl bg-red-500 hover:bg-red-600 text-white"
-              style={{ fontFamily: "'DM Sans', sans-serif" }}
             >
               {canceling ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
               Yes, Cancel
@@ -585,10 +549,10 @@ const MembershipSection = () => {
       <AlertDialog open={!!showSwitchConfirm} onOpenChange={(open) => !open && setShowSwitchConfirm(null)}>
         <AlertDialogContent className="rounded-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle style={{ fontFamily: "'Playfair Display', serif" }}>
+            <AlertDialogTitle>
               Switch to {showSwitchConfirm === 'annual' ? 'Annual' : 'Monthly'}?
             </AlertDialogTitle>
-            <AlertDialogDescription style={{ fontFamily: "'DM Sans', sans-serif" }} asChild>
+            <AlertDialogDescription asChild>
               <div>
                 {showSwitchConfirm === 'annual' ? (
                   isOnTrial ? (
@@ -609,7 +573,6 @@ const MembershipSection = () => {
           <AlertDialogFooter>
             <AlertDialogCancel
               className="rounded-xl"
-              style={{ fontFamily: "'DM Sans', sans-serif" }}
             >
               Keep Current Plan
             </AlertDialogCancel>
@@ -619,7 +582,6 @@ const MembershipSection = () => {
               }}
               disabled={switching}
               className="rounded-xl bg-[#612a4f] hover:bg-[#4d2140] text-white"
-              style={{ fontFamily: "'DM Sans', sans-serif" }}
             >
               {switching ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
               Yes, Switch

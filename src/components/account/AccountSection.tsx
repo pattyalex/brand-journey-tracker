@@ -65,24 +65,13 @@ const AccountSection = ({
           border: '1px solid rgba(139, 115, 130, 0.06)',
         }}
       >
-        <div className="flex items-center gap-3 mb-6">
-          <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center"
-            style={{
-              background: 'linear-gradient(145deg, #8b6a7e 0%, #4a3442 100%)',
-              boxShadow: '0 4px 12px rgba(107, 74, 94, 0.2)',
-            }}
-          >
-            <User className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h2 className="text-lg text-[#2d2a26]" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>
-              Account
-            </h2>
-            <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-              Your personal information
-            </p>
-          </div>
+        <div className="mb-6">
+          <h2 className="text-base font-semibold text-[#2d2a26]">
+            Account
+          </h2>
+          <p className="text-xs text-[#8B7082]">
+            Your personal information
+          </p>
         </div>
 
         {/* Profile Photo */}
@@ -118,12 +107,11 @@ const AccountSection = ({
               disabled={uploadingAvatar}
               onClick={() => fileInputRef.current?.click()}
               className="h-9 px-4 rounded-lg border-[#8B7082]/30 text-[#612a4f] hover:bg-[#612a4f]/5 mb-2"
-              style={{ fontFamily: "'DM Sans', sans-serif" }}
             >
               <Camera className="w-4 h-4 mr-2" />
               {uploadingAvatar ? 'Uploading...' : 'Upload Photo'}
             </Button>
-            <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+            <p className="text-xs text-[#8B7082]">
               JPG or PNG. Max 10MB.
             </p>
           </div>
@@ -132,7 +120,7 @@ const AccountSection = ({
         <form onSubmit={handleProfileUpdate} className="space-y-5">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+              <label className="text-sm font-medium text-[#2d2a26]">
                 Full Name
               </label>
               <input
@@ -141,11 +129,10 @@ const AccountSection = ({
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Enter your name"
                 className="w-full h-11 px-4 rounded-xl border border-[#E8E4E6] bg-white text-sm focus:border-[#612a4f] focus:ring-2 focus:ring-[#612a4f]/20 outline-none transition-all disabled:opacity-50"
-                style={{ fontFamily: "'DM Sans', sans-serif" }}
-              />
+                />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+              <label className="text-sm font-medium text-[#2d2a26]">
                 Email Address
               </label>
               <input
@@ -154,8 +141,7 @@ const AccountSection = ({
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
                 className="w-full h-11 px-4 rounded-xl border border-[#E8E4E6] bg-white text-sm focus:border-[#612a4f] focus:ring-2 focus:ring-[#612a4f]/20 outline-none transition-all disabled:opacity-50"
-                style={{ fontFamily: "'DM Sans', sans-serif" }}
-              />
+                />
             </div>
           </div>
           <Button
@@ -163,7 +149,6 @@ const AccountSection = ({
             disabled={updatingProfile}
             className="h-11 px-6 rounded-xl text-white font-medium"
             style={{
-              fontFamily: "'DM Sans', sans-serif",
               background: 'linear-gradient(145deg, #612a4f 0%, #4a3442 100%)',
             }}
           >
@@ -181,26 +166,15 @@ const AccountSection = ({
         }}
       >
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center"
-              style={{
-                background: 'linear-gradient(145deg, #8b6a7e 0%, #4a3442 100%)',
-                boxShadow: '0 4px 12px rgba(107, 74, 94, 0.2)',
-              }}
-            >
-              <Lock className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h2 className="text-lg text-[#2d2a26]" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>
-                Password
-              </h2>
-              <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                {resetEmailSent
-                  ? 'Check your email for the reset link'
-                  : 'Change your password via email'}
-              </p>
-            </div>
+          <div>
+            <h2 className="text-base font-semibold text-[#2d2a26]">
+              Password
+            </h2>
+            <p className="text-xs text-[#8B7082]">
+              {resetEmailSent
+                ? 'Check your email for the reset link'
+                : 'Change your password via email'}
+            </p>
           </div>
           <Button
             type="button"
@@ -208,7 +182,6 @@ const AccountSection = ({
             disabled={sendingResetEmail || resetEmailSent}
             variant="outline"
             className="h-9 px-4 rounded-lg border-[#8B7082]/30 text-[#612a4f] hover:bg-[#612a4f]/5 hover:border-[#612a4f]/30 disabled:opacity-50"
-            style={{ fontFamily: "'DM Sans', sans-serif" }}
           >
             {sendingResetEmail ? (
               'Sending...'
@@ -233,18 +206,13 @@ const AccountSection = ({
         }}
       >
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-red-50 flex items-center justify-center">
-              <Trash2 className="w-4 h-4 text-red-500" />
-            </div>
-            <div>
-              <h3 className="text-sm font-medium text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                Delete Account
-              </h3>
-              <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                Permanently deletes your account and all data immediately
-              </p>
-            </div>
+          <div>
+            <h3 className="text-base font-semibold text-[#2d2a26]">
+              Delete Account
+            </h3>
+            <p className="text-xs text-[#8B7082]">
+              Permanently deletes your account and all data immediately
+            </p>
           </div>
           <Button
             type="button"
@@ -252,7 +220,6 @@ const AccountSection = ({
             size="sm"
             onClick={() => { setDeleteEmailInput(''); setShowDeleteDialog(true); }}
             className="h-9 px-4 rounded-lg border-red-200 text-red-500 hover:bg-red-50"
-            style={{ fontFamily: "'DM Sans', sans-serif" }}
           >
             Delete
           </Button>
@@ -272,16 +239,16 @@ const AccountSection = ({
                   <div className="w-16 h-16 rounded-2xl bg-[#612a4f]/10 flex items-center justify-center mx-auto mb-5">
                     <Mail className="w-7 h-7 text-[#612a4f]" />
                   </div>
-                  <h2 className="text-xl text-[#2d2a26] mb-2" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>
+                  <h2 className="text-xl text-[#2d2a26] mb-2">
                     Your account has been deleted
                   </h2>
-                  <p className="text-sm text-[#8B7082] mb-4" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                  <p className="text-sm text-[#8B7082] mb-4">
                     All your data has been permanently removed.
                   </p>
-                  <p className="text-sm text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                  <p className="text-sm text-[#8B7082]">
                     We're sorry to see you go. If you ever want to come back, you're always welcome.
                   </p>
-                  <p className="text-xs text-[#8B7082]/60 mt-6" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                  <p className="text-xs text-[#8B7082]/60 mt-6">
                     Redirecting you shortly...
                   </p>
                 </div>
@@ -294,10 +261,10 @@ const AccountSection = ({
                     <AlertTriangle className="w-6 h-6 text-red-500" />
                   </div>
                   <div>
-                    <h2 className="text-lg text-[#2d2a26]" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>
+                    <h2 className="text-lg text-[#2d2a26]">
                       Delete your account?
                     </h2>
-                    <p className="text-xs text-red-500 font-medium" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                    <p className="text-xs text-red-500 font-medium">
                       This cannot be undone
                     </p>
                   </div>
@@ -305,10 +272,10 @@ const AccountSection = ({
 
                 {/* Warning box */}
                 <div className="rounded-xl bg-red-50 border border-red-100 p-4 mb-6 space-y-2">
-                  <p className="text-sm font-medium text-red-700" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                  <p className="text-sm font-medium text-red-700">
                     Everything will be deleted immediately:
                   </p>
-                  <ul className="text-sm text-red-600 space-y-1 list-disc list-inside" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                  <ul className="text-sm text-red-600 space-y-1 list-disc list-inside">
                     <li>Your profile and account info</li>
                     <li>All your content, ideas, and notes</li>
                     <li>Your calendar and partnerships</li>
@@ -319,17 +286,17 @@ const AccountSection = ({
                 {/* Export nudge */}
                 <div className="rounded-xl bg-[#612a4f]/5 border border-[#612a4f]/10 p-4 mb-6 flex items-start gap-3">
                   <Download className="w-4 h-4 text-[#612a4f] mt-0.5 flex-shrink-0" />
-                  <p className="text-sm text-[#612a4f]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                  <p className="text-sm text-[#612a4f]">
                     <strong>Export your data first.</strong> Go to the Data section in Settings to download everything before you delete. You won't be able to recover it after.
                   </p>
                 </div>
 
                 {/* Email confirmation */}
                 <div className="space-y-2 mb-6">
-                  <label className="text-sm font-medium text-[#2d2a26]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                  <label className="text-sm font-medium text-[#2d2a26]">
                     Type your email address to confirm
                   </label>
-                  <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                  <p className="text-xs text-[#8B7082]">
                     {email}
                   </p>
                   <input
@@ -338,8 +305,7 @@ const AccountSection = ({
                     onChange={(e) => setDeleteEmailInput(e.target.value)}
                     placeholder="Enter your email"
                     className="w-full h-11 px-4 rounded-xl border border-[#E8E4E6] bg-white text-sm focus:border-red-400 focus:ring-2 focus:ring-red-200 outline-none transition-all"
-                    style={{ fontFamily: "'DM Sans', sans-serif" }}
-                  />
+                        />
                 </div>
 
                 {/* Actions */}
@@ -349,8 +315,7 @@ const AccountSection = ({
                     variant="outline"
                     onClick={() => setShowDeleteDialog(false)}
                     className="flex-1 h-11 rounded-xl border-[#8B7082]/30 text-[#8B7082] hover:bg-[#f9f7f5]"
-                    style={{ fontFamily: "'DM Sans', sans-serif" }}
-                  >
+                        >
                     Cancel
                   </Button>
                   <Button
@@ -358,8 +323,7 @@ const AccountSection = ({
                     onClick={handleDeleteAccount}
                     disabled={deletingAccount || deleteEmailInput.trim().toLowerCase() !== email.trim().toLowerCase()}
                     className="flex-1 h-11 rounded-xl text-white font-medium bg-red-500 hover:bg-red-600 disabled:opacity-40 disabled:cursor-not-allowed"
-                    style={{ fontFamily: "'DM Sans', sans-serif" }}
-                  >
+                        >
                     {deletingAccount ? 'Deleting...' : 'Yes, delete my account'}
                   </Button>
                 </div>

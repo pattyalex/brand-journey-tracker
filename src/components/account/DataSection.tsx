@@ -16,20 +16,11 @@ const DataSection = ({ handleExportAllData, handleDownloadCalendar }: DataSectio
       }}
     >
       <div className="flex items-center gap-3 mb-6">
-        <div
-          className="w-10 h-10 rounded-xl flex items-center justify-center"
-          style={{
-            background: 'linear-gradient(145deg, #8b6a7e 0%, #4a3442 100%)',
-            boxShadow: '0 4px 12px rgba(107, 74, 94, 0.2)',
-          }}
-        >
-          <Download className="w-5 h-5 text-white" />
-        </div>
         <div>
-          <h2 className="text-lg text-[#2d2a26]" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>
+          <h2 className="text-base font-semibold text-[#2d2a26]">
             Data
           </h2>
-          <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+          <p className="text-xs text-[#8B7082]">
             Export and download your data
           </p>
         </div>
@@ -42,10 +33,10 @@ const DataSection = ({ handleExportAllData, handleDownloadCalendar }: DataSectio
               <Download className="w-4 h-4 text-[#612a4f]" />
             </div>
             <div>
-              <p className="font-medium text-[#2d2a26] text-sm" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+              <p className="font-medium text-[#2d2a26] text-sm">
                 Export All Data
               </p>
-              <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+              <p className="text-xs text-[#8B7082]">
                 Download all your account data as JSON
               </p>
             </div>
@@ -53,7 +44,6 @@ const DataSection = ({ handleExportAllData, handleDownloadCalendar }: DataSectio
           <Button
             variant="outline"
             className="h-9 px-4 rounded-lg border-[#8B7082]/30 text-[#612a4f] hover:bg-[#612a4f]/5 hover:border-[#612a4f]/30"
-            style={{ fontFamily: "'DM Sans', sans-serif" }}
             onClick={handleExportAllData}
           >
             Export
@@ -66,10 +56,10 @@ const DataSection = ({ handleExportAllData, handleDownloadCalendar }: DataSectio
               <Calendar className="w-4 h-4 text-[#612a4f]" />
             </div>
             <div>
-              <p className="font-medium text-[#2d2a26] text-sm" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+              <p className="font-medium text-[#2d2a26] text-sm">
                 Download Content Calendar
               </p>
-              <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+              <p className="text-xs text-[#8B7082]">
                 Export your content calendar as CSV or iCal
               </p>
             </div>
@@ -77,7 +67,6 @@ const DataSection = ({ handleExportAllData, handleDownloadCalendar }: DataSectio
           <Button
             variant="outline"
             className="h-9 px-4 rounded-lg border-[#8B7082]/30 text-[#612a4f] hover:bg-[#612a4f]/5 hover:border-[#612a4f]/30"
-            style={{ fontFamily: "'DM Sans', sans-serif" }}
             onClick={handleDownloadCalendar}
           >
             Download
@@ -93,7 +82,7 @@ const DataSection = ({ handleExportAllData, handleDownloadCalendar }: DataSectio
         }}
       >
         <AlertTriangle className="w-4 h-4 text-[#612a4f] mt-0.5 flex-shrink-0" />
-        <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+        <p className="text-xs text-[#8B7082]">
           Exported data may contain sensitive information. Please store it securely and do not share with others.
         </p>
       </div>

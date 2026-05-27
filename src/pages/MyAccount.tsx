@@ -46,7 +46,6 @@ const MyAccount = () => {
     { id: 'account', label: 'Account', icon: User },
     { id: 'membership', label: 'Subscription', icon: Crown },
     { id: 'preferences', label: 'Calendar', icon: Calendar },
-    { id: 'integrations', label: 'Integrations', icon: Calendar },
     { id: 'data', label: 'Data', icon: Download },
     { id: 'legal', label: 'Legal', icon: FileText },
     { id: 'help', label: 'Help', icon: HelpCircle },
@@ -55,26 +54,7 @@ const MyAccount = () => {
 
   return (
         <div className="min-h-screen" style={{ background: '#f9f7f5' }}>
-          <div className="max-w-5xl mx-auto px-6 md:px-8 pt-8 pb-16">
-            {/* Header */}
-            <div className="mb-8">
-              <h1
-                className="text-3xl mb-2"
-                style={{
-                  fontFamily: "'Playfair Display', serif",
-                  fontWeight: 600,
-                  color: '#2d2a26'
-                }}
-              >
-                Settings
-              </h1>
-              <p
-                className="text-[15px] text-[#8B7082]"
-                style={{ fontFamily: "'DM Sans', sans-serif" }}
-              >
-                Manage your account, preferences, and subscription
-              </p>
-            </div>
+          <div className="max-w-5xl mx-auto px-6 md:px-8 pt-14 pb-16">
 
             <div className="flex gap-8">
               {/* Sidebar Navigation */}
@@ -90,7 +70,6 @@ const MyAccount = () => {
                           ? "bg-white text-[#612a4f] shadow-sm"
                           : "text-[#8B7082] hover:bg-white/50 hover:text-[#612a4f]"
                       )}
-                      style={{ fontFamily: "'DM Sans', sans-serif" }}
                     >
                       <section.icon className={cn(
                         "w-4 h-4",
@@ -109,7 +88,6 @@ const MyAccount = () => {
                       type="button"
                       onClick={handleSignOut}
                       className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-[#8B7082] hover:bg-red-50 hover:text-red-500 transition-all"
-                      style={{ fontFamily: "'DM Sans', sans-serif" }}
                     >
                       <LogOut className="w-4 h-4" />
                       Sign Out
@@ -153,7 +131,6 @@ const MyAccount = () => {
                   />
                 )}
 
-                {activeSection === 'integrations' && <IntegrationsSection />}
 
                 {activeSection === 'data' && (
                   <DataSection

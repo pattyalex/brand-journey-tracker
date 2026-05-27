@@ -13,20 +13,11 @@ const LegalSection = () => {
       }}
     >
       <div className="flex items-center gap-3 mb-6">
-        <div
-          className="w-10 h-10 rounded-xl flex items-center justify-center"
-          style={{
-            background: 'linear-gradient(145deg, #8b6a7e 0%, #4a3442 100%)',
-            boxShadow: '0 4px 12px rgba(107, 74, 94, 0.2)',
-          }}
-        >
-          <FileText className="w-5 h-5 text-white" />
-        </div>
         <div>
-          <h2 className="text-lg text-[#2d2a26]" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>
+          <h2 className="text-base font-semibold text-[#2d2a26]">
             Legal
           </h2>
-          <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+          <p className="text-xs text-[#8B7082]">
             Review our policies and terms
           </p>
         </div>
@@ -42,10 +33,10 @@ const LegalSection = () => {
               <Shield className="w-4 h-4 text-[#612a4f]" />
             </div>
             <div>
-              <p className="font-medium text-[#2d2a26] text-sm" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+              <p className="font-medium text-[#2d2a26] text-sm">
                 Privacy Policy
               </p>
-              <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+              <p className="text-xs text-[#8B7082]">
                 How we collect, use, and protect your data
               </p>
             </div>
@@ -62,10 +53,10 @@ const LegalSection = () => {
               <FileText className="w-4 h-4 text-[#612a4f]" />
             </div>
             <div>
-              <p className="font-medium text-[#2d2a26] text-sm" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+              <p className="font-medium text-[#2d2a26] text-sm">
                 Terms of Service
               </p>
-              <p className="text-xs text-[#8B7082]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+              <p className="text-xs text-[#8B7082]">
                 Rules and guidelines for using HeyMeg
               </p>
             </div>
