@@ -64,10 +64,10 @@ const SidebarMenuItemComponent = ({ item, onDelete }: SidebarMenuItemProps) => {
         <a
           href={item.url}
           className={cn(
-            "flex items-center gap-2 rounded-xl transition-all duration-200",
+            "flex items-center gap-2 rounded-xl",
             (isActive || isSubItemActive)
               ? "bg-[#EBE1E7] text-[#612A4F] font-medium"
-              : "hover:bg-[#EDE8EB] text-[#5A4A52]"
+              : "hover:bg-[#EDE8EB] text-[#5A4A52] transition-all duration-200"
           )}
           onClick={handleMenuItemClick}
           onMouseEnter={() => preloadRoute(item.url)}
