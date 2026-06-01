@@ -134,6 +134,9 @@ export function useMyAccount() {
         throw new Error(`${res.status}: ${errBody}`);
       }
 
+      // Notify sidebar to refresh profile data
+      window.dispatchEvent(new Event('profile-updated'));
+
       // Update auth.users metadata (name and/or email)
       const authUpdateBody: Record<string, any> = {};
       if (name !== (user.user_metadata?.full_name || user.user_metadata?.name || '')) {

@@ -245,7 +245,7 @@ const TaskList: React.FC<TaskListProps> = ({
       </DndContext>
 
       {/* Add task input */}
-      <div className="mt-6">
+      <div className="mt-2">
         <TaskInput
           onAdd={onAdd}
           autoFocus={isEmpty}

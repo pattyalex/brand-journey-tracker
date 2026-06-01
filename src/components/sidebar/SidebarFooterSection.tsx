@@ -25,8 +25,9 @@ const SidebarFooterSection = ({ settingsItem, helpItem }: SidebarFooterSectionPr
   const { user, session } = useAuth();
   const isCollapsed = state === 'collapsed';
   const [profileAvatarUrl, setProfileAvatarUrl] = useState<string | null>(null);
+  const [profileName, setProfileName] = useState<string | null>(null);
 
-  const fullName = user?.user_metadata?.full_name || 'User';
+  const fullName = profileName || user?.user_metadata?.full_name || 'User';
   const firstName = fullName.split(' ')[0];
   const metaAvatarUrl = user?.user_metadata?.avatar_url || user?.user_metadata?.picture;
   const initials = fullName
@@ -36,11 +37,11 @@ const SidebarFooterSection = ({ settingsItem, helpItem }: SidebarFooterSectionPr
     .toUpperCase()
     .slice(0, 2);
 
-  // Load avatar_url from profiles table (updates immediately after upload)
-  useEffect(() => {
+  // Load name and avatar_url from profiles table
+  const fetchProfile = () => {
     if (!user?.id || !session?.access_token) return;
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    fetch(`${supabaseUrl}/rest/v1/profiles?id=eq.${user.id}&select=avatar_url`, {
+    fetch(`${supabaseUrl}/rest/v1/profiles?id=eq.${user.id}&select=full_name,avatar_url`, {
       headers: {
         'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
         'Authorization': `Bearer ${session.access_token}`,
@@ -49,8 +50,20 @@ const SidebarFooterSection = ({ settingsItem, helpItem }: SidebarFooterSectionPr
       .then(res => res.json())
       .then(rows => {
         if (rows?.[0]?.avatar_url) setProfileAvatarUrl(rows[0].avatar_url);
+        if (rows?.[0]?.full_name) setProfileName(rows[0].full_name);
       })
       .catch(() => {});
+  };
+
+  useEffect(() => {
+    fetchProfile();
+  }, [user?.id, session?.access_token]);
+
+  // Re-fetch when profile is updated from settings
+  useEffect(() => {
+    const handler = () => fetchProfile();
+    window.addEventListener('profile-updated', handler);
+    return () => window.removeEventListener('profile-updated', handler);
   }, [user?.id, session?.access_token]);
 
   const avatarUrl = profileAvatarUrl || metaAvatarUrl;
