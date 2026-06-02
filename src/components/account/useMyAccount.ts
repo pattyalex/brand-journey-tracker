@@ -179,12 +179,39 @@ export function useMyAccount() {
     }
   };
 
+  const compressImage = (file: File, maxSize = 800): Promise<File> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let { width, height } = img;
+        if (width > maxSize || height > maxSize) {
+          if (width > height) {
+            height = Math.round((height * maxSize) / width);
+            width = maxSize;
+          } else {
+            width = Math.round((width * maxSize) / height);
+            height = maxSize;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d')!;
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob(
+          (blob) => {
+            resolve(new File([blob!], file.name, { type: 'image/jpeg' }));
+          },
+          'image/jpeg',
+          0.85
+        );
+      };
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
   const handleAvatarUpload = async (file: File) => {
     if (!user || !session?.access_token) return;
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error('Image must be under 10MB');
-      return;
-    }
     if (!file.type.startsWith('image/')) {
       toast.error('Please upload an image file (JPG, PNG, or GIF)');
       return;
@@ -192,13 +219,13 @@ export function useMyAccount() {
 
     setUploadingAvatar(true);
     try {
-      const ext = file.name.split('.').pop() || 'jpg';
-      const filePath = `${user.id}/avatar.${ext}`;
+      const compressed = await compressImage(file);
+      const filePath = `${user.id}/avatar.jpg`;
 
       // Upload to Supabase Storage
       const { error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(filePath, file, { upsert: true });
+        .upload(filePath, compressed, { upsert: true });
 
       if (uploadError) throw uploadError;
 

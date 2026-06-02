@@ -112,7 +112,7 @@ const AccountSection = ({
               {uploadingAvatar ? 'Uploading...' : 'Upload Photo'}
             </Button>
             <p className="text-xs text-[#8B7082]">
-              JPG or PNG. Max 10MB.
+              JPG or PNG
             </p>
           </div>
         </div>
