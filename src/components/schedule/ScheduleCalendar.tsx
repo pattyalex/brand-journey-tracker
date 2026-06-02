@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, ImageIcon, AlertTriangle, Clock } from 'lucide-react';
 import { useDroppable, useDraggable } from '@dnd-kit/core';
@@ -90,10 +90,29 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
   draggingId,
 }) => {
   const today = new Date();
-  const [viewYear, setViewYear] = useState(today.getFullYear());
-  const [viewMonth, setViewMonth] = useState(today.getMonth());
+  const [viewYear, setViewYear] = useState(() => {
+    const saved = sessionStorage.getItem('schedule_viewYear');
+    return saved ? Number(saved) : today.getFullYear();
+  });
+  const [viewMonth, setViewMonth] = useState(() => {
+    const saved = sessionStorage.getItem('schedule_viewMonth');
+    return saved ? Number(saved) : today.getMonth();
+  });
   const [calView, setCalView] = useState<CalendarView>('month');
-  const [weekBase, setWeekBase] = useState(today);
+  const [weekBase, setWeekBase] = useState(() => {
+    const saved = sessionStorage.getItem('schedule_weekBase');
+    return saved ? new Date(saved) : today;
+  });
+
+  // Persist calendar position
+  useEffect(() => {
+    sessionStorage.setItem('schedule_viewYear', String(viewYear));
+    sessionStorage.setItem('schedule_viewMonth', String(viewMonth));
+  }, [viewYear, viewMonth]);
+
+  useEffect(() => {
+    sessionStorage.setItem('schedule_weekBase', weekBase.toISOString());
+  }, [weekBase]);
 
   const monthDays = useMemo(() => getMonthGrid(viewYear, viewMonth), [viewYear, viewMonth]);
   const weekDays = useMemo(() => getWeekDays(weekBase), [weekBase]);

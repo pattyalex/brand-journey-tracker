@@ -58,6 +58,13 @@ const LandingPage = () => {
               {isAuthenticated ? "Go to Dashboard" : "Start 14-Day Free Trial"}
             </Button>
           </div>
+          <div className="mt-12 rounded-xl overflow-hidden shadow-2xl border border-gray-200">
+            <img
+              src="/heymeg-hero.png?v=2"
+              alt="HeyMeg app screenshot"
+              className="w-full"
+            />
+          </div>
         </section>
 
         {/* Features Section */}
