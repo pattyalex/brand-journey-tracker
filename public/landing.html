@@ -382,6 +382,7 @@
       max-width: 100%;
       border-radius: 16px;
       overflow: visible;
+      container-type: inline-size;
     }
 
     .dashboard-preview img:not(.hero-avatar),
@@ -441,6 +442,51 @@
         background: rgba(120,160,255,0);
         box-shadow: 0 0 0 5px rgba(120,160,255,0), 0 0 56px 24px rgba(120,160,255,0);
       }
+    }
+
+    /* ── "Scheduled" confirmation pill in the day-11 cell (end of clip) ── */
+    .hero-sched-pill {
+      position: absolute;
+      left: 43.5%;
+      top: 51.5%;
+      display: flex;
+      align-items: center;
+      gap: 0.32cqw;
+      padding: 0.25cqw 0.62cqw 0.25cqw 0.3cqw;
+      background: #aec3f5;
+      border-radius: 1.2cqw;
+      z-index: 21;
+      opacity: 0;
+      transform-origin: left center;
+      pointer-events: none;
+      box-shadow: 0 0.15cqw 0.6cqw rgba(60,90,180,0.2);
+      white-space: nowrap;
+    }
+    .hero-sched-check {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 1cqw;
+      height: 1cqw;
+      background: #1faa4e;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .hero-sched-check svg { width: 0.58cqw; height: 0.58cqw; }
+    .hero-sched-label {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 700;
+      font-size: 0.78cqw;
+      color: #1b2545;
+      line-height: 1;
+    }
+    .hero-sched-pill.show {
+      animation: heroSchedPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+    @keyframes heroSchedPop {
+      0%   { opacity: 0; transform: scale(0.5) translateY(0.5cqw); }
+      60%  { opacity: 1; }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
     }
 
     /* ══════════════ Hero Animation Overlay ══════════════ */
@@ -5155,6 +5201,12 @@
             aria-label="HeyMeg Schedule View - Plan your content calendar"
           ></video>
           <div class="hero-drop-highlight" id="heroDropHighlight"></div>
+          <div class="hero-sched-pill" id="heroSchedPill">
+            <span class="hero-sched-check">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </span>
+            <span class="hero-sched-label">Scheduled</span>
+          </div>
         </div>
       </div>
     </div>
@@ -5805,24 +5857,35 @@
       };
       window.addEventListener('scroll', startHeroVideo, { passive: true });
 
-      // Blue pulse highlight when content lands on day 11 (~6.5s into the clip)
+      // Overlay cues keyed to the video's own timeline
       const heroDropHighlight = document.getElementById('heroDropHighlight');
-      if (heroDropHighlight) {
-        const DROP_TIME = 4.7; // seconds along the video's own timeline
+      const heroSchedPill = document.getElementById('heroSchedPill');
+      if (heroDropHighlight || heroSchedPill) {
+        const DROP_TIME = 4.7;  // blue pulse as the tile lands on day 11
+        const SCHED_TIME = 6.1; // "Scheduled" pill after the time is picked
         let dropFired = false;
+        let schedFired = false;
         let prevTime = 0;
         heroDemoVideo.addEventListener('timeupdate', () => {
           const t = heroDemoVideo.currentTime;
           if (t < prevTime - 0.4) {        // the clip looped back to the start
             dropFired = false;
-            heroDropHighlight.classList.remove('show');
+            schedFired = false;
+            if (heroDropHighlight) heroDropHighlight.classList.remove('show');
+            if (heroSchedPill) heroSchedPill.classList.remove('show');
           }
           prevTime = t;
-          if (!dropFired && t >= DROP_TIME) {
+          if (heroDropHighlight && !dropFired && t >= DROP_TIME) {
             dropFired = true;
             heroDropHighlight.classList.remove('show');
             void heroDropHighlight.offsetWidth; // force reflow to restart the animation
             heroDropHighlight.classList.add('show');
+          }
+          if (heroSchedPill && !schedFired && t >= SCHED_TIME) {
+            schedFired = true;
+            heroSchedPill.classList.remove('show');
+            void heroSchedPill.offsetWidth;
+            heroSchedPill.classList.add('show');
           }
         });
       }
