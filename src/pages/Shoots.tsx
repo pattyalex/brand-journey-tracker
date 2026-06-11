@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Plus, MapPin, Camera, ChevronDown, ArrowRight, Check, X, MoreHorizontal, Copy, Trash2, ImageIcon, Calendar, Clapperboard } from 'lucide-react';
+import { Plus, MapPin, Camera, ChevronDown, ArrowRight, Check, X, MoreHorizontal, Copy, Trash2, ImageIcon, Calendar, Clapperboard, Aperture } from 'lucide-react';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 import { useShootsStore } from '@/hooks/useShootsStore';
@@ -13,6 +13,7 @@ import ShootDetail from '@/components/shoots/ShootDetail';
 import CreateShootModal from '@/components/shoots/CreateShootModal';
 import MobileExecutionView from '@/components/shoots/MobileExecutionView';
 import PostDetailPanel from '@/components/posts/PostDetailPanel';
+import { PlatformIconsDisplay } from '@/components/posts/PlatformSelector';
 import { format, formatDistanceToNow, isAfter } from 'date-fns';
 
 type Screen = 'list' | 'detail';
@@ -358,9 +359,12 @@ const Shoots: React.FC = () => {
                               <p className="text-sm font-medium text-gray-900 line-clamp-2 flex-1 pr-5">{post.title}</p>
                             </div>
 
-                            {/* Bottom row: format + status */}
+                            {/* Bottom row: format + platforms + status */}
                             <div className="flex items-center justify-between">
-                              <span className="text-[10px] text-gray-500">{post.format || ''}</span>
+                              <div className="flex items-center gap-6">
+                                <span className="text-[10px] text-gray-500">{post.format || ''}</span>
+                                <PlatformIconsDisplay platforms={post.platforms} size={11} />
+                              </div>
                               <div className="flex items-center gap-1">
                                 <StatusIcon status={post.status} className="w-2.5 h-2.5" style={{ color: statusColor.dot }} />
                                 <span className="text-[10px] text-gray-400">{post.status}</span>
@@ -398,7 +402,7 @@ const Shoots: React.FC = () => {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 8, scale: 0.98 }}
                         transition={{ duration: 0.2, ease: 'easeOut' }}
-                        className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 rounded-2xl text-white px-6 py-3.5 shadow-[0_8px_32px_rgba(97,42,79,0.35)] flex items-center gap-5 backdrop-blur-sm"
+                        className="mt-6 mx-auto w-fit z-40 rounded-2xl text-white px-6 py-3.5 shadow-[0_8px_32px_rgba(97,42,79,0.35)] flex items-center gap-5 backdrop-blur-sm"
                         style={{ background: 'linear-gradient(135deg, #612A4F 0%, #7B3461 100%)' }}
                       >
                         <span className="text-[13px] font-semibold tabular-nums">

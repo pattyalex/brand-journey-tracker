@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, MapPin } from 'lucide-react';
 import { ShootLocation } from '@/types/shoots';
@@ -15,17 +15,11 @@ const LocationsBlock: React.FC<LocationsBlockProps> = ({
   onAddLocation,
   onRemoveLocation,
 }) => {
-  const [showInput, setShowInput] = useState(false);
   const [inputValue, setInputValue] = useState('');
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const handleAddClick = () => {
-    setShowInput(true);
-    setTimeout(() => inputRef.current?.focus(), 0);
-  };
 
   const handleInputKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && inputValue.trim()) {
+      e.preventDefault();
       onAddLocation({
         id: crypto.randomUUID(),
         name: inputValue.trim(),
@@ -35,24 +29,14 @@ const LocationsBlock: React.FC<LocationsBlockProps> = ({
         place_id: '',
       });
       setInputValue('');
-      setShowInput(false);
-    } else if (e.key === 'Escape') {
-      setInputValue('');
-      setShowInput(false);
-    }
-  };
-
-  const handleInputBlur = () => {
-    if (!inputValue.trim()) {
-      setInputValue('');
-      setShowInput(false);
     }
   };
 
   return (
     <div>
       {/* Section label */}
-      <div className="text-xs uppercase tracking-wider text-gray-400 font-medium mb-3">
+      <div className="flex items-center gap-1.5 text-xs uppercase tracking-wider text-gray-400 font-medium mb-3">
+        <MapPin className="w-3 h-3" />
         Location
       </div>
 
@@ -66,65 +50,46 @@ const LocationsBlock: React.FC<LocationsBlockProps> = ({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.2 }}
-                className="group flex items-start gap-3"
+                className="group flex items-baseline gap-3 py-1.5 px-2 -mx-2 rounded-lg hover:bg-gray-50/80 transition-colors duration-150"
               >
-                {/* Pin number */}
-                <div className="w-6 h-6 rounded-full bg-[#612A4F] text-white text-[10px] font-semibold flex items-center justify-center flex-shrink-0 mt-0.5">
+                {/* Number */}
+                <span className="w-4 text-right text-[12px] text-gray-300 font-medium tabular-nums flex-shrink-0">
                   {index + 1}
-                </div>
+                </span>
 
                 {/* Location info */}
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-gray-800">{location.name}</div>
+                  <div className="text-[13px] text-gray-700 leading-snug">{location.name}</div>
                   {location.address && (
-                    <div className="text-[11px] text-gray-400">{location.address}</div>
+                    <div className="text-[11px] text-gray-400 mt-0.5">{location.address}</div>
                   )}
                 </div>
 
                 {/* Remove button */}
                 <button
                   onClick={() => onRemoveLocation(location.id)}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity mt-0.5"
+                  className="self-center p-0.5 rounded text-gray-300 opacity-0 group-hover:opacity-100 hover:text-red-400 hover:bg-red-50/80 transition-all duration-150 flex-shrink-0"
                 >
-                  <X size={14} className="text-gray-300 hover:text-red-400" />
+                  <X size={13} />
                 </button>
               </motion.div>
-
-              {/* Connector line */}
-              {index < locations.length - 1 && (
-                <div className="w-px h-4 bg-gray-200 ml-3" />
-              )}
             </React.Fragment>
           ))}
         </AnimatePresence>
       </div>
 
       {/* Add location */}
-      {showInput ? (
-        <div className="mt-3">
-          <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-2">
-            <MapPin size={14} className="text-gray-300 flex-shrink-0" />
-            <input
-              ref={inputRef}
-              type="text"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={handleInputKeyDown}
-              onBlur={handleInputBlur}
-              placeholder="Search for a location..."
-              className="text-sm bg-transparent outline-none w-full placeholder:text-gray-300"
-            />
-          </div>
-        </div>
-      ) : (
-        <button
-          onClick={handleAddClick}
-          className="mt-3 text-sm text-gray-400 hover:text-[#612A4F] flex items-center gap-2 transition-colors"
-        >
-          <Plus size={14} />
-          Add location
-        </button>
-      )}
+      <div className="group/add flex items-center gap-3 py-1.5 px-2 -mx-2 rounded-lg hover:bg-[#612A4F]/[0.06] transition-colors duration-150">
+        <Plus size={12} className="w-4 text-gray-300 group-hover/add:text-[#612A4F] transition-colors duration-150 flex-shrink-0" />
+        <input
+          type="text"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onKeyDown={handleInputKeyDown}
+          placeholder="Add a location..."
+          className="text-[13px] border-none bg-transparent outline-none placeholder:text-gray-300 group-hover/add:placeholder:text-[#612A4F]/70 transition-colors duration-150 w-full"
+        />
+      </div>
     </div>
   );
 };

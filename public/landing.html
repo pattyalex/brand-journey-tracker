@@ -5464,41 +5464,158 @@
     <!-- Feature 1: AI Storyboard -->
     <div class="feature-row storyboard-row">
       <div class="feature-text">
-        <h3>AI Storyboard</h3>
-        <p>MegAI builds a scene-by-scene storyboard from your script. It tells you what to shoot, how to frame it, and what to say.</p>
-      </div>
-      <div class="feature-visual reveal-visual storyboard-visual">
-        <div class="storyboard-gen" id="storyboard-gen">
-          <div class="sb-header" style="display:none;">
-            <div class="sb-header-top">
-              <span class="sb-header-title">MegAI Storyboard</span>
-              <span class="sb-ai-badge">AI</span>
-              <span class="sb-status" id="sb-status">
-                <span class="sb-status-dot"></span>
-                <span id="sb-status-text">Generating...</span>
-              </span>
-            </div>
-          </div>
-          <div class="sb-grid">
-            <div class="sb-card"><img src="scene-1.png" alt="Scene 1 — Medium Shot"><div class="sb-shimmer"></div></div>
-            <div class="sb-card"><img src="scene-2.png" alt="Scene 2 — Hands Doing Something"><div class="sb-shimmer"></div></div>
-            <div class="sb-card"><img src="scene-3.png" alt="Scene 3 — Close-Up Shot"><div class="sb-shimmer"></div></div>
-            <div class="sb-card"><img src="scene-4.png" alt="Scene 4 — Moving Through the Space"><div class="sb-shimmer"></div></div>
-            <div class="sb-card"><img src="scene-5.png" alt="Scene 5 — Reaction Moment"><div class="sb-shimmer"></div></div>
-            <div class="sb-card"><img src="scene-6.png" alt="Scene 6 — Hands Doing Something"><div class="sb-shimmer"></div></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Feature 2: Visual Pipeline (reversed) -->
-    <div class="feature-row reversed">
-      <div class="feature-text">
         <h3>Production Pipeline</h3>
         <p>See your entire workflow on one visual board. Always know what's in progress, what needs attention, and what's ready to go live.</p>
       </div>
       <div class="feature-visual reveal-visual" style="background: none; padding: 0; box-shadow: none;">
-        <img src="pipeline-preview.png" alt="Production Pipeline - Post detail view" style="width: 100%; border-radius: 16px;">
+        <img src="content-table.png" alt="Production Pipeline - Content board view" style="width: 100%; border-radius: 16px;">
+      </div>
+    </div>
+
+    <style>
+      .idea-room-stage { position: relative; display: block; width: 100%; }
+
+      /* Shared popup base */
+      .idea-room-stage .ir-popup {
+        position: absolute;
+        top: 47.6%;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 0.4em 0.7em;
+        border-radius: 10px;
+        color: #fff;
+        font-size: clamp(9px, 0.8vw, 11.5px);
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        white-space: nowrap;
+        opacity: 0;
+        transform-origin: bottom left;
+        pointer-events: none;
+        filter: saturate(0.82) brightness(0.93);
+      }
+      .idea-room-stage .ir-popup-spark svg { width: 11px; height: 11px; }
+      .idea-room-stage .ir-popup::after {
+        content: "";
+        position: absolute;
+        left: 20px;
+        bottom: -5px;
+        width: 11px;
+        height: 11px;
+        transform: rotate(45deg);
+        border-radius: 2px;
+      }
+      .idea-room-stage .ir-popup-spark {
+        display: inline-flex;
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      /* Per-column color + position (animation only runs once scrolled into view) */
+      .idea-room-stage .ir-popup--pillar {
+        left: 2.2%;
+        background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+        box-shadow: 0 8px 20px rgba(124, 58, 237, 0.28);
+      }
+      .idea-room-stage .ir-popup--pillar::after { background: #9b4ef0; }
+
+      .idea-room-stage .ir-popup--format {
+        left: 24%;
+        background: linear-gradient(135deg, #2563eb 0%, #4f86f7 100%);
+        box-shadow: 0 8px 20px rgba(37, 99, 235, 0.28);
+      }
+      .idea-room-stage .ir-popup--format::after { background: #3b82f6; }
+
+      .idea-room-stage .ir-popup--platforms {
+        left: 48%;
+        background: linear-gradient(135deg, #db2777 0%, #ec4899 100%);
+        box-shadow: 0 8px 20px rgba(219, 39, 119, 0.28);
+      }
+      .idea-room-stage .ir-popup--platforms::after { background: #ec4899; }
+
+      .idea-room-stage .ir-popup--status {
+        left: 73%;
+        background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
+        box-shadow: 0 8px 20px rgba(22, 163, 74, 0.28);
+      }
+      .idea-room-stage .ir-popup--status::after { background: #22c55e; }
+
+      /* Start the looping popups only when the section is scrolled into view */
+      .idea-room-stage.is-visible .ir-popup--pillar    { animation: irPop1 3.2s ease-in-out infinite; }
+      .idea-room-stage.is-visible .ir-popup--format    { animation: irPop2 3.2s ease-in-out infinite; }
+      .idea-room-stage.is-visible .ir-popup--platforms { animation: irPop3 3.2s ease-in-out infinite; }
+      .idea-room-stage.is-visible .ir-popup--status    { animation: irPop4 3.2s ease-in-out infinite; }
+
+      /* Each pops in at a staggered time, all stay, then fade out together */
+      @keyframes irPop1 {
+        0%        { opacity: 0; transform: translateY(10px) scale(0.9); }
+        9%        { opacity: 1; transform: translateY(0) scale(1.03); }
+        14%       { transform: translateY(0) scale(1); }
+        88%       { opacity: 1; transform: translateY(0) scale(1); }
+        96%, 100% { opacity: 0; transform: translateY(6px) scale(0.94); }
+      }
+      @keyframes irPop2 {
+        0%, 9%    { opacity: 0; transform: translateY(10px) scale(0.9); }
+        18%       { opacity: 1; transform: translateY(0) scale(1.03); }
+        23%       { transform: translateY(0) scale(1); }
+        88%       { opacity: 1; transform: translateY(0) scale(1); }
+        96%, 100% { opacity: 0; transform: translateY(6px) scale(0.94); }
+      }
+      @keyframes irPop3 {
+        0%, 18%   { opacity: 0; transform: translateY(10px) scale(0.9); }
+        27%       { opacity: 1; transform: translateY(0) scale(1.03); }
+        32%       { transform: translateY(0) scale(1); }
+        88%       { opacity: 1; transform: translateY(0) scale(1); }
+        96%, 100% { opacity: 0; transform: translateY(6px) scale(0.94); }
+      }
+      @keyframes irPop4 {
+        0%, 27%   { opacity: 0; transform: translateY(10px) scale(0.9); }
+        36%       { opacity: 1; transform: translateY(0) scale(1.03); }
+        41%       { transform: translateY(0) scale(1); }
+        88%       { opacity: 1; transform: translateY(0) scale(1); }
+        96%, 100% { opacity: 0; transform: translateY(6px) scale(0.94); }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .idea-room-stage .ir-popup { animation: none; }
+      }
+    </style>
+
+    <!-- Feature 2: Visual Pipeline (reversed) -->
+    <div class="feature-row reversed">
+      <div class="feature-text">
+        <h3>Idea Room</h3>
+        <p>Your editing suite for one post. Mix references, draft the script, dial in the format. Experiment with one idea in a focused space until it's ready to ship.</p>
+      </div>
+      <div class="feature-visual reveal-visual" style="background: none; padding: 0; box-shadow: none;">
+        <div class="idea-room-stage">
+          <img src="pipeline-preview.png" alt="Idea Room - Post detail view" style="width: 100%; border-radius: 16px; display: block;">
+
+          <!-- Floating popups, one per column, appearing in sequence -->
+          <div class="ir-popup ir-popup--pillar">
+            <span class="ir-popup-spark">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M12 2l1.9 5.5L19.5 9l-4.5 3.4L16.4 18 12 14.8 7.6 18l1.4-5.6L4.5 9l5.6-1.5z"/></svg>
+            </span>
+            Pillar
+          </div>
+          <div class="ir-popup ir-popup--format">
+            <span class="ir-popup-spark">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M12 2l1.9 5.5L19.5 9l-4.5 3.4L16.4 18 12 14.8 7.6 18l1.4-5.6L4.5 9l5.6-1.5z"/></svg>
+            </span>
+            Format
+          </div>
+          <div class="ir-popup ir-popup--platforms">
+            <span class="ir-popup-spark">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M12 2l1.9 5.5L19.5 9l-4.5 3.4L16.4 18 12 14.8 7.6 18l1.4-5.6L4.5 9l5.6-1.5z"/></svg>
+            </span>
+            Platforms
+          </div>
+          <div class="ir-popup ir-popup--status">
+            <span class="ir-popup-spark">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M12 2l1.9 5.5L19.5 9l-4.5 3.4L16.4 18 12 14.8 7.6 18l1.4-5.6L4.5 9l5.6-1.5z"/></svg>
+            </span>
+            Status
+          </div>
+        </div>
       </div>
     </div>
 
@@ -5547,6 +5664,26 @@
             </div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Feature 4: Plan Your Shoots (reversed) -->
+    <div class="feature-row reversed">
+      <div class="feature-text">
+        <h3>Plan Your Shoots</h3>
+        <p>Map out every shoot before you pick up the camera. Know exactly what to shoot, where, what to wear, and everything else you need — so shoot day runs smooth and nothing gets forgotten.</p>
+      </div>
+      <div class="feature-visual reveal-visual" style="background: none; padding: 0; box-shadow: none;">
+        <video
+          src="plan-shoots.mov"
+          loop
+          muted
+          autoplay
+          playsinline
+          preload="auto"
+          aria-label="Plan Your Shoots - Shoot planning view"
+          style="width: 100%; border-radius: 16px; display: block;"
+        ></video>
       </div>
     </div>
 
@@ -5902,6 +6039,24 @@
     }, { threshold: 0.3 });
 
     visualElements.forEach(el => visualObserver.observe(el));
+
+
+    // ── Idea Room popups: start the loop only when scrolled into view, reset on leave ──
+    const ideaRoomStage = document.querySelector('.idea-room-stage');
+    if (ideaRoomStage) {
+      const ideaRoomObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            ideaRoomStage.classList.add('is-visible');
+          } else {
+            // Remove so the sequence restarts the next time it scrolls into view
+            ideaRoomStage.classList.remove('is-visible');
+          }
+        });
+      }, { threshold: 0.45 });
+
+      ideaRoomObserver.observe(ideaRoomStage);
+    }
 
 
     // ── Pipeline 3D board staggered reveal ──

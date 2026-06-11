@@ -1,4 +1,4 @@
-import React, { useState, KeyboardEvent } from "react";
+import React, { useState } from "react";
 import { Check, MapPin, Calendar as CalendarIcon, FileText, Shirt, Package, StickyNote, Camera, Clapperboard, ArrowRight } from "lucide-react";
 import {
   Dialog,
@@ -41,11 +41,9 @@ export default function CreateShootModal({
   const [name, setName] = useState("");
   const [mainLocation, setMainLocation] = useState("");
   const [date, setDate] = useState("");
-  const [outfits, setOutfits] = useState<string[]>([]);
-  const [gear, setGear] = useState<string[]>([]);
+  const [outfits, setOutfits] = useState("");
+  const [gear, setGear] = useState("");
   const [notes, setNotes] = useState("");
-  const [outfitInput, setOutfitInput] = useState("");
-  const [gearInput, setGearInput] = useState("");
   const [selectedPostIds, setSelectedPostIds] = useState<Set<string>>(new Set(preSelectedPostIds));
 
   // Reset selection when modal opens with new preselected
@@ -66,41 +64,21 @@ export default function CreateShootModal({
     });
   };
 
-  const handleAddOutfit = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      const value = outfitInput.trim();
-      if (value && !outfits.includes(value)) setOutfits([...outfits, value]);
-      setOutfitInput("");
-    }
-  };
-
-  const handleAddGear = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      const value = gearInput.trim();
-      if (value && !gear.includes(value)) setGear([...gear, value]);
-      setGearInput("");
-    }
-  };
-
-  const removeOutfit = (i: number) => setOutfits(outfits.filter((_, idx) => idx !== i));
-  const removeGear = (i: number) => setGear(gear.filter((_, idx) => idx !== i));
-
   const handleSave = () => {
     if (!isValid) return;
+    const toLines = (text: string) => text.split("\n").map(s => s.trim()).filter(Boolean);
     onSave({
       name: name.trim(),
       mainLocation: mainLocation.trim(),
       date,
-      outfits,
-      gear,
+      outfits: toLines(outfits),
+      gear: toLines(gear),
       notes: notes.trim(),
       postIds: Array.from(selectedPostIds),
     });
     onOpenChange(false);
-    setName(""); setMainLocation(""); setDate(""); setOutfits([]); setGear([]);
-    setNotes(""); setOutfitInput(""); setGearInput(""); setSelectedPostIds(new Set());
+    setName(""); setMainLocation(""); setDate(""); setOutfits(""); setGear("");
+    setNotes(""); setSelectedPostIds(new Set());
   };
 
   const totalSelected = selectedPostIds.size + (selectedPostCount > 0 && selectedPostIds.size === 0 ? selectedPostCount : 0);
@@ -233,17 +211,7 @@ export default function CreateShootModal({
               <Shirt className="w-3 h-3" />
               Outfits
             </label>
-            {outfits.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mb-2">
-                {outfits.map((o, i) => (
-                  <span key={i} className="inline-flex items-center gap-1.5 bg-[#612A4F]/[0.06] text-[#612A4F] text-[11px] font-medium px-2.5 py-1 rounded-full">
-                    {o}
-                    <button type="button" onClick={() => removeOutfit(i)} className="text-[#612A4F]/40 hover:text-[#612A4F]/80 transition-colors">&times;</button>
-                  </span>
-                ))}
-              </div>
-            )}
-            <input type="text" value={outfitInput} onChange={e => setOutfitInput(e.target.value)} onKeyDown={handleAddOutfit} placeholder="Add an outfit..." className={inputClass} />
+            <textarea value={outfits} onChange={e => setOutfits(e.target.value)} rows={3} placeholder="Add an outfit..." className={`${inputClass} resize-none`} />
           </div>
 
           {/* Props */}
@@ -252,17 +220,7 @@ export default function CreateShootModal({
               <Package className="w-3 h-3" />
               Props
             </label>
-            {gear.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mb-2">
-                {gear.map((g, i) => (
-                  <span key={i} className="inline-flex items-center gap-1.5 bg-[#612A4F]/[0.06] text-[#612A4F] text-[11px] font-medium px-2.5 py-1 rounded-full">
-                    {g}
-                    <button type="button" onClick={() => removeGear(i)} className="text-[#612A4F]/40 hover:text-[#612A4F]/80 transition-colors">&times;</button>
-                  </span>
-                ))}
-              </div>
-            )}
-            <input type="text" value={gearInput} onChange={e => setGearInput(e.target.value)} onKeyDown={handleAddGear} placeholder="Add a prop..." className={inputClass} />
+            <textarea value={gear} onChange={e => setGear(e.target.value)} rows={3} placeholder="Add a prop..." className={`${inputClass} resize-none`} />
           </div>
 
           {/* Notes */}

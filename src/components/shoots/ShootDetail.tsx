@@ -75,7 +75,7 @@ export default function ShootDetail({
       animate={{ opacity: 1 }}
       transition={{ duration: 0.2 }}
     >
-      <div className="max-w-3xl mx-auto px-6 md:px-8 pt-5">
+      <div className="max-w-5xl mx-auto px-6 md:px-8 pt-5">
         {/* Back + menu */}
         <div className="flex items-center justify-between mb-5">
           <button onClick={onBack} className="flex items-center gap-1 text-gray-400 hover:text-gray-600 transition-colors">
@@ -213,18 +213,8 @@ export default function ShootDetail({
           )}
         </div>
 
-        {/* Location */}
-        <div className="mt-8">
-          <LocationsBlock
-            locations={shoot.locations || []}
-            onAddLocation={handleAddLocation}
-            onRemoveLocation={handleRemoveLocation}
-            onReorderLocations={handleReorderLocations}
-          />
-        </div>
-
-        {/* Outfits, Gear, Notes */}
-        <div className="mt-6 mb-8">
+        {/* Location · Outfits · Props (3 columns) + Notes */}
+        <div className="mt-8 mb-8">
           <OutfitsGearNotes
             outfits={shoot.outfits || []}
             gear={shoot.gear || []}
@@ -232,6 +222,14 @@ export default function ShootDetail({
             onUpdateOutfits={(outfits) => onUpdate({ outfits })}
             onUpdateGear={(gear) => onUpdate({ gear })}
             onUpdateNotes={(notes) => onUpdate({ notes })}
+            locationSlot={
+              <LocationsBlock
+                locations={shoot.locations || []}
+                onAddLocation={handleAddLocation}
+                onRemoveLocation={handleRemoveLocation}
+                onReorderLocations={handleReorderLocations}
+              />
+            }
           />
         </div>
       </div>
