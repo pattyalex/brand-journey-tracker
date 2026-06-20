@@ -2832,16 +2832,15 @@
       8%     { left: 30.3%; top: 87.5%; opacity: 1; transform: scale(0.82); }
       10%    { left: 30.3%; top: 86.8%; opacity: 1; transform: scale(1); }
       15%    { left: 30.3%; top: 86.8%; opacity: 1; transform: scale(1); }
-      19%    { left: 37%; top: 83%; opacity: 1; transform: scale(1); }
-      27%    { left: 51%; top: 78%; opacity: 1; transform: scale(1); }
-      30%    { left: 58%; top: 76.5%; opacity: 1; transform: scale(1); }
-      32%    { left: 62.5%; top: 76.3%; opacity: 1; transform: scale(1); }
-      34%    { left: 62.5%; top: 76.3%; opacity: 1; transform: scale(1); }
-      36%    { left: 62.5%; top: 76.8%; opacity: 1; transform: scale(0.82); }
-      38%    { left: 62.5%; top: 76.8%; opacity: 1; transform: scale(0.82); }
-      40%    { left: 62.5%; top: 76.1%; opacity: 1; transform: scale(1); }
-      47%    { left: 62.5%; top: 76.1%; opacity: 1; }
-      53%    { left: 62.5%; top: 76.1%; opacity: 0; }
+      16%    { left: 37%; top: 83%; opacity: 1; transform: scale(1); }
+      17.5%  { left: 51%; top: 78%; opacity: 1; transform: scale(1); }
+      18.5%  { left: 58%; top: 76.5%; opacity: 1; transform: scale(1); }
+      19%    { left: 62.5%; top: 76.3%; opacity: 1; transform: scale(1); }
+      20%    { left: 62.5%; top: 76.8%; opacity: 1; transform: scale(0.82); }
+      22%    { left: 62.5%; top: 76.8%; opacity: 1; transform: scale(0.82); }
+      24%    { left: 62.5%; top: 76.1%; opacity: 1; transform: scale(1); }
+      31%    { left: 62.5%; top: 76.1%; opacity: 1; }
+      37%    { left: 62.5%; top: 76.1%; opacity: 0; }
       100%   { left: 62.5%; top: 76.1%; opacity: 0; }
     }
 
@@ -2866,11 +2865,11 @@
     }
 
     @keyframes sephoraCheckPop {
-      0%, 35.5%  { transform: scale(0); }
-      37%        { transform: scale(1.3); }
-      39%        { transform: scale(0.88); }
-      41%        { transform: scale(1.08); }
-      43%        { transform: scale(1); }
+      0%, 19.5%  { transform: scale(0); }
+      21%        { transform: scale(1.3); }
+      23%        { transform: scale(0.88); }
+      25%        { transform: scale(1.08); }
+      27%        { transform: scale(1); }
       88%        { transform: scale(1); opacity: 1; }
       94%        { transform: scale(0); opacity: 0; }
       100%       { transform: scale(0); opacity: 0; }
@@ -2884,9 +2883,9 @@
     }
 
     @keyframes sephoraRipple {
-      0%, 35.5%  { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
-      36%        { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
-      46%        { transform: translate(-50%, -50%) scale(2.5); opacity: 0; }
+      0%, 19.5%  { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+      20%        { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+      30%        { transform: translate(-50%, -50%) scale(2.5); opacity: 0; }
       100%       { transform: translate(-50%, -50%) scale(2.5); opacity: 0; }
     }
 
@@ -5675,8 +5674,8 @@
       </div>
       <div class="feature-visual reveal-visual" style="background: none; padding: 0; box-shadow: none;">
         <video
+          id="plan-shoots-video"
           src="plan-shoots.mov"
-          loop
           muted
           autoplay
           playsinline
@@ -6102,26 +6101,26 @@
             // Start cursor check animation after images slide up
             const dcw = document.querySelector('.deal-cards-wrapper');
             if (dcw) {
-              setTimeout(() => dcw.classList.add('cursor-active'), 2000);
+              setTimeout(() => dcw.classList.add('cursor-active'), 700);
             }
             // Loop notifications in sync with 7s cursor animation
             const publishNotif = document.getElementById('publishNotification');
             function notifLoop() {
               // Alo click at ~6% of 5s = 0.3s into loop
               setTimeout(() => { if (paymentNotif) paymentNotif.classList.add('show'); }, 400);
-              // Sephora click at ~36% of 5s = 1.8s into loop
-              setTimeout(() => { if (publishNotif) publishNotif.classList.add('show'); }, 1900);
+              // Sephora click at ~20% of 5s = 1.0s into loop (fires as cursor lands)
+              setTimeout(() => { if (publishNotif) publishNotif.classList.add('show'); }, 1050);
               // Hide both before loop restarts
               setTimeout(() => {
                 if (paymentNotif) paymentNotif.classList.remove('show');
                 if (publishNotif) publishNotif.classList.remove('show');
               }, 4200);
             }
-            // Start first loop when cursor-active begins (2s)
+            // Start first loop when cursor-active begins
             setTimeout(() => {
               notifLoop();
               setInterval(notifLoop, 5000);
-            }, 2000);
+            }, 700);
           }
         });
       }, { threshold: 0.2 });
@@ -6530,6 +6529,20 @@
           btn.style.borderColor = 'rgba(107, 47, 90, 0.15)';
           btn.style.background = 'rgba(255, 255, 255, 0.85)';
         });
+      });
+    })();
+  </script>
+  <script>
+    // Pause between loops for the "Plan Your Shoots" video
+    (function() {
+      var v = document.getElementById('plan-shoots-video');
+      if (!v) return;
+      var LOOP_DELAY_MS = 1500; // gap before the video restarts
+      v.addEventListener('ended', function() {
+        setTimeout(function() {
+          v.currentTime = 0;
+          v.play();
+        }, LOOP_DELAY_MS);
       });
     })();
   </script>
