@@ -1,6 +1,6 @@
 export type PostStatus = 'Idea' | 'Scripted' | 'Ready to shoot' | 'Shot' | 'Edited' | 'Ready to Schedule' | 'Scheduled' | 'Posted';
 
-export const DEFAULT_FORMATS: string[] = ['Carousel', 'Reel', 'Photo', 'Story'];
+export const DEFAULT_FORMATS: string[] = ['Carousel', 'Reel', 'Photo', 'Story', 'YouTube'];
 
 export interface Post {
   id: string;

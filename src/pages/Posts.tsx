@@ -139,10 +139,11 @@ const Posts: React.FC = () => {
     setJSON('meg_formats', formats);
   }, [formats]);
 
-  // On mount, ensure any custom formats used on posts are included in the formats list
+  // On mount, ensure any custom formats used on posts are included in the formats list,
+  // plus any default formats (e.g. YouTube) added after a user's list was first saved
   useEffect(() => {
     const formatsFromPosts = posts.map(p => p.format).filter(f => f && f.trim() !== '');
-    const missing = [...new Set(formatsFromPosts)].filter(f => !formats.includes(f));
+    const missing = [...new Set([...DEFAULT_FORMATS, ...formatsFromPosts])].filter(f => !formats.includes(f));
     if (missing.length > 0) {
       setFormats(prev => [...prev, ...missing.filter(f => !prev.includes(f))]);
     }
