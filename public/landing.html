@@ -383,6 +383,10 @@
       border-radius: 16px;
       overflow: visible;
       container-type: inline-size;
+      box-shadow:
+        0 4px 6px rgba(0,0,0,0.02),
+        0 12px 24px rgba(139,112,130,0.08),
+        0 24px 48px rgba(139,112,130,0.06);
     }
 
     .dashboard-preview img:not(.hero-avatar),
@@ -393,12 +397,14 @@
       max-width: 100%;
       aspect-ratio: 2072 / 1080;
       border-radius: 16px;
-      box-shadow:
-        0 4px 6px rgba(0,0,0,0.02),
-        0 12px 24px rgba(139,112,130,0.08),
-        0 24px 48px rgba(139,112,130,0.06);
       opacity: 0;
       animation: dashboardRise 0.8s ease 1.2s forwards;
+    }
+
+    /* The hero video file has a 1px dark frame baked into its edges.
+       Clip the outer ring (no scaling, so the layout/content is untouched). */
+    .dashboard-preview video {
+      clip-path: inset(2px round 16px);
     }
 
     /* ── Blue "scheduled" pulse highlight when content drops on day 11 ── */
@@ -5192,7 +5198,7 @@
           <video
             id="heroDemoVideo"
             src="hero-demo.mp4"
-            poster="hero-poster.jpg"
+            poster="hero-poster-fixed.jpg"
             loop
             muted
             playsinline
@@ -5463,11 +5469,20 @@
     <!-- Feature 1: AI Storyboard -->
     <div class="feature-row storyboard-row">
       <div class="feature-text">
-        <h3>Production Pipeline</h3>
-        <p>See your entire workflow on one visual board. Always know what's in progress, what needs attention, and what's ready to go live.</p>
+        <h3>Content Board</h3>
+        <p>See your whole content library on one board. Always know what each post is, where it's going, and how close it is to live.</p>
       </div>
       <div class="feature-visual reveal-visual" style="background: none; padding: 0; box-shadow: none;">
-        <img src="content-table.png" alt="Production Pipeline - Content board view" style="width: 100%; border-radius: 16px;">
+        <video
+          id="production-pipeline-video"
+          src="production-pipeline.mov"
+          muted
+          autoplay
+          playsinline
+          preload="auto"
+          aria-label="Production Pipeline - Content board view"
+          style="width: 100%; border-radius: 16px; display: block;"
+        ></video>
       </div>
     </div>
 
@@ -6533,16 +6548,22 @@
     })();
   </script>
   <script>
-    // Pause between loops for the "Plan Your Shoots" video
+    // Pause between loops for feature videos (per-video delay in ms)
     (function() {
-      var v = document.getElementById('plan-shoots-video');
-      if (!v) return;
-      var LOOP_DELAY_MS = 1500; // gap before the video restarts
-      v.addEventListener('ended', function() {
-        setTimeout(function() {
-          v.currentTime = 0;
-          v.play();
-        }, LOOP_DELAY_MS);
+      var LOOP_DELAYS = {
+        'plan-shoots-video': 1500,
+        'production-pipeline-video': 2000,
+      };
+      Object.keys(LOOP_DELAYS).forEach(function(id) {
+        var v = document.getElementById(id);
+        if (!v) return;
+        var delay = LOOP_DELAYS[id];
+        v.addEventListener('ended', function() {
+          setTimeout(function() {
+            v.currentTime = 0;
+            v.play();
+          }, delay);
+        });
       });
     })();
   </script>
