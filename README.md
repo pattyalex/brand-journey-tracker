@@ -64,6 +64,16 @@ This project is built with .
 
 Simply open [Lovable](https://lovable.dev/projects/ea203a7b-5a4c-4f5e-99ef-d993d285706e) and click on Share -> Publish.
 
+## Production server
+
+After running `npm run build`, start both the API server and static site with:
+
+```sh
+npm run start:prod
+```
+
+This serves the built React app on port `5000` and the API on port `3001`.
+
 ## I want to use a custom domain - is that possible?
 
 We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
